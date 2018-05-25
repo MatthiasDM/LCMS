@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>QCmanager: beheer van de QC-instellingen</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="../LCMS/JS/jqGrid/js/standardView.js" type="text/javascript"></script>
+        <script src="./HTML/other/qcmanager/interface.js"></script>
+        <script src="./HTML/other/qcmanager/servletCalls.js"></script>
+        <link rel="stylesheet" type="text/css" media="screen" href="./HTML/other/qcmanager/style.css" />
+
+
+
+
+    </head>
+    <body>
+        <div class="container" id="qc-container">
+            <div class="row">
+                <div class="col-sm-1 mx-auto"></div>
+                <div class="col-sm-10 mx-auto" id="div-grid-wrapper">
+                    <table id="qc-table"></table>
+                    <div id="qc-pager"></div>       
+                    
+                </div>
+                <div class="col-sm-1 mx-auto"></div>
+
+            </div>
+            <br/>
+            <div class="row">
+                <div class="col-sm-1 mx-auto"></div>
+                <div class="col-sm-10 mx-auto" id="div-grid-test-wrapper">
+                    <table id="qctest-table"></table>
+                    <div id="qctest-pager"></div>       
+
+                </div>
+                <div class="col-sm-1 mx-auto"></div>
+
+            </div>
+        </div>
+    </body>
+</html>

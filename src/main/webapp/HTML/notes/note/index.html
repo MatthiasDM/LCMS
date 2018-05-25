@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script>
+
+        </script>
+        <script src="./JS/ckeditor/plugins/templates/templates/defaultLCMS.js"></script>
+
+    </head>
+    <body>
+
+
+        <div id="editor-wrapper">
+            <form id="form-note-id">
+                <div class="row" id="metadata-note-id">
+                    <div LCMS="note-metadata" id="note-metadata" style='width: 100%'>
+
+                    </div>
+                </div>
+                <textarea name="editor-note-id" id="editor-note-id" rows="200" cols="60" style="padding:10px">
+                note-content
+                </textarea>
+            </form>
+        </div>
+    </body>
+</html>
+
+
+
+<script>
+            $(function () {
+
+                $.fn.modal.Constructor.prototype.enforceFocus = function () {
+                    var $modalElement = this.$element;
+                    $(document).on('focusin.modal', function (e) {
+                        var $parent = $(e.target.parentNode);
+                        if ($modalElement[0] !== e.target
+                                && !$modalElement.has(e.target).length
+                                && $(e.target).parentsUntil('*[role="dialog"]').length === 0) {
+                            $modalElement.focus();
+                        }
+                    });
+                };
+
+                console.log("loading note framework");
+                loadNote();
+
+            });
+
+            function loadNote() {
+
+                $("#navbar-extra .cke_top").remove();
+                CKEDITOR.config.templates_files = ['http://localhost:8080/LCMS/JS/ckeditor/plugins/templates/templates/defaultLCMS.js'];
+                CKEDITOR.config.allowedContent = {
+                    script: true,
+                    $1: {
+                        // This will set the default set of elements
+                        elements: CKEDITOR.dtd,
+                        attributes: true,
+                        styles: true,
+                        classes: true
+                    }
+                };
+                CKEDITOR.on('instanceReady', function (ev) {
+                    var editor = ev.editor;
+                    console.log("Loaded editor-note-id");
+                    //catch ctrl+clicks on <a>'s in edit mode to open hrefs in new tab/window
+
+                    $("#cke_editor-note-id").css("padding", "10px");
+                    $(".cke_top").css("min-width", "650px");
+                    $(".cke_chrome").css("border", "0px");
+
+
+                    $("#navbar-extra").prepend($(".cke_top")); //add toolbar to header
+                    insert = CKEDITOR.getTemplate('note');
+
+
+                });
+                CKEDITOR.config.contentsCss = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css';
+                CKEDITOR.scriptLoader.load("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js", function (success)
+                {
+                    console.log("bootstrap js loaded");
+                });
+                CKEDITOR.config.height = '100%';
+                CKEDITOR.config.autoGrow_minHeight = 250;
+                CKEDITOR.config.autoGrow_onStartup = true;
+
+
+
+                CKEDITOR.replace('editor-note-id', {
+                    filebrowserBrowseUrl: '/browser/browse.php',
+                    filebrowserUploadUrl: '?page=other/upload'
+                });
+                CKEDITOR.on('instanceReady', function () {
+                    loadTOC('#cke_editor-note-id');
+                    loadImages('#cke_editor-note-id');
+                });
+
+
+
+
+
+
+            }
+
+            function loadTOC(editor) {
+                console.log("Loading TOC");
+                var editorContents = $(editor).find("iframe");
+                var editorHeaders = editorContents.contents().find("h1, h2, h3, h4, h5, h6");
+                editorHeaders.each(function (index) {
+                    var uuid = uuidv4();
+                    $(this).attr("id", uuid);
+                    $("#toc-list").empty();
+                    $("#toc-list").append("<li class='list-group-item' anchor='#" + uuid + "'>" + $(this).text() + "</li>");
+                });
+                loadAnchors(editorContents);
+            }
+
+            function loadAnchors(editorContents) {
+                console.log("Loading anchors");
+                $('#toc-list li').on('click', function (event) {
+                    var target = editorContents.contents().find(this.getAttribute('anchor'));
+                    //var target = $(this.getAttribute('anchor'));
+                    if (target.length) {
+                        event.preventDefault();
+                        $('html, body').stop().animate({
+                            scrollTop: target.offset().top
+                        }, 1000);
+                    }
+                });
+            }
+
+            function loadImages(editor) {
+
+                var images = $(editor).find("iframe").contents().find('[fileid]')
+
+                images.each(function (index) {
+                    downloadToTemp($(this));
+
+                });
+
+            }
+
+            function downloadToTemp(file) {
+                var formData = new FormData();
+                formData.append('action', 'FILE_DOWNLOADTEMP');
+                formData.append('LCMS_session', $.cookie('LCMS_session'));
+                formData.append('filename', file.attr("name"));
+                var request = new XMLHttpRequest();
+                request.onreadystatechange = function () {
+                    if (request.readyState == 4) {
+                        var jsonData = JSON.parse(request.responseText);
+                        var filePath = jsonData.filePath;
+                        console.log("Changing filepath from " + file.attr("src") + " to " + filePath);
+                        file.attr("src", filePath);
+
+                    }
+                }
+                request.open('POST', "./upload", /* async = */ false);
+                request.send(formData);
+            }
+</script>

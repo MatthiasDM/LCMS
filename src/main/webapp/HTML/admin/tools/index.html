@@ -1,0 +1,93 @@
+
+<style>
+    #container .row .col-sm-3{
+        min-width: 300px; 
+        margin: 10px;
+    }
+    #container .card-title a{
+        color: white;        
+    }
+</style>
+
+<div class="container" style="width:100%" id="admin-container">
+    <!--<div class="row">
+    
+        <div class="col-sm-3 mx-auto">
+            <div class="card text-center" id="card-create-object">
+                <div class="card-header card-primary card-inverse">
+                    <h4 class="card-title"><a href="index.html?p=admin" lang="card-create-object-title">Databaseobject maken</a></h4>
+                </div>
+                <div class="card-body" style="padding: 10px">                            
+                    <form id="form-new-object">
+                        <div class="form-group">
+                            <select class="form-control" LCMS="objectList" id ="card-create-object-list-objects">
+                                <option>Default select</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="input-object" lang="card-create-object-label-object">Maak een object</label>
+                            <input type="text" class="form-control" id="input-database" name="input-database" aria-describedby="info-user" placeholder="Database">
+                            <small id="info-user" class="form-text text-muted" lang="card-create-object-info-object">In welke database moet het object komen?</small>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="input-object" name="input-object" aria-describedby="info-user" placeholder="Collection">
+                            <small id="info-user" class="form-text text-muted" lang="card-create-object-info-object">Naam van het object</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>                                              
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-3 mx-auto">
+            <div class="card text-center" id="card-create-object">
+                <div class="card-header card-primary card-inverse">
+                    <h4 class="card-title"><a href="index.html?p=admin">Gebruiker aanmaken</a></h4>
+                </div>
+                <div class="card-body" style="padding: 10px">                            
+                    <form id="form-new-user">
+                        <div class="form-group">
+                            <label for="input-user">Gebruikersnaam</label>
+                            <input type="text" class="form-control" id="input-gebruiker" aria-describedby="info-user" placeholder="Gebruikersnaam" requered>
+                            <small id="info-user" class="form-text text-muted">Nieuwe gebruiker aanmaken</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="input-password">Wachtwoord</label>
+                            <input type="password" class="form-control" id="input-wachtwoord" aria-describedby="info-password" placeholder="Wachtwoord" requered>
+                            <small id="info-user" class="form-text text-muted">Wachtwoord</small>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="input-LDAP">
+                            <label class="form-check-label" for="input-LDAP">Kan LDAP gebruiken</label>
+                        </div>
+                        <select class="custom-select" id="select-roles" LCMS="roleList" multiple>
+                            <option selected>Open this select menu</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>                                             
+                </div>
+            </div>
+        </div>
+     
+
+
+
+    </div> -->
+
+    <div class="row">
+        <div class="col-sm-1 mx-auto"></div>
+        <!START object-table-->
+        <div class="col-sm-5 mx-auto" id="div-grid-object-wrapper">
+            <table id="object-table"></table>
+            <div id="object-pager"></div>   
+        </div>
+        <!START user-table-->
+        <div class="col-sm-5 mx-auto" id="div-grid-user-wrapper">
+            <table id="user-table"></table>
+            <div id="user-pager"></div>   
+        </div>
+        <div class="col-sm-1 mx-auto"></div>
+
+    </div>
+
+</div>
