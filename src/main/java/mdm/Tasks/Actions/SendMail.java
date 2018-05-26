@@ -30,8 +30,8 @@ public class SendMail {
         String from = (String) parameters.get("from");
         List<String> receivers = (List<String>) parameters.get("receivers");
 
-        final String username = "labbl";
-        final String password = "azert";
+        final String username = ""; //load username from profile
+        final String password = ""; //load password from profile
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
