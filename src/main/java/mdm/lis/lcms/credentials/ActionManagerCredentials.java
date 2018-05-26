@@ -86,15 +86,16 @@ public class ActionManagerCredentials {
 //        } catch (ClassNotFoundException ex) {
 //            Logger.getLogger(ActionManagerCredentials.class.getName()).log(Level.SEVERE, null, ex);
 //        }
-        if (_user.equals("admin") && passwordEncryptor.checkPassword(_pwd, "LcTFMqFglZI4VmJyyPAR/Js4ekJ3jr1xJZenBdn2Nd6o89FZoNY8F9xhQdpp+xB6")) {
-            UUID sessionId = UUID.randomUUID();
-            Cookie loginCookie = new Cookie("LCMS_session", sessionId.toString());
-            loginCookie.setMaxAge(60 * 60 * 6);
-            Session session = createSession(_user, loginCookie.getValue());
-            DatabaseActions.insertSession(session);
-            createTempDir(session.getSessionID());
-            return loginCookie;
-        }
+
+//        if (_user.equals("admin") && passwordEncryptor.checkPassword(_pwd, "LcTFMqFglZI4VmJyyPAR/Js4ekJ3jr1xJZenBdn2Nd6o89FZoNY8F9xhQdpp+xB6")) {
+//            UUID sessionId = UUID.randomUUID();
+//            Cookie loginCookie = new Cookie("LCMS_session", sessionId.toString());
+//            loginCookie.setMaxAge(60 * 60 * 6);
+//            Session session = createSession(_user, loginCookie.getValue());
+//            DatabaseActions.insertSession(session);
+//            createTempDir(session.getSessionID());
+//            return loginCookie;
+//        }
 
         User user = DatabaseActions.getUser(_user);
         if (user != null) {
@@ -176,8 +177,8 @@ public class ActionManagerCredentials {
         UUID id = UUID.randomUUID();
         ObjectMapper mapper = new ObjectMapper();
         User user = new User();
-        user.setUsername("matthias");
-        user.setPassword(passwordEncryptor.encryptPassword("funoob"));
+        user.setUsername("LCMS");
+        user.setPassword(passwordEncryptor.encryptPassword("LCMS"));
         user.setEmail("LCMS@klinilab.be");
         user.setRoles(Arrays.asList(new String[]{"ADMIN"}));
         user.setLdap(false);
