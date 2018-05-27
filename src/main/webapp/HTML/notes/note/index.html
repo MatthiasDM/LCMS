@@ -66,14 +66,16 @@
                     var editor = ev.editor;
                     console.log("Loaded editor-note-id");
                     //catch ctrl+clicks on <a>'s in edit mode to open hrefs in new tab/window
-
                     $("#cke_editor-note-id").css("padding", "10px");
                     $(".cke_top").css("min-width", "650px");
                     $(".cke_chrome").css("border", "0px");
-
-
                     $("#navbar-extra").prepend($(".cke_top")); //add toolbar to header
                     insert = CKEDITOR.getTemplate('note');
+                    $('iframe').contents().click(function (e) {
+                        if (typeof e.target.href != 'undefined' && e.ctrlKey == true) {
+                            window.open(e.target.href, 'new' + e.screenX);
+                        }
+                    });
 
 
                 });

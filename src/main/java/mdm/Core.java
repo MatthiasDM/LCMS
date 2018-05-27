@@ -133,9 +133,9 @@ public class Core {
     public static String loadWebFile(String url) {
         String file = "";
         if (url.equals("")) {
-            file = readFile("http://localhost:8084/LCMS/HTML/home/index.html");
+            file = readFile("http://localhost:8080/LCMS/HTML/home/index.html");
         } else {
-            file = readFile("http://localhost:8084/LCMS/HTML/" + url);
+            file = readFile("http://localhost:8080/LCMS/HTML/" + url);
         }
         return file;
     }
@@ -143,7 +143,7 @@ public class Core {
     public static String loadScriptFile(String url) {
         String file = "";
 
-        file = readFile("http://localhost:8084/LCMS/HTML/" + url);
+        file = readFile("http://localhost:8080/LCMS/HTML/" + url);
 
         return file;
     }

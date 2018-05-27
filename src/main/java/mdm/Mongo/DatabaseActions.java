@@ -82,7 +82,7 @@ public class DatabaseActions {
     public static void createDatabaseMap() {
 
         if (databases.get("users") == null) {
-            mongo.dropDatabase("users");
+            //mongo.dropDatabase("users");
             databases.put("users", openOrCreateDB("users"));
         }
         if (databases.get("lcms") == null) {

@@ -78,6 +78,7 @@ public class ActionManagerCredentials {
     }
 
     public Cookie actionCREDENTIALS_LOGIN() throws JsonProcessingException {
+        
         String _user = requestParameters.get("username")[0];
         String _pwd = requestParameters.get("password")[0];
         StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();

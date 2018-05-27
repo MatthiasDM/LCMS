@@ -76,8 +76,11 @@ public class ActionManagerNote {
         StringBuilder sb = new StringBuilder();
         if (Core.checkSession(cookie)) {
             String id = requestParameters.get("id")[0];
-            Note note = DatabaseActions.getNote(DatabaseActions.getSession(cookie).getUsername(), id);
-            sb.append(DatabaseWrapper.getNote(note));
+            if (!id.equals("")) {
+                Note note = DatabaseActions.getNote(DatabaseActions.getSession(cookie).getUsername(), id);
+                sb.append(DatabaseWrapper.getNote(note));
+            }
+
         }
         return sb;
     }
@@ -101,11 +104,11 @@ public class ActionManagerNote {
                         Note note = createNoteObject(id.toString(), "create");
                         Session session = DatabaseActions.getSession(cookie);
                         note.setAuthor(session.getUsername());
-                        note.setCreated(Instant.now().toEpochMilli() / 1000);  
+                        note.setCreated(Instant.now().toEpochMilli() / 1000);
                         ObjectMapper mapper = new ObjectMapper();
                         Document document = Document.parse(mapper.writeValueAsString(note));
                         DatabaseWrapper.addObject(document, Core.MongoConf.NOTES, cookie);
-                        DatabaseActions.insertNote(note);
+                        //DatabaseActions.insertNote(note);
                     }
 
                 }

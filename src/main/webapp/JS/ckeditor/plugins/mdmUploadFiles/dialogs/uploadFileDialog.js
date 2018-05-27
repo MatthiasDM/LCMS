@@ -106,7 +106,7 @@ function insertFileInEditor(rowId) {
     var dataFromTheRow = grid.jqGrid('getRowData', rowId);
 
     var re = /(?:\.([^.]+))?$/;
-    var type = re.exec(dataFromTheRow.name)[0]
+    var type = re.exec(dataFromTheRow.name)[0];
 
     var formData = new FormData();
     formData.append('action', 'FILE_DOWNLOADTEMP');
@@ -117,7 +117,7 @@ function insertFileInEditor(rowId) {
         if (request.readyState == 4) {
             var jsonData = JSON.parse(request.responseText);
             var filePath = jsonData.filePath;
-            if (type == ".png" || type == ".jpg") {
+            if (type == ".png" || type == ".jpg" || type == ".JPG") {
                 currentEditor.insertHtml("<img name='" + dataFromTheRow.name + "' fileid='"+dataFromTheRow.fileid+"' src='" + filePath + "'/>");
             } else {
                 currentEditor.insertHtml("<a name='" + dataFromTheRow.name + "'  href='" + filePath + "' fileid='"+dataFromTheRow.fileid+"'>" + dataFromTheRow.name + "</a>");

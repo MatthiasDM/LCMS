@@ -9,7 +9,7 @@ and open the template in the editor.
 */
 
 #floating_alert{
-    position:absolute;
+    position:fixed;
     top: 10px;
     left: 10px;
     z-index: 1000000;

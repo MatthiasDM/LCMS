@@ -27,6 +27,7 @@
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
             <version>1.6.1</version>
+            <type>jar</type>
         </dependency>
         <!-- Thanks for using https://jar-download.com -->
         <dependency>
@@ -157,6 +158,36 @@
                     </execution>
                 </executions>
             </plugin>
+          <!--  <plugin>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-maven2-plugin</artifactId>
+                <version>1.6.7</version>
+                <configuration>
+                    <container>
+                        <containerId>tomcat9x</containerId>
+                        <type>remote</type>
+                    </container>
+                    <configuration>
+                        <type>runtime</type>
+                        <properties>
+                            <cargo.remote.username>LCMS</cargo.remote.username>
+                            <cargo.remote.password>funoob</cargo.remote.password>
+                            <cargo.tomcat.manager.url>http://192.168.0.200:8080/manager/html
+                            </cargo.tomcat.manager.url>
+                        </properties>
+                    </configuration>
+                </configuration>
+            </plugin>-->
+            <plugin>
+		<groupId>org.apache.tomcat.maven</groupId>
+		<artifactId>tomcat7-maven-plugin</artifactId>
+		<version>2.2</version>
+		<configuration>
+			<url>http://192.168.0.200:8080/manager/text</url>
+			<server>tomcat9x</server>
+			<path>/LCMS</path>
+		</configuration>
+	</plugin>
         </plugins>
     </build>
 
