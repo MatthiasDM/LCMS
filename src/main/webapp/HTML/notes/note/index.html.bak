@@ -110,58 +110,11 @@
                 console.log("Loading TOC");
                 var editorContents = $(editor).find("iframe");
                 var editorHeaders = editorContents.contents().find("h1, h2, h3, h4, h5, h6");
-                var level1 = 0;
-                var level2 = 0;
-                var level3 = 0;
-                var level4 = 0;
-                var level5 = 0;
-                var level6 = 0;
-                $("#toc-list").empty();
-                var headerNumber = "";
                 editorHeaders.each(function (index) {
-                    var currentHeader = this.tagName.substr(1, this.tagName.length);
-                    if (currentHeader === "1") {
-                        level1++;
-                        level2 = 0;
-                        level3 = 0;
-                        level4 = 0;
-                        level5 = 0;
-                        level6 = 0;
-                    }
-                    if (currentHeader === "2") {
-                        level2++;
-                        level3 = 0;
-                        level4 = 0;
-                        level5 = 0;
-                        level6 = 0;
-                    }
-                    if (currentHeader === "3") {
-                        level3++;
-                        level4 = 0;
-                        level5 = 0;
-                        level6 = 0;
-                    }
-                    if (currentHeader === "4") {
-                        level4++;
-                        level5 = 0;
-                        level6 = 0;
-                    }
-                    if (currentHeader === '5') {
-                        level5++;
-                        level6 = 0;
-                    }
-                    if (currentHeader === '6') {
-                        level6++;
-                    }
                     var uuid = uuidv4();
                     $(this).attr("id", uuid);
-                    var heading = level1 + "." + level2 + "." + level3 + "." + level4 + "." + level5 + "." + level6;
-                    while(heading.slice(-1) === "0"){
-                            heading =  heading.substr(0,heading.length - 2);                   
-                    }
-                    heading = 
-                    $("#toc-list").append("<li class='list-group-item' anchor='#" + uuid + "'>" + heading + " " + $(this).text() + "</li>");
-                    var previousHeader = this.tagName.substr(1, this.tagName.length);
+                    $("#toc-list").empty();
+                    $("#toc-list").append("<li class='list-group-item' anchor='#" + uuid + "'>" + $(this).text() + "</li>");
                 });
                 loadAnchors(editorContents);
             }

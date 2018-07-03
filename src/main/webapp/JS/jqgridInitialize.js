@@ -77,6 +77,7 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
     });
 
     _tableObject.jqGrid(jqgridOptions);
+
     var lastSelection;
 
     function editRow(id) {
@@ -106,6 +107,13 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
     $(window).bind('resize', function () {
         _tableObject.setGridWidth(_parent.width() - 10);
     }).trigger('resize');
+
+    _tableObject.click(function (e) {
+        var $groupHeader = $(e.target).closest("tr.jqgroup");
+        if ($groupHeader.length > 0) {
+            $(this).jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
+        }
+    });
 
 
 

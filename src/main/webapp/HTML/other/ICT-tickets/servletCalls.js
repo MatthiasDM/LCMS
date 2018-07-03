@@ -22,8 +22,16 @@ function ICTtickets_doLoad(_parent) {
             jsonData.parent = _parent;
             loadParameters(jsonData);
         } else {
-            var extraOptions = {};
+            var extraOptions = {
+                grouping: true,
+                groupingView: {
+                    groupField: ['status'],
+                    groupColumnShow: [false],
+                    groupText: ['<b>{0} - {1} Item(s)</b>'],
+                    groupCollapse: true,
+                }};
             extraOptions.onSelectRow = editTicket;
+            
             populateTable(jsonData, "ICT_EDITTICKETS", './ict', $("#ICT-ticket-table"), "#ICT-ticket-pager", $("#div-grid-wrapper"), "ICT-tickets in het labo", extraOptions);
         }
     }).fail(function (data) {

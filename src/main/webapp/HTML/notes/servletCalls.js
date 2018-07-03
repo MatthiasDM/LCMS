@@ -24,7 +24,7 @@ function notes_doLoad(_parent) {
         } else {
 
             var extraOptions = {};
-            extraOptions.gridComplete = loadContextMenu;//($("#note-table"), $("#div-grid-wrapper"));
+            //extraOptions.gridComplete = loadContextMenu;//($("#note-table"), $("#div-grid-wrapper"));
             //extraOptions.ondblClickRow = editNote;//($("#note-table")); 
             extraOptions.onSelectRow = editNote;       
 
@@ -36,62 +36,6 @@ function notes_doLoad(_parent) {
 }
 
 
-
-function loadContextMenu() {
-    var _tableObject = $("#note-table");
-    var _parent = $("#div-grid-wrapper");
-    _tableObject.contextMenu('contextMenu', {
-        bindings: {
-            'edit': function (t) {
-                editRow();
-            },
-//                'add': function (t) {
-//                    addRow();
-//                },
-//                'del': function (t) {
-//                    delRow();
-//                }
-        },
-        onContextMenu: function (event, menu) {
-            var rowId = $(event.target).parent("tr").attr("id");
-            var grid = _tableObject;
-            grid.setSelection(rowId);
-
-            return true;
-        }
-    });
-    //<div class='contextMenu' id='contextMenu' style='display:none; width:400px;'>
-    var menu = $("<div class='contextMenu' id='contextMenu' style='display:none; width:400px;'></div>");
-    var ul = $("<ul style='width: 400px; font-size: 65%;'></ul>");
-    var liEdit = $("<li id='edit'></li>");
-    var editIcon = $("<span class='ui-icon ui-icon-pencil' style='float:left'></span>");
-    var editText = $("<span style='font-size:130%; font-family:Verdana'>Edit Row</span>");
-
-    liEdit.append(editIcon);
-    liEdit.append(editText);
-    ul.append(liEdit);
-    menu.append(ul);
-
-    _parent.append(menu);
-//        function addRow() {
-//            var grid = _tableObject;
-//            grid.editGridRow("new", {closeAfterAdd: true});
-//        }
-
-
-
-//        function delRow() {
-//            var grid = _tableObject;
-//            var rowKey = grid.getGridParam("selrow");
-//            if (rowKey) {
-//                grid.delGridRow(rowKey);
-//            } else {
-//                alert("No rows are selected");
-//            }
-//        }
-
-
-}
 
 
 function editRow() {

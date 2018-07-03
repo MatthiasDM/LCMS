@@ -236,8 +236,7 @@ public class DatabaseWrapper {
 
     }
 
-   //OBJECT SPECIFIC
-
+    //OBJECT SPECIFIC
     public static ObjectNode getObjectData(String cookie, Core.MongoConf _mongoConf, String tableName) throws ClassNotFoundException, NoSuchFieldException, IOException {
 
         ObjectMapper mapper = new ObjectMapper();
@@ -246,13 +245,8 @@ public class DatabaseWrapper {
 
         ArrayList<Document> results = DatabaseActions.getObjectsList(cookie, _mongoConf);
 
-
-
         //getObjectsList
-
         List<String> columns = getDocumentPriveleges("view", cookie, _mongoConf.getClassName());
-
-
 
         ArrayList<HashMap> header = new ArrayList<>();
 
@@ -287,8 +281,6 @@ public class DatabaseWrapper {
                 headerEntry.put("tablename", tableName);
 
                 if (!"".equals(mdmAnnotations.reference()[0])) {
-
-
 
                     String refType = mdmAnnotations.reference()[0];
 
@@ -342,35 +334,13 @@ public class DatabaseWrapper {
 
                         }
 
-                        if (Enum.equals("todoCategories")) {
-
-                            Map<String, todoCategories> todoCategories = new HashMap<>();
-
-                            for (todoCategories todoCategorie : todoCategories.class.getEnumConstants()) {
-
-                                todoCategories.put(todoCategorie.name(), todoCategorie);
-
-                            }
-
-                            headerEntry.put("choices", todoCategories);
-
-                        }
-
-
-
                     }
-
-
 
                 } else {
 
                     headerEntry.put("choices", mdmAnnotations.choices());
 
-
-
                 }
-
-
 
             }
 
@@ -379,8 +349,6 @@ public class DatabaseWrapper {
             tableEntry.put(field.getName(), "");
 
         }
-
-
 
         if (!results.isEmpty()) {
 
@@ -392,15 +360,11 @@ public class DatabaseWrapper {
 
         }
 
-
-
         jsonData.put("header", mapper.writeValueAsString(header));
 
         return jsonData;
 
     }
-
-
 
     public static void editObjectData(Object mongoObject, MongoConf _mongoConf, String cookie) throws JsonProcessingException, ClassNotFoundException {
 
@@ -409,8 +373,6 @@ public class DatabaseWrapper {
         List<String> columns = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
 
         List<Field> systemFields = Core.getSystemFields(_mongoConf.getClassName(), "edit");
-
-
 
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
@@ -431,14 +393,10 @@ public class DatabaseWrapper {
         for (Field systemField : systemFields) {
 
             // if (columns.indexOf(systemField.getName()) != -1) {
-
             filteredObj.put(systemField.getName(), obj.get(systemField.getName()));
 
             // }
-
         }
-
-
 
         filteredObj.put(_mongoConf.getIdName(), obj.get(_mongoConf.getIdName())); //put id
 
@@ -446,19 +404,13 @@ public class DatabaseWrapper {
 
     }
 
-
-
     public static void addObject(Document doc, MongoConf _mongoConf, String cookie) throws ClassNotFoundException {
-
-
 
         ObjectMapper mapper = new ObjectMapper();
 
         List<String> columns = getDocumentPriveleges("create", cookie, _mongoConf.getClassName());
 
         List<Field> systemFields = Core.getSystemFields(_mongoConf.getClassName(), "edit");
-
-
 
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
@@ -477,33 +429,22 @@ public class DatabaseWrapper {
         for (Field systemField : systemFields) {
 
             //if (columns.indexOf(systemField.getName()) != -1) {
-
             filteredDoc.put(systemField.getName(), doc.get(systemField.getName()));
 
             //}
-
         }
 
         filteredDoc.put(_mongoConf.getIdName(), doc.get(_mongoConf.getIdName())); //put id
 
         DatabaseActions.insertObjectItem(_mongoConf, filteredDoc);
 
-
-
     }
-
-
 
     private static Enum<?> findEnumValue(Class<? extends Enum<?>> enumType, String name) {
 
-
-
         return Arrays.stream(enumType.getEnumConstants())
-
                 .filter(p -> p.name().equals(name))
-
                 .findFirst()
-
                 .orElse(null);
 
     }

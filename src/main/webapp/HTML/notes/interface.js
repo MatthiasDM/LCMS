@@ -71,7 +71,7 @@ $(function () {
     });
 
     notes_doLoad($("#note-container"));
-
+    config0();
     $('#btn-open-notes').on('click', function () {
         if ($(this).hasClass('selected')) {
             deselect($(this));

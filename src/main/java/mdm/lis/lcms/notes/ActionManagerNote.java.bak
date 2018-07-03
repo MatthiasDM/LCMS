@@ -16,7 +16,6 @@ import java.util.Map;
 import mdm.Core;
 import mdm.Mongo.DatabaseActions;
 import java.util.UUID;
-import static mdm.Core.checkSession;
 import mdm.GsonObjects.Note;
 import mdm.GsonObjects.Session;
 import mdm.Mongo.DatabaseWrapper;
@@ -39,7 +38,6 @@ public class ActionManagerNote {
             action = Core.Actions.valueOf(requestParameters.get("action")[0]);
         }
         if (requestParameters.get("LCMS_session") != null) {
-   
             cookie = requestParameters.get("LCMS_session")[0];
         }
     }
@@ -54,7 +52,7 @@ public class ActionManagerNote {
 
     public StringBuilder startAction() throws ClassNotFoundException, IOException, JsonProcessingException, NoSuchFieldException {
         StringBuilder sb = new StringBuilder();
-        if (checkSession(cookie) != false) {
+        if (cookie != null) {
             if (action == Core.Actions.NOTE_LOADNOTES) {
                 sb.append(actionNOTE_LOADNOTES());
             }
@@ -105,7 +103,7 @@ public class ActionManagerNote {
                         UUID id = UUID.randomUUID();
                         Note note = createNoteObject(id.toString(), "create");
                         Session session = DatabaseActions.getSession(cookie);
-                        note.setAuthor(session.getUserid());
+                        note.setAuthor(session.getUsername());
                         note.setCreated(Instant.now().toEpochMilli() / 1000);
                         ObjectMapper mapper = new ObjectMapper();
                         Document document = Document.parse(mapper.writeValueAsString(note));
@@ -178,7 +176,7 @@ public class ActionManagerNote {
             //  Note note = MongoMain.getNote(MongoMain.getSession(cookie).getUsername(), id);
             // sb.append(PageLoader.getNote(note));
 
-            String user = DatabaseActions.getSession(cookie).getUserid();
+            String user = DatabaseActions.getSession(cookie).getUsername();
             String data = requestParameters.get("data")[0];
             String docid = requestParameters.get("docid")[0];
 
