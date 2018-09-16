@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>        
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">        
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <title>LCMS</title>
+
+        <link href="./JS/jquery-ui-1.12.1/jquery-ui.css" rel="stylesheet">
+
+        <script src="./JS/jquery-3.2.1.min.js"  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="  crossorigin="anonymous"></script>
+        <script src="./JS/jquery.cookie.js"></script>
+        <script src="./JS/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>        
+
+        <!--
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        -->
+        <script src="./JS/dependencies/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        <script src="./JS/dependencies/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="./JS/dependencies/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <link rel="stylesheet" href="./JS/dependencies/font-awesome.min.css">
+
+
+        <script src="./JS/moment.js"></script>
+        <script src="./JS/nl.js"></script> 
+        <!--<script src="//cdn.quilljs.com/1.3.4/quill.js"></script>-->
+        <script src="./JS/jquery-ui-1.12.1/jquery-ui.js"></script>
+        <script src="./JS/lang.nl.js"></script>
+        <script src="./JS/interface.js"></script>
+        <script src="./JS/servletCalls.js"></script>
+        <link rel="stylesheet" href="./JS/jqGridFree/css/jquery-ui.min.css">
+        <link rel="stylesheet" href="./JS/jqGridFree/css/ui.jqgrid.min.css">
+        <script src="./JS/jqGridFree/js/jquery.jqgrid.min.js"></script>
+        <script src="./JS/jqgridInitialize.js"></script>
+        <script src="./JS/custom/ckconfig/config.js"></script>
+        <!--<script src="./JS/contextmenu.js"></script>-->
+        <!--<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">-->
+        <link rel="stylesheet" href="./CSS/style.css">
+
+    </head>
+    <body>
+
+
+
+
+        <nav class="navbar navbar-expand-sm navbar-fixed-top bg-light text-black rounded sticky-top flex-column">
+            <div class="container col-lg-12">
+
+                <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbar-toggler" aria-controls="navbar-toggler" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <a class="navbar-brand" href="index.html" id="text-navbar-lcms">LCMS</a>
+
+                <div class="collapse navbar-collapse flex-row" id="navbar-toggler">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item"></li>
+                    </ul>
+                    <script>credentials_doUserInfo($("#navbar-toggler"));</script>
+                </div>               
+            </div>
+            <div class="container col-lg-12 flex-row" id="text-jumbo-crumbs" style='padding: .3rem; margin-bottom: 0'></div>
+             
+            <div class="container col-lg-12 flex-row" id="navbar-extra"></div>
+            
+
+
+        </nav> 
+
+
+
+
+        <div class="jumbotron" id="jumbotron" style="padding: 3rem 4rem;">            
+            <h1 class="display-5" id="text-jumbo-heading"></h1>
+            <p class="lead" id="text-jumbo-info"></p>
+        </div>
+       
+        <script>
+            page_doLoadPage(getUrlParam(window.location.href), $("body"));
+        </script>
+
+
+
+    </body>
+</html>

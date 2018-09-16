@@ -1,0 +1,78 @@
+<link rel="stylesheet" type="text/css" media="screen" href="./HTML/notes/dashboard/style.css" />
+
+<div class="container-fluid">
+    <div class="row">
+        <main class="col-md-12 col-xs-11 p-l-2 p-t-2">
+
+            <button class="btn btn-primary hidden-md-up" type="button" data-toggle="collapse" data-target="#sidebar">
+                <span class="">Menu</span>
+            </button>
+            <hr>
+
+
+            <div class="container" style="width:100%" id="container">
+                <div class="row">
+         
+                    <div class="col-sm-5 mx-auto">
+                        <div class="card text-center" id="card-browse-notes">
+                            <div class="card-header card-primary card-inverse">
+                                <h4 class="card-title"><a href="#" lang="browse-notes">Uw notities</a></h4>
+                            </div>
+                            <div class="card-body" id="card-browse-notes-body" style="padding: 10px">     
+                                <div class="list-group" LCMS="notesList" id="div-list-notes">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="col-sm-3 mx-auto">
+                        <div class="card text-center" id="card-create-note">
+                            <div class="card-header card-primary card-inverse">
+                                <h4 class="card-title"><a href="#" lang="create-note">Nieuwe notitie maken</a></h4>
+                            </div>
+                            <div class="card-body" id="card-create-note-body" style="padding: 10px">                            
+                                <form id="form-new-note">
+                                    <div class="form-group">
+                                        <label for="input-title" lang="create-note-title">Titel</label>
+                                        <input type="text" class="form-control" name="input-title" id="input-title" aria-describedby="info-user" placeholder="Gebruikersnaam">
+                                        <small id="info-title" class="form-text text-muted">Titel van de notitie</small>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </form>  
+                            </div>
+                        </div>
+                    </div>
+      
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+</div> 
+
+
+
+
+
+
+ <div class="modal modal-lg" tabindex="-1" id="modal-notes" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Modal title</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body" id="card-edit-note-body">                    
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary">Opslaan</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Sluiten</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
