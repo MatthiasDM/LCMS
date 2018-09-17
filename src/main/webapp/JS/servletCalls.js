@@ -6,6 +6,7 @@
 
 
 function page_doLoadPage(_page, parent) {
+<<<<<<< HEAD
     var _cookie = $.cookie('LCMS_session');
     console.log("Loading page...");
     $.ajax({
@@ -73,6 +74,49 @@ function getUrlParam(url_string) {
 
 
 
+=======
+
+    $.ajax({
+        method: "POST",
+        url: "./page",
+        data: {page: _page},
+        beforeSend: function (xhr) {
+            xhr.overrideMimeType("application/html");
+        }
+    }).done(function (data) {
+        parent.append(data);
+        setJumbo(_page);
+    }).fail(function (data) {
+        alert("Sorry. Server unavailable. ");
+    });
+
+}
+
+function credentials_doUserInfo(_parent) {
+    var _cookie = $.cookie('LCMS_session');
+    $.ajax({
+        method: "POST",
+        url: "./credentials",
+        data: {action: "CREDENTIALS_USERINFO", LCMS_session: _cookie},
+        beforeSend: function (xhr) {
+            xhr.overrideMimeType("application/html");
+        }
+    }).done(function (data) {
+        var jsonData = JSON.parse(data, _parent);
+        jsonData.parent = _parent;
+        loadParameters(jsonData);
+    }).fail(function (data) {
+        alert("Sorry. Server unavailable. ");
+    });
+
+}
+
+function getUrlParam(url_string) {
+    var url = new URL(url_string);
+    var p = url.searchParams.get("p");
+    return p;
+}
+>>>>>>> origin/master
 
 //function doLoginCheck() {
 //

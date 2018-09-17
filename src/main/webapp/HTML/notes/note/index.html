@@ -26,6 +26,7 @@
     </body>
 </html>
 
+<<<<<<< HEAD
 <script>
             $(function () {
 
@@ -164,6 +165,99 @@
                     var previousHeader = this.tagName.substr(1, this.tagName.length);
                 });
                 loadAnchors(editorContents);               
+=======
+
+
+<script>
+            $(function () {
+
+                $.fn.modal.Constructor.prototype.enforceFocus = function () {
+                    var $modalElement = this.$element;
+                    $(document).on('focusin.modal', function (e) {
+                        var $parent = $(e.target.parentNode);
+                        if ($modalElement[0] !== e.target
+                                && !$modalElement.has(e.target).length
+                                && $(e.target).parentsUntil('*[role="dialog"]').length === 0) {
+                            $modalElement.focus();
+                        }
+                    });
+                };
+
+                console.log("loading note framework");
+                loadNote();
+
+            });
+
+            function loadNote() {
+
+                $("#navbar-extra .cke_top").remove();
+                CKEDITOR.config.templates_files = ['http://localhost:8080/LCMS/JS/ckeditor/plugins/templates/templates/defaultLCMS.js'];
+                CKEDITOR.config.allowedContent = {
+                    script: true,
+                    $1: {
+                        // This will set the default set of elements
+                        elements: CKEDITOR.dtd,
+                        attributes: true,
+                        styles: true,
+                        classes: true
+                    }
+                };
+                CKEDITOR.on('instanceReady', function (ev) {
+                    var editor = ev.editor;
+                    console.log("Loaded editor-note-id");
+                    //catch ctrl+clicks on <a>'s in edit mode to open hrefs in new tab/window
+                    $("#cke_editor-note-id").css("padding", "10px");
+                    $(".cke_top").css("min-width", "650px");
+                    $(".cke_chrome").css("border", "0px");
+                    $("#navbar-extra").prepend($(".cke_top")); //add toolbar to header
+                    insert = CKEDITOR.getTemplate('note');
+                    $('iframe').contents().click(function (e) {
+                        if (typeof e.target.href != 'undefined' && e.ctrlKey == true) {
+                            window.open(e.target.href, 'new' + e.screenX);
+                        }
+                    });
+
+
+                });
+                CKEDITOR.config.contentsCss = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css';
+                CKEDITOR.scriptLoader.load("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js", function (success)
+                {
+                    console.log("bootstrap js loaded");
+                });
+                CKEDITOR.config.height = '100%';
+                CKEDITOR.config.autoGrow_minHeight = 250;
+                CKEDITOR.config.autoGrow_onStartup = true;
+
+
+
+                CKEDITOR.replace('editor-note-id', {
+                    filebrowserBrowseUrl: '/browser/browse.php',
+                    filebrowserUploadUrl: '?page=other/upload'
+                });
+                CKEDITOR.on('instanceReady', function () {
+                    loadTOC('#cke_editor-note-id');
+                    loadImages('#cke_editor-note-id');
+                });
+
+
+
+
+
+
+            }
+
+            function loadTOC(editor) {
+                console.log("Loading TOC");
+                var editorContents = $(editor).find("iframe");
+                var editorHeaders = editorContents.contents().find("h1, h2, h3, h4, h5, h6");
+                editorHeaders.each(function (index) {
+                    var uuid = uuidv4();
+                    $(this).attr("id", uuid);
+                    $("#toc-list").empty();
+                    $("#toc-list").append("<li class='list-group-item' anchor='#" + uuid + "'>" + $(this).text() + "</li>");
+                });
+                loadAnchors(editorContents);
+>>>>>>> origin/master
             }
 
             function loadAnchors(editorContents) {

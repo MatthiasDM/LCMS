@@ -37,6 +37,7 @@ public class ICTTicket {
             type = "string")
     public String subject;
     @MdmAnnotations(
+<<<<<<< HEAD
             editRole = "ICTMANAGER",
             type = "select",
             choices = {"Glims", "Cyberlab", "Sharepoint", "Hardware", ""}
@@ -95,6 +96,60 @@ public class ICTTicket {
             viewRole = "ICTMANAGER",
             createRole = "SYSTEM",
             editRole = "ICTMANAGER")
+=======
+            type = "cktext",
+            editRole = "ICTMANAGER",
+            visibleOnTable = false)
+    public String overview;
+    @MdmAnnotations(            
+            editRole = "ICTMANAGER",
+            type = "cktext",
+            visibleOnTable = false)
+    public String followup;
+    @MdmAnnotations(
+            editRole = "ICTMANAGER",            
+            type = "select",
+            choices = {"Gemeld", "Analyse", "Validatie", "Voltooid"}
+    )
+    public String status;
+    @MdmAnnotations(
+            editRole = "ICTMANAGER",
+            type = "select",
+            multiple = true,
+            reference = {"Mongo","USERS","userid","username"},
+            visibleOnTable = false
+    )
+    public List<String> involved_persons;
+    @MdmAnnotations(
+            type = "select",
+            reference = {"Mongo","USERS","userid","username"},
+            editRole = "ICTMANAGER",
+            visibleOnTable = false
+            )
+    public String approver;
+    @MdmAnnotations(
+            type = "date",
+            visibleOnTable = false,
+            visibleOnForm = false,
+            viewRole = "ICTMANAGER",
+            createRole = "SYSTEM",
+            editRole = "SYSTEM")
+    public long approved_on;
+    @MdmAnnotations(
+            type = "date",
+            visibleOnTable = true,
+            visibleOnForm = false,
+            editRole = "SYSTEM",
+            createRole = "SYSTEM")
+    public long created_on;
+    @MdmAnnotations(
+            type = "ref",
+            visibleOnTable = false,
+            visibleOnForm = false,
+            viewRole = "ICTMANAGER",
+            createRole = "SYSTEM",
+            editRole = "SYSTEM")
+>>>>>>> origin/master
     public String created_by;
     @MdmAnnotations(
             type = "date",

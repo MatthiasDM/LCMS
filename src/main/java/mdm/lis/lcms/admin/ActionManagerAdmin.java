@@ -27,6 +27,7 @@ import java.util.Map;
 import mdm.Core;
 import mdm.Mongo.DatabaseActions;
 import java.util.UUID;
+<<<<<<< HEAD
 import mdm.Config.MongoConf;
 import mdm.Config.Roles;
 import static mdm.Core.StringToLong;
@@ -154,6 +155,135 @@ public class ActionManagerAdmin {
         user.setUserid(_id);
 
         List<Field> systemFields = Core.getSystemFields(mdm.Config.MongoConf.USERS.getClassName(), type);
+=======
+import mdm.Core.MongoConf;
+import mdm.Core.Roles;
+import static mdm.Core.StringToLong;
+import static mdm.Core.checkUserRole;
+import mdm.GsonObjects.Role;
+import mdm.GsonObjects.User;
+import static mdm.Mongo.DatabaseActions.getDocumentPriveleges;
+import mdm.Mongo.DatabaseWrapper;
+import mdm.pojo.annotations.MdmAnnotations;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.jasypt.util.password.StrongPasswordEncryptor;
+
+public class ActionManagerAdmin {
+
+    String cookie;
+    Core.Actions action;
+    HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
+
+    public ActionManagerAdmin(Map<String, String[]> requestParameters) {
+        this.requestParameters = new HashMap<String, String[]>(requestParameters);
+        if (requestParameters.get("action") != null) {
+            action = Core.Actions.valueOf(requestParameters.get("action")[0]);
+        }
+        if (requestParameters.get("LCMS_session") != null) {
+            cookie = requestParameters.get("LCMS_session")[0];
+        }
+    }
+
+    public String getCookie() {
+        return cookie;
+    }
+
+    public Core.Actions getAction() {
+        return action;
+    }
+
+    public StringBuilder startAction() throws ClassNotFoundException, IOException, NoSuchFieldException {
+        StringBuilder sb = new StringBuilder();
+        if (action == Core.Actions.ADMIN_LOADPAGE) {
+            if (checkUserRole(cookie, Core.Roles.ADMIN)) {
+                //  Object[] possibleValues = Core.Roles.ADMIN.getDeclaringClass().getEnumConstants();
+                sb.append(DatabaseWrapper.getAdminToolsPage());
+            } else {
+                sb.append(DatabaseWrapper.getCredentialPage());
+            }
+        }
+        if (action == Core.Actions.NEWOBJECT) {
+            HashMap<String, String> metadata = Core.JsonToHashMap(requestParameters.get("metadata")[0]);
+            if (metadata != null) {
+                DatabaseActions.createCollection(metadata.get("input-database"), metadata.get("input-object"));
+            }
+        }
+        if (action == Core.Actions.ADMIN_LOADOBJECTS) {
+
+        }
+        if (action == Core.Actions.ADMIN_EDITOBJECTS) {
+
+        }
+        if (action == Core.Actions.ADMIN_LOADUSERS) {
+            sb.append(actionADMIN_LOADUSERS());
+
+        }
+        if (action == Core.Actions.ADMIN_EDITUSERS) {
+            sb.append(actionADMIN_EDITUSERS());
+
+        }
+        return sb;
+    }
+
+    private StringBuilder actionADMIN_EDITUSERS() throws IOException, ClassNotFoundException {
+        StringBuilder sb = new StringBuilder();
+        if (cookie != null) {
+            if (checkUserRole(cookie, Core.Roles.ADMIN)) {
+                requestParameters.remove("action");
+                requestParameters.remove("LCMS_session");
+                String operation = requestParameters.get("oper")[0];
+                if (requestParameters.get("oper") != null) { 
+                    if (operation.equals("edit")) {
+                        requestParameters.remove("oper");
+                        requestParameters.remove("password");
+                        requestParameters.remove("id");
+                        User user = createUserObject(requestParameters.get("userid")[0], "edit");
+                        DatabaseWrapper.editObjectData(user, Core.MongoConf.USERS, cookie);
+                    }
+                    if (operation.equals("add")) {
+                        StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
+                        requestParameters.remove("oper");
+                        requestParameters.get("password")[0] = passwordEncryptor.encryptPassword(requestParameters.get("password")[0]);
+                         UUID id = UUID.randomUUID();
+                        User user = createUserObject(id.toString(), "add");
+                        ObjectMapper mapper = new ObjectMapper();
+                        Document document = Document.parse(mapper.writeValueAsString(user));
+                        // DatabaseActions.insertObjectItem(MongoConf.USERS, document);
+                        DatabaseWrapper.addObject(document, Core.MongoConf.USERS, cookie);
+
+                    }
+                }
+            }
+        } else {
+            sb.append(DatabaseWrapper.getCredentialPage());
+        }
+        return sb;
+    }
+
+    private StringBuilder actionADMIN_LOADUSERS() throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
+        StringBuilder sb = new StringBuilder();
+        if (cookie == null) {
+            sb.append(DatabaseWrapper.getCredentialPage());
+        } else {
+            if (action == Core.Actions.ADMIN_LOADUSERS) {
+                if (Core.checkSession(cookie)) {
+                    sb.append(DatabaseWrapper.getObjectData(cookie, Core.MongoConf.USERS, "user_table"));
+                } else {
+                    sb.append(DatabaseWrapper.getCredentialPage());
+                }
+            }
+
+        }
+        return sb;
+    }
+
+    private User createUserObject(String _id, String type) throws ClassNotFoundException {
+        User user = new User();
+        user.setUserid(_id);
+
+        List<Field> systemFields = Core.getSystemFields(Core.MongoConf.USERS.getClassName(), type);
+>>>>>>> origin/master
         for (Field systemField : systemFields) {
             requestParameters.remove(systemField.getName());
         }

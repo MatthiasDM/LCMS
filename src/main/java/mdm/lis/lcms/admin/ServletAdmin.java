@@ -20,7 +20,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import mdm.Core;
+<<<<<<< HEAD
 import mdm.Config.Actions;
+=======
+import mdm.Core.Actions;
+>>>>>>> origin/master
 import static mdm.Core.checkUserRole;
 import static mdm.Core.loadScriptFile;
 import static mdm.Core.loadWebFile;

@@ -13,6 +13,7 @@ import mdm.pojo.annotations.MdmAnnotations;
  */
 public class Instrument {
 
+<<<<<<< HEAD
     @MdmAnnotations(type = "string", visibleOnTable = false)
     public String instid;
     @MdmAnnotations(
@@ -40,6 +41,37 @@ public class Instrument {
     @MdmAnnotations(type = "ref", minimumEditRoleVal = 4)
     public String serviceContract, department, workpost, location; //reference   
     @MdmAnnotations(type = "text", minimumEditRoleVal = 4)
+=======
+    @MdmAnnotations(
+            viewRole = "ICTMANAGER",
+            createRole = "GOD",
+            editRole = "GOD",
+            type = "string",
+            visibleOnTable = false,
+            visibleOnForm = false)
+    public String instid;
+    @MdmAnnotations(
+            viewRole = "ICTMANAGER",
+            createRole = "GOD",
+            editRole = "GOD",
+            type = "string",
+            visibleOnTable = false,
+            visibleOnForm = false)
+    public String tag;
+    @MdmAnnotations(
+            minimumEditRoleVal = 4,
+            type = "string",
+            visibleOnTable = false,
+            visibleOnForm = false)
+    public String name;
+
+    public String serialNumber;
+    @MdmAnnotations(type = "date")
+    public long received, firstUse, lastUse;
+    @MdmAnnotations(type = "ref")
+    public String serviceContract, department, workpost, location; //reference   
+    @MdmAnnotations(type = "text")
+>>>>>>> origin/master
     public String notes;
 
     public Instrument(String instid, String name, String tag, String serialNumber, long received, long firstUse, long lastUse, String serviceContract, String department, String workpost, String notes, String location) {

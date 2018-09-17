@@ -41,6 +41,7 @@ import org.bson.types.ObjectId;
 public class ActionManagerUpload {
 
     String cookie;
+<<<<<<< HEAD
     mdm.Config.Actions action;
     Collection<Part> parts;
     String contextPath;
@@ -93,6 +94,60 @@ public class ActionManagerUpload {
             sb.append(actionFILE_BROWSE());
         }
         if (action == mdm.Config.Actions.FILE_DOWNLOADTEMP) {
+=======
+    Core.Actions action;
+    Collection<Part> parts;
+    String contextPath;
+    HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
+
+    public ActionManagerUpload(Map<String, String[]> requestParameters, Collection<Part> parts) {
+        this.requestParameters = new HashMap<String, String[]>(requestParameters);
+        if (requestParameters.get("action") != null) {
+            action = Core.Actions.valueOf(requestParameters.get("action")[0]);
+        }
+        if (requestParameters.get("LCMS_session") != null) {
+            cookie = requestParameters.get("LCMS_session")[0];
+        }
+        if (requestParameters.get("contextPath") != null) {
+            contextPath = requestParameters.get("contextPath")[0];
+        }
+
+        this.parts = parts;
+    }
+
+    public ActionManagerUpload(Map<String, String[]> requestParameters) {
+        this.requestParameters = new HashMap<String, String[]>(requestParameters);
+        if (requestParameters.get("action") != null) {
+            action = Core.Actions.valueOf(requestParameters.get("action")[0]);
+        }
+        if (requestParameters.get("LCMS_session") != null) {
+            cookie = requestParameters.get("LCMS_session")[0];
+        }
+        if (requestParameters.get("contextPath") != null) {
+            contextPath = requestParameters.get("contextPath")[0];
+        }
+
+    }
+
+    public String getCookie() {
+        return cookie;
+    }
+
+    public Core.Actions getAction() {
+        return action;
+    }
+
+    public StringBuilder startAction() throws ClassNotFoundException, IOException, NoSuchFieldException {
+        StringBuilder sb = new StringBuilder();
+
+        if (action == Core.Actions.FILE_UPLOAD) {
+            sb.append(actionFILE_UPLOAD());
+        }
+        if (action == Core.Actions.FILE_BROWSE) {
+            sb.append(actionFILE_BROWSE());
+        }
+        if (action == Core.Actions.FILE_DOWNLOADTEMP) {
+>>>>>>> origin/master
             sb.append(actionFILE_DOWNLOADTEMP());
         }
 
