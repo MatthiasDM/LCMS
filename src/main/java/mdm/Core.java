@@ -5,15 +5,14 @@
  */
 package mdm;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import difflib.Delta;
 import difflib.DiffUtils;
 import difflib.Patch;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -26,9 +25,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import mdm.Config.Roles;
 import mdm.GsonObjects.Session;
 import mdm.GsonObjects.User;
 import mdm.Mongo.DatabaseActions;
@@ -40,80 +41,15 @@ import mdm.pojo.annotations.MdmAnnotations;
  */
 public class Core {
 
-    public enum Roles {
-        ADMIN(100), QCMANAGER(50), ICTMANAGER(49), LABASSISTANT(4), SECRETARY(3), DRIVER(2), GUEST(1), ROLE3(48);
-        private final int levelCode;
-
-        Roles(int levelCode) {
-            this.levelCode = levelCode;
-        }
-
-        public int getLevelCode() {
-            return this.levelCode;
-        }
-    }   
-    
-
-    public enum Actions {
-        //CREDENTIAL RELATED
-        CREDENTIALS_LOGIN, LOAD, CREDENTIALS_CHECKCREDENTIALS, CREDENTIALS_USERINFO, CREDENTIALS_LOGOUT,
-        //ADMIN RELATED
-        ADMIN_LOADPAGE, ADMIN_LOADOBJECTS, ADMIN_EDITOBJECTS, ADMIN_LOADUSERS, ADMIN_EDITUSERS,
-        //OBJECT RELATED
-        NEWOBJECT, LOADOBJECTS,
-        //USER RELATED
-        USER_CREATEUSER,
-        //NOTES RELATED
-        AUTOSAVE, LISTNOTES, CREATENOTE, GETNOTE, SAVENOTE, NOTE_LOADNOTES, NOTE_EDITNOTES, NOTE_GETNOTE, NOTE_SAVENOTE,
-        //LAB RELATED
-        LAB_LOADLAB, LAB_LOADINSTRUMENTS, LAB_EDITINSTRUMENTS,
-        //QCMANAGER RELATED
-        QC_GETLOTINFO, QC_CHANGELOTINFO, QC_ADDLOTINFO, QC_CHANGETESTINFO, QC_GETTESTINFO,
-        //ICT RELATED
-        ICT_LOADTICKETS, ICT_EDITTICKETS,
-        //FILE RELATED
-        FILE_UPLOAD, FILE_BROWSE, FILE_DOWNLOADTEMP,
-        //TAKS RELATED
-        TASKS_LOADTASKS, TASKS_EDITTASKS
-    }
-
-    public enum MongoConf {
-        USERS("users", "users", "mdm.GsonObjects.User", "userid"),
-        ICTTICKETS("lcms", "ICTTickets", "mdm.GsonObjects.Other.ICTTicket", "ticketid"),
-        INSTRUMENTS("lcms", "instrument", "mdm.GsonObjects.Lab.Instrument", "instid"),
-        NOTES("lcms", "notes", "mdm.GsonObjects.Note", "docid"),
-        TASKS("lcms", "tasks", "mdm.GsonObjects.Other.Task", "taskid");
-        
-        private final String database;
-        private final String collection;
-        private final String className;
-        private final String idName;
-
-        private MongoConf(String database, String collection, String className, String idName) {
-            this.database = database;
-            this.collection = collection;
-            this.className = className;
-            this.idName = idName;
-        }
-
-        public String getIdName() {
-            return idName;
-        }
-
-        public String getDatabase() {
-            return database;
-        }
-
-        public String getCollection() {
-            return collection;
-        }
-
-        public String getClassName() {
-            return className;
-        }
-
-    }
-
+//    public enum Roles {
+//
+//    }       
+//    public enum Actions {
+//
+//    }
+//    public enum MongoConf {
+//
+//    }
     public enum taskCategories {
         //ICT-TICKET RELATED
         ICT_TICKET;
@@ -273,20 +209,24 @@ public class Core {
         Class cls = Class.forName(_cls);
         List<Field> fields = Arrays.asList(cls.getDeclaredFields());
         List<Field> systemfields = new ArrayList<>();
-        if ("view".equals(type)) {
-            systemfields = fields.stream().
-                    filter(p -> p.getAnnotation(MdmAnnotations.class).viewRole().equals("SYSTEM")).
-                    collect(Collectors.toList());
-        }
-        if ("edit".equals(type)) {
-            systemfields = fields.stream().
-                    filter(p -> p.getAnnotation(MdmAnnotations.class).editRole().equals("SYSTEM")).
-                    collect(Collectors.toList());
-        }
-        if ("create".equals(type)) {
-            systemfields = fields.stream().
-                    filter(p -> p.getAnnotation(MdmAnnotations.class).createRole().equals("SYSTEM")).
-                    collect(Collectors.toList());
+        if (systemfields.size() > 0) {
+            if ("view".equals(type)) {
+                systemfields = fields.stream().
+                        filter(p -> p.getAnnotation(MdmAnnotations.class).viewRole().equals("SYSTEM")).
+                        collect(Collectors.toList());
+            }
+            if ("edit".equals(type)) {
+                systemfields = fields.stream().
+                        filter(p -> p.getAnnotation(MdmAnnotations.class).editRole().equals("SYSTEM")).
+                        collect(Collectors.toList());
+            }
+            if ("create".equals(type)) {
+                systemfields = fields.stream().
+                        filter(p -> p.getAnnotation(MdmAnnotations.class).createRole().equals("SYSTEM")).
+                        collect(Collectors.toList());
+            }
+        } else {
+
         }
 
         return systemfields;
@@ -317,6 +257,26 @@ public class Core {
             }
         }
         return lines;
+    }
+
+    public static Object createDatabaseObject(HashMap<String, String[]> requestParameters, Class cls) {
+        Object databaseObject = null;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+            requestParameters.remove("oper");
+            requestParameters.remove("id");
+            HashMap<String, Object> parameters = new HashMap<>();
+            requestParameters.forEach((key, value) -> {
+                parameters.put(key, value[0]);
+            });
+            databaseObject = mapper.readValue(mapper.writeValueAsString(parameters), cls);//createNoteObject(requestParameters.get("docid")[0], "create");
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return databaseObject;
     }
 
 }

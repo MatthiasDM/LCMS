@@ -25,14 +25,19 @@ function ICTtickets_doLoad(_parent) {
             var extraOptions = {
                 grouping: true,
                 groupingView: {
-                    groupField: ['status'],
-                    groupColumnShow: [false],
-                    groupText: ['<b>{0} - {1} Item(s)</b>'],
+                    groupField: ['status', 'category'],
+                    groupColumnShow: [false,  false],
+                    groupText: ['<b>{0} - {1} Item(s)</b>', '<b>{0} - {1} Item(s)</b>'],
                     groupCollapse: true,
                 }};
             extraOptions.onSelectRow = editTicket;
-            
-            populateTable(jsonData, "ICT_EDITTICKETS", './ict', $("#ICT-ticket-table"), "#ICT-ticket-pager", $("#div-grid-wrapper"), "ICT-tickets in het labo", extraOptions);
+            var navGridParameters = {
+                add: false                
+            }
+            populateTable(jsonData, "ICT_EDITTICKETS", './ict', $("#ICT-ticket-table"), "#ICT-ticket-pager", $("#div-grid-wrapper"), "ICT-tickets in het labo", extraOptions, navGridParameters);
+//            $("#ICT-ticket-table_iladd").on("click", function () {
+//                editTicket('new');
+//            });
         }
     }).fail(function (data) {
         alert("Sorry. Server unavailable. ");
@@ -94,7 +99,7 @@ function editTicket(action) {
     var parent = $("#btn-edit-ticket");
     var grid = _tableObject;
     console.log("new ticket");
-    
+
     grid.jqGrid('editGridRow', action, {
         reloadAfterSubmit: false,
         width: $("body").width() * 0.9,
@@ -106,6 +111,7 @@ function editTicket(action) {
                     customConfig: ' '
                 });
             });
+            $("#created_on").val(moment().format('D-M-YY'));
         },
         beforeSubmit: function (postdata, formid) {
             $("textarea[title=ckedit]").each(function (index) {
@@ -122,27 +128,8 @@ function editTicket(action) {
             return [success, message, new_id];
         },
         editData: {action: "ICT_EDITTICKETS", LCMS_session: $.cookie('LCMS_session')}
-    } 
-            
+    }
+
     );
-    
-
-    //  
-    //  var rowKey = grid.getGridParam("selrow");
-    //  if (rowKey) {
-    // grid.editGridRow("new",
-    //         {
-    //             closeAfterEdit: true,
-    //              extraparam: {action: "ICT_EDITTICKETS", LCMS_session: $.cookie('LCMS_session')}
-
-    //          });
-    // } else {
-    //     console.log("No rows are selected");
-    //   }
-
-
-
-
-
 
 }

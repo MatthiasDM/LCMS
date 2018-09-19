@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import mdm.Core.Actions;
+import mdm.Config.Actions;
 import static mdm.Core.checkSession;
 
 import mdm.GsonObjects.Session;

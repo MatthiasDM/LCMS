@@ -37,14 +37,14 @@ import org.jasypt.util.password.StrongPasswordEncryptor;
 public class ActionManagerCredentials {
 
     String cookie;
-    Core.Actions action;
+    mdm.Config.Actions action;
     String contextPath;
     HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
 
     public ActionManagerCredentials(Map<String, String[]> requestParameters) {
         this.requestParameters = new HashMap<String, String[]>(requestParameters);
         if (requestParameters.get("action") != null) {
-            action = Core.Actions.valueOf(requestParameters.get("action")[0]);
+            action = mdm.Config.Actions.valueOf(requestParameters.get("action")[0]);
         }
         if (requestParameters.get("LCMS_session") != null) {
             cookie = requestParameters.get("LCMS_session")[0];
@@ -59,17 +59,17 @@ public class ActionManagerCredentials {
         return cookie;
     }
 
-    public Core.Actions getAction() {
+    public mdm.Config.Actions getAction() {
         return action;
     }
 
     public StringBuilder startAction() throws ClassNotFoundException, IOException {
         StringBuilder sb = new StringBuilder();
 
-        if (action == Core.Actions.CREDENTIALS_USERINFO) {
+        if (action == mdm.Config.Actions.CREDENTIALS_USERINFO) {
             sb.append(actionCREDENTIALS_USERINFO());
         }
-        if (action == Core.Actions.CREDENTIALS_LOGOUT) {
+        if (action == mdm.Config.Actions.CREDENTIALS_LOGOUT) {
             sb.append(actionCREDENTIALS_LOGOUT());
 
         }
@@ -137,7 +137,7 @@ public class ActionManagerCredentials {
         ArrayList<Document> results;
         Session session = null;
         try {
-            results = DatabaseActions.getObjectSpecific(Core.MongoConf.USERS, and(eq("username", _user)));
+            results = DatabaseActions.getObjectSpecific(mdm.Config.MongoConf.USERS, and(eq("username", _user)));
             Document d = Document.parse(mapper.writeValueAsString(results.get(0)));
             session = new Session(_user, _sessionId, now + (60 * 60 * 6), true, d.getString("userid"));
         } catch (ClassNotFoundException ex) {
@@ -179,7 +179,7 @@ public class ActionManagerCredentials {
         user.setRoles(Arrays.asList(new String[]{"ADMIN"}));
         user.setLdap(false);
         Document document = Document.parse(mapper.writeValueAsString(user));
-        DatabaseWrapper.addObject(document, Core.MongoConf.USERS, cookie);
+        DatabaseWrapper.addObject(document, mdm.Config.MongoConf.USERS, cookie);
     }
 
 }

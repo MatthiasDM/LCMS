@@ -26,8 +26,6 @@
     </body>
 </html>
 
-
-
 <script>
             $(function () {
 
@@ -156,14 +154,16 @@
                     var uuid = uuidv4();
                     $(this).attr("id", uuid);
                     var heading = level1 + "." + level2 + "." + level3 + "." + level4 + "." + level5 + "." + level6;
-                    while(heading.slice(-1) === "0"){
-                            heading =  heading.substr(0,heading.length - 2);                   
+                    while (heading.slice(-1) === "0") {
+                        heading = heading.substr(0, heading.length - 2);
                     }
-                    heading = 
+                    heading += ".";
                     $("#toc-list").append("<li class='list-group-item' anchor='#" + uuid + "'>" + heading + " " + $(this).text() + "</li>");
+                    this.innerHTML = "<span class='nosave'>" + heading + " </span>" + this.innerHTML;
+                    
                     var previousHeader = this.tagName.substr(1, this.tagName.length);
                 });
-                loadAnchors(editorContents);
+                loadAnchors(editorContents);               
             }
 
             function loadAnchors(editorContents) {

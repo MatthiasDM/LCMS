@@ -7,6 +7,7 @@
 
 function page_doLoadPage(_page, parent) {
     var _cookie = $.cookie('LCMS_session');
+    console.log("Loading page...");
     $.ajax({
         method: "POST",
         url: "./page",
@@ -49,10 +50,29 @@ function credentials_doUserInfo(_parent) {
 }
 
 function getUrlParam(url_string) {
-    var url = new URL(url_string);
-    var p = url.searchParams.get("p");
+    var isIE = /*@cc_on!@*/false || !!document.documentMode;
+    var isEdge = !isIE && !!window.StyleMedia;
+    var p;
+    if (isIE || isEdge) {
+        p = parse_query_string(url_string);
+        p = p[Object.keys(p)[0]]; // "a"
+    } else {
+        var url = new URL(url_string);
+        p = url.searchParams.get("p");
+    }
+    if (typeof p == "undefined") {
+        p = "";
+    }
+    if(p == "undefined"){
+        p = "";        
+    }
+
     return p;
+
 }
+
+
+
 
 //function doLoginCheck() {
 //

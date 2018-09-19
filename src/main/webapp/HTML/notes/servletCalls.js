@@ -26,8 +26,7 @@ function notes_doLoad(_parent) {
             var extraOptions = {};
             //extraOptions.gridComplete = loadContextMenu;//($("#note-table"), $("#div-grid-wrapper"));
             //extraOptions.ondblClickRow = editNote;//($("#note-table")); 
-            extraOptions.onSelectRow = editNote;       
-
+            extraOptions.onSelectRow = editNote;
             populateTable(jsonData, "NOTE_EDITNOTES", './note', $("#note-table"), "#note-pager", $("#div-grid-wrapper"), "Al uw persoonlijke notities", extraOptions);
         }
     }).fail(function (data) {
@@ -66,6 +65,8 @@ function editNote(id) {
     var grid = _tableObject;
     // var id = grid.getGridParam("selrow");
     console.log(id);
+    //$('#notes-list').BootSideMenu.close();
+
     if (id && id !== lastSelection) {
         var rowData = grid.jqGrid('getRowData', id);
         console.log(rowData);
@@ -132,11 +133,13 @@ function note_createMetaDataHeader(_metadata) {
 function note_save(instance) {
 // PREPARE FORM DATA
     var data = CKEDITOR.instances[instance].getData();
+    data = removeElements("nosave", data);
+    
     var _cookie = $.cookie('LCMS_session');
     $.ajax({
         method: "POST",
         url: "./note",
-        data: {action: "NOTE_SAVENOTE", LCMS_session: _cookie, data: data, docid: instance},
+        data: {action: "NOTE_SAVENOTE", LCMS_session: _cookie, content: data, docid: instance},
         beforeSend: function (xhr) {
             xhr.overrideMimeType("application/html");
         }
@@ -149,21 +152,3 @@ function note_save(instance) {
 
 }
 
-//            extraOptions.actionsNavOptions = {
-//                editbutton: false,
-//                posticon: "fa-lock",
-//                posttitle: "Confirm (F2)",
-//                openicon: "fa-folder-open-o",
-//                opentitle: "Open (Enter)",
-//                isDisplayButtons: function (options, rowData) {
-//                    if (options.rowData.closed) { // or rowData.closed
-//                        return {post: {hidden: true}, del: {display: false}};
-//                    }
-//                },
-//                custom: [
-//                    {action: "open", position: "first",
-//                        onClick: function (options) {
-//                            alert("Open, rowid=" + options.rowid);
-//                        }}
-//                ]
-//            };

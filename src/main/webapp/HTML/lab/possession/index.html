@@ -1,0 +1,28 @@
+<script src="./JS/ckeditor/ckeditor.js"></script>
+<script src="./HTML/lab/possession/interface.js"></script>
+<script src="./HTML/lab/possession/servletCalls.js"></script>
+<div class="container" id="possession-container">
+
+    <div class="row">
+        <div class="col-sm-1 mx-auto"></div>
+        <div class="col-sm-10 mx-auto" id="div-possession-menu">
+            <button type="button" id='btn-edit-possession' class="btn btn-primary" onclick="editPossession('new')">Nieuw object</button><br/><br/>
+        </div>
+        <div class="col-sm-1 mx-auto"></div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-1 mx-auto"></div>
+        <!START qc-table-->
+        <div class="col-sm-10 mx-auto" id="div-grid-wrapper">
+            <table id="possession-table"></table>
+            <div id="possession-pager"></div>   
+        </div>
+        <div class="col-sm-1 mx-auto"></div>
+
+    </div>
+    <!END qc-table-->
+
+    <!END possession-table-->
+
+</div>

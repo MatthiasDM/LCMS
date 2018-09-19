@@ -5,7 +5,14 @@
  */
 package mdm.Tasks;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.BasicDBObject;
 import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,8 +23,14 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import mdm.Config.Actions;
+import mdm.Config.MongoConf;
+import mdm.GsonObjects.Lab.InventoryItem;
+import mdm.GsonObjects.Lab.LabItem;
+import mdm.Mongo.DatabaseWrapper;
 import mdm.lis.lcms.other.ict.ActionManagerICT;
 import mdm.lis.lcms.other.ict.ServletICT;
+import org.bson.Document;
 
 /**
  *
@@ -62,5 +75,51 @@ public class ServletTasks extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
         }
 
+    }
+        class ActionManagerTasks {
+
+        String cookie;
+        mdm.Config.Actions action;
+        HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
+
+        public ActionManagerTasks(Map<String, String[]> requestParameters) {
+            this.requestParameters = new HashMap<String, String[]>(requestParameters);
+            if (requestParameters.get("action") != null) {
+                action = mdm.Config.Actions.valueOf(requestParameters.get("action")[0]);
+            }
+            if (requestParameters.get("LCMS_session") != null) {
+                cookie = requestParameters.get("LCMS_session")[0];
+            }
+        }
+
+        public String getCookie() {
+            return cookie;
+        }
+
+        public mdm.Config.Actions getAction() {
+            return action;
+        }
+
+        public StringBuilder startAction() throws ClassNotFoundException, IOException, JsonProcessingException, NoSuchFieldException {
+            StringBuilder sb = new StringBuilder();
+            if (cookie != null) {
+
+                if (action.toString().contains("EDIT")) {
+                    sb.append(DatabaseWrapper.actionEDITOBJECT(requestParameters, cookie, action.getMongoConf()));
+                } else {
+                    if (action.toString().contains("LOAD")) {
+                        sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf()));
+                    } else {
+
+                    }
+                }
+
+            } else {
+                sb.append(DatabaseWrapper.getCredentialPage());
+            }
+
+            return sb;
+        }
+     
     }
 }

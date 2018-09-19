@@ -3,25 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mdm;
+package mdm.workflows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
 import java.io.IOException; 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import mdm.GsonObjects.Other.ICTTicket;
+import mdm.Config.MongoConf;
+import mdm.Core;
 import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
-import mdm.Tasks.ActionManagerTasks;
 import mdm.Tasks.Actions.SendMail;
 import org.bson.Document;
 
@@ -42,31 +36,29 @@ public class Workflows {
             String userid = DatabaseActions.getSession(cookie).getUserid();
             HashMap<String, String[]> taskParameters = new HashMap<String, String[]>();
             taskParameters.put("description", new String[]{description});
-            taskParameters.put("category", new String[]{Core.taskCategories.ICT_TICKET.name()});
+            taskParameters.put("category", new String[]{MongoConf.TASKS.name()});
             taskParameters.put("assigned_to", new String[]{userid});
             taskParameters.put("start_time", new String[]{String.valueOf(Instant.now().toEpochMilli() / 1000)});
             taskParameters.put("end_time", new String[]{String.valueOf((Instant.now().toEpochMilli() / 1000) + (30 * 24 * 3600))});
             taskParameters.put("created_on", new String[]{String.valueOf(Instant.now().toEpochMilli() / 1000)});
-            taskParameters.put("edited_on", new String[]{String.valueOf(Instant.now().toEpochMilli() / 1000)});
-            
-            taskParameters.put("action", new String[]{Core.Actions.TASKS_EDITTASKS.name()});
+            taskParameters.put("edited_on", new String[]{String.valueOf(Instant.now().toEpochMilli() / 1000)});            
+            taskParameters.put("action", new String[]{mdm.Config.Actions.TASKS_EDITTASKS.name()});
             taskParameters.put("LCMS_session", new String[]{cookie});
             taskParameters.put("oper", new String[]{"add"});
-
-            ActionManagerTasks aM = new ActionManagerTasks(taskParameters);
-            aM.startAction();
+            DatabaseWrapper.actionEDITOBJECT(taskParameters, cookie, MongoConf.TASKS);
+            //ActionManagerTasks aM = new ActionManagerTasks(taskParameters);
+            //aM.startAction();
+            
+            
             //ObjectMapper mapper = new ObjectMapper();
             //Document document = Document.parse(mapper.writeValueAsString(ActionManagerTasks.createTaskObject(id.toString(), "create", taskParameters, cookie)));
-            //DatabaseWrapper.addObject(document, Core.MongoConf.TASKS, cookie);
+            //DatabaseWrapper.addObject(document, mdm.Config.MongoConf.TASKS, cookie);
         }
         if (action.equals("edit")) {
-
             if (Arrays.asList(choiceValues).contains(requestParameters.get("status")[0])) {
-
-                Document doc = DatabaseActions.getObject(Core.MongoConf.ICTTICKETS, requestParameters.get("ticketid")[0]);
-
-                if (!doc.get("status").equals(requestParameters.get("status")[0])) {
-
+                Document doc;
+                doc = DatabaseActions.getObject(mdm.Config.MongoConf.ICTTICKETS, requestParameters.get("ticketid")[0]);
+                if (doc.get("status").equals(requestParameters.get("status")[0])) {
                     List<String> involved_persons = Arrays.asList(requestParameters.get("involved_persons"));
                     List<String> receivers = new ArrayList<>();
                     List<String> emails = new ArrayList<>();
@@ -88,7 +80,7 @@ public class Workflows {
                     } else {
                         parameters.put("text", "Beste,\nBovenstaand ICT-ticket moet door u gekeurd worden. Gelieve dit document te controleren en te keuren.");
                     }
-                    SendMail.send(parameters);
+                    //SendMail.send(parameters);
 
                 }
             }

@@ -29,7 +29,7 @@ public class Task {
     @MdmAnnotations(
             type = "select",
             multiple = false,
-            reference = {"Enum", "taskCategories"},
+            reference = {"Enum", "MongoConf"},
             visibleOnTable = true,
             editRole = "TASKMANAGER")
     public String category;

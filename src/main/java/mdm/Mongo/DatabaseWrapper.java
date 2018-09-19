@@ -8,6 +8,7 @@ package mdm.Mongo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
@@ -15,7 +16,6 @@ import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,23 +24,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import mdm.Config.MongoConf;
+import mdm.Config.Roles;
 import mdm.Core;
-import mdm.Core.MongoConf;
-import mdm.Core.Roles;
-import static mdm.Core.checkUserAgainstRoles;
-import static mdm.Core.checkUserRoleValue;
+import static mdm.Core.createDatabaseObject;
 import static mdm.Core.loadScriptFile;
 import static mdm.Core.loadWebFile;
+
 import mdm.GsonObjects.Lab.Instrument;
 import mdm.GsonObjects.Note;
-import mdm.GsonObjects.Other.ICTTicket;
-import mdm.GsonObjects.Role;
 import mdm.GsonObjects.Session;
 import mdm.GsonObjects.User;
-import mdm.Mongo.DatabaseActions;
 import static mdm.Mongo.DatabaseActions.getDocumentPriveleges;
+import static mdm.Mongo.DatabaseActions.getObjectDifference;
+import static mdm.Mongo.DatabaseActions.getObjects;
 import mdm.pojo.annotations.MdmAnnotations;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 /**
  *
@@ -148,7 +148,7 @@ public class DatabaseWrapper {
     public static ObjectNode getICTTicketData(String cookie) throws ClassNotFoundException, NoSuchFieldException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
-        ArrayList<Document> results = DatabaseActions.getObjectsList(cookie, Core.MongoConf.ICTTICKETS);
+        ArrayList<Document> results = DatabaseActions.getObjectsList(cookie, mdm.Config.MongoConf.ICTTICKETS);
 
         //getObjectsList
         List<String> columns = getDocumentPriveleges("view", cookie, "mdm.GsonObjects.Other.ICTTicket");
@@ -237,7 +237,7 @@ public class DatabaseWrapper {
     }
 
     //OBJECT SPECIFIC
-    public static ObjectNode getObjectData(String cookie, Core.MongoConf _mongoConf, String tableName) throws ClassNotFoundException, NoSuchFieldException, IOException {
+    public static ObjectNode getObjectData(String cookie, mdm.Config.MongoConf _mongoConf, String tableName) throws ClassNotFoundException, NoSuchFieldException, IOException {
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -292,7 +292,7 @@ public class DatabaseWrapper {
 
                         fields.add(mdmAnnotations.reference()[3]);
 
-                        ArrayList<Document> objectList = DatabaseActions.getObjectsList(cookie, Core.MongoConf.valueOf(mdmAnnotations.reference()[1]), fields);
+                        ArrayList<Document> objectList = DatabaseActions.getObjectsList(cookie, mdm.Config.MongoConf.valueOf(mdmAnnotations.reference()[1]), fields);
 
                         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
@@ -333,6 +333,19 @@ public class DatabaseWrapper {
                             headerEntry.put("choices", roles);
 
                         }
+                        if (Enum.equals("MongoConf")) {
+
+                            Map<String, MongoConf> mongoConfs = new HashMap<>();
+
+                            for (MongoConf mongoConf : MongoConf.class.getEnumConstants()) {
+
+                                mongoConfs.put(mongoConf.name(), mongoConf);
+
+                            }
+
+                            headerEntry.put("choices", mongoConfs);
+
+                        }
 
                     }
 
@@ -355,9 +368,7 @@ public class DatabaseWrapper {
             jsonData.put("table", mapper.writeValueAsString(results));
 
         } else {
-
             jsonData.put("table", mapper.writeValueAsString(table));
-
         }
 
         jsonData.put("header", mapper.writeValueAsString(header));
@@ -366,13 +377,21 @@ public class DatabaseWrapper {
 
     }
 
+    public static ArrayList<Document> getObjectSpecificRawData(String cookie, mdm.Config.MongoConf _mongoConf, Bson bson) throws ClassNotFoundException, NoSuchFieldException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jsonData = mapper.createObjectNode();
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, bson);
+
+        return results;
+    }
+
     public static void editObjectData(Object mongoObject, MongoConf _mongoConf, String cookie) throws JsonProcessingException, ClassNotFoundException {
 
         ObjectMapper mapper = new ObjectMapper();
 
         List<String> columns = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
 
-        List<Field> systemFields = Core.getSystemFields(_mongoConf.getClassName(), "edit");
+        List<Field> systemFields = mdm.Core.getSystemFields(_mongoConf.getClassName(), "edit");
 
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
@@ -402,6 +421,12 @@ public class DatabaseWrapper {
 
         DatabaseActions.updateObjectItem(_mongoConf, filteredObj);
 
+        //do Backlog
+        Object oldDocument = getObjects(_mongoConf).find(and(eq(_mongoConf.getIdName(), filteredObj.get(_mongoConf.getIdName())))).first();
+        Document backlog = getObjectDifference(_mongoConf, oldDocument, mongoObject);
+        if (backlog != null) {
+            getObjects(MongoConf.BACKLOG).insertOne(backlog);
+        }
     }
 
     public static void addObject(Document doc, MongoConf _mongoConf, String cookie) throws ClassNotFoundException {
@@ -410,7 +435,7 @@ public class DatabaseWrapper {
 
         List<String> columns = getDocumentPriveleges("create", cookie, _mongoConf.getClassName());
 
-        List<Field> systemFields = Core.getSystemFields(_mongoConf.getClassName(), "edit");
+        List<Field> systemFields = mdm.Core.getSystemFields(_mongoConf.getClassName(), "edit");
 
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
@@ -447,6 +472,66 @@ public class DatabaseWrapper {
                 .findFirst()
                 .orElse(null);
 
+    }
+
+    public static StringBuilder actionEDITOBJECT(HashMap<String, String[]> requestParameters, String cookie, MongoConf _mongoConf) throws IOException, ClassNotFoundException {
+        StringBuilder sb = new StringBuilder();
+        if (cookie != null) {
+            if (Core.checkUserRoleValue(cookie, 2)) {
+                requestParameters.remove("action");
+                requestParameters.remove("LCMS_session");
+                String operation = requestParameters.get("oper")[0];
+                Class cls = Class.forName(_mongoConf.getClassName());
+                if (requestParameters.get("oper") != null) {
+                    if (operation.equals("edit")) {
+
+//                        ObjectMapper mapper = new ObjectMapper();
+//                        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+//                        requestParameters.remove("oper");
+//                        requestParameters.remove("id");
+//                        HashMap<String, Object> parameters = new HashMap<>();
+//                        requestParameters.forEach((key, value) -> {
+//                            parameters.put(key, value[0]);
+//                        });
+//                        Object labitem = mapper.readValue(mapper.writeValueAsString(parameters), cls);//createNoteObject(requestParameters.get("docid")[0], "create");
+                        Object obj = createDatabaseObject(requestParameters, cls);
+                        DatabaseWrapper.editObjectData(obj, _mongoConf, cookie);
+                    }
+                    if (operation.equals("add")) {
+                        requestParameters.remove("oper");
+                        requestParameters.remove("id");
+                        HashMap<String, Object> parameters = new HashMap<>();
+                        requestParameters.forEach((key, value) -> {
+                            parameters.put(key, value[0]);
+                        });
+                        ObjectMapper mapper = new ObjectMapper();
+                        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+                        Object labitem = mapper.readValue(mapper.writeValueAsString(parameters), cls);//createNoteObject(requestParameters.get("docid")[0], "create");
+                        Document document = Document.parse(mapper.writeValueAsString(labitem));
+                        document.append(_mongoConf.getIdName(), UUID.randomUUID().toString());
+                        DatabaseWrapper.addObject(document, _mongoConf, cookie);
+                    }
+                }
+            }
+        } else {
+            sb.append(DatabaseWrapper.getCredentialPage());
+        }
+        return sb;
+    }
+
+    public static StringBuilder actionLOADOBJECT(String cookie, MongoConf _mongoConf) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
+        StringBuilder sb = new StringBuilder();
+        if (cookie == null) {
+            sb.append(DatabaseWrapper.getCredentialPage());
+        } else {
+            if (Core.checkSession(cookie)) {
+                //sb.append(getInstrumentData(cookie));
+                sb.append(DatabaseWrapper.getObjectData(cookie, _mongoConf, _mongoConf.getCollection()));
+            } else {
+                sb.append(DatabaseWrapper.getCredentialPage());
+            };
+        }
+        return sb;
     }
 
 }

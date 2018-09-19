@@ -27,8 +27,8 @@ import java.util.Map;
 import mdm.Core;
 import mdm.Mongo.DatabaseActions;
 import java.util.UUID;
-import mdm.Core.MongoConf;
-import mdm.Core.Roles;
+import mdm.Config.MongoConf;
+import mdm.Config.Roles;
 import static mdm.Core.StringToLong;
 import static mdm.Core.checkUserRole;
 import mdm.GsonObjects.Role;
@@ -43,13 +43,13 @@ import org.jasypt.util.password.StrongPasswordEncryptor;
 public class ActionManagerAdmin {
 
     String cookie;
-    Core.Actions action;
+    mdm.Config.Actions action;
     HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
 
     public ActionManagerAdmin(Map<String, String[]> requestParameters) {
         this.requestParameters = new HashMap<String, String[]>(requestParameters);
         if (requestParameters.get("action") != null) {
-            action = Core.Actions.valueOf(requestParameters.get("action")[0]);
+            action = mdm.Config.Actions.valueOf(requestParameters.get("action")[0]);
         }
         if (requestParameters.get("LCMS_session") != null) {
             cookie = requestParameters.get("LCMS_session")[0];
@@ -60,37 +60,37 @@ public class ActionManagerAdmin {
         return cookie;
     }
 
-    public Core.Actions getAction() {
+    public mdm.Config.Actions getAction() {
         return action;
     }
 
     public StringBuilder startAction() throws ClassNotFoundException, IOException, NoSuchFieldException {
         StringBuilder sb = new StringBuilder();
-        if (action == Core.Actions.ADMIN_LOADPAGE) {
-            if (checkUserRole(cookie, Core.Roles.ADMIN)) {
-                //  Object[] possibleValues = Core.Roles.ADMIN.getDeclaringClass().getEnumConstants();
+        if (action == mdm.Config.Actions.ADMIN_LOADPAGE) {
+            if (checkUserRole(cookie, mdm.Config.Roles.ADMIN)) {
+                //  Object[] possibleValues = mdm.Config.Roles.ADMIN.getDeclaringClass().getEnumConstants();
                 sb.append(DatabaseWrapper.getAdminToolsPage());
             } else {
                 sb.append(DatabaseWrapper.getCredentialPage());
             }
         }
-        if (action == Core.Actions.NEWOBJECT) {
+        if (action == mdm.Config.Actions.NEWOBJECT) {
             HashMap<String, String> metadata = Core.JsonToHashMap(requestParameters.get("metadata")[0]);
             if (metadata != null) {
                 DatabaseActions.createCollection(metadata.get("input-database"), metadata.get("input-object"));
             }
         }
-        if (action == Core.Actions.ADMIN_LOADOBJECTS) {
+        if (action == mdm.Config.Actions.ADMIN_LOADOBJECTS) {
 
         }
-        if (action == Core.Actions.ADMIN_EDITOBJECTS) {
+        if (action == mdm.Config.Actions.ADMIN_EDITOBJECTS) {
 
         }
-        if (action == Core.Actions.ADMIN_LOADUSERS) {
+        if (action == mdm.Config.Actions.ADMIN_LOADUSERS) {
             sb.append(actionADMIN_LOADUSERS());
 
         }
-        if (action == Core.Actions.ADMIN_EDITUSERS) {
+        if (action == mdm.Config.Actions.ADMIN_EDITUSERS) {
             sb.append(actionADMIN_EDITUSERS());
 
         }
@@ -100,7 +100,7 @@ public class ActionManagerAdmin {
     private StringBuilder actionADMIN_EDITUSERS() throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         if (cookie != null) {
-            if (checkUserRole(cookie, Core.Roles.ADMIN)) {
+            if (checkUserRole(cookie, mdm.Config.Roles.ADMIN)) {
                 requestParameters.remove("action");
                 requestParameters.remove("LCMS_session");
                 String operation = requestParameters.get("oper")[0];
@@ -110,7 +110,7 @@ public class ActionManagerAdmin {
                         requestParameters.remove("password");
                         requestParameters.remove("id");
                         User user = createUserObject(requestParameters.get("userid")[0], "edit");
-                        DatabaseWrapper.editObjectData(user, Core.MongoConf.USERS, cookie);
+                        DatabaseWrapper.editObjectData(user, mdm.Config.MongoConf.USERS, cookie);
                     }
                     if (operation.equals("add")) {
                         StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
@@ -121,7 +121,7 @@ public class ActionManagerAdmin {
                         ObjectMapper mapper = new ObjectMapper();
                         Document document = Document.parse(mapper.writeValueAsString(user));
                         // DatabaseActions.insertObjectItem(MongoConf.USERS, document);
-                        DatabaseWrapper.addObject(document, Core.MongoConf.USERS, cookie);
+                        DatabaseWrapper.addObject(document, mdm.Config.MongoConf.USERS, cookie);
 
                     }
                 }
@@ -137,9 +137,9 @@ public class ActionManagerAdmin {
         if (cookie == null) {
             sb.append(DatabaseWrapper.getCredentialPage());
         } else {
-            if (action == Core.Actions.ADMIN_LOADUSERS) {
+            if (action == mdm.Config.Actions.ADMIN_LOADUSERS) {
                 if (Core.checkSession(cookie)) {
-                    sb.append(DatabaseWrapper.getObjectData(cookie, Core.MongoConf.USERS, "user_table"));
+                    sb.append(DatabaseWrapper.getObjectData(cookie, mdm.Config.MongoConf.USERS, "user_table"));
                 } else {
                     sb.append(DatabaseWrapper.getCredentialPage());
                 }
@@ -153,7 +153,7 @@ public class ActionManagerAdmin {
         User user = new User();
         user.setUserid(_id);
 
-        List<Field> systemFields = Core.getSystemFields(Core.MongoConf.USERS.getClassName(), type);
+        List<Field> systemFields = Core.getSystemFields(mdm.Config.MongoConf.USERS.getClassName(), type);
         for (Field systemField : systemFields) {
             requestParameters.remove(systemField.getName());
         }

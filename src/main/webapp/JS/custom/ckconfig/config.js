@@ -7,11 +7,11 @@
 function config0() {
     CKEDITOR.stylesSet.add('mdmStijlen', [
         // Block-level styles
-        {name: 'Hoofdding 1', element: 'h1', styles: {'color': 'Black'}},
-        {name: 'Hoofdding 2', element: 'h2', styles: {'color': 'Black', 'font-style': 'italic'}},
-        {name: 'Hoofdding 3', element: 'h3', styles: {'color': 'Blue'}},
-        {name: 'Hoofdding 4', element: 'h4', styles: {'color': 'Blue', 'font-style': 'italic'}},
-        {name: 'Hoofdding 5', element: 'h5', styles: {'color': 'Grey'}},
+        {name: 'Hoofdding 1', element: 'h1', styles: {'color': 'rgb(54,95,145)'}},
+        {name: 'Hoofdding 2', element: 'h2', styles: {'color': 'rgb(79,129,189)'}},
+        {name: 'Hoofdding 3', element: 'h3', styles: {'color': 'rgb(79,129,189)'}},
+        {name: 'Hoofdding 4', element: 'h4', styles: {'color': 'rgb(79,129,189)', 'font-style': 'italic'}},
+        {name: 'Hoofdding 5', element: 'h5', styles: {'color': 'rgb(36,63,96)'}},
 
         // Inline styles
         {name: 'Normaal', element: 'span', attributes: {'class': 'my_style'}},

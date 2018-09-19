@@ -21,7 +21,7 @@
         var defaults = {
             side: "left",
             duration: 500,
-            remember: true,
+            remember: false,
             autoClose: false,
             pushBody: true,
             closeOnClick: true,
@@ -81,7 +81,7 @@
         } else if (options.side === "right") {
             $menu.addClass("bootsidemenu-right");
         }
-
+        
         $menu.id = $menu.attr("id");
         $menu.cookieName = "bsm2-" + $menu.id;
         $menu.toggler = $menu.find('[data-whois="toggler"]');
@@ -267,7 +267,7 @@
                 }
             }
             if (options.side === "left") {
-
+                console.log($menu);
                 if (options.pushBody) {
                     $DOMBody.animate({marginLeft: bodyProperties.originalMarginLeft}, {duration: options.duration});
                 }
@@ -288,7 +288,7 @@
                     }
                 });
             } else if (options.side === "right") {
-
+console.log($menu);
                 if (options.pushBody) {
                     $DOMBody.animate({marginRight: bodyProperties.originalMarginRight}, {duration: options.duration});
                 }
@@ -440,6 +440,7 @@
         };
 
         $.fn.BootSideMenu.close = function () {
+            
             closeMenu();
         };
 

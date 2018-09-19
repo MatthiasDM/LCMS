@@ -1,5 +1,5 @@
 $(function () {
-   // sessionCountdown();
+    // sessionCountdown();
 
 
 
@@ -41,9 +41,54 @@ function setJumbo(page) {
     if (page === null || typeof page === 'undefined') {
         page = "default";
     }
+    console.log("generaring breadcrumbs");
+    var breadcrumbs = page.split("/");
+    var crumblink = "";
+    if (breadcrumbs.length > 1) {
+        var bcList = $("<ol class='breadcrumb bg-light' style='padding: 0; margin-bottom: 0'></ol>");
+        for (var crumb in breadcrumbs) {
+            crumblink += breadcrumbs[crumb] + "/";
+            var bcItem = $("<li class='breadcrumb-item'><a href='index.html?p=" + crumblink + "'>" + breadcrumbs[crumb] + "</a></li>");
+            bcList.append(bcItem);
+        }
+        $("#text-jumbo-crumbs").append(bcList);        
+    }
+
     $("#text-jumbo-heading").text(lang.jumbo[page]);
     $("#text-jumbo-info").text(lang.jumbo_info[page]);
+
+
+//    <ol class="breadcrumb">
+//        <li class="breadcrumb-item"><a href="#">Home</a></li>
+//        <li class="breadcrumb-item"><a href="#">Library</a></li>
+//        <li class="breadcrumb-item active">Data</li>
+//    </ol>
+
 }
+
+function parse_query_string(query) {
+  var vars = query.split("&");
+  var query_string = {};
+  for (var i = 0; i < vars.length; i++) {
+    var pair = vars[i].split("=");
+    var key = decodeURIComponent(pair[0]);
+    var value = decodeURIComponent(pair[1]);
+    // If first entry with this name
+    if (typeof query_string[key] === "undefined") {
+      query_string[key] = decodeURIComponent(value);
+      // If second entry with this name
+    } else if (typeof query_string[key] === "string") {
+      var arr = [query_string[key], decodeURIComponent(value)];
+      query_string[key] = arr;
+      // If third or later entry with this name
+    } else {
+      query_string[key].push(decodeURIComponent(value));
+    }
+  }
+  return query_string;
+}
+
+
 function sessionCountdown() {
     var diffTime = $("#userInfo-session-timout").text();
     if (diffTime === null) {
@@ -84,8 +129,14 @@ bootstrap_alert.warning = function (message, alert, timeout) {
 
 })(jQuery);
 function uuidv4() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+function removeElements(classname, source) {
+    var domData = $.parseHTML(source)
+    $(domData).find("."+classname).remove();
+    return $(domData).prop('outerHTML');
 }

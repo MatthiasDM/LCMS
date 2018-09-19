@@ -1,13 +1,14 @@
 lang = {
     greeting: "Welkom",
     jumbo: {
-        default: "Starpagina",
+        default: "Startpagina",
         admin: "Administratie",
         notes: "Notities",
         lab: "Laboratorium",
         maintainance: "Onderhoudstaken",
         other: "Andere modules",
-        "other/qcmanager": "Beheer van de QC-informatie"
+        "other/qcmanager": "Beheer van de QC-informatie",
+        "other/ICT-tickets": "ICT-tickets"
     },
     jumbo_info: {
         default: "Welkom op de startpagina van LCMS.",
@@ -16,9 +17,11 @@ lang = {
         notes: "Houd hier uw eigen notities bij. Deze notities zijn persoonlijk",
         maintainance: "Kijk hier welke onderhoudstaken u heeft. Deze taken hebben betrekking op alle aspecten van het laboratorium.",
         other: "Andere labo-gebonden modules.",
-        "other/qcmanager": "Hier kunt u lotinformatie wijzigen. Deze informatie is nodig om correct te communiceren met Unity Real Time."
+        "other/qcmanager": "Hier kunt u lotinformatie wijzigen. Deze informatie is nodig om correct te communiceren met Unity Real Time.",
+        "other/ICT-tickets": "Registreer hier ICT-gerelateerde opdrachten, opmerkingen en problemen."
+
     },
-    ICT_ticket: {
+    ICTTickets: {
         subject: "Onderwerp",
         overview: "Beschrijving",
         followup: "Opvolging",
@@ -30,16 +33,52 @@ lang = {
     file_table: {
         name: "Naam"
     },
-    note_table: {
+    notes: {
         title: "Titel"
     },
     user_table: {
 
     },
-    note_table: {
-
+    tasks: {
+        title: "Openstaande taken"
     },
-    task_table: {
-
+    inventoryitem: {
+        title: "Producten in vooraad.",
+        name: "Artikel",
+        date_in: "Ingescand op",
+        date_out: "Uitgescand op",
+        expiration_date: "Vervaldatum"
+    },
+    labitem: {
+        title: "Producten die in het labo worden gebruikt.",
+        name: "Product",
+        identifier: "Unieke code",
+        description: "Omschrijving",
+        storage: "Opslaglocatie"
+    },
+    instruments: {
+        title: "De verschillende toestellen gebruikt in het labo"
+    },
+    possession: {
+        title: "Goederen die een permanent deel uitmaken van het labo. (Koelkasten, pipetten, ...)",
+        name: "Vast materiaal",
+        identifier: "Unieke code",
+        department: "Departement",
+        info: "Info"
+    },
+    department: {
+        title: "Activiteitencentra van het laboratorium",
+        name: "Departement",
+        description: "Omschrijving"
+    },
+    storage: {
+        title: "Opslaglocatie in het labo (bv, een schap of schof in een kast, rek, koelkast,...)",
+        name: "Naam",
+        description: "Beschrijving",
+        identifier: "Code van object",
+        location: "Locatie in lab"
     }
 };
+
+
+

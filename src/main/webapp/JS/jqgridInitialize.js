@@ -22,9 +22,11 @@ $(function () {
         }, 100);
     };
 
+    $.jgrid.defaults.responsive = true;
+    $.jgrid.defaults.styleUI = 'Bootstrap4';
 });
 
-function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _parent, _caption, _extraOptions) {
+function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _parent, _caption, _extraOptions, _navGridParameters) {
     var _colModel = generateView2(_data);
     var cols = new Array();
     $.each(JSON.parse(_data.header), function (index, value) {
@@ -57,11 +59,11 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
         responsive: true,
         headertitles: true,
         iconSet: "fontAwesome",
-        guiStyle: "bootstrap",
+        guiStyle: "bootstrap4",
         searching: {
             defaultSearch: "cn"
         },
-        rowNum: 50,
+        rowNum: 150,
         mtype: 'POST',
         editurl: _editUrl,
         loadonce: true,
@@ -102,6 +104,10 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
                 },
                 extraparam: {action: _editAction, LCMS_session: $.cookie('LCMS_session')}
             }}};
+    $.each(_navGridParameters, function (i, n) {
+        navGridParameters[i] = n;
+    });
+
     _tableObject.inlineNav(_pagerName, navGridParameters, {}, addDataOptions);
     _tableObject.jqGrid("filterToolbar");
     $(window).bind('resize', function () {
@@ -110,6 +116,11 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
 
     _tableObject.click(function (e) {
         var $groupHeader = $(e.target).closest("tr.jqgroup");
+        if ($groupHeader.length > 0) {
+            $(this).jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
+            $(this).css('cursor', 'pointer');
+        }
+        $groupHeader = $(e.target).closest("span.tree-wrap");
         if ($groupHeader.length > 0) {
             $(this).jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
         }
@@ -132,6 +143,13 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
                 column.sorttype = "date";
                 column.editoptions = {dataInit: initDateEdit};
             }
+            if (value.type === "datetime") {
+                column.formatoptions = {srcformat: "u1000", newformat: "d-m-y h:i"};
+                column.formatter = "date";
+                column.sorttype = "date";
+                column.editoptions = {dataInit: initDateEdit};
+            }
+
             if (value.type === "text") {
                 column.edittype = "textarea";
             }
@@ -178,5 +196,5 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
 
 
 
-
+    return _tableObject;
 }

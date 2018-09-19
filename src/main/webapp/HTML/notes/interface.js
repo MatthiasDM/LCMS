@@ -8,23 +8,47 @@
 
 $(function () {
 
+    $('#notes-list').BootSideMenu({
+
+        // 'left' or 'right'
+        side: "right",
+        // animation speed
+        duration: 500,
+        // auto close
+        autoClose: true,
+        // push the whole page
+        pushBody: true,
+        // close on click
+        closeOnClick: true,
+        // width
+        width: "250px",
+
+        // icons
+        icons: {
+            left: 'fa fa-angle-left fa-2x',
+            right: 'fa fa-angle-right fa-2x',
+            down: 'fa fa-angle-down fa-2x'
+        },
+
+        // 'dracula', 'darkblue', 'zenburn', 'pinklady', 'somebook'
+        theme: '',
+
+    });
+    $('#notes-list').BootSideMenu.open();
+
     $('#toc').BootSideMenu({
         // 'left' or 'right'
         side: "left",
         // animation speed
         duration: 500,
-        // restore last menu status on page refresh
-        remember: true,
         // auto close
-        autoClose: false,
+        autoClose: true,        
         // push the whole page
         pushBody: true,
-        
-        autoClose: false,
         // close on click
         closeOnClick: true,
         // width
-        width: "15%",
+        width: "250px",
         // icons
         icons: {
             left: 'fa fa-angle-left fa-2x',
@@ -35,43 +59,14 @@ $(function () {
         theme: '',
     });
 
-    $('#notes-list').BootSideMenu({
 
-        // 'left' or 'right'
-        side: "right",
 
-        // animation speed
-        duration: 500,
-
-        // restore last menu status on page refresh
-        remember: true,
-
-        // auto close
-        autoClose: true,
-
-        // push the whole page
-        pushBody: true,
-
-        // close on click
-        closeOnClick: true,
-
-        // width
-        width: "25%",
-
-        // icons
-        icons: {
-            left: 'fa fa-angle-left fa-2x',
-            right: 'fa fa-angle-right fa-2x',
-            down: 'fa fa-angle-down fa-2x'
-        },
-
-        // 'dracula', 'darkblue', 'zenburn', 'pinklady', 'somebook'
-        theme: '',
-
-    });
 
     notes_doLoad($("#note-container"));
     config0();
+    
+
+
     $('#btn-open-notes').on('click', function () {
         if ($(this).hasClass('selected')) {
             deselect($(this));

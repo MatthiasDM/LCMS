@@ -5,7 +5,7 @@
  */
 package mdm.lis.lcms.other.ict;
 
-import mdm.lis.lcms.lab.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,9 +18,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import mdm.Core;
-import static mdm.Core.checkUserRole;
-import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
 
 /**
@@ -67,4 +64,50 @@ public class ServletICT extends HttpServlet {
         }
 
     }
+    
+        class ActionManagerICT {
+
+        String cookie;
+        mdm.Config.Actions action;
+        HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
+
+        public ActionManagerICT(Map<String, String[]> requestParameters) {
+            this.requestParameters = new HashMap<String, String[]>(requestParameters);
+            if (requestParameters.get("action") != null) {
+                action = mdm.Config.Actions.valueOf(requestParameters.get("action")[0]);
+            }
+            if (requestParameters.get("LCMS_session") != null) {
+                cookie = requestParameters.get("LCMS_session")[0];
+            }
+        }
+
+        public String getCookie() {
+            return cookie;
+        }
+
+        public mdm.Config.Actions getAction() {
+            return action;
+        }
+
+        public StringBuilder startAction() throws ClassNotFoundException, IOException, JsonProcessingException, NoSuchFieldException {
+            StringBuilder sb = new StringBuilder();
+            if (cookie != null) {
+
+                if (action.toString().contains("EDIT")) {
+                    sb.append(DatabaseWrapper.actionEDITOBJECT(requestParameters, cookie, action.getMongoConf()));
+                } else {
+                    if (action.toString().contains("LOAD")) {
+                        sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf()));
+                    } 
+                }
+
+            } else {
+                sb.append(DatabaseWrapper.getCredentialPage());
+            }
+
+            return sb;
+        }
+      
+    }
+    
 }

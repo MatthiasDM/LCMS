@@ -29,14 +29,14 @@ import org.bson.Document;
 public class ActionManagerNote {
 
     String cookie;
-    Core.Actions action;
+    mdm.Config.Actions action;
     HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
 
     public ActionManagerNote(Map<String, String[]> requestParameters) {
         this.requestParameters = new HashMap<String, String[]>(requestParameters);
 
         if (requestParameters.get("action") != null) {
-            action = Core.Actions.valueOf(requestParameters.get("action")[0]);
+            action = mdm.Config.Actions.valueOf(requestParameters.get("action")[0]);
         }
         if (requestParameters.get("LCMS_session") != null) {
    
@@ -48,23 +48,23 @@ public class ActionManagerNote {
         return cookie;
     }
 
-    public Core.Actions getAction() {
+    public mdm.Config.Actions getAction() {
         return action;
     }
 
     public StringBuilder startAction() throws ClassNotFoundException, IOException, JsonProcessingException, NoSuchFieldException {
         StringBuilder sb = new StringBuilder();
         if (checkSession(cookie) != false) {
-            if (action == Core.Actions.NOTE_LOADNOTES) {
+            if (action == mdm.Config.Actions.NOTE_LOADNOTES) {
                 sb.append(actionNOTE_LOADNOTES());
             }
-            if (action == Core.Actions.NOTE_EDITNOTES) {
+            if (action == mdm.Config.Actions.NOTE_EDITNOTES) {
                 sb.append(actionNOTE_EDITNOTES());
             }
-            if (action == Core.Actions.NOTE_GETNOTE) {
+            if (action == mdm.Config.Actions.NOTE_GETNOTE) {
                 sb.append(actionNOTE_GETNOTE());
             }
-            if (action == Core.Actions.NOTE_SAVENOTE) {
+            if (action == mdm.Config.Actions.NOTE_SAVENOTE) {
                 sb.append(actionNOTE_SAVENOTE());
             }
         } else {
@@ -98,7 +98,7 @@ public class ActionManagerNote {
                     if (operation.equals("edit")) {
                         requestParameters.remove("oper");
                         Note note = createNoteObject(requestParameters.get("docid")[0], "create");
-                        DatabaseWrapper.editObjectData(note, Core.MongoConf.NOTES, cookie);
+                        DatabaseWrapper.editObjectData(note, mdm.Config.MongoConf.NOTES, cookie);
                     }
                     if (operation.equals("add")) {
                         requestParameters.remove("oper");
@@ -109,7 +109,7 @@ public class ActionManagerNote {
                         note.setCreated(Instant.now().toEpochMilli() / 1000);
                         ObjectMapper mapper = new ObjectMapper();
                         Document document = Document.parse(mapper.writeValueAsString(note));
-                        DatabaseWrapper.addObject(document, Core.MongoConf.NOTES, cookie);
+                        DatabaseWrapper.addObject(document, mdm.Config.MongoConf.NOTES, cookie);
                         //DatabaseActions.insertNote(note);
                     }
 
@@ -126,7 +126,7 @@ public class ActionManagerNote {
         if (cookie == null) {
             sb.append(DatabaseWrapper.getCredentialPage());
         } else {
-            if (action == Core.Actions.NOTE_LOADNOTES) {
+            if (action == mdm.Config.Actions.NOTE_LOADNOTES) {
                 if (Core.checkSession(cookie)) {
 //                    ObjectMapper mapper = new ObjectMapper();
 //                    ObjectNode jsonData = mapper.createObjectNode();
@@ -160,7 +160,7 @@ public class ActionManagerNote {
 //
 //                    sb.append(jsonData);
 
-                    sb.append(DatabaseWrapper.getObjectData(cookie, Core.MongoConf.NOTES, "note_table"));
+                    sb.append(DatabaseWrapper.getObjectData(cookie, mdm.Config.MongoConf.NOTES, "note_table"));
 
                 } else {
                     sb.append(DatabaseWrapper.getCredentialPage());
@@ -174,17 +174,10 @@ public class ActionManagerNote {
     private StringBuilder actionNOTE_SAVENOTE() throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         if (Core.checkSession(cookie)) {
-            //String id = requestParameters.get("id")[0];
-            //  Note note = MongoMain.getNote(MongoMain.getSession(cookie).getUsername(), id);
-            // sb.append(PageLoader.getNote(note));
-
             String user = DatabaseActions.getSession(cookie).getUserid();
             String data = requestParameters.get("data")[0];
             String docid = requestParameters.get("docid")[0];
-
             DatabaseActions.updateNote(user, docid, data);
-            // sb.append(createNoteList(notes));
-
         }
         return sb;
     }
@@ -193,7 +186,7 @@ public class ActionManagerNote {
         Note note = new Note();
         note.setDocid(_id);
 
-        List<Field> systemFields = Core.getSystemFields(Core.MongoConf.USERS.getClassName(), type);
+        List<Field> systemFields = Core.getSystemFields(mdm.Config.MongoConf.USERS.getClassName(), type);
         for (Field systemField : systemFields) {
             requestParameters.remove(systemField.getName());
         }

@@ -7,6 +7,7 @@ package mdm.lis.lcms.notes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +18,10 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import mdm.Core;
+import mdm.GsonObjects.Note;
+import mdm.Mongo.DatabaseActions;
+import mdm.Mongo.DatabaseWrapper;
 import mdm.lis.lcms.notes.ActionManagerNote;
 import mdm.lis.lcms.lab.ServletLab;
 
@@ -26,7 +31,7 @@ import mdm.lis.lcms.lab.ServletLab;
  */
 @WebServlet(name = "noteServlet", urlPatterns = {"/note"})
 public class ServletNote extends HttpServlet {
-    
+
     private ServletContext context;
 
     @Override
@@ -66,4 +71,80 @@ public class ServletNote extends HttpServlet {
         }
 
     }
+
+    class ActionManagerNote {
+
+        String cookie;
+        mdm.Config.Actions action;
+        HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
+
+        public ActionManagerNote(Map<String, String[]> requestParameters) {
+            this.requestParameters = new HashMap<String, String[]>(requestParameters);
+            if (requestParameters.get("action") != null) {
+                action = mdm.Config.Actions.valueOf(requestParameters.get("action")[0]);
+            }
+            if (requestParameters.get("LCMS_session") != null) {
+                cookie = requestParameters.get("LCMS_session")[0];
+            }
+        }
+
+        public String getCookie() {
+            return cookie;
+        }
+
+        public mdm.Config.Actions getAction() {
+            return action;
+        }
+
+        public StringBuilder startAction() throws ClassNotFoundException, IOException, JsonProcessingException, NoSuchFieldException {
+            StringBuilder sb = new StringBuilder();
+            if (cookie != null) {
+
+                if (action.toString().contains("EDIT")) {
+                    sb.append(DatabaseWrapper.actionEDITOBJECT(requestParameters, cookie, action.getMongoConf()));
+                } else {
+                    if (action.toString().contains("LOAD")) {
+                        sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf()));
+                    }
+                    if (action == mdm.Config.Actions.NOTE_GETNOTE) {
+                        sb.append(actionNOTE_GETNOTE());
+                    } 
+                    if (action == mdm.Config.Actions.NOTE_SAVENOTE) {
+                        sb.append(actionNOTE_SAVENOTE());
+                    }
+                }
+
+            } else {
+                sb.append(DatabaseWrapper.getCredentialPage());
+            }
+
+            return sb;
+        }
+
+        private StringBuilder actionNOTE_GETNOTE() throws IOException, ClassNotFoundException {
+            StringBuilder sb = new StringBuilder();
+            if (Core.checkSession(cookie)) {
+                String id = requestParameters.get("id")[0];
+                if (!id.equals("")) {
+                    Note note = DatabaseActions.getNote(DatabaseActions.getSession(cookie).getUsername(), id);
+                    sb.append(DatabaseWrapper.getNote(note));
+                }
+
+            }
+            return sb;
+        }
+
+        private StringBuilder actionNOTE_SAVENOTE() throws IOException, ClassNotFoundException {
+            StringBuilder sb = new StringBuilder();
+            if (Core.checkSession(cookie)) {
+                String user = DatabaseActions.getSession(cookie).getUserid();
+                String data = requestParameters.get("content")[0];
+                String docid = requestParameters.get("docid")[0];
+                DatabaseActions.updateNote(user, docid, data);
+            }
+            return sb;
+        }
+
+    }
+
 }

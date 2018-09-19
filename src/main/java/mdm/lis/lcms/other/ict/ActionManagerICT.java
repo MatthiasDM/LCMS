@@ -23,7 +23,7 @@ import static mdm.Core.checkUserRoleValue;
 import mdm.GsonObjects.Other.ICTTicket;
 import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
-import mdm.Workflows;
+import mdm.workflows.Workflows;
 import org.bson.Document;
 
 /**
@@ -33,7 +33,7 @@ import org.bson.Document;
 public class ActionManagerICT {
 
     String cookie;
-    Core.Actions action;
+    mdm.Config.Actions action;
     HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
     HashMap<String, String[]> workflowParameters = new HashMap<String, String[]>();
 
@@ -41,7 +41,7 @@ public class ActionManagerICT {
         this.requestParameters = new HashMap<String, String[]>(requestParameters);
         this.workflowParameters = new HashMap<>(requestParameters);
         if (requestParameters.get("action") != null) {
-            action = Core.Actions.valueOf(requestParameters.get("action")[0]);
+            action = mdm.Config.Actions.valueOf(requestParameters.get("action")[0]);
         }
         if (requestParameters.get("LCMS_session") != null) {
             cookie = requestParameters.get("LCMS_session")[0];
@@ -52,17 +52,17 @@ public class ActionManagerICT {
         return cookie;
     }
 
-    public Core.Actions getAction() {
+    public mdm.Config.Actions getAction() {
         return action;
     }
 
     public StringBuilder startAction() throws ClassNotFoundException, IOException, NoSuchFieldException {
 
         StringBuilder sb = new StringBuilder();
-        if (action == Core.Actions.ICT_LOADTICKETS) {
+        if (action == mdm.Config.Actions.ICT_LOADTICKETS) {
             sb.append(actionICT_LOADTICKETS());
         }
-        if (action == Core.Actions.ICT_EDITTICKETS) {
+        if (action == mdm.Config.Actions.ICT_EDITTICKETS) {
             sb.append(actionICT_EDITTICKETS());
         }
         return sb;
@@ -71,8 +71,8 @@ public class ActionManagerICT {
     private StringBuilder actionICT_EDITTICKETS() throws IOException, ClassNotFoundException, JsonProcessingException, NoSuchFieldException {
         StringBuilder sb = new StringBuilder();
         List<String> roles = new ArrayList<>();
-        roles.add(Core.Roles.ADMIN.toString());
-        roles.add(Core.Roles.ICTMANAGER.toString());
+        roles.add(mdm.Config.Roles.ADMIN.toString());
+        roles.add(mdm.Config.Roles.ICTMANAGER.toString());
 
         if (cookie != null && DatabaseActions.getSession(cookie) != null) {
             requestParameters.remove("action");
@@ -82,7 +82,7 @@ public class ActionManagerICT {
                 if (operation.equals("edit") && checkUserAgainstRoles(cookie, roles)) {
                     requestParameters.remove("oper");
                     ICTTicket ticket = createTicketObject(requestParameters.get("ticketid")[0], "edit");
-                    DatabaseWrapper.editObjectData(ticket, Core.MongoConf.ICTTICKETS, cookie);
+                    DatabaseWrapper.editObjectData(ticket, mdm.Config.MongoConf.ICTTICKETS, cookie);
 
                     Workflows workflow = new Workflows();
                     workflow.workflowICTTicket(workflowParameters, "edit", cookie);
@@ -93,7 +93,7 @@ public class ActionManagerICT {
                     UUID id = UUID.randomUUID();
                     ObjectMapper mapper = new ObjectMapper();
                     Document document = Document.parse(mapper.writeValueAsString(createTicketObject(id.toString(), "create")));
-                    DatabaseWrapper.addObject(document, Core.MongoConf.ICTTICKETS, cookie);
+                    DatabaseWrapper.addObject(document, mdm.Config.MongoConf.ICTTICKETS, cookie);
                 }
             }
         } else {
@@ -107,9 +107,9 @@ public class ActionManagerICT {
         if (cookie == null) {
             sb.append(DatabaseWrapper.getCredentialPage());
         } else {
-            if (action == Core.Actions.ICT_LOADTICKETS) {
+            if (action == mdm.Config.Actions.ICT_LOADTICKETS) {
                 if (Core.checkSession(cookie) && checkUserRoleValue(cookie, 2)) {
-                    sb.append(DatabaseWrapper.getObjectData(cookie, Core.MongoConf.ICTTICKETS, "ICT_ticket"));
+                    sb.append(DatabaseWrapper.getObjectData(cookie, mdm.Config.MongoConf.ICTTICKETS, "ICT_ticket"));
                 } else {
                     sb.append(DatabaseWrapper.getCredentialPage());
                 };
@@ -124,7 +124,7 @@ public class ActionManagerICT {
         ICTTicket ticket = new ICTTicket();
         ticket.setTicketid(_id);
 
-        List<Field> systemFields = Core.getSystemFields(Core.MongoConf.ICTTICKETS.getClassName(), type);
+        List<Field> systemFields = Core.getSystemFields(mdm.Config.MongoConf.ICTTICKETS.getClassName(), type);
         for (Field systemField : systemFields) {
             requestParameters.remove(systemField.getName());
         }
@@ -151,12 +151,13 @@ public class ActionManagerICT {
             ticket.setApproved_on(StringToLong(requestParameters.get("approved_on")[0]));
         }
         if (requestParameters.get("created_on") != null) {
+            ticket.setCreated_on(StringToLong(requestParameters.get("created_on")[0]));
         }
         if (type.equals("create")) {
-            ticket.setCreated_on(Instant.now().toEpochMilli() / 1000);
+            ticket.setCreated_on(Instant.now().toEpochMilli());
             ticket.setCreated_by(DatabaseActions.getSession(cookie).getUsername());
         }
-        ticket.setEdited_on(Instant.now().toEpochMilli() / 1000);
+        ticket.setEdited_on(Instant.now().toEpochMilli());
 
         return ticket;
     }

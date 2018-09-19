@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
-import com.mongodb.Block;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.client.FindIterable;
@@ -19,7 +18,6 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
-import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,20 +33,22 @@ import static com.mongodb.client.model.Filters.*;
 import com.mongodb.client.model.FindOneAndUpdateOptions;
 import static com.mongodb.client.model.Projections.fields;
 import static com.mongodb.client.model.Projections.include;
+import difflib.DiffUtils;
+import difflib.Patch;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Optional;
+import java.util.UUID;
 import java.util.logging.Level;
-import jdk.internal.dynalink.MonomorphicCallSite;
-import mdm.Core;
-import mdm.Core.MongoConf;
+import mdm.Config.MongoConf;
 import static mdm.Core.getUserRoles;
+
 import mdm.GsonObjects.Lab.Instrument;
 import mdm.GsonObjects.Lab.InventoryItem;
 import mdm.GsonObjects.Note;
+import mdm.GsonObjects.Other.Backlog;
 import mdm.GsonObjects.Other.FileObject;
 import mdm.GsonObjects.Other.ICTTicket;
 
@@ -212,7 +212,7 @@ public class DatabaseActions {
     static public void editSessionValidity(String _sessionId, long _validity) {
 
         if (checkConnection("users")) {
-            if ((Core.checkSession(_sessionId))) {
+            if ((mdm.Core.checkSession(_sessionId))) {
                 long newValidity;
                 Session session = getSession(_sessionId);
                 newValidity = session.getValidity() + _validity;
@@ -325,7 +325,6 @@ public class DatabaseActions {
         Bson newDocument = new Document("$set", obj);
 
         _docid = _docid.substring(7);
-
         getNotes().findOneAndUpdate(and(eq("docid", _docid), eq("author", _user)), newDocument);
 
         LOG.info("One note updated of total: " + getNotes().count());
@@ -560,7 +559,7 @@ public class DatabaseActions {
     }
 
     public static String downloadFileToTemp(String _fileName, String _cookie, String _contextPath) {
-        System.out.println("Calling download...");
+        System.out.println("Calling download..");
         String outputPath = mdm.Core.getTempDir(_cookie, _contextPath) + _fileName;
         try {
             MongoDatabase database = databases.get("files");
@@ -574,7 +573,7 @@ public class DatabaseActions {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return Core.getTempDirWebUrl(_cookie) + _fileName;
+        return mdm.Core.getTempDirWebUrl(_cookie) + _fileName;
     }
 
     //FILEOBJECT METHODS
@@ -652,7 +651,7 @@ public class DatabaseActions {
                 for (String userRole : userRoles) {
 
                     if (role.equals("")) {
-                        if (Core.Roles.valueOf(userRole).getLevelCode() >= roleVal) {
+                        if (mdm.Config.Roles.valueOf(userRole).getLevelCode() >= roleVal) {
                             columns.add(field.getName());
                             break;
                         }
@@ -688,6 +687,7 @@ public class DatabaseActions {
     public static void updateObjectItem(MongoConf mongoConf, BasicDBObject _bson) throws ClassNotFoundException {
         Bson newDocument = new Document("$set", _bson);
 
+
         getObjects(mongoConf).findOneAndUpdate(and(eq(mongoConf.getIdName(), _bson.get(mongoConf.getIdName()))), newDocument, (new FindOneAndUpdateOptions()).upsert(true));
 
         //   getObjects(mongoConf).findOneAndUpdate(and(eq(mongoConf.getIdName(), _bson.get(mongoConf.getIdName()))), _bson);
@@ -707,6 +707,7 @@ public class DatabaseActions {
         results = ObjectItems.find(and(eq(mongoConf.getIdName(), id))).into(new ArrayList<Document>());
 
         Document d = Document.parse(mapper.writeValueAsString(results.get(0)));
+
         return d;
     }
 
@@ -745,6 +746,51 @@ public class DatabaseActions {
         return results;
     }
 
+    public static ArrayList<Document> getObjectsSpecificList(String _cookie, MongoConf mongoConf, Bson bson) throws ClassNotFoundException {
+
+        List<String> columns = getDocumentPriveleges("view", _cookie, mongoConf.getClassName());
+        Document doc = null;
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jsonData = mapper.createObjectNode();
+        MongoCollection<Document> ObjectItems = getObjects(mongoConf);
+        ArrayList<Document> results = null;
+        results = ObjectItems.find(bson).projection(
+                fields(include(columns))
+        ).into(new ArrayList<Document>());
+
+        return results;
+    }
+
+    public static ArrayList<Document> getObjectsSpecificList(String _cookie, MongoConf mongoConf, Bson bson, Bson sort) throws ClassNotFoundException {
+
+        List<String> columns = getDocumentPriveleges(_cookie, "view", mongoConf.getClassName());
+        Document doc = null;
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jsonData = mapper.createObjectNode();
+        MongoCollection<Document> ObjectItems = getObjects(mongoConf);
+        ArrayList<Document> results = null;
+        results = ObjectItems.find(bson).sort(sort).projection(
+                fields(include(columns))
+        ).into(new ArrayList<Document>());
+
+        return results;
+    }
+
+    public static ArrayList<Document> getObjectsSpecificList(String _cookie, MongoConf mongoConf, Bson bson, Bson sort, int limit) throws ClassNotFoundException {
+
+        List<String> columns = getDocumentPriveleges(_cookie, "view", mongoConf.getClassName());
+        Document doc = null;
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jsonData = mapper.createObjectNode();
+        MongoCollection<Document> ObjectItems = getObjects(mongoConf);
+        ArrayList<Document> results = null;
+        results = ObjectItems.find(bson).sort(sort).limit(limit).projection(
+                fields(include(columns))
+        ).into(new ArrayList<Document>());
+
+        return results;
+    }
+
     //OBJECT OTHER METHODS
     public static Long getObjectCount(MongoConf mongoConf, Bson bson) throws ClassNotFoundException {
         MongoCollection<Document> results = null;
@@ -768,6 +814,43 @@ public class DatabaseActions {
 
         //Document d = Document.parse(mapper.writeValueAsString(results.get(0)));
         return results;
+    }
+
+    public static Document getObjectDifference(MongoConf mongoConf, Object oldDocObject, Object newDocObject) {
+        ObjectMapper mapper = new ObjectMapper();
+        Document document = null;
+        try {
+            String oldDocString = mapper.writeValueAsString(oldDocObject);
+            Document oldDocDocument = Document.parse((oldDocString));
+            List<String> oldDocStringList = new ArrayList<>();
+            String newDocString = mapper.writeValueAsString(newDocObject);
+            Document newDocDocument = Document.parse((newDocString));
+            List<String> newDocStringList = new ArrayList<>();
+
+            oldDocDocument.forEach((k, v) -> {
+                oldDocStringList.add(k + ": " + v);
+            });
+            newDocDocument.forEach((k, v) -> {
+                newDocStringList.add(k + ": " + v);
+            });
+
+            Patch<String> patch = DiffUtils.diff(oldDocStringList, newDocStringList);
+          
+            String patchString = mapper.writeValueAsString(patch);
+            Document patchDocument = Document.parse((patchString));
+            
+            Backlog backlog = new Backlog();
+            backlog.setBacklogid(UUID.randomUUID().toString());
+            backlog.setObject_type(mongoConf.getClassName());
+            backlog.setObject_id(oldDocDocument.getString(mongoConf.getIdName()));
+            backlog.setCreated_on(System.currentTimeMillis());
+            backlog.setChanges(mapper.writeValueAsString(patchDocument));
+            document = Document.parse(mapper.writeValueAsString(backlog));
+
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return document;
     }
 
 }
