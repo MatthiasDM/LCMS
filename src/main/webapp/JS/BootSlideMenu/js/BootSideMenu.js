@@ -267,7 +267,7 @@
                 }
             }
             if (options.side === "left") {
-                console.log($menu);
+              
                 if (options.pushBody) {
                     $DOMBody.animate({marginLeft: bodyProperties.originalMarginLeft}, {duration: options.duration});
                 }
@@ -288,7 +288,7 @@
                     }
                 });
             } else if (options.side === "right") {
-console.log($menu);
+
                 if (options.pushBody) {
                     $DOMBody.animate({marginRight: bodyProperties.originalMarginRight}, {duration: options.duration});
                 }

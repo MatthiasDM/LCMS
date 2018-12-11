@@ -23,7 +23,9 @@ public enum MongoConf {
     STORAGE("lcms", "storage", "mdm.GsonObjects.Lab.Storage", "storageid"),
     POSSESSION("lcms", "possession", "mdm.GsonObjects.Lab.Possession", "possessionid"),
     DEPARTMENT("lcms", "department", "mdm.GsonObjects.Lab.Department", "departmentid"),
-    BACKLOG("backlog", "backlog", "mdm.GsonObjects.Other.Backlog", "backlogid");
+    BACKLOG("backlog", "backlog", "mdm.GsonObjects.Other.Backlog", "backlogid"),
+    SUGGESTIONS("lcms", "suggestions", "mdm.GsonObjects.Other.Suggestion", "suggestionid"),
+    VALIDATIONS("lcms", "validations", "mdm.GsonObjects.Other.Validation", "validationid");
     private final String database;
     private final String collection;
     private final String className;

@@ -5,7 +5,7 @@
  */
 
 function config0() {
-    CKEDITOR.stylesSet.add('mdmStijlen', [
+    CKEDITOR.stylesSet.add('mdmConfig0', [
         // Block-level styles
         {name: 'Hoofdding 1', element: 'h1', styles: {'color': 'rgb(54,95,145)'}},
         {name: 'Hoofdding 2', element: 'h2', styles: {'color': 'rgb(79,129,189)'}},
@@ -38,11 +38,13 @@ function config0() {
         ];
         //"http://localhost:8080/LCMS/JS/ckeditor/plugins/templates/templates/default.js?t=HBDD"
 
-        config.extraPlugins = 'forms,codesnippet,widget,dialog,pre,resize,autogrow,notificationaggregator,filetools,notification,clipboard,mdmUploadFiles';
+        config.extraPlugins = 'forms,codesnippet,widget,dialog,pre,resize,autogrow,notificationaggregator,notification,mdmUploadFiles,mdmjexcel';
 
         config.format_tags = 'div';
-        config.removeButtons = 'New,Radio,Save,Source,New,TextField,Textarea,Select,Button,ImageButton,HiddenField,Flash,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Anchor,Unlink,Language,BidiRtl,BidiLtr,Blockquote,CreateDiv,ShowBlocks,About,Scayt,PasteFromWord,PasteText,Paste,Copy,Cut';
-        config.stylesSet = 'mdmStijlen:/styles.js';
+        config.removeButtons = 'Table,New,Radio,Save,Source,New,TextField,Textarea,Select,Button,ImageButton,HiddenField,Flash,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Anchor,Unlink,Language,BidiRtl,BidiLtr,Blockquote,CreateDiv,ShowBlocks,About,Scayt,PasteFromWord,PasteText,Paste,Copy,Cut';
+        config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';
+        //CKEDITOR.config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu';
+        config.stylesSet = 'mdmConfig0:/styles.js';
         config.allowedContent = {
             script: true,
             $1: {
@@ -57,11 +59,23 @@ function config0() {
 
 
 
-
 }
 
 function config1() {
-    console.log("Loading Ckeditor config");
+    console.log("function config1");
+    CKEDITOR.stylesSet.add('mdmConfig1', [
+        // Block-level styles
+        {name: 'Hoofdding 1', element: 'h1', styles: {'color': 'rgb(54,95,145)'}},
+        {name: 'Hoofdding 2', element: 'h2', styles: {'color': 'rgb(79,129,189)'}},
+        {name: 'Hoofdding 3', element: 'h3', styles: {'color': 'rgb(79,129,189)'}},
+        {name: 'Hoofdding 4', element: 'h4', styles: {'color': 'rgb(79,129,189)', 'font-style': 'italic'}},
+        {name: 'Hoofdding 5', element: 'h5', styles: {'color': 'rgb(36,63,96)'}},
+
+        // Inline styles
+        {name: 'Normaal', element: 'span', attributes: {'class': 'my_style'}},
+        {name: 'Marker: Yellow', element: 'span', styles: {'background-color': 'Yellow'}}
+    ]);
+    
     CKEDITOR.editorConfig = function (config) {
         config.toolbarGroups = [
             {name: 'document', groups: ['mode', 'document', 'doctools']},
@@ -78,9 +92,10 @@ function config1() {
             {name: 'others', groups: ['others']},
             {name: 'about', groups: ['about']}
         ];
-        config.extraPlugins = 'mdmUploadFiles,codesnippet,widget,dialog';
-        config.removeButtons = 'Source,Save,Templates,Cut,Undo,Redo,Copy,Preview,Print,PasteText,Paste,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,NewPage,Outdent,Indent,CreateDiv,Blockquote,JustifyLeft,JustifyCenter,JustifyRight,JustifyBlock,Language,BidiRtl,Anchor,Unlink,BidiLtr,Flash,Table,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Format,Styles,Font,Maximize,ShowBlocks,About,RemoveFormat,CopyFormatting,Subscript,Superscript';
+        config.extraPlugins = 'mdmUploadFiles,codesnippet,widget,dialog,mdmjexcel';
+        config.removeButtons = 'Source,Save,Templates,Cut,Undo,Redo,Copy,Preview,Print,PasteText,Paste,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,NewPage,Outdent,Indent,CreateDiv,Blockquote,JustifyLeft,JustifyCenter,JustifyRight,JustifyBlock,Language,BidiRtl,Anchor,Unlink,BidiLtr,Flash,Table,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Format,Font,Maximize,ShowBlocks,About,RemoveFormat,CopyFormatting,Subscript,Superscript';
         config.height = 500;
+        config.stylesSet = 'mdmConfig1:/styles.js';
     };
     CKEDITOR.config.allowedContent = {
         script: true,
@@ -144,3 +159,33 @@ function config1() {
     }
 
 }
+
+
+
+
+
+
+//function editRowPopup(id) {
+//    var _tableObject = $("#validations-table");
+//   
+//    var grid = _tableObject;
+//    // var id = grid.getGridParam("selrow");
+//    console.log(id);
+//    //$('#validations-list').BootSideMenu.close();
+//
+//    if (id && id !== lastSelection) {
+//        var rowData = grid.jqGrid('getRowData', id);
+//        var previousRowData = grid.jqGrid('getRowData', lastSelection);
+//        console.log(rowData);
+//        if (typeof CKEDITOR.instances["editor-" + previousRowData.validationid] !== "undefined") {
+//            CKEDITOR.instances["editor-" + previousRowData.validationid].destroy();            
+//        }
+//        validations_getValidation($("#div-validations"), rowData.validationid);
+//        lastSelection = id;
+//    }
+//
+//
+//
+//
+//
+//};

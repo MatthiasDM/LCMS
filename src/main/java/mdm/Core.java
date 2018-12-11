@@ -5,6 +5,7 @@
  */
 package mdm;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -209,7 +210,7 @@ public class Core {
         Class cls = Class.forName(_cls);
         List<Field> fields = Arrays.asList(cls.getDeclaredFields());
         List<Field> systemfields = new ArrayList<>();
-        if (systemfields.size() > 0) {
+        if (fields.size() > 0) {
             if ("view".equals(type)) {
                 systemfields = fields.stream().
                         filter(p -> p.getAnnotation(MdmAnnotations.class).viewRole().equals("SYSTEM")).
@@ -259,21 +260,39 @@ public class Core {
         return lines;
     }
 
-    public static Object createDatabaseObject(HashMap<String, String[]> requestParameters, Class cls) {
-        Object databaseObject = null;
+    public static HashMap<String, Object> createDatabaseObject(HashMap<String, String[]> requestParameters, Class cls) {
+        HashMap<String, Object> databaseObject = null;
         try {
             ObjectMapper mapper = new ObjectMapper();
+            mapper.setSerializationInclusion(Include.NON_NULL);
             mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
             requestParameters.remove("oper");
             requestParameters.remove("id");
             HashMap<String, Object> parameters = new HashMap<>();
             requestParameters.forEach((key, value) -> {
-                parameters.put(key, value[0]);
+
+                try {
+                    System.out.println(cls.getField(key).getType().toString());
+                    String val = value[0];
+                    if (cls.getField(key).getType().equals(long.class) && !val.equals("") && val != null) {
+                        parameters.put(key, Long.parseLong(val));
+                    }if (cls.getField(key).getType().equals(List.class) && !val.equals("") && val != null) {
+                        parameters.put(key, new ArrayList<>(Arrays.asList(val.split(","))));
+                    }if (cls.getField(key).getType().equals(String.class) && !val.equals("") && val != null) {
+                        parameters.put(key, (val));
+                    }
+                } catch (NoSuchFieldException ex) {
+                    Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SecurityException ex) {
+                    Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
             });
-            databaseObject = mapper.readValue(mapper.writeValueAsString(parameters), cls);//createNoteObject(requestParameters.get("docid")[0], "create");
-        } catch (JsonProcessingException ex) {
-            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
+
+            databaseObject = parameters;//mapper.readValue(mapper.writeValueAsString(parameters), HashMap.class);
+            //databaseObject = mapper.readValue(mapper.writeValueAsString(parameters), cls); //gewoon een HashMap object van maken???
+
+        } catch (SecurityException ex) {
             Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
         }
         return databaseObject;

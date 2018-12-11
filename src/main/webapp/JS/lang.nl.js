@@ -8,7 +8,9 @@ lang = {
         maintainance: "Onderhoudstaken",
         other: "Andere modules",
         "other/qcmanager": "Beheer van de QC-informatie",
-        "other/ICT-tickets": "ICT-tickets"
+        "other/ICT-tickets": "ICT-tickets",
+        validation: "Validatiedossiers",
+        "other/worksummary": "Openstaande orders"
     },
     jumbo_info: {
         default: "Welkom op de startpagina van LCMS.",
@@ -18,7 +20,8 @@ lang = {
         maintainance: "Kijk hier welke onderhoudstaken u heeft. Deze taken hebben betrekking op alle aspecten van het laboratorium.",
         other: "Andere labo-gebonden modules.",
         "other/qcmanager": "Hier kunt u lotinformatie wijzigen. Deze informatie is nodig om correct te communiceren met Unity Real Time.",
-        "other/ICT-tickets": "Registreer hier ICT-gerelateerde opdrachten, opmerkingen en problemen."
+        "other/ICT-tickets": "Registreer hier ICT-gerelateerde opdrachten, opmerkingen en problemen.",
+        "other/worksummary": "Samenvatting van orders en resultaten."
 
     },
     ICTTickets: {
@@ -77,6 +80,16 @@ lang = {
         description: "Beschrijving",
         identifier: "Code van object",
         location: "Locatie in lab"
+    },
+    suggestions: {
+        title: "Algemene idëeen of opmerkingen over het laboratorium en de werking ervan.",
+        subject: "Onderwerp",
+        description: "Beschrijving"
+        
+    },
+    validations: {
+        
+        
     }
 };
 

@@ -94,6 +94,9 @@ public class DatabaseActions {
         if (databases.get("history") == null) {
             databases.put("history", openOrCreateDB("history"));
         }
+        if (databases.get("backlog") == null) {
+            databases.put("backlog", openOrCreateDB("backlog"));
+        }
 
     }
 
@@ -687,7 +690,6 @@ public class DatabaseActions {
     public static void updateObjectItem(MongoConf mongoConf, BasicDBObject _bson) throws ClassNotFoundException {
         Bson newDocument = new Document("$set", _bson);
 
-
         getObjects(mongoConf).findOneAndUpdate(and(eq(mongoConf.getIdName(), _bson.get(mongoConf.getIdName()))), newDocument, (new FindOneAndUpdateOptions()).upsert(true));
 
         //   getObjects(mongoConf).findOneAndUpdate(and(eq(mongoConf.getIdName(), _bson.get(mongoConf.getIdName()))), _bson);
@@ -710,6 +712,8 @@ public class DatabaseActions {
 
         return d;
     }
+    
+    
 
     public static ArrayList<Document> getObjectsList(String _cookie, MongoConf mongoConf) throws ClassNotFoundException {
 
@@ -816,29 +820,56 @@ public class DatabaseActions {
         return results;
     }
 
-    public static Document getObjectDifference(MongoConf mongoConf, Object oldDocObject, Object newDocObject) {
+    public static Document getObjectDifference(MongoConf mongoConf, Object original, Object revised) {
         ObjectMapper mapper = new ObjectMapper();
         Document document = null;
         try {
-            String oldDocString = mapper.writeValueAsString(oldDocObject);
-            Document oldDocDocument = Document.parse((oldDocString));
-            List<String> oldDocStringList = new ArrayList<>();
-            String newDocString = mapper.writeValueAsString(newDocObject);
-            Document newDocDocument = Document.parse((newDocString));
-            List<String> newDocStringList = new ArrayList<>();
 
-            oldDocDocument.forEach((k, v) -> {
-                oldDocStringList.add(k + ": " + v);
-            });
+            Document oldDocDocument = Document.parse((mapper.writeValueAsString(original)));
+            Document newDocDocument = Document.parse((mapper.writeValueAsString(revised)));
+            HashMap<String, Patch<String>> patches = new HashMap<>();
+
+//            oldDocDocument.forEach((k, v) -> {
+//                String revisedEntry = "";
+//                if (newDocDocument.get(k) != null) {
+//                    revisedEntry = newDocDocument.get(k).toString();
+//                }
+//                if (v == null) {
+//                    v = "";
+//                }
+//                List<String> originalList = Arrays.asList(v.toString().split("\\n"));
+//                List<String> revisedList = Arrays.asList(revisedEntry.split("\\n"));
+//                patches.put(k, DiffUtils.diff(originalList, revisedList));
+//                newDocDocument.remove(k);
+//            });
             newDocDocument.forEach((k, v) -> {
-                newDocStringList.add(k + ": " + v);
+                String originalEntry = "";
+
+                if (newDocDocument.containsKey(k)) {
+                    originalEntry = oldDocDocument.get(k).toString();
+                }
+                if (v == null) {
+                    v = "";
+                }
+                List<String> originalList = Arrays.asList(originalEntry.split("(\\n|\\:|\\;)"));
+                List<String> revisedList = Arrays.asList(v.toString().split("(\\n|\\:|\\;)"));
+
+
+
+
+                patches.put(k, DiffUtils.diff(originalList, revisedList));
             });
 
-            Patch<String> patch = DiffUtils.diff(oldDocStringList, newDocStringList);
-          
-            String patchString = mapper.writeValueAsString(patch);
+            HashMap<String, Patch<String>> registeredPatches = new HashMap<>();
+            patches.forEach((k, p) -> {
+                if (p.getDeltas().size() != 0) {
+                    registeredPatches.put(k, p);
+                }
+            });
+
+            String patchString = mapper.writeValueAsString(registeredPatches);
             Document patchDocument = Document.parse((patchString));
-            
+
             Backlog backlog = new Backlog();
             backlog.setBacklogid(UUID.randomUUID().toString());
             backlog.setObject_type(mongoConf.getClassName());
@@ -848,6 +879,8 @@ public class DatabaseActions {
             document = Document.parse(mapper.writeValueAsString(backlog));
 
         } catch (JsonProcessingException ex) {
+            Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NullPointerException ex) {
             Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
         }
         return document;

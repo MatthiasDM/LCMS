@@ -7,6 +7,7 @@
 
 function notes_doLoad(_parent) {
     console.log("Notes load");
+
     var _cookie = $.cookie('LCMS_session');
     $.ajax({
         method: "POST",
@@ -20,7 +21,7 @@ function notes_doLoad(_parent) {
         console.log(jsonData.webPage);
         if (typeof jsonData.webPage !== 'undefined') {
             jsonData.parent = _parent;
-            loadParameters(jsonData);
+            loadParameters(jsonData);            
         } else {
 
             var extraOptions = {};
@@ -61,7 +62,7 @@ var lastSelection;
 
 function editNote(id) {
     var _tableObject = $("#note-table");
-
+   
     var grid = _tableObject;
     // var id = grid.getGridParam("selrow");
     console.log(id);
@@ -69,7 +70,11 @@ function editNote(id) {
 
     if (id && id !== lastSelection) {
         var rowData = grid.jqGrid('getRowData', id);
+        var previousRowData = grid.jqGrid('getRowData', lastSelection);
         console.log(rowData);
+        if (typeof CKEDITOR.instances["editor-" + previousRowData.docid] !== "undefined") {
+            CKEDITOR.instances["editor-" + previousRowData.docid].destroy();            
+        }
         notes_getNote($("#div-note"), rowData.docid);
         lastSelection = id;
     }
@@ -104,9 +109,11 @@ function notes_getNote(_parent, _id) {
         }
         if (typeof (jsonData.replaces) !== "undefined") {
             jsonData.webPage = replaceAll(jsonData.webPage, "note-id", jsonData.replaces["note-id"]);
+            jsonData.webPage = replaceAll(jsonData.webPage, "note-short-id", replaceAll(jsonData.replaces["note-id"].toString(),"-", ""));
             jsonData.webPage = replaceAll(jsonData.webPage, "note-content", jsonData.replaces["note-content"]);
             _parent.click();
         }
+        jsonData.parent.empty();
         loadParameters(jsonData);
         //$("#modal-notes").modal();
         console.log("Fetched one note.");
@@ -134,12 +141,12 @@ function note_save(instance) {
 // PREPARE FORM DATA
     var data = CKEDITOR.instances[instance].getData();
     data = removeElements("nosave", data);
-    
+
     var _cookie = $.cookie('LCMS_session');
     $.ajax({
         method: "POST",
         url: "./note",
-        data: {action: "NOTE_SAVENOTE", LCMS_session: _cookie, content: data, docid: instance},
+        data: {action: "NOTE_EDITNOTES", LCMS_session: _cookie, content: data, docid: instance.substring(7), oper: 'edit'},
         beforeSend: function (xhr) {
             xhr.overrideMimeType("application/html");
         }

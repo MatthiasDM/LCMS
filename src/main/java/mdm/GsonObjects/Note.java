@@ -76,14 +76,14 @@ public class Note {
     @MdmAnnotations(type = "string", visibleOnTable = false)
     public String version;
     @MdmAnnotations(type = "boolean", visibleOnTable = false)
-    public int done;
+    public boolean done;
     @MdmAnnotations(type = "list", visibleOnTable = false)
     public List<String> anchors;
 
     public Note() {
     }
 
-    public Note(String title, String content, String owner, String author, String qualitymanager, String inspector, String exciter, String lastEditedBy, String docid, long created, long edited, String version, int done, List<String> anchors) {
+    public Note(String title, String content, String owner, String author, String qualitymanager, String inspector, String exciter, String lastEditedBy, String docid, long created, long edited, String version, boolean done, List<String> anchors) {
         this.title = title;
         this.content = content;
         this.owner = owner;
@@ -196,11 +196,11 @@ public class Note {
         this.version = version;
     }
 
-    public int getDone() {
+    public boolean getDone() {
         return done;
     }
 
-    public void setDone(int done) {
+    public void setDone(boolean done) {
         this.done = done;
     }
 

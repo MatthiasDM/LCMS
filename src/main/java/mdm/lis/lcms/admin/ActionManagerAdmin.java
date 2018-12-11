@@ -31,6 +31,7 @@ import mdm.Config.MongoConf;
 import mdm.Config.Roles;
 import static mdm.Core.StringToLong;
 import static mdm.Core.checkUserRole;
+import static mdm.Core.createDatabaseObject;
 import mdm.GsonObjects.Role;
 import mdm.GsonObjects.User;
 import static mdm.Mongo.DatabaseActions.getDocumentPriveleges;
@@ -109,8 +110,10 @@ public class ActionManagerAdmin {
                         requestParameters.remove("oper");
                         requestParameters.remove("password");
                         requestParameters.remove("id");
-                        User user = createUserObject(requestParameters.get("userid")[0], "edit");
-                        DatabaseWrapper.editObjectData(user, mdm.Config.MongoConf.USERS, cookie);
+                       // User user = createUserObject(requestParameters.get("userid")[0], "edit");
+                        Class cls = Class.forName(MongoConf.USERS.getClassName());
+                        HashMap<String, Object> obj = createDatabaseObject(requestParameters, cls);
+                        DatabaseWrapper.editObjectData(obj, mdm.Config.MongoConf.USERS, cookie);
                     }
                     if (operation.equals("add")) {
                         StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import mdm.Config.MongoConf;
 import mdm.Config.Roles;
 import mdm.Core;
@@ -38,6 +39,8 @@ import mdm.GsonObjects.User;
 import static mdm.Mongo.DatabaseActions.getDocumentPriveleges;
 import static mdm.Mongo.DatabaseActions.getObjectDifference;
 import static mdm.Mongo.DatabaseActions.getObjects;
+import static mdm.Mongo.DatabaseActions.getObjectsList;
+import static mdm.Mongo.DatabaseActions.getObject;
 import mdm.pojo.annotations.MdmAnnotations;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -106,28 +109,6 @@ public class DatabaseWrapper {
         );
         jsonData.set("parameters", jsonParameters);
 
-        return jsonData;
-    }
-
-    public static ObjectNode getNote(Note note) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode jsonData = mapper.createObjectNode();
-        ObjectNode jsonParameters = mapper.createObjectNode();
-        ObjectNode jsonReplaces = mapper.createObjectNode();
-
-        jsonReplaces.put("note-id", note.getDocid());
-        jsonReplaces.put("note-content", note.getContent());
-
-        note.setContent("");
-        jsonParameters.put("note-metadata", mapper.writeValueAsString(note));
-
-        jsonData.put("webPage", loadWebFile("notes/note/index.html"));
-        jsonData.put("scripts",
-                loadScriptFile("notes/note/servletCalls.js")
-                + loadScriptFile("notes/note/interface.js")
-        );
-        jsonData.set("parameters", jsonParameters);
-        jsonData.set("replaces", jsonReplaces);
         return jsonData;
     }
 
@@ -385,7 +366,18 @@ public class DatabaseWrapper {
         return results;
     }
 
-    public static void editObjectData(Object mongoObject, MongoConf _mongoConf, String cookie) throws JsonProcessingException, ClassNotFoundException {
+    public static Map<String, Object> getObjectHashMap(String cookie, mdm.Config.MongoConf _mongoConf, Bson bson) throws ClassNotFoundException, JsonProcessingException {
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        ObjectNode jsonData = mapper.createObjectNode();
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, bson);
+        BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(results.get(0)));
+        Map<String, Object> objHashMap = obj.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+        return objHashMap;
+    }
+
+    public static void editObjectData(HashMap<String, Object> mongoObject, MongoConf _mongoConf, String cookie) throws JsonProcessingException, ClassNotFoundException {
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -403,7 +395,9 @@ public class DatabaseWrapper {
 
             if (columns.indexOf(key) != -1) {
 
-                filteredObj.put(key, obj.get(key));
+                if (obj.get(key) != null) {
+                    filteredObj.put(key, obj.get(key));
+                }
 
             }
 
@@ -411,19 +405,17 @@ public class DatabaseWrapper {
 
         for (Field systemField : systemFields) {
 
-            // if (columns.indexOf(systemField.getName()) != -1) {
-            filteredObj.put(systemField.getName(), obj.get(systemField.getName()));
+            filteredObj.remove(systemField);
+            //filteredObj.put(systemField.getName(), obj.get(systemField.getName()));
 
-            // }
         }
 
         filteredObj.put(_mongoConf.getIdName(), obj.get(_mongoConf.getIdName())); //put id
 
+        Object originalDocument = getObject(_mongoConf, filteredObj.get(_mongoConf.getIdName()).toString());
         DatabaseActions.updateObjectItem(_mongoConf, filteredObj);
-
-        //do Backlog
-        Object oldDocument = getObjects(_mongoConf).find(and(eq(_mongoConf.getIdName(), filteredObj.get(_mongoConf.getIdName())))).first();
-        Document backlog = getObjectDifference(_mongoConf, oldDocument, mongoObject);
+        Map<String, Object> filteredObjHashMap = filteredObj.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+        Document backlog = getObjectDifference(_mongoConf, originalDocument, filteredObjHashMap);
         if (backlog != null) {
             getObjects(MongoConf.BACKLOG).insertOne(backlog);
         }
@@ -494,7 +486,7 @@ public class DatabaseWrapper {
 //                            parameters.put(key, value[0]);
 //                        });
 //                        Object labitem = mapper.readValue(mapper.writeValueAsString(parameters), cls);//createNoteObject(requestParameters.get("docid")[0], "create");
-                        Object obj = createDatabaseObject(requestParameters, cls);
+                        HashMap<String, Object> obj = createDatabaseObject(requestParameters, cls);
                         DatabaseWrapper.editObjectData(obj, _mongoConf, cookie);
                     }
                     if (operation.equals("add")) {

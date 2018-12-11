@@ -1,0 +1,61 @@
+<script src="../../../../JS/jquery-3.2.1.min.js"></script>
+<script src="../../../../JS/jquery.jexcel.js"></script>
+<script src="../../../../JS/iframeresizer/iframeResizer.contentWindow.min.js"></script>
+<script src="../../../../JS/jexcel/underscore-min.js"></script>
+<script src="../../../../JS/jexcel/underscore.string.js"></script>
+<script src="../../../../JS/jexcel/jstat.min.js"></script>
+<script src="../../../../JS/jexcel/numeric.min.js"></script>
+<script src="../../../../JS/jexcel/numeral.min.js"></script>
+<script src="../../../../JS/jexcel/excel-formula.min.js"></script>
+<link rel="stylesheet" type="text/css" media="screen" href="../../../../CSS/jquery.jexcel.css" />
+<table id='jexceltable'></table>
+<script>
+    $.fn.textWidth = function (text, font) {
+        if (!$.fn.textWidth.fakeEl)
+            $.fn.textWidth.fakeEl = $('<span>').hide().appendTo(document.body);
+        $.fn.textWidth.fakeEl.text(text || this.val() || this.text()).css('font', font || this.css('font'));
+        return $.fn.textWidth.fakeEl.width();
+    };
+
+
+    var data = $(parent.document.getElementById("jexceldata")).text();
+    if (data.length < 1) {
+        data = [
+            ['Mazda', 2001, 2000],
+            ['Pegeout', 2010, 5000],
+            ['Honda Fit', 2009, 3000],
+            ['Honda CRV', 2010, 6000],
+        ];
+    }else{        
+        data = JSON.parse(data);
+    }
+    //  $("#jexceldata").val(data);
+    console.log("debuggin");
+    var update = function (obj, cel, val) {
+        var data = $('#jexceltable').jexcel("getData");
+        $(parent.document.getElementById("jexceldata")).text(JSON.stringify(data));
+    }
+
+
+    var columnwidths = {};
+    $.each(data, function (key, value) {
+        $.each(value, function (key2, value2) {
+
+            if (typeof columnwidths[key2] != "undefined") {
+                if ($.fn.textWidth(value2, '24px arial') > columnwidths[key2]) {
+                    columnwidths[key2] = $.fn.textWidth(value2, '24px arial');
+                }
+            } else {
+                columnwidths[key2] = $.fn.textWidth(value2, '24px arial');
+            }
+
+        })
+    });
+    
+
+
+    $('#jexceltable').jexcel({data: data, colWidths: Object.values(columnwidths), onchange: update});
+
+
+
+</script>

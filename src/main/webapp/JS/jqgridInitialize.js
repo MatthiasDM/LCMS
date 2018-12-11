@@ -3,6 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+var numberTemplate = {
+    align: 'center',
+    sorttype: 'number',
+    searchoptions: {
+        sopt: ['ge', 'gt', 'eq', 'lt', 'le']
+    }
+}, listGridFilterToolbarOptions = {
+    searchOnEnter: true,
+    stringResult: true,
+    multipleSearch: true,
+    searchOperators: true
+};
+
 
 $(function () {
 
@@ -24,6 +37,8 @@ $(function () {
 
     $.jgrid.defaults.responsive = true;
     $.jgrid.defaults.styleUI = 'Bootstrap4';
+
+
 });
 
 function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _parent, _caption, _extraOptions, _navGridParameters) {
@@ -60,9 +75,7 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
         headertitles: true,
         iconSet: "fontAwesome",
         guiStyle: "bootstrap4",
-        searching: {
-            defaultSearch: "cn"
-        },
+        searching: listGridFilterToolbarOptions,
         rowNum: 150,
         mtype: 'POST',
         editurl: _editUrl,
@@ -70,6 +83,7 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
         ondblClickRow: editRow,
         pager: _pagerName,
         caption: _caption
+
 
     };
 
@@ -124,77 +138,77 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
         if ($groupHeader.length > 0) {
             $(this).jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
         }
+
     });
 
-
-
-    function generateView2(data) {
-        var cols = new Array();
-        var view = [];
-        $.each(JSON.parse(data.header), function (index, value) {
-            var column = {};
-            column.label = value.name;
-            column.name = value.name;
-            //column.editable = true;
-
-            if (value.type === "date") {
-                column.formatoptions = {srcformat: "u1000", newformat: "d-m-y"};
-                column.formatter = "date";
-                column.sorttype = "date";
-                column.editoptions = {dataInit: initDateEdit};
-            }
-            if (value.type === "datetime") {
-                column.formatoptions = {srcformat: "u1000", newformat: "d-m-y h:i"};
-                column.formatter = "date";
-                column.sorttype = "date";
-                column.editoptions = {dataInit: initDateEdit};
-            }
-
-            if (value.type === "text") {
-                column.edittype = "textarea";
-            }
-            if (value.type === "cktext") {
-                column.edittype = "textarea";
-                column.editoptions = {title: "ckedit"};
-            }
-            if (value.type === "boolean") {
-                column.template = "booleanCheckbox";
-            }
-            if (value.type === "select") {
-                column.edittype = "select";
-                column.formatter = "select";
-                column.width = "200";
-                if (value.choices.constructor.name === "String") {
-                    value.choices = JSON.parse(value.choices);
-                }
-                column.editoptions = {multiple: value.multiple, value: (value.choices)};
-            }
-            if (value.type === "password") {
-                column.edittype = "password";
-            }
-            if (value.visibleOnTable === false) {
-                column.hidden = true;
-            }
-            if (value.editable === false) {
-                column.editable = false;
-            } else {
-                column.editable = true;
-            }
-            if (value.visibleOnForm === true) {
-                column.editrules = {edithidden: true};
-            }
-
-
-
-            view.push(column);
-
-        });
-
-        console.log("Generating view");
-        return view;
-    }
-
-
-
     return _tableObject;
+}
+
+function generateView2(data) {
+    var cols = new Array();
+    var view = [];
+    $.each(JSON.parse(data.header), function (index, value) {
+        var column = {};
+        column.label = value.name;
+        column.name = value.name;
+        //column.editable = true;
+
+        if (value.type === "date") {
+            column.formatoptions = {srcformat: "u1000", newformat: "d-m-y"};
+            column.formatter = "date";
+            column.sorttype = "date";
+            column.editoptions = {dataInit: initDateEdit};
+        }
+        if (value.type === "number") {
+            column.template = numberTemplate;
+        }
+        if (value.type === "datetime") {
+            column.formatoptions = {srcformat: "u1000", newformat: "d-m-y h:i"};
+            column.formatter = "date";
+            column.sorttype = "date";
+            column.editoptions = {dataInit: initDateEdit};
+        }
+
+        if (value.type === "text") {
+            column.edittype = "text";
+        }
+        if (value.type === "cktext") {
+            column.edittype = "textarea";
+            column.editoptions = {title: "ckedit"};
+        }
+        if (value.type === "boolean") {
+            column.template = "booleanCheckbox";
+        }
+        if (value.type === "select") {
+            column.edittype = "select";
+            column.formatter = "select";
+            column.width = "200";
+            if (value.choices.constructor.name === "String") {
+                value.choices = JSON.parse(value.choices);
+            }
+            column.editoptions = {multiple: value.multiple, value: (value.choices)};
+        }
+        if (value.type === "password") {
+            column.edittype = "password";
+        }
+        if (value.visibleOnTable === false || value.hidden === true) {
+            column.hidden = true;
+        }
+        if (value.editable === false) {
+            column.editable = false;
+        } else {
+            column.editable = true;
+        }
+        if (value.visibleOnForm === true) {
+            column.editrules = {edithidden: true};
+        }
+
+
+
+        view.push(column);
+
+    });
+
+    console.log("Generating view");
+    return view;
 }

@@ -9,13 +9,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.math.BigDecimal;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -25,11 +34,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import mdm.Config.Actions;
 import mdm.Config.MongoConf;
-import mdm.Core;
-import static mdm.Core.checkUserRole;
 import mdm.GsonObjects.Lab.InventoryItem;
 import mdm.GsonObjects.Lab.LabItem;
-import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
 import org.bson.Document;
 
@@ -78,8 +84,6 @@ public class ServletLab extends HttpServlet {
 
     }
 
-
-
     class ActionManagerLab {
 
         String cookie;
@@ -116,6 +120,9 @@ public class ServletLab extends HttpServlet {
                     } else {
                         if (action == Actions.LAB_CHECKINVENTORY) {
                             sb.append(actionLAB_CHECKINVENTORY());
+                        }
+                        if (action == Actions.LAB_WORKSUMMARY) {
+                            sb.append(actionLAB_WORKSUMMARY());
                         }
                     }
                 }
@@ -159,6 +166,25 @@ public class ServletLab extends HttpServlet {
 
             sb.append(jsonData);
 
+            return sb;
+        }
+
+        private StringBuilder actionLAB_WORKSUMMARY() throws ClassNotFoundException, NoSuchFieldException, IOException {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode jsonData = mapper.createObjectNode();
+            List<String> lines = new ArrayList<>();
+            String pth = context.getRealPath("/HTML/other/worksummary/worksummarydata/data.txt");
+            try (Stream<String> stream = Files.lines(Paths.get(pth), Charset.forName("ISO-8859-1"))) {
+                lines = stream                        
+                        .map(String::toUpperCase)
+                        .filter(line -> line.contains("'"))
+                        .collect(Collectors.toList());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }       
+            jsonData.put("data", mapper.writeValueAsString(lines));
+            StringBuilder sb = new StringBuilder();
+            sb.append(jsonData);
             return sb;
         }
 

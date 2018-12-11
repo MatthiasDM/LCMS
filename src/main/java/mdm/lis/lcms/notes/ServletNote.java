@@ -6,7 +6,11 @@
 package mdm.lis.lcms.notes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.BasicDBObject;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -18,12 +22,16 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import mdm.Config.MongoConf;
 import mdm.Core;
+import static mdm.Core.loadScriptFile;
+import static mdm.Core.loadWebFile;
 import mdm.GsonObjects.Note;
 import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
 import mdm.lis.lcms.notes.ActionManagerNote;
 import mdm.lis.lcms.lab.ServletLab;
+import org.bson.Document;
 
 /**
  *
@@ -100,6 +108,12 @@ public class ServletNote extends HttpServlet {
             StringBuilder sb = new StringBuilder();
             if (cookie != null) {
 
+                Boolean[] conditions = new Boolean[]{true, false, true};
+                Boolean[] variables = new Boolean[]{true, true, false};
+                for (Boolean condition : conditions) {
+
+                }
+
                 if (action.toString().contains("EDIT")) {
                     sb.append(DatabaseWrapper.actionEDITOBJECT(requestParameters, cookie, action.getMongoConf()));
                 } else {
@@ -108,10 +122,10 @@ public class ServletNote extends HttpServlet {
                     }
                     if (action == mdm.Config.Actions.NOTE_GETNOTE) {
                         sb.append(actionNOTE_GETNOTE());
-                    } 
-                    if (action == mdm.Config.Actions.NOTE_SAVENOTE) {
-                        sb.append(actionNOTE_SAVENOTE());
                     }
+//                    if (action == mdm.Config.Actions.NOTE_SAVENOTE) {
+//                        sb.append(actionNOTE_SAVENOTE());
+//                    }
                 }
 
             } else {
@@ -121,28 +135,56 @@ public class ServletNote extends HttpServlet {
             return sb;
         }
 
-        private StringBuilder actionNOTE_GETNOTE() throws IOException, ClassNotFoundException {
+        private StringBuilder actionNOTE_GETNOTE() throws IOException, ClassNotFoundException, NoSuchFieldException {
             StringBuilder sb = new StringBuilder();
             if (Core.checkSession(cookie)) {
                 String id = requestParameters.get("id")[0];
                 if (!id.equals("")) {
-                    Note note = DatabaseActions.getNote(DatabaseActions.getSession(cookie).getUsername(), id);
-                    sb.append(DatabaseWrapper.getNote(note));
+
+                    BasicDBObject searchObject = new BasicDBObject();
+                    ObjectMapper mapper = new ObjectMapper();
+                    ObjectNode jsonData = mapper.createObjectNode();
+                    searchObject.put("docid", new BasicDBObject("$eq", id));
+                    
+                    Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMap(cookie, MongoConf.NOTES, searchObject);
+                                       
+                    //Note note = DatabaseActions.getNote(DatabaseActions.getSession(cookie).getUsername(), id);
+                    sb.append(getNote(searchResult));
                 }
 
             }
             return sb;
         }
 
-        private StringBuilder actionNOTE_SAVENOTE() throws IOException, ClassNotFoundException {
-            StringBuilder sb = new StringBuilder();
-            if (Core.checkSession(cookie)) {
-                String user = DatabaseActions.getSession(cookie).getUserid();
-                String data = requestParameters.get("content")[0];
-                String docid = requestParameters.get("docid")[0];
-                DatabaseActions.updateNote(user, docid, data);
-            }
-            return sb;
+//        private StringBuilder actionNOTE_SAVENOTE() throws IOException, ClassNotFoundException {
+//            StringBuilder sb = new StringBuilder();
+//            if (Core.checkSession(cookie)) {
+//                String user = DatabaseActions.getSession(cookie).getUserid();
+//                String data = requestParameters.get("content")[0];
+//                String docid = requestParameters.get("docid")[0];
+//                DatabaseActions.updateNote(user, docid, data);
+//            }
+//            return sb;
+//        }
+        private ObjectNode getNote(Map<String, Object> note) throws JsonProcessingException {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode jsonData = mapper.createObjectNode();
+            ObjectNode jsonParameters = mapper.createObjectNode();
+            ObjectNode jsonReplaces = mapper.createObjectNode();
+
+            jsonReplaces.put("note-id", note.get("docid").toString());
+            jsonReplaces.put("note-content", note.get("content").toString());
+            note.put("content", "");
+            jsonParameters.put("note-metadata", mapper.writeValueAsString(note));
+
+            jsonData.put("webPage", loadWebFile("notes/note/index.html"));
+            jsonData.put("scripts",
+                    loadScriptFile("notes/note/servletCalls.js")
+                    + loadScriptFile("notes/note/interface.js")
+            );
+            jsonData.set("parameters", jsonParameters);
+            jsonData.set("replaces", jsonReplaces);
+            return jsonData;
         }
 
     }

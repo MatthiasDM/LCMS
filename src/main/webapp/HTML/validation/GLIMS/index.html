@@ -1,0 +1,51 @@
+<html>
+
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="./JS/ckeditor/ckeditor.js"></script>
+        <script src="./HTML/validation/GLIMS/interface.js"></script>
+        <link rel="stylesheet" type="text/css" media="screen" href="./HTML/validation/GLIMS/style.css" />
+    </head>
+    <body>
+
+
+
+        <div class="container" id="validation-container">
+
+            <div class="row">
+                <div class="col-sm-1 mx-auto"></div>
+                <div class="col-sm-10 mx-auto" id="div-validation-menu">
+                    <button type="button" id='btn-new-editable-field' class="btn btn-primary" onclick="saveValidationFile()">Opslaan</button>
+                    <button type="button" id='btn-new-editable-field' class="btn btn-primary" onclick="newEditableField()">Nieuw bewerkbaar veld</button>
+                    <button type="button" id='btn-new-jqgrid' class="btn btn-primary" onclick="editJqgrid()">Nieuwe tabel</button>
+
+                    <br/><br/>
+                </div>
+                <div class="col-sm-1 mx-auto"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-1 mx-auto"></div>
+                <!START qc-table-->
+                <div class="col-sm-10 mx-auto" id="div-grid-wrapper">
+
+                    <div id="test" contenteditable="true">
+                        <h1>Inline Editing in Action!</h1>
+                        <p>The "div" element that contains this text is now editable.</p>
+                    </div>
+
+                </div>
+                <div class="col-sm-1 mx-auto"></div>
+
+            </div>
+            <!END qc-table-->
+
+            <!END validation-table-->
+
+        </div>
+
+
+    </body>
+</html>
