@@ -6,7 +6,7 @@
 package mdm.workflows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.io.IOException; 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,61 +26,57 @@ import org.bson.Document;
 public class Workflows {
 
     //Workflow ICTTickets
-    public void workflowICTTicket(HashMap<String, String[]> requestParameters, String action, String cookie) throws ClassNotFoundException, JsonProcessingException, IOException, NoSuchFieldException {
+    public static void workflowICTTicket(HashMap<String, String[]> requestParameters, String operation, String cookie) throws ClassNotFoundException, JsonProcessingException, IOException, NoSuchFieldException {
 
         String[] choices = {"Gemeld", "Analyse", "Validatie", "Voltooid"};
         String[] choiceValues = {"0", "1", "2", "3"};
-        if (action.equals("add")) {
+        if (operation.equals("add")) {
             String description;
-            description = "ICT-ticket: " + requestParameters.get("subject") + "\n Dit ticket werd aan u toegewezen.";
+            description = "ICT-ticket: " + requestParameters.get("subject")[0] + "\n Dit ticket werd aan u toegewezen.";
             String userid = DatabaseActions.getSession(cookie).getUserid();
             HashMap<String, String[]> taskParameters = new HashMap<String, String[]>();
             taskParameters.put("description", new String[]{description});
             taskParameters.put("category", new String[]{MongoConf.TASKS.name()});
             taskParameters.put("assigned_to", new String[]{userid});
-            taskParameters.put("start_time", new String[]{String.valueOf(Instant.now().toEpochMilli() / 1000)});
-            taskParameters.put("end_time", new String[]{String.valueOf((Instant.now().toEpochMilli() / 1000) + (30 * 24 * 3600))});
+            taskParameters.put("starttime", new String[]{String.valueOf(Instant.now().toEpochMilli() / 1000)});
+            taskParameters.put("endtime", new String[]{String.valueOf((Instant.now().toEpochMilli() / 1000) + (30 * 24 * 3600))});
             taskParameters.put("created_on", new String[]{String.valueOf(Instant.now().toEpochMilli() / 1000)});
-            taskParameters.put("edited_on", new String[]{String.valueOf(Instant.now().toEpochMilli() / 1000)});            
+            taskParameters.put("edited_on", new String[]{String.valueOf(Instant.now().toEpochMilli() / 1000)});
             taskParameters.put("action", new String[]{mdm.Config.Actions.TASKS_EDITTASKS.name()});
             taskParameters.put("LCMS_session", new String[]{cookie});
             taskParameters.put("oper", new String[]{"add"});
             DatabaseWrapper.actionEDITOBJECT(taskParameters, cookie, MongoConf.TASKS);
+
+            List<String> receivers = new ArrayList<>();
+            receivers.addAll(Arrays.asList(requestParameters.get("involved_persons")));
+            receivers.add(requestParameters.get("created_by")[0]);
+            receivers.add(requestParameters.get("approver")[0]);
+            String content = "Beste,<br><br>Er is een nieuw ICT-ticket aangemaakt.<br><br><b>Titel:</b> " + requestParameters.get("subject")[0] + "<br><br><b>Inhoud:</b><br><br>" + requestParameters.get("overview")[0];
+            HashMap<String, Object> parameters = Core.createMailParameters(receivers, "Update ICT-melding: " + requestParameters.get("subject")[0], content);
+            SendMail.send(parameters);
+
             //ActionManagerTasks aM = new ActionManagerTasks(taskParameters);
             //aM.startAction();
-            
-            
             //ObjectMapper mapper = new ObjectMapper();
             //Document document = Document.parse(mapper.writeValueAsString(ActionManagerTasks.createTaskObject(id.toString(), "create", taskParameters, cookie)));
             //DatabaseWrapper.addObject(document, mdm.Config.MongoConf.TASKS, cookie);
         }
-        if (action.equals("edit")) {
+        if (operation.equals("edit")) {
             if (Arrays.asList(choiceValues).contains(requestParameters.get("status")[0])) {
                 Document doc;
                 doc = DatabaseActions.getObject(mdm.Config.MongoConf.ICTTICKETS, requestParameters.get("ticketid")[0]);
                 if (doc.get("status").equals(requestParameters.get("status")[0])) {
-                    List<String> involved_persons = Arrays.asList(requestParameters.get("involved_persons"));
                     List<String> receivers = new ArrayList<>();
-                    List<String> emails = new ArrayList<>();
-                    receivers.addAll(involved_persons);
-                    receivers.add(requestParameters.get("created_by")[0]);
-                    for (String receiver : receivers) {
-                        try {
-                            emails.add(DatabaseActions.getUser(receiver, "userid").getEmail());
-                        } catch (Exception e) {
-                            System.out.print(e.getMessage());
-                        }
-                    }
-                    HashMap<String, Object> parameters = new HashMap<>();
-                    parameters.put("subject", "Update ICT-melding: " + requestParameters.get("subject")[0]);
-                    parameters.put("from", "labo.bl@azzeno.be");
-                    parameters.put("receivers", emails);
+                    receivers.addAll(Arrays.asList(requestParameters.get("involved_persons")));
+                    String content = "";
                     if (!requestParameters.get("status")[0].equals("3")) {
-                        parameters.put("text", "Beste,\nBovenstaand ICT-ticket is van status gewijzigd.");
+                        content = "Beste,<br><br>Bovenstaand ICT-ticket is van status gewijzigd. <br><br> <b>Inhoud</b><br>" + requestParameters.get("followup")[0];
                     } else {
-                        parameters.put("text", "Beste,\nBovenstaand ICT-ticket moet door u gekeurd worden. Gelieve dit document te controleren en te keuren.");
+                        receivers.add(requestParameters.get("approver")[0]);
+                        content = "Beste,<br><br>Bovenstaand ICT-ticket moet door u gekeurd worden. Gelieve dit document te controleren en te keuren.";
                     }
-                    //SendMail.send(parameters);
+                    HashMap<String, Object> parameters = Core.createMailParameters(receivers, "Update ICT-melding: " + requestParameters.get("subject")[0], content);
+                    SendMail.send(parameters);
 
                 }
             }

@@ -3,9 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
-
-function worksummary_doLoad(_parent) {
+function worksummary_doLoad(type) {
     console.log("worksummary load");
     var _cookie = $.cookie('LCMS_session');
     $.ajax({
@@ -15,38 +13,31 @@ function worksummary_doLoad(_parent) {
         beforeSend: function (xhr) {
             xhr.overrideMimeType("application/html");
         }
-    }).done(function (data) {
+    }).done(function (data) {  
         var jsonData = JSON.parse(data);
         var data = JSON.parse(jsonData.data);
-        data.forEach(function lines(line, index){             
-                       
-                    
-                       line = line.replace(/[']/g, "\"");
-                       line = JSON.parse(line);
-                       data[index] = line;
-                       
+        data.forEach(function lines(line, index) {
+
+
+            line = line.replace(/[']/g, "\"");
+            line = JSON.parse(line);
+            data[index] = line;
+
         })
+        if(type === 'new'){
+           parseData(data);  
+            
+        }
+        if(type === 'refresh'){
+            refreshData(data);            
+        }
         
-        parseData(data);
+        setTimeout(function(){ worksummary_doLoad("refresh"); }, 100000);     
+        setTimeout(function(){ bootstrap_alert.warning('Update in 5 sec.', 'info', 5000); }, 95000); 
+
+        
+       
         console.log(data);
-//        if (typeof jsonData.webPage !== 'undefined') {
-//            jsonData.parent = _parent;
-//            loadParameters(jsonData);
-//        } else {
-//            var extraOptions = {
-//                grouping: true,
-//                groupingView: {
-//                    groupField: ['category'],
-//                    groupColumnShow: [false],
-//                    groupText: ['<b>{0} - {1} Item(s)</b>'],
-//                    groupCollapse: true,
-//                }};
-//            extraOptions.onSelectRow = editSuggestion;
-//            var navGridParameters = {
-//                add: false
-//            }
-//           // populateTable(jsonData, "LAB_WORKSUMMARY", './lab', $("#worksummary-table"), "#worksummary-pager", $("#div-grid-wrapper"), lang.worksummary["title"], extraOptions, navGridParameters);//"Algemene idëeen of opmerkingen over het laboratorium en de werking ervan.", {});
-//        }
     }).fail(function (data) {
         alert("Sorry. Server unavailable. ");
     });

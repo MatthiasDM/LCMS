@@ -8,3 +8,10 @@ and open the template in the editor.
     Author     : matmey
 */
 
+div.progress{
+    color: #999999;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -100;    
+}

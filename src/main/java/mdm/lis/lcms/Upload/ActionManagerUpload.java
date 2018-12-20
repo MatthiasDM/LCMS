@@ -105,7 +105,7 @@ public class ActionManagerUpload {
                 String fileName = part.getSubmittedFileName();
                 part.write(mdm.Core.getTempDir(cookie, contextPath) + fileName);
                 UUID id = UUID.randomUUID();
-                FileObject fileobject = createFileObject(id.toString(), fileName, "image", "image/jpg");
+                FileObject fileobject = createFileObject(id.toString(), fileName, "image", "image/jpg", "private");
                 DatabaseActions.insertFile(part.getInputStream(), fileName, fileobject);
                 DatabaseActions.insertFileObject(fileobject);
             }
@@ -182,7 +182,7 @@ public class ActionManagerUpload {
         return sb;
     }
 
-    private FileObject createFileObject(String _id, String _filename, String _type, String _contenttype) {
+    private FileObject createFileObject(String _id, String _filename, String _type, String _contenttype, String _accesstype) {
         long now = Instant.now().toEpochMilli() / 1000;
         FileObject fileObject = new FileObject();
         fileObject.setFileid(_id);
@@ -190,6 +190,7 @@ public class ActionManagerUpload {
         fileObject.setName(_filename);
         fileObject.setUpload_date(_type);
         fileObject.setContent_type(_contenttype);
+        fileObject.setAccesstype(_accesstype);
 
         return fileObject;
     }

@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import mdm.Mongo.DatabaseWrapper;
+import mdm.workflows.Workflows;
 
 /**
  *
@@ -64,8 +65,8 @@ public class ServletICT extends HttpServlet {
         }
 
     }
-    
-        class ActionManagerICT {
+
+    class ActionManagerICT {
 
         String cookie;
         mdm.Config.Actions action;
@@ -94,11 +95,13 @@ public class ServletICT extends HttpServlet {
             if (cookie != null) {
 
                 if (action.toString().contains("EDIT")) {
+                    String operation = requestParameters.get("oper")[0].toString();
                     sb.append(DatabaseWrapper.actionEDITOBJECT(requestParameters, cookie, action.getMongoConf()));
+                    Workflows.workflowICTTicket(requestParameters, operation, cookie);
                 } else {
                     if (action.toString().contains("LOAD")) {
                         sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf()));
-                    } 
+                    }
                 }
 
             } else {
@@ -107,7 +110,7 @@ public class ServletICT extends HttpServlet {
 
             return sb;
         }
-      
+
     }
-    
+
 }

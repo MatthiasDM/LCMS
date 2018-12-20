@@ -27,17 +27,25 @@ public class SendMail {
     public static void send(HashMap<String, Object> parameters) {
         String subject = (String) parameters.get("subject");
         String text = (String) parameters.get("text");
+
         String from = (String) parameters.get("from");
         List<String> receivers = (List<String>) parameters.get("receivers");
 
         final String username = ""; //load username from profile
         final String password = ""; //load password from profile
         Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.ssl.trust", "");
         props.put("mail.smtp.host", "");
         props.put("mail.smtp.port", "");
+
+//        final String username = "labo.bl@vzwgo.be"; //load username from profile
+//        final String password = "azert"; //load password from profile
+//        Properties props = new Properties();
+//        props.put("mail.smtp.host", "mx.vzwgo.be");
+//        props.put("mail.smtp.port", "smtp");
+
+        //Bypass the SSL authentication
+        props.put("mail.smtp.ssl.enable", false);
+        props.put("mail.smtp.starttls.enable", false);
 
         Session session = Session.getInstance(props,
                 new javax.mail.Authenticator() {
@@ -53,8 +61,8 @@ public class SendMail {
             message.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(String.join(",", receivers.toArray(new String[receivers.size()]))));
             message.setSubject(subject);
-            message.setText(text);
-
+            //message.setText(text);
+            message.setContent(text, "text/html; charset=utf-8");
             Transport.send(message);
 
             System.out.println("Done");

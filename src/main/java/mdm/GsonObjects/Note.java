@@ -75,7 +75,11 @@ public class Note {
     public long edited;
     @MdmAnnotations(type = "string", visibleOnTable = false)
     public String version;
-    @MdmAnnotations(type = "boolean", visibleOnTable = false)
+    @MdmAnnotations(
+            type = "boolean",
+            visibleOnTable = false,
+            editRole = "ICTMANAGER"
+    )
     public boolean done;
     @MdmAnnotations(type = "list", visibleOnTable = false)
     public List<String> anchors;

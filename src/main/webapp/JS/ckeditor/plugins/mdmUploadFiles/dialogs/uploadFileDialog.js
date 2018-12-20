@@ -91,7 +91,7 @@ function files_doBrowse() {
             //loadParameters(jsonData);
         } else {
             var extraOptions = {};
-            extraOptions.onSelectRow = insertFileInEditor;
+            extraOptions.onSelectRow = insertFileInEditor;           
             populateTable(jsonData, "", './upload', $("#filebrowser-table"), "#filebrowser-pager", $("#div-grid-wrapper"), "Bestanden op de server", extraOptions);
         }
     }).fail(function (data) {

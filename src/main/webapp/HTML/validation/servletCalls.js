@@ -35,9 +35,6 @@ function validations_doLoad(_parent) {
     });
 }
 
-
-
-
 function editRow() {
 
     setTimeout(function () {
@@ -84,7 +81,7 @@ function editValidation(id) {
 
 
 }
-;
+
 
 function validations_getValidation(_parent, _id) {
 
@@ -135,7 +132,6 @@ function validations_getValidation(_parent, _id) {
 
 }
 
-
 function loadValidationPage(jsonData, grids) {
     console.log("loadValidationPage()");
     var webPage = $($.parseHTML(jsonData.webPage, document, true));
@@ -152,14 +148,48 @@ function loadValidationPage(jsonData, grids) {
     $.each(grids, function (key, value) {
         var grid = $("<table id='" + key + "'></table>");
         var pager = $("<div id='pager_" + key + "'></div>");
-        editor.find("div[name*="+key+"]").after(grid);
-        editor.find("div[name*="+key+"]").after(pager);
-        editor.find("div[name*="+key+"]").remove();
-        
-        generate_grid(jsonData.parent, grid, value, {pager:'#' + 'pager_' + key ,autowidth: true, autoheight: true});        
+        editor.find("div[name*=" + key + "]").after(grid);
+        editor.find("div[name*=" + key + "]").after(pager);
+        editor.find("div[name*=" + key + "]").remove();
+
+        var extraOptions = {
+            pager: '#' + 'pager_' + key,
+            autowidth: true,
+            autoheight: true,
+            rownumbers: Object.keys(Object.filter(value.colModel, item => item.name == "rn")).length === 0
+        };
+
+        if (typeof value.summaries !== "undefined") {
+            extraOptions.summaries = value.summaries;
+            extraOptions.footerrow = true;
+            extraOptions.userDataOnFooter = true;
+            extraOptions.loadComplete = function () {
+                var sumJson = {};
+                var grid = $(this);
+                value.summaries.forEach(function (a) {
+                    sumJson[a] = grid.jqGrid("getCol", a, false, "sum");
+                });
+                $(this).jqGrid("footerData", "set", sumJson);
+            };
+        }
+
+        if (typeof value.groups !== "undefined") {
+
+            extraOptions.grouping = true;
+            extraOptions.groupingView = {
+                groupField: value.groups,
+                //groupColumnShow: [false, false],
+                groupText: ['<b>{0} - {1} Item(s)</b>', '<b>{0} - {1} Item(s)</b>'],
+                groupCollapse: true,
+            }
+        } else {
+            extraOptions.grouping = false;
+        }
+
+
+        generate_grid(jsonData.parent, grid, value, extraOptions);
     });
 }
-
 
 //function validations_createMetaDataHeader(_metadata) {
 //    var container = $("<div></div>");

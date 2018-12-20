@@ -276,9 +276,11 @@ public class Core {
                     String val = value[0];
                     if (cls.getField(key).getType().equals(long.class) && !val.equals("") && val != null) {
                         parameters.put(key, Long.parseLong(val));
-                    }if (cls.getField(key).getType().equals(List.class) && !val.equals("") && val != null) {
+                    }
+                    if (cls.getField(key).getType().equals(List.class) && !val.equals("") && val != null) {
                         parameters.put(key, new ArrayList<>(Arrays.asList(val.split(","))));
-                    }if (cls.getField(key).getType().equals(String.class) && !val.equals("") && val != null) {
+                    }
+                    if (cls.getField(key).getType().equals(String.class) && !val.equals("") && val != null) {
                         parameters.put(key, (val));
                     }
                 } catch (NoSuchFieldException ex) {
@@ -297,5 +299,26 @@ public class Core {
         }
         return databaseObject;
     }
+
+
+    public static HashMap<String, Object> createMailParameters(List<String> receivers, String subject, String content) {
+
+        List<String> emails = new ArrayList<>();
+        for (String receiver : receivers) {
+            try {
+                emails.add(DatabaseActions.getUser(receiver, "userid").getEmail());
+            } catch (Exception e) {
+                System.out.print(e.getMessage());
+            }
+        }
+        HashMap<String, Object> parameters = new HashMap<>();
+        parameters.put("subject", "LCMS " + subject);
+        parameters.put("from", "labo.bl@azzeno.be");
+        parameters.put("receivers", emails);
+        parameters.put("text", content);
+        return parameters;
+    }
+
+
 
 }

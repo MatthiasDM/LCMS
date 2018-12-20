@@ -1,148 +1,91 @@
+var gridIds = [];
+
 Object.filter = (obj, predicate) =>
     Object.keys(obj)
             .filter(key => predicate(obj[key]))
             .reduce((res, key) => (res[key] = obj[key], res), {});
 
 $(function () {
-    worksummary_doLoad($("#worksummary-container"));
-    // config1();
-
+    worksummary_doLoad('new');
 });
+
+function refreshData(data) {
+    console.log("refreshData()");
+    //-----------------KNOKKE----------------------------------------------------------
+    //---------------------------------------------------------------------------
+    perGroep(null, data, gridIds[3].gridid, false, "Knokke");
+    //-----------------BRUGGE----------------------------------------------------------
+    //---------------------------------------------------------------------------
+    perGroep(null, data, gridIds[4].gridid, false, "Brugge");
+    //----------------ORDERS MET KLINISCHE INFO-----------------------------------------------------------
+    //---------------------------------------------------------------------------
+    perKlinischeInfo(data, gridIds[2].gridid, true);
+    //----------------ORDERS PER TOESTEL-----------------------------------------------------------
+    //---------------------------------------------------------------------------    
+    perToestel(null, data, gridIds[0].gridid, true);
+    //-----------------ORDERS PER ARTS----------------------------------------------------------
+    //---------------------------------------------------------------------------
+    perArts(null, data, gridIds[1].gridid, true);
+
+}
 
 function parseData(data) {
     console.log("parseData()");
+    var gridId;
+    var row1 = $("<div class='row'></div>");
+    var row2 = $("<div class='row'></div>");
+    var row3 = $("<div class='row'></div>");
+    $("#worksummary-container").append(row1);
+    $("#worksummary-container").append(row2);
+    $("#worksummary-container").append(row3);
 
-    var distinctStations = filterUnique(data, "STATION");
-    var distinctIssuers = filterUnique(data, "ISSUER");
-    var row = $("<div class='row'></div>");
-    $("#worksummary-container").append(row);
-
-    //----------------ORDERS PER TOESTEL-----------------------------------------------------------
-    //---------------------------------------------------------------------------
-    var col = $("<div class='col-sm-6 mx-auto'></div>");
-    var colModel = [
-        {name: "Station", type: "text"},
-        {name: "Orders", type:"number"},
-        {name: "Gekende testen", type: "text"},
-        {name: "Openstaande testen", type: "text"},
-    ]
-    var gridData = [];
-    var subgridData = [];
-    $.each(distinctStations, function (key1, value) {
-        var filteredData = Object.filter(data, item => item["STATION"] === value);
-        var info = getInformation(filteredData);
-        info["Station"] = value;
-        gridData.push(info);
-
-        //Testen filteren van eenzelfde order        
-        //1 Filter distinct orders
-        var distinctOrders = filterUnique($.map(filteredData, function (el) {
-            return el;
-        }), "ORDER");
-        var orderData = new Array();
-        //2 Filter "filteredData" per distinctOrder
-        $.each(distinctOrders, function (key2, value) {
-            var filteredTestsPerOrder = Object.filter(filteredData, item => item["ORDER"] === value);
-            //3 Zet alle testen in een String
-            var tests = "";
-            $.each(filteredTestsPerOrder, function (key3, value) {
-                tests += value["TEST"] + " ";
-            })
-            //4 Voeg tests toe aan distinctOrders
-            orderData.push({ORDER: value, TESTEN: tests});
-        });
-        subgridData["jqg" + (key1 + 1)] = Object.values(orderData);
-    });
-
-    var extraOptions = {
-        caption: "Orders per Toestel",
-        hiddengrid: true,
-        subGridRowExpanded: function (subgridDivId, rowId) {
-            var subgridTableId = subgridDivId + "_t";
-            $("#" + subgridDivId).html("<table id='" + subgridTableId + "'></table>");
-            $("#" + subgridTableId).jqGrid({
-                datatype: 'local',
-                data: subgridData[rowId],
-                colNames: ['ORDER', 'TESTEN'],
-                colModel: [
-                    {name: 'ORDER', width: 100},
-                    {name: 'TESTEN', width: 200}
-                ],
-                gridview: true,
-                rownumbers: true,
-                autoencode: true,
-                responsive: true,
-                headertitles: true,
-                iconSet: "fontAwesome",
-                guiStyle: "bootstrap4"
-            });
+    gridIds = [
+        {
+            gridid: "grid_" + uuidv4(),
+            gridexpandedgroups: []
         },
-        subGrid: true,
-        subGridOptions: {
-            hasSubgrid: function (options) {
-                return true;
-            }
+        {
+            gridid: "grid_" + uuidv4(),
+            gridexpandedgroups: []
         },
-        onSelectRow: function(rowid) {
-            $(this).find("#" + rowid).children("td.ui-sgcollapsed").click();
+        {
+            gridid: "grid_" + uuidv4(),
+            gridexpandedgroups: []
+        },
+        {
+            gridid: "grid_" + uuidv4(),
+            gridexpandedgroups: []
+        },
+        {
+            gridid: "grid_" + uuidv4(),
+            gridexpandedgroups: []
         }
+    ];
 
-    };
-    row.append(col);
-    new_grid(colModel, extraOptions, gridData, "grid_" + uuidv4(), col);
-    
-    //-----------------ORDERS PER ARTS----------------------------------------------------------
+    //PROGRESS BAR----------------------------------------------//
+    //<div class="progress">
+    //<div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+    //</div>
+    //KNOKKE----------------------------------------------------------
     //---------------------------------------------------------------------------
-    var col = $("<div class='col-sm-6 mx-auto'></div>");
-    colModel = [
-        {name: "Aanvrager", type: "text"},
-        {name: "Orders", type: "text"},
-        {name: "Gekende testen", type: "text"},
-        {name: "Openstaande testen", type: "text"},
-    ]
-    gridData = [];
-    $.each(distinctIssuers, function (key, value) {
-        var filteredData = Object.filter(data, item => item["ISSUER"] === value);
-        var info = getInformation(filteredData);
-        info["Aanvrager"] = value;
-        gridData.push(info);
-    });    
-    row.append(col);
-    new_grid(colModel, {caption: "Orders per arts", hiddengrid: true}, gridData, "grid_" + uuidv4(), col);
-    //----------------ORDERS MET KLINISCHE INFO-----------------------------------------------------------
+    perGroep(row1, data, gridIds[3].gridid, false, "Knokke");
+    //BRUGGE----------------------------------------------------------
     //---------------------------------------------------------------------------
-    var gridid = "grid_" + uuidv4();
-    var row = $("<div class='row'></div>");
-    $("#worksummary-container").append(row);
-    var col = $("<div class='col-sm-12 mx-auto'></div>");
-    colModel = [
-        {name: "Order", type: "text"},
-        {name: "Aanvrager", type: "text"},
-        {name: "Gekende testen", type: "text"},
-        {name: "Openstaande testen", type: "text"},
-        {name: "Info", type: "text"}
-    ]
-    gridData = [];
-    var filteredData = Object.filter(data, item => item["INFO"].length > 0);
-    $.each(filteredData, function (key, value) {
-        var info = getInformation(value);
-        info["Aanvrager"] = value.ISSUER;
-        info["Order"] = value.ORDER;
-        info["Info"] = value.INFO;
-        gridData.push(info);
-    });
-    row.append(col);
-    
-    new_grid(colModel, {caption: "Orders met commentaar", cmTemplate: { autoResizable: true },autoResizing: { compact: true, resetWidthOrg: true },autowidth: true,autoresizeOnLoad: true}, gridData, gridid, col);
-    $("#" + gridid).setGridWidth(col.width() - 5);
-    $("#" + gridid).trigger('resize');
+    perGroep(row1, data, gridIds[4].gridid, false, "Brugge");
+
+    //ORDERS MET KLINISCHE INFO-----------------------------------------------------------
+    //---------------------------------------------------------------------------
+    perKlinischeInfo(row2, data, gridIds[2].gridid, false);
+    //ORDERS PER TOESTEL-----------------------------------------------------------
+    //---------------------------------------------------------------------------    
+    perToestel(row3, data, gridIds[0].gridid, false);
+    //ORDERS PER ARTS----------------------------------------------------------
+    //---------------------------------------------------------------------------
+    perArts(row3, data, gridIds[1].gridid, false);
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
 }
-
-
-
 
 function filterUnique(data, filterBy) {
     var lookup = {};
@@ -195,7 +138,7 @@ function new_grid(colModel, extraOptions, gridData, gridId, parent) {
     var grid = $("<table id='" + uuid + "'></table>");
     var pager = $("<div id='pager_" + uuid + "'></div>");
     container.append(grid);
-    container.append(pager);
+    //container.append(pager);
     parent.append(container);
     gridData = Object.assign(gridData, data);
     var tableOptions = {
@@ -212,15 +155,15 @@ function new_grid(colModel, extraOptions, gridData, gridId, parent) {
         iconSet: "fontAwesome",
         guiStyle: "bootstrap4",
         searching: listGridFilterToolbarOptions,
-        rowNum: 20,
+        rowNum: 1000,
         mtype: 'POST',
         //editurl: "_editUrl",
         loadonce: true,
         //onSelectRow: popupEdittRow,
         // ondblClickRow: inlineEditRow,
-        pager: "#" + pager.attr('id'),
+        // pager: "#" + pager.attr('id'),
         caption: ""
-        
+
     };
     generate_grid(editor, grid, tableOptions, extraOptions);
     return container;
@@ -231,31 +174,31 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     $.each(_extraOptions, function (i, val) {
         _tableOptions[i] = val;
     });
-    //_tableOptions.caption += ("<span class='nosave'><button type='button' id='btn_options' style='padding-right: 20px;' class='close' aria-label='Close'><span aria-hidden='true'>info</span></button></span>");
-    // _tableOptions.onSelectRow = popupEdittRow;
-    //tableOptions.ondblClickRow = popupEdittRow;
     _grid.jqGrid(_tableOptions);
     var lastSelection;
     var addDataOptions = {editData: {action: "_editAction", LCMS_session: $.cookie('LCMS_session')}};
     var navGridParameters2 = {edit: false, add: false, save: false, cancel: false};
 
-    _grid.inlineNav(_tableOptions.pager, navGridParameters2, {}, addDataOptions);
+    //_grid.inlineNav(_tableOptions.pager, navGridParameters2, {}, addDataOptions);
     _grid.jqGrid('filterToolbar');
-    _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").addClass("card-header card-primary bg-primary text-white");
+    _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").addClass("card-header card-primary text-white text-center");
+    _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").css("background-color", "white");
+    //.ui-jqgrid.ui-jqgrid-bootstrap border: none
+    var barinfo = getGroupInformation(_tableOptions.data);
+    var bar1 = barinfo.sumKnownTests / (barinfo.sumKnownTests+barinfo.sumUnknownTests) *100;
+    var bar2 = barinfo.sumUnknownTests / (barinfo.sumKnownTests+barinfo.sumUnknownTests)*100;
+    var progess = dom_progressbar([{value: bar1, color: 'rgba(43, 121, 83, 1)'},{value: bar2, color: 'rgba(66,139,202, 1)'}]);
+   
+              //  rgba(170, 146, 57, 1)
+    _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").append(progess);
+
     _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").click(function () {
+
         $(".ui-jqgrid-titlebar-close", this).click();
     });
-//    _grid.navButtonAdd(_tableOptions.pager, {
-//        caption: "Options",
-//        title: "Click here to change columns",
-//        buttonicon: "ui-icon-plusthick",
-//        onClickButton: function () {
-//            new_grid_popup(_parent, _tableOptions);
-//        },
-//        position: "last"
-//    });
-
-    //_grid.inlineNav(_tableOptions.pager, navGridParameters, {}, addDataOptions);
+    _grid.click(function (e) {
+        gridClickFunctions(e, $(this))
+    });
 
     $(window).bind('resize', function () {
         _grid.setGridWidth(_parent.width() - 5);
@@ -263,5 +206,34 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
 
 
 
+
+}
+
+function gridClickFunctions(e, target) {
+    console.log("gridClickFunctions()");
+    var $groupHeader = $(e.target).closest("tr.jqgroup");
+    if ($groupHeader.length > 0) {
+        target.jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
+        target.css('cursor', 'pointer');
+        var index = gridIds.map(function (e) {
+            return e.gridid;
+        }).indexOf(target.attr('id'));
+
+        var indexofClickItem = gridIds[index].gridexpandedgroups.find(function (a) {
+            return a === $groupHeader.attr("id")
+        });
+        if (typeof indexofClickItem !== "undefined") {
+            gridIds[index].gridexpandedgroups.splice(indexofClickItem, 1);
+        } else {
+            gridIds[index].gridexpandedgroups.push($groupHeader.attr("id"));
+        }
+    }
+
+    $groupHeader = $(e.target).closest("span.tree-wrap");
+    if ($groupHeader.length > 0) {
+        target.jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
+    }
+
+    // $subGridExpanded = $(e.target).closest("td.sgexpanded");
 
 }

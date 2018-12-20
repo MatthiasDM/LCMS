@@ -28,6 +28,7 @@ function notes_doLoad(_parent) {
             //extraOptions.gridComplete = loadContextMenu;//($("#note-table"), $("#div-grid-wrapper"));
             //extraOptions.ondblClickRow = editNote;//($("#note-table")); 
             extraOptions.onSelectRow = editNote;
+            extraOptions.ondblClickRow = popupEdittRow;
             populateTable(jsonData, "NOTE_EDITNOTES", './note', $("#note-table"), "#note-pager", $("#div-grid-wrapper"), "Al uw persoonlijke notities", extraOptions);
         }
     }).fail(function (data) {
@@ -36,7 +37,48 @@ function notes_doLoad(_parent) {
 }
 
 
-
+function popupEdittRow(action) {
+    console.log("popupEditRow()");
+    $(this).jqGrid('editGridRow', action, {
+        reloadAfterSubmit: false,
+        width: $("body").width() * 0.9,
+        left: $(this).offset().left * -1 + $("body").width() * 0.05,
+        top: $(this).offset().top * -1 + 250,
+        afterShowForm: function (formid) {
+            $("textarea[title=ckedit]").each(function (index) {
+                CKEDITOR.replace($(this).attr('id'), {
+                    customConfig: ' ',
+                    allowedContent: true
+                });
+            });
+            $("textarea[title=ckedit_code]").each(function (index) {
+                //$("textarea[title=ckedit_code]")[0].value = "<pre> <code>" + $("textarea[title=ckedit_code]")[0].value + "</code></pre>";
+                CKEDITOR.replace($(this).attr('id'), {
+                    customConfig: ' ',
+                    allowedContent: true,
+                    startupMode: 'source'
+                });
+            });
+            $("#created_on").val(moment().format('D-M-YY'));
+        },
+        beforeSubmit: function (postdata, formid) {
+            $("textarea[title=ckedit]").each(function (index) {
+                var editorname = $(this).attr('id');
+                var editorinstance = CKEDITOR.instances[editorname];
+                var text = editorinstance.getData();
+                // CKEDITOR.instances[editorname].element.remove()
+                postdata[editorname] = text;
+            });
+            console.log("Checking post data");
+        },
+        afterComplete: function (response, postdata, formid) {
+            // $(this).trigger( 'reloadGrid' );
+            $("#cData").trigger("click");
+            bootstrap_alert.warning('Rij toegevoegd/gewijzigd', 'info', 1000);
+        },
+        editData: {action: "NOTE_EDITNOTES", LCMS_session: $.cookie('LCMS_session')}
+    });
+}
 
 function editRow() {
 

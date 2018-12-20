@@ -659,6 +659,17 @@ public class DatabaseActions {
                             break;
                         }
                     } else {
+                        if (role.startsWith("@")) {
+                            String roleName = role.substring(1);
+                            String referencedField = fields.stream()
+                                    .filter(r -> r.getName().equals(roleName.substring(1)))
+                                    .findFirst()
+                                    .toString();
+                            if (getSession(_cookie).getUsername().equals(referencedField)) {
+                                columns.add(field.getName());
+                            }
+                        }
+
                         if (userRole.equals(role)) {
                             columns.add(field.getName());
                             break;
@@ -712,8 +723,6 @@ public class DatabaseActions {
 
         return d;
     }
-    
-    
 
     public static ArrayList<Document> getObjectsList(String _cookie, MongoConf mongoConf) throws ClassNotFoundException {
 
@@ -753,14 +762,17 @@ public class DatabaseActions {
     public static ArrayList<Document> getObjectsSpecificList(String _cookie, MongoConf mongoConf, Bson bson) throws ClassNotFoundException {
 
         List<String> columns = getDocumentPriveleges("view", _cookie, mongoConf.getClassName());
-        Document doc = null;
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode jsonData = mapper.createObjectNode();
-        MongoCollection<Document> ObjectItems = getObjects(mongoConf);
         ArrayList<Document> results = null;
-        results = ObjectItems.find(bson).projection(
-                fields(include(columns))
-        ).into(new ArrayList<Document>());
+        try {
+            MongoCollection<Document> ObjectItems = getObjects(mongoConf);
+            results = ObjectItems.find(bson).projection(
+                    fields(include(columns))
+            ).into(new ArrayList<Document>());
+
+        } catch (Exception e) {
+            LOG.severe(e.getMessage());
+            return results;
+        }
 
         return results;
     }
@@ -853,9 +865,6 @@ public class DatabaseActions {
                 }
                 List<String> originalList = Arrays.asList(originalEntry.split("(\\n|\\:|\\;)"));
                 List<String> revisedList = Arrays.asList(v.toString().split("(\\n|\\:|\\;)"));
-
-
-
 
                 patches.put(k, DiffUtils.diff(originalList, revisedList));
             });

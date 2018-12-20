@@ -73,6 +73,12 @@ public class ICTTicket {
             visibleOnTable = false
     )
     public String approver;
+        @MdmAnnotations(
+            type = "boolean",
+            visibleOnTable = false,
+            editRole = "@approver"
+    )
+    public boolean approved;
     @MdmAnnotations(
             type = "date",
             visibleOnTable = false,

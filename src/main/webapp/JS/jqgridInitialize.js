@@ -176,6 +176,10 @@ function generateView2(data) {
             column.edittype = "textarea";
             column.editoptions = {title: "ckedit"};
         }
+        if (value.type === "cktext_code") {
+            column.edittype = "textarea";
+            column.editoptions = {title: "ckedit_code"};
+        }
         if (value.type === "boolean") {
             column.template = "booleanCheckbox";
         }
@@ -190,6 +194,9 @@ function generateView2(data) {
         }
         if (value.type === "password") {
             column.edittype = "password";
+        }
+        if (value.key === true) {
+            column.key = true;
         }
         if (value.visibleOnTable === false || value.hidden === true) {
             column.hidden = true;
@@ -212,3 +219,4 @@ function generateView2(data) {
     console.log("Generating view");
     return view;
 }
+

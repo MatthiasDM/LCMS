@@ -108,17 +108,14 @@ public class ServletNote extends HttpServlet {
             StringBuilder sb = new StringBuilder();
             if (cookie != null) {
 
-                Boolean[] conditions = new Boolean[]{true, false, true};
-                Boolean[] variables = new Boolean[]{true, true, false};
-                for (Boolean condition : conditions) {
-
-                }
-
                 if (action.toString().contains("EDIT")) {
                     sb.append(DatabaseWrapper.actionEDITOBJECT(requestParameters, cookie, action.getMongoConf()));
                 } else {
                     if (action.toString().contains("LOAD")) {
-                        sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf()));
+                        BasicDBObject searchObject = new BasicDBObject();
+                        
+                        searchObject.put("author", new BasicDBObject("$eq", DatabaseActions.getSession(cookie).getUserid()));;
+                        sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf(), searchObject));
                     }
                     if (action == mdm.Config.Actions.NOTE_GETNOTE) {
                         sb.append(actionNOTE_GETNOTE());
@@ -145,9 +142,9 @@ public class ServletNote extends HttpServlet {
                     ObjectMapper mapper = new ObjectMapper();
                     ObjectNode jsonData = mapper.createObjectNode();
                     searchObject.put("docid", new BasicDBObject("$eq", id));
-                    
+
                     Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMap(cookie, MongoConf.NOTES, searchObject);
-                                       
+
                     //Note note = DatabaseActions.getNote(DatabaseActions.getSession(cookie).getUsername(), id);
                     sb.append(getNote(searchResult));
                 }

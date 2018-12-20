@@ -1,8 +1,15 @@
 $(function () {
     //ICTtickets_doLoad($("#ICT-ticket-container"));
     console.log("loading CK config1");
-    config1();
+    config2();
     loadGrids();
+    $("div[id^=editable]").click(function (e) {
+        console.log("clicked");
+        if (typeof e.target.href != 'undefined' && e.ctrlKey == true) {
+            window.open(e.target.href, 'new' + e.screenX);
+        }
+    });
+
 });
 
 function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId, location) {
@@ -53,13 +60,13 @@ function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId,
             autowidth: true,
             responsive: true,
             headertitles: true,
+            searching: listGridFilterToolbarOptions,
             iconSet: "fontAwesome",
             guiStyle: "bootstrap4",
-            searching: {
-                defaultSearch: "cn"
-            },
-            rowNum: 20,
+            rowNum: 1000,
+            rownumbers: true,
             mtype: 'POST',
+            altRows: true,
             //editurl: "_editUrl",
             loadonce: true,
             //onSelectRow: popupEdittRow,
@@ -77,6 +84,7 @@ function new_editable_field() {
     var editable_field = $("<div id='editable_" + uuidv4() + "' contenteditable='true'><p>Nieuw bewerkbaar veld</p></div>");
     editor.append(editable_field);
     var ck = CKEDITOR.inline(editable_field.attr('id'));
+
     ck.on('instanceReady', function (ev) {
         var editor = ev.editor;
         editor.setReadOnly(false);
@@ -92,20 +100,27 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     // _tableOptions.onSelectRow = popupEdittRow;
     _tableOptions.ondblClickRow = popupEdittRow;
     _grid.jqGrid(_tableOptions);
+    _grid.jqGrid('filterToolbar');
     var lastSelection;
     var addDataOptions = {editData: {action: "_editAction", LCMS_session: $.cookie('LCMS_session')}};
-    var navGridParameters = {add: true, edit: false, del: false, save: false, cancel: false, addParams: {position: "last", addRowParams: {
-                keys: true,
 
-                oneditfunc: function (grid) {
-                    if (typeof lastSelection !== 'undefined') {
-                        grid.jqGrid('restoreRow', lastSelection)
-                    }
+    var navGridParameters2 = {
+        add: true,
+        del: true,
+        addParams: {
+            rowID: function (options) {
+                return "row_" + uuidv4();
+            },
+            position: "last",
+            addRowParams: {
+                rowID: function (options) {
+                    return "row_" + uuidv4();
                 },
-                extraparam: {action: "_editAction", LCMS_session: $.cookie('LCMS_session')}
-            }}};
-
-    var navGridParameters2 = {add: true, addParams: {rowID: "row" + uuidv4(), position: "last", addRowParams: {rowID: "row" + uuidv4(), position: "last", keys: true}}};
+                position: "last",
+                keys: true
+            }
+        }
+    };
 
     _grid.inlineNav(_tableOptions.pager, navGridParameters2, {}, addDataOptions);
 
@@ -118,11 +133,14 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
         },
         position: "last"
     });
-
+    _grid.click(function (e) {
+        gridClickFunctions(e, $(this))
+    });
+    //_grid.jqGrid('gridDnD',{connectWith:'#'+_grid.attr('id')}); 
     //_grid.inlineNav(_tableOptions.pager, navGridParameters, {}, addDataOptions);
 
     $(window).bind('resize', function () {
-        _grid.setGridWidth(_parent.width() - 10);
+        _grid.setGridWidth(_parent.width());
     }).trigger('resize');
 
     $("#btn_options").on('click', function (e) {
@@ -132,7 +150,7 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
 }
 
 function popupEdittRow(action) {
-
+    console.log("popupEditRow()");
     $(this).jqGrid('editGridRow', action, {
         reloadAfterSubmit: false,
         width: $("body").width() * 0.9,
@@ -141,7 +159,16 @@ function popupEdittRow(action) {
         afterShowForm: function (formid) {
             $("textarea[title=ckedit]").each(function (index) {
                 CKEDITOR.replace($(this).attr('id'), {
-                    customConfig: ' '
+                    customConfig: ' ',
+                    allowedContent: true
+                });
+            });
+            $("textarea[title=ckedit_code]").each(function (index) {
+                //$("textarea[title=ckedit_code]")[0].value = "<pre> <code>" + $("textarea[title=ckedit_code]")[0].value + "</code></pre>";
+                CKEDITOR.replace($(this).attr('id'), {
+                    customConfig: ' ',
+                    allowedContent: true,
+                    startupMode: 'source'
                 });
             });
             $("#created_on").val(moment().format('D-M-YY'));
@@ -202,7 +229,8 @@ function new_grid_popup(parent, _gridData) {
         var options = new Object();
         var colModel = new Object();
         var c = -1;
-
+        var summaries = [];
+        var groups = [];
         $.each(modalArray, function (i, val) {
             if (val.name === 'name') {
                 c++;
@@ -211,24 +239,16 @@ function new_grid_popup(parent, _gridData) {
             }
             if (val.name === 'type') {
                 colModel[c].type = val.value;
-//                if (val.value !== 'select') {
-//                    c++;
-//                    colModel[c] = new Object();
-//                }
-
-//                if (colModel[c].type === "datetime") {
-//                    colModel[c].formatoptions = {srcformat: "u1000", newformat: "d-m-y h:i"};
-//                    colModel[c].formatter = "date";
-//                    colModel[c].sorttype = "date";
-//                    colModel[c].editoptions = {dataInit: initDateEdit};
-//                }
-
             }
             if (val.name === 'choices') {
                 colModel[c].choices = val.value.split(/\r?\n/);
-//                c++;
-//                colModel[c] = new Object();
             }
+
+//            if (val.name === 'summary') {
+//                if(val.value === "on"){
+//                    colModel[c].summaryType = 'sum';
+//                }                
+//            }
 
             if (val.name.match("^option")) {
                 var option = val.name.substring(7);
@@ -239,10 +259,22 @@ function new_grid_popup(parent, _gridData) {
                     }
                 }
 
+                if (option === 'summary') {
+                    summaries.push(val.value);
+                }
+                if (option === 'group') {
+                    groups.push(val.value);
+                }
+
+
+
+
                 options[val.name.substring(7)] = val.value;
             }
             if (val.name.match("^import")) {
-                importCSV = CSVToArray(val.value, ",");
+                if (val.value.length > 0) {
+                    importCSV = CSVToArray(val.value, ",");
+                }
             }
 
 //            colModel[0].name = 
@@ -250,6 +282,33 @@ function new_grid_popup(parent, _gridData) {
         });
         //  delete colModel[c];
         console.log(colModel);
+        if (summaries.length > 0) {
+            options.summaries = summaries;
+            options.footerrow = true;
+            options.userDataOnFooter = true;
+            options.loadComplete = function () {
+                var sumJson = {};
+                var grid = $(this);
+                summaries.forEach(function (a) {
+                    sumJson[a] = grid.jqGrid("getCol", a, false, "sum");
+                });
+                $(this).jqGrid("footerData", "set", sumJson);
+            };
+        } else {
+            options.footerrow = false;
+        }
+        if (groups.length > 0) {
+            options.groups = groups;
+            options.grouping = true;
+            options.groupingView = {
+                groupField: groups,
+                //groupColumnShow: [false, false],
+                groupText: ['<b>{0} - {1} Item(s)</b>', '<b>{0} - {1} Item(s)</b>'],
+                groupCollapse: false,
+            }
+        } else {
+            options.grouping = false;
+        }
 
         var data = [];
         if (typeof _gridData !== "undefined") {
@@ -292,8 +351,8 @@ function createForm(parent, _griddata) {
     var addRowButton = $("<button type='button' class='btn btn-primary'>Add column</button>");
     form.append(container);
     form.append(forms_textbox("Titel", "option_caption", "option_caption", _griddata.caption));
-    form.append(forms_checkbox("Geminimaliseerd starten", "option_hiddengrid", _griddata.hiddengrid));
-    form.append(forms_textarea("Importeer CSV", "import"));
+    form.append(forms_checkbox("Geminimaliseerd starten", "option_hiddengrid", "option_hiddengrid", _griddata.hiddengrid));
+    form.append(forms_textarea("Importeer CSV", "import", "import"));
     form.append(addRowButton);
     addHeader(form);
 
@@ -301,16 +360,45 @@ function createForm(parent, _griddata) {
         var colModel = _griddata.colModel;
         for (var key in colModel) {
             if (typeof colModel[key].name !== 'undefined') {
-                addRow(form, uuidv4(), colModel[key].name, colModel[key].edittype || colModel[key].formatter, colModel[key].editoptions, colModel[key].hidden);
+                if (colModel[key].name !== "rn") {
+                    addRow(form, uuidv4(), colModel[key].name, colModel[key].edittype || colModel[key].formatter || colModel[key].template, colModel[key].editoptions, colModel[key].hidden, colModel[key]);
+                }
             }
         }
     } else {
         addRow(form, uuidv4());
     }
-
     addRowButton.on('click', function (e) {
         addRow(form, uuidv4());
     });
+
+    //OPTIE SAMENVATTING START
+    var obj = [];
+    form.find("div[class*=row]").each(function (a, b) {
+        var name = $(b).find("input[name=name]").val();
+        var id = $(b).find("input[name=name]").attr('id');
+        if (typeof id !== "undefined") {
+
+            obj.push({id, name});
+        }
+    });
+    form.append(forms_select("Samenvatting van: ", "option_summary", "option_summary", obj, _griddata.summaries));
+    //OPTIE SAMENVATTING EINDE
+    form.append(forms_select("Groeperen op: ", "option_group", "option_group", obj, _griddata.groups));
+
+    var deleteContentButton = $("<button type='button' style='margin-right: 5px;' class='btn btn-warning'>Verwijder inhoud</button>");
+    form.append(deleteContentButton);
+    deleteContentButton.on('click', function (e) {
+        $("#" + _griddata.id).jqGrid("clearGridData", true);
+    });
+    var deleteTableButton = $("<button type='button' class='btn btn-danger'>Verwijder tabel</button>");
+    form.append(deleteTableButton);
+    deleteTableButton.on('click', function (e) {
+        $("#" + _griddata.id).jqGrid('gridDestroy');
+        $("#" + _griddata.id).jqGrid('gridUnload');
+    });
+
+
     parent.append(form);
     return form;
 }
@@ -342,7 +430,7 @@ function addLabel(parent, text, colWidth) {
 }
 
 function addElement(parent, element, colWidth, clazz) {
-    var col = $("<div class='col-sm-" + colWidth + " mx-auto' style='text-align:center;'></div>");
+    var col = $("<div class='col-sm-" + colWidth + " mx-auto' style='text-align:center;top: 5px;'></div>");
     var formGroup = $("<div class='" + clazz + "'></div>");
     formGroup.append(element);
     col.append(formGroup);
@@ -350,19 +438,26 @@ function addElement(parent, element, colWidth, clazz) {
     return parent;
 }
 
-function addRow(parent, elementID, nameVal, typeVal, choiceList, visibleVal) {
+function addRow(parent, elementID, nameVal, typeVal, choiceList, visibleVal, colModel) {
     console.log("addRow()");
-    var row = dom_div("row");
+    var row = dom_div("row row-striped");
 
     var element1 = $("<input type='text' class='form-control' name='name' id='name-" + elementID + "' placeholder='fieldname'>");
     element1.val(nameVal);
     row = addElement(row, element1, 4, "form-group");
 
-    var element2 = $("<select class='form-control' name='type' id='type-" + elementID + "'><option value='text'>Tekst</option><option value='date'>Datum</option><option value='cktext'>Tekst met opmaak</option><option value='select'>Keuzelijst</option><option value='internal_list'>Interne lijst</option><option value='external_list'>Externe lijst</option></select>");
-    if (typeVal === "textarea") {
+    var element2 = $("<select class='form-control' name='type' id='type-" + elementID + "'><option value='text'>Tekst</option><option value='number'>Getal</option><option value='euro'>Euro</option><option value='cktext_code'>Code</option><option value='date'>Datum</option><option value='cktext'>Tekst met opmaak</option><option value='select'>Keuzelijst</option><option value='internal_list'>Interne lijst</option><option value='external_list'>Externe lijst</option></select>");
+    if (typeVal === "textarea" && colModel.editoptions.title === "ckedit") {
         typeVal = "cktext";
     }
-
+    if (typeVal === "textarea" && colModel.editoptions.title === "ckedit_code") {
+        typeVal = "cktext_code";
+    }
+    if (typeof typeVal !== "undefined") {
+        if (typeVal.sorttype === "number") {
+            typeVal = "number";
+        }
+    }
 
     element2.val(typeVal);
     row = addElement(row, element2, 4, "form-group");
@@ -381,11 +476,20 @@ function addRow(parent, elementID, nameVal, typeVal, choiceList, visibleVal) {
         } else {
             parent.find("div[id='" + "choicelist-" + elementID + "']").remove();
         }
+//        if (this.value === 'number') {
+//            element2.after(forms_checkbox('Samenvatting', "summary-" + elementID, "option_summary", false));
+//        } else {
+//            parent.find("div[id='" + "summary-" + elementID + "']").remove();
+//        }
     });
+
+
+
 
     if (typeVal === "select") {
         element2.after(forms_textarea('Keuzelijst', "choicelist-" + elementID, "choices", choiceList.value));
     }
+
 
 
 //    if(choiceList.length){
@@ -403,5 +507,31 @@ function addRow(parent, elementID, nameVal, typeVal, choiceList, visibleVal) {
 }
 
 function mapGridDataToColumns(data, columns) {
+
+}
+
+function gridClickFunctions(e, target) {
+    var $groupHeader = $(e.target).closest("tr.jqgroup");
+    if ($groupHeader.length > 0) {
+        target.jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
+        target.css('cursor', 'pointer');
+        var index = gridIds.map(function (e) {
+            return e.gridid;
+        }).indexOf(target.attr('id'));
+
+        var indexofClickItem = gridIds[index].gridexpandedgroups.find(function (a) {
+            return a === $groupHeader.attr("id")
+        });
+        if (typeof indexofClickItem !== "undefined") {
+            gridIds[index].gridexpandedgroups.splice(indexofClickItem, 1);
+        } else {
+            gridIds[index].gridexpandedgroups.push($groupHeader.attr("id"));
+        }
+    }
+
+    $groupHeader = $(e.target).closest("span.tree-wrap");
+    if ($groupHeader.length > 0) {
+        target.jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
+    }
 
 }

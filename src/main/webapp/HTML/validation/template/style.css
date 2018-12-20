@@ -8,30 +8,43 @@ and open the template in the editor.
     Author     : matmey
 */
 
+.ui-jqgrid-bdiv{
+    max-height:400px;
+}
+
+.row-striped:nth-of-type(odd){
+  background-color: #efefef;
+  margin-top: 5px;
+}
+
+.row-striped:nth-of-type(even){
+  background-color: #ffffff;
+  margin-top: 5px;
+}
 
 
-  .notespop {
-        background-color:#FFFFFF;
-        border:1px solid #999999;
-        cursor:default;
-        display:none;
-        margin-top: 15px;
-        position:absolute;
-        text-align:left;
-        width:400px;
-        z-index:50;
-        padding: 25px 25px 20px;
-    }
+.notespop {
+    background-color:#FFFFFF;
+    border:1px solid #999999;
+    cursor:default;
+    display:none;
+    margin-top: 15px;
+    position:absolute;
+    text-align:left;
+    width:400px;
+    z-index:50;
+    padding: 25px 25px 20px;
+}
 
-    label {
-        display: block;
-        margin-bottom: 3px;
-        padding-left: 15px;
-        text-indent: -15px;
-    }
+label {
+    display: block;
+    margin-bottom: 3px;
+    padding-left: 15px;
+    text-indent: -15px;
+}
 
-    .notespop p, .notespop.div {
-        border-bottom: 1px solid #EFEFEF;
-        margin: 8px 0;
-        padding-bottom: 8px;
-    }
+.notespop p, .notespop.div {
+    border-bottom: 1px solid #EFEFEF;
+    margin: 8px 0;
+    padding-bottom: 8px;
+}

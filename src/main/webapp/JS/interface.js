@@ -220,7 +220,7 @@ function forms_textarea(title, id, name, choices) {
     var textarea = $("<textarea wrap='off' class='form-control' name='" + name + "' id='textarea-" + id + "' rows='4'></textarea>");
     form_group.append(label);
     form_group.append(textarea);
-    
+
     for (var choiceKey in choices) {
         textarea.append(choices[choiceKey] + "\n");
     }
@@ -228,12 +228,12 @@ function forms_textarea(title, id, name, choices) {
 }
 
 function forms_checkbox(title, id, name, val) {
-    var form_check = $("<div class=\"form-check\"></div>");
+    var form_check = $("<div style='text-align:left' id='" + id + "' class=\"form-check\"></div>");
     var checkbox = $("<input class=\"form-check-input\" type=\"checkbox\" name='" + name + "' id='" + id + "'>");
     var label = $("<label class=\"form-check-label\" for='" + title + "'>" + title + "<\/label>");
     form_check.append(checkbox);
     form_check.append(label);
-    checkbox.val(val);
+    checkbox.attr("checked", val);
     return form_check;
 }
 
@@ -247,11 +247,35 @@ function forms_textbox(title, id, name, val) {
     return form_group;
 }
 
+function forms_select(title, id, name, valObjects, val) {
+    console.log("forms_select()");
+    var form_group = $("<div id='" + id + "' class='form-group'></div>");
+    var label = $("<label for='" + title + "'>" + title + "</label>");
+    var select = $("<select class='form-control' multiple name='" + name + "' id='select-" + id + "'></select>");
+    Object.keys(valObjects).forEach(function (key) {
+        select.append($("<option value='" + valObjects[key].name + "'>" + valObjects[key].name + "</option>"));
+    });
+    form_group.append(label);
+    form_group.append(select);
+    select.val(val);
+    return form_group;
+
+}
+
+function dom_progressbar(bars){
+    var progress = $("<div class='progress'></div>");
+    Object.keys(bars).forEach(function(index){
+        progress.append("<div class='progress-bar-striped' role='progressbar' style='background-color:"+bars[index].color+";width: "+bars[index].value+"%' aria-valuenow='"+bars[index].value+"' aria-valuemin='0' aria-valuemax='100'></div>");        
+    });
+    return progress;
+}
+
 function dom_div(_class) {
     return $("<div class='" + _class + "'></div>");
 }
 
 function CSVToArray(strData, strDelimiter) {
+    console.log("CSVToArray()");
     // Check to see if the delimiter is defined. If not,
     // then default to comma.
     strDelimiter = (strDelimiter || ",");
@@ -264,7 +288,7 @@ function CSVToArray(strData, strDelimiter) {
                     // Quoted fields.
                     "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
                     // Standard fields.
-                    "([^\"\\" + strDelimiter + "\\r\\n]*))"
+                    "([^\"\\" + strDelimiter + "(\\r\\n|\\r)]*))"
                     ),
             "gi"
             );
