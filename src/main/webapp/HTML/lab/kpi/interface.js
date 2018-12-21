@@ -11,6 +11,7 @@ $(function () {
 function loadPivotTable(data) {
     console.log("loadPivotTable()");
     var dateFormat = $.pivotUtilities.derivers.dateFormat;
+    var sortAs = $.pivotUtilities.sortAs;
     var derivers = $.pivotUtilities.derivers;
     var renderers = $.extend($.pivotUtilities.renderers,
             $.pivotUtilities.plotly_renderers);
