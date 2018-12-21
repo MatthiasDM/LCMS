@@ -31,17 +31,17 @@ public class SendMail {
         String from = (String) parameters.get("from");
         List<String> receivers = (List<String>) parameters.get("receivers");
 
-        final String username = ""; //load username from profile
-        final String password = ""; //load password from profile
-        Properties props = new Properties();
-        props.put("mail.smtp.host", "");
-        props.put("mail.smtp.port", "");
-
-//        final String username = "labo.bl@vzwgo.be"; //load username from profile
-//        final String password = "azert"; //load password from profile
+//        final String username = ""; //load username from profile
+//        final String password = ""; //load password from profile
 //        Properties props = new Properties();
-//        props.put("mail.smtp.host", "mx.vzwgo.be");
-//        props.put("mail.smtp.port", "smtp");
+//        props.put("mail.smtp.host", "");
+//        props.put("mail.smtp.port", "");
+
+        final String username = "labo.bl@vzwgo.be"; //load username from profile
+        final String password = "azert"; //load password from profile
+        Properties props = new Properties();
+        props.put("mail.smtp.host", "mx.vzwgo.be");
+        props.put("mail.smtp.port", "smtp");
 
         //Bypass the SSL authentication
         props.put("mail.smtp.ssl.enable", false);

@@ -76,7 +76,8 @@ public class ICTTicket {
         @MdmAnnotations(
             type = "boolean",
             visibleOnTable = false,
-            editRole = "@approver"
+            editRole = "@approver",
+            viewRole = "@approver"                
     )
     public boolean approved;
     @MdmAnnotations(

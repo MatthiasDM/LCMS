@@ -124,6 +124,9 @@ public class ServletLab extends HttpServlet {
                         if (action == Actions.LAB_WORKSUMMARY) {
                             sb.append(actionLAB_WORKSUMMARY());
                         }
+                        if (action == Actions.LAB_KPI_HEMOLYSIS) {
+                            sb.append(actionLAB_KPI_HEMOLYSIS());
+                        }
                     }
                 }
 
@@ -175,13 +178,33 @@ public class ServletLab extends HttpServlet {
             List<String> lines = new ArrayList<>();
             String pth = context.getRealPath("/HTML/other/worksummary/worksummarydata/data.txt");
             try (Stream<String> stream = Files.lines(Paths.get(pth), Charset.forName("ISO-8859-1"))) {
-                lines = stream                        
+                lines = stream
                         .map(String::toUpperCase)
                         .filter(line -> line.contains("'"))
                         .collect(Collectors.toList());
             } catch (IOException e) {
                 e.printStackTrace();
-            }       
+            }
+            jsonData.put("data", mapper.writeValueAsString(lines));
+            StringBuilder sb = new StringBuilder();
+            sb.append(jsonData);
+            return sb;
+        }
+
+        private StringBuilder actionLAB_KPI_HEMOLYSIS() throws ClassNotFoundException, NoSuchFieldException, IOException {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode jsonData = mapper.createObjectNode();
+            List<String> lines = new ArrayList<>();
+            //C:\Users\Matthias\Documents\NetBeansProjects\LCMS\target\LCMS-1.0-SNAPSHOT\HTML\lab\kpi\data
+            String pth = context.getRealPath("/HTML/lab/kpi/data/hemolysis.txt");
+            try (Stream<String> stream = Files.lines(Paths.get(pth), Charset.forName("ISO-8859-1"))) {
+                lines = stream
+                        .map(String::toUpperCase)
+                        .filter(line -> line.contains("'"))
+                        .collect(Collectors.toList());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             jsonData.put("data", mapper.writeValueAsString(lines));
             StringBuilder sb = new StringBuilder();
             sb.append(jsonData);

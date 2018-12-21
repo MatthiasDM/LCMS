@@ -13,10 +13,10 @@ function refreshData(data) {
     console.log("refreshData()");
     //-----------------KNOKKE----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perGroep(null, data, gridIds[3].gridid, false, "Knokke");
+    perGroep(null, data, gridIds[3].gridid, true, "Knokke");
     //-----------------BRUGGE----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perGroep(null, data, gridIds[4].gridid, false, "Brugge");
+    perGroep(null, data, gridIds[4].gridid, true, "Brugge");
     //----------------ORDERS MET KLINISCHE INFO-----------------------------------------------------------
     //---------------------------------------------------------------------------
     perKlinischeInfo(data, gridIds[2].gridid, true);
