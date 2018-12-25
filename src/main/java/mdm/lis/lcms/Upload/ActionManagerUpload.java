@@ -20,11 +20,13 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.servlet.http.Part;
+import mdm.Config.MongoConf;
 import static mdm.Core.checkUserRoleValue;
 import mdm.GsonObjects.Other.FileObject;
 import mdm.GsonObjects.User;
@@ -137,14 +139,16 @@ public class ActionManagerUpload {
                     headerEntry.put("visibleOnForm", mdmAnnotations.visibleOnForm());
                     headerEntry.put("tablename", "file_table");
                     if (!"".equals(mdmAnnotations.reference()[0])) {
-                        ArrayList<User> users = mapper.readValue(DatabaseActions.getListAsString("User", cookie), new TypeReference<List<User>>() {
-                        });
-                        Map<String, String> map = users
-                                .stream()
-                                .collect(
-                                        Collectors.toMap(p -> p.getUserid(), p -> p.getUsername())
-                                );
-                        headerEntry.put("choices", (map));
+                        ArrayList<Document> users = DatabaseActions.getObjectsSpecificFields(cookie, MongoConf.USERS, null, null, 100, Arrays.asList(new String[]{"userid", "username"}));
+//                        ArrayList<User> users = mapper.readValue(DatabaseActions.getListAsString("User", cookie), new TypeReference<List<User>>() {
+//                        });
+//                        Map<String, String> map = users
+//                                .stream()
+//                                .collect(
+//                                        Collectors.toMap(p -> p.getUserid(), p -> p.getUsername())
+//                                );
+
+                        headerEntry.put("choices", mapper.writeValueAsString(users));
 
                     } else {
                         headerEntry.put("choices", mdmAnnotations.choices());

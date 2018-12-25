@@ -18,13 +18,13 @@ public class Note {
 
     @MdmAnnotations(type = "string", visibleOnTable = true)
     public String title;
-    @MdmAnnotations(type = "string", visibleOnTable = false)
+    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String content;
     @MdmAnnotations(
             type = "select",
             reference = {"Mongo", "USERS", "userid", "username"},
             editRole = "ICTMANAGER",
-            visibleOnTable = false
+            visibleOnTable = false            
     )
     public String owner;
     @MdmAnnotations(
@@ -80,14 +80,14 @@ public class Note {
             visibleOnTable = false,
             editRole = "ICTMANAGER"
     )
-    public boolean done;
+    public boolean archived;
     @MdmAnnotations(type = "list", visibleOnTable = false)
     public List<String> anchors;
 
     public Note() {
     }
 
-    public Note(String title, String content, String owner, String author, String qualitymanager, String inspector, String exciter, String lastEditedBy, String docid, long created, long edited, String version, boolean done, List<String> anchors) {
+    public Note(String title, String content, String owner, String author, String qualitymanager, String inspector, String exciter, String lastEditedBy, String docid, long created, long edited, String version, boolean archived, List<String> anchors) {
         this.title = title;
         this.content = content;
         this.owner = owner;
@@ -100,7 +100,7 @@ public class Note {
         this.created = created;
         this.edited = edited;
         this.version = version;
-        this.done = done;
+        this.archived = archived;
         this.anchors = anchors;
     }
 
@@ -200,12 +200,12 @@ public class Note {
         this.version = version;
     }
 
-    public boolean getDone() {
-        return done;
+    public boolean getArchived() {
+        return archived;
     }
 
-    public void setDone(boolean done) {
-        this.done = done;
+    public void setArchived(boolean done) {
+        this.archived = done;
     }
 
     public List<String> getAnchors() {

@@ -25,11 +25,11 @@ function worksummary_doLoad(type) {
 
         })
         if(type === 'new'){
-           parseData(data);  
+           parseData(data, 1);  
             
         }
         if(type === 'refresh'){
-            refreshData(data);            
+            refreshData(data, 2);            
         }
         
         setTimeout(function(){ worksummary_doLoad("refresh"); }, 100000);     

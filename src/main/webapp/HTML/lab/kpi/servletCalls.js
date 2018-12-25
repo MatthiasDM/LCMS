@@ -24,6 +24,7 @@ function kpi_hemolysis_doLoad(_parent) {
 
             line = line.replace(/[']/g, "\"");
             line = line.replace(/[<]/g, "");
+            line = line.replace(/[>]/g, "");
             line = JSON.parse(line);
             data[index] = line;
 

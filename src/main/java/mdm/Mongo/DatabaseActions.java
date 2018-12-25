@@ -131,53 +131,6 @@ public class DatabaseActions {
         return repos;
     }
 
-    //GETLIST METHODS
-    static public String getListAsString(String object, String _cookie) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        String result = "";
-        if (object.equals("User")) {
-            result = mapper.writeValueAsString(getUserList());
-        }
-        if (object.equals("Instrument")) {
-            result = mapper.writeValueAsString(getInstrumentList());
-        }
-        if (object.equals("ICTTicket")) {
-            try {
-                result = mapper.writeValueAsString(getICTTicketList(_cookie));
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        return result;
-    }
-
-    //VIEW METHODS
-    static private MongoCollection<View> getViews() {
-        MongoCollection<View> views = databases.get("lcms")
-                .getCollection("views", View.class);
-        return views;
-
-    }
-
-    static public View getView(String _id) {
-        View view = null;
-        if (checkConnection("users")) {
-            try {
-                MongoCollection<View> views = getViews();
-                FindIterable it = views.find(and(eq("id", _id)));
-                ArrayList<View> results = new ArrayList();
-                it.into(results);
-                for (View entry : results) {
-                    view = (View) entry;
-                }
-                return view;
-            } catch (Exception e) {
-                LOG.severe(e.getMessage());
-            }
-        }
-        return view;
-    }
-
     //SESSION METHODS
     static private MongoCollection<Session> getSessions() {
         MongoCollection<Session> sessions = databases.get("users")
@@ -192,10 +145,10 @@ public class DatabaseActions {
         LOG.info("One session inserted of total: " + getSessions().count());
     }
 
-    public static void updateSession(Session session) {
+    public static void updateSession(Session session) throws ClassNotFoundException {
         Bson newDocument = new Document("$set", session);
         getSessions().findOneAndUpdate(and(eq("sessionID", session.getSessionID())), newDocument);
-        LOG.info("One Session updated of total: " + getICTTickets().count());
+        LOG.info("One Session updated of total: " + getObjectCount(MongoConf.SESSION, new BasicDBObject()));
     }
 
     static public Session getSession(String _sessionId) {
@@ -212,7 +165,7 @@ public class DatabaseActions {
         return session;
     }
 
-    static public void editSessionValidity(String _sessionId, long _validity) {
+    static public void editSessionValidity(String _sessionId, long _validity) throws ClassNotFoundException {
 
         if (checkConnection("users")) {
             if ((mdm.Core.checkSession(_sessionId))) {
@@ -279,265 +232,6 @@ public class DatabaseActions {
             return true;
         }
 
-    }
-
-    public static ArrayList<User> getUserList() {
-        ArrayList<User> results = null;
-        try {
-            MongoCollection<User> users = getUsers();
-            FindIterable it = users.find();
-            results = new ArrayList();
-            it.into(results);
-        } catch (Exception e) {
-            LOG.severe(e.getMessage());
-            return results;
-        }
-        return results;
-    }
-
-    public static void insertUser(User _user) {
-        getUsers().insertOne(_user);
-        LOG.info("One instrument inserted of total: " + getUsers().count());
-    }
-
-    public static void updateUser(User _user) {
-
-        Bson newDocument = new Document("$set", _user);
-        getUsers().findOneAndUpdate(and(eq("userid", _user.getUserid())), newDocument);
-
-        LOG.info("One instrument updated of total: " + getUsers().count());
-    }
-
-    //NOTES METHODS
-    static private MongoCollection<Note> getNotes() {
-        MongoCollection<Note> notes = databases.get("lcms")
-                .getCollection("notes", Note.class);
-        return notes;
-
-    }
-
-    public static void insertNote(Note note) {
-        getNotes().insertOne(note);
-        LOG.info("One note inserted of total: " + getNotes().count());
-    }
-
-    public static void updateNote(String _user, String _docid, String _content) {
-        BasicDBObject obj = new BasicDBObject();
-        obj.put("content", _content);
-        obj.put("edited", Instant.now().toEpochMilli() / 1000);
-        Bson newDocument = new Document("$set", obj);
-
-        _docid = _docid.substring(7);
-        getNotes().findOneAndUpdate(and(eq("docid", _docid), eq("author", _user)), newDocument);
-
-        LOG.info("One note updated of total: " + getNotes().count());
-    }
-
-    static public Note getNote(String _author, String _id) {
-        Note note = null;
-        ArrayList<Note> results = null;
-        if (checkConnection("users")) {
-            try {
-                MongoCollection<Note> notes = getNotes();
-
-                //Document query = new Document();
-                //query.append("docid", _id);
-                FindIterable it = notes.find(eq("docid", _id));
-
-                results = new ArrayList();
-                it.into(results);
-                for (Note entry : results) {
-                    note = (Note) entry;
-                }
-            } catch (Exception e) {
-                LOG.severe(e.getMessage());
-            }
-        }
-        return note;
-    }
-
-    public static ArrayList<Note> getNotes(String _author) {
-        ArrayList<Note> results = null;
-        try {
-            MongoCollection<Note> notes = getNotes();
-
-//            notes.deleteMany(eq("author", _author));
-//            notes.drop();
-//                    notes = databases.get("lcms")
-//                .getCollection("notes", Note.class);
-            //FindIterable it = notes.find(and(eq("author", _author)));
-            FindIterable it = notes.find(and(eq("author", _author)));
-            results = new ArrayList();
-            it.into(results);
-//            for (Note entry : results) {
-//                entry.setContent("");
-//                results.add((Note) entry);
-//            }
-        } catch (Exception e) {
-            LOG.severe(e.getMessage());
-        }
-        return results;
-    }
-
-    public static ArrayList<Note> getNoteList(String _author) {
-        ArrayList<Note> results = null;
-        try {
-            MongoCollection<Note> notes = getNotes();
-            FindIterable it = notes.find(and(eq("author", _author))).sort(new Document("title", 1));
-            results = new ArrayList();
-            it.into(results);
-        } catch (Exception e) {
-            LOG.severe(e.getMessage());
-        }
-        return results;
-    }
-
-    public static void updateNote(Note _note, String _user) {
-        //BasicDBObject obj = new BasicDBObject();
-        //obj.put("content", _content);
-        //obj.put("edited", Instant.now().toEpochMilli() / 1000);
-        Bson newDocument = new Document("$set", _note);
-
-        //_docid = _docid.substring(7);
-        getNotes().findOneAndUpdate(and(eq("docid", _note.getDocid()), eq("author", _user)), newDocument);
-
-        LOG.info("One note updated of total: " + getNotes().count());
-    }
-
-    //INSTRUMENT METHODS
-    static private MongoCollection<Instrument> getInstruments() {
-        MongoCollection<Instrument> instruments = databases.get("lcms")
-                .getCollection("instruments", Instrument.class);
-        return instruments;
-
-    }
-
-    public static void insertInstrument(Instrument _instrument) {
-        getInstruments().insertOne(_instrument);
-        LOG.info("One instrument inserted of total: " + getInstruments().count());
-    }
-
-    public static void updateInstrument(Instrument _instrument) {
-        BasicDBObject obj = new BasicDBObject();
-//        Iterator it = _fields.entrySet().iterator();
-//        while (it.hasNext()) {
-//            Map.Entry pair = (Map.Entry) it.next();
-//            
-//            obj.put(pair.getKey().toString(), pair.getValue());
-//            it.remove(); // avoids a ConcurrentModificationException
-//        }
-        Bson newDocument = new Document("$set", _instrument);
-        getInstruments().findOneAndUpdate(and(eq("instid", _instrument.getInstid())), newDocument);
-
-        LOG.info("One instrument updated of total: " + getInstruments().count());
-    }
-
-    public static ArrayList<Instrument> getInstrumentList() {
-        ArrayList<Instrument> results = null;
-        try {
-            MongoCollection<Instrument> instruments = getInstruments();
-            FindIterable it = instruments.find();
-            results = new ArrayList();
-            it.into(results);
-        } catch (Exception e) {
-            LOG.severe(e.getMessage());
-            return results;
-        }
-        return results;
-    }
-
-    //ICTTICKET METHODS
-    static private MongoCollection<ICTTicket> getICTTickets() {
-        MongoCollection<ICTTicket> ICTTickets = databases.get("lcms")
-                .getCollection("ICTTickets", ICTTicket.class);
-        return ICTTickets;
-
-    }
-
-    public static void insertICTTicket(ICTTicket _ticket) {
-        getICTTickets().insertOne(_ticket);
-        LOG.info("One ICTTicket inserted of total: " + getICTTickets().count());
-    }
-
-    public static void updateICTTicket(ICTTicket _ticket) {
-        Bson newDocument = new Document("$set", _ticket);
-        getICTTickets().findOneAndUpdate(and(eq("ticketid", _ticket.getTicketid())), newDocument);
-
-        LOG.info("One ICTTicket updated of total: " + getICTTickets().count());
-    }
-
-    public static ArrayList<ICTTicket> getICTTicketList(String _cookie) throws ClassNotFoundException {
-        //controle adhv rollen
-        List<String> columns = getDocumentPriveleges("view", _cookie, "mdm.GsonObjects.Other.ICTTicket");
-        ArrayList<ICTTicket> results = null;
-        ArrayList<Document> results2 = null;
-        //ArrayList<HashMap> returnValue = new ArrayList<>();
-        try {
-            MongoCollection<ICTTicket> ICTTickets = getICTTickets();
-
-            results = ICTTickets.find().projection(
-                    fields(include(columns))
-            ).into(new ArrayList<ICTTicket>());
-
-            results2 = databases.get("lcms").getCollection("ICTTickets").find().projection(
-                    fields(include(columns))
-            ).into(new ArrayList<Document>());
-
-            //FindIterable it = ICTTickets.find();
-            //results = new ArrayList();
-            //it.into(results);
-        } catch (Exception e) {
-            LOG.severe(e.getMessage());
-            return results;
-        }
-        return results;
-    }
-
-    //INVENTORY METHODS
-    static private MongoCollection<InventoryItem> getIventoryItems() {
-        MongoCollection<InventoryItem> IventoryItems = databases.get("lcms")
-                .getCollection("IventoryItems", InventoryItem.class);
-        return IventoryItems;
-
-    }
-
-    public static void insertInventoryItem(InventoryItem _item) {
-        getIventoryItems().insertOne(_item);
-        LOG.info("One InventoryItem inserted of total: " + getIventoryItems().count());
-    }
-
-    public static void updateInventoryItem(InventoryItem _item) {
-        Bson newDocument = new Document("$set", _item);
-        getIventoryItems().findOneAndUpdate(and(eq("itemid", _item.getItemid())), newDocument);
-
-        LOG.info("One InventoryItem updated of total: " + getIventoryItems().count());
-    }
-
-    public static ArrayList<InventoryItem> getInventoryItemList(String _cookie) throws ClassNotFoundException {
-        //controle adhv rollen
-        List<String> columns = getDocumentPriveleges("view", _cookie, "mdm.GsonObjects.Other.InventoryItem");
-        ArrayList<InventoryItem> results = null;
-        ArrayList<Document> results2 = null;
-        //ArrayList<HashMap> returnValue = new ArrayList<>();
-        try {
-            MongoCollection<InventoryItem> IventoryItems = getIventoryItems();
-
-            results = IventoryItems.find().projection(
-                    fields(include(columns))
-            ).into(new ArrayList<InventoryItem>());
-
-            results2 = databases.get("lcms").getCollection("IventoryItems").find().projection(
-                    fields(include(columns))
-            ).into(new ArrayList<Document>());
-
-            //FindIterable it = IventoryItems.find();
-            //results = new ArrayList();
-            //it.into(results);
-        } catch (Exception e) {
-            LOG.severe(e.getMessage());
-            return results;
-        }
-        return results;
     }
 
     //FILE METHODS
@@ -683,7 +377,7 @@ public class DatabaseActions {
         return columns;
     }
 
-    //EXPERIMENTEEL
+    //ALGEMENE NIET-SPECIFIEKE OBJECT METHODEN
     public static MongoCollection<Document> getObjects(MongoConf mongoConf) throws ClassNotFoundException {
         MongoCollection<Document> results = null;
         //Class cls = Class.forName(_className);
@@ -693,9 +387,8 @@ public class DatabaseActions {
     }
 
     public static void insertObjectItem(MongoConf mongoConf, Document _doc) throws ClassNotFoundException {
-
         getObjects(mongoConf).insertOne(_doc);
-        LOG.info("One Object inserted of total: " + getIventoryItems().count());
+        LOG.info("One Object inserted of total: " + getObjectCount(mongoConf, new BasicDBObject()));
     }
 
     public static void updateObjectItem(MongoConf mongoConf, BasicDBObject _bson) throws ClassNotFoundException {
@@ -704,7 +397,7 @@ public class DatabaseActions {
         getObjects(mongoConf).findOneAndUpdate(and(eq(mongoConf.getIdName(), _bson.get(mongoConf.getIdName()))), newDocument, (new FindOneAndUpdateOptions()).upsert(true));
 
         //   getObjects(mongoConf).findOneAndUpdate(and(eq(mongoConf.getIdName(), _bson.get(mongoConf.getIdName()))), _bson);
-        LOG.info("One Object updated of total: " + getIventoryItems().count());
+        LOG.info("One Object updated of total: " + getObjectCount(mongoConf, new BasicDBObject()));
     }
 
     public static Document getObject(MongoConf mongoConf, String id) throws ClassNotFoundException, JsonProcessingException {
@@ -795,14 +488,57 @@ public class DatabaseActions {
     public static ArrayList<Document> getObjectsSpecificList(String _cookie, MongoConf mongoConf, Bson bson, Bson sort, int limit) throws ClassNotFoundException {
 
         List<String> columns = getDocumentPriveleges(_cookie, "view", mongoConf.getClassName());
-        Document doc = null;
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode jsonData = mapper.createObjectNode();
-        MongoCollection<Document> ObjectItems = getObjects(mongoConf);
         ArrayList<Document> results = null;
-        results = ObjectItems.find(bson).sort(sort).limit(limit).projection(
-                fields(include(columns))
-        ).into(new ArrayList<Document>());
+        try {
+            MongoCollection<Document> ObjectItems = getObjects(mongoConf);
+            results = ObjectItems.find(bson).sort(sort).limit(limit).projection(
+                    fields(include(columns))
+            ).into(new ArrayList<Document>());
+
+        } catch (Exception e) {
+            LOG.severe(e.getMessage());
+            return results;
+        }
+
+        return results;
+    }
+
+    public static ArrayList<Document> getObjectsSpecificList(String _cookie, MongoConf mongoConf, Bson bson, Bson sort, int limit, String[] excludes) throws ClassNotFoundException {
+
+        List<String> columns = getDocumentPriveleges("view", _cookie, mongoConf.getClassName());
+        if(excludes != null){
+            for (String exclude : excludes) {
+                columns.remove(exclude);
+            }
+        }
+        ArrayList<Document> results = null;
+        try {
+            MongoCollection<Document> ObjectItems = getObjects(mongoConf);
+            results = ObjectItems.find(bson).sort(sort).limit(limit).projection(
+                    fields(include(columns))
+            ).into(new ArrayList<Document>());
+
+        } catch (Exception e) {
+            LOG.severe(e.getMessage());
+            return results;
+        }
+
+        return results;
+    }
+
+    public static ArrayList<Document> getObjectsSpecificFields(String _cookie, MongoConf mongoConf, Bson bson, Bson sort, int limit, List<String> columns) throws ClassNotFoundException {
+
+        ArrayList<Document> results = null;
+        try {
+            MongoCollection<Document> ObjectItems = getObjects(mongoConf);
+            results = ObjectItems.find(bson).sort(sort).limit(limit).projection(
+                    fields(include(columns))
+            ).into(new ArrayList<Document>());
+
+        } catch (Exception e) {
+            LOG.severe(e.getMessage());
+            return results;
+        }
 
         return results;
     }
@@ -810,7 +546,6 @@ public class DatabaseActions {
     //OBJECT OTHER METHODS
     public static Long getObjectCount(MongoConf mongoConf, Bson bson) throws ClassNotFoundException {
         MongoCollection<Document> results = null;
-        //Class cls = Class.forName(_className);
         Class cls = Class.forName(mongoConf.getClassName());
         results = databases.get(mongoConf.getDatabase()).getCollection(mongoConf.getCollection(), cls);
         return results.count(bson);

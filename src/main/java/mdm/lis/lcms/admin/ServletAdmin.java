@@ -26,7 +26,6 @@ import static mdm.Core.loadScriptFile;
 import static mdm.Core.loadWebFile;
 import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
-import mdm.lis.lcms.notes.ActionManagerNote;
 import mdm.lis.lcms.notes.ServletNote;
 
 import org.jasypt.util.password.StrongPasswordEncryptor;

@@ -10,7 +10,7 @@ package mdm.Config;
  * @author Matthias
  */
 public enum MongoConf {
-
+    SESSION("users", "sessions", "mdm.GsonObjects.Session", "sessionID"),
     USERS("users", "users", "mdm.GsonObjects.User", "userid"),
     ICTTICKETS("lcms", "ICTTickets", "mdm.GsonObjects.Other.ICTTicket", "ticketid"),
     INSTRUMENTS("lcms", "instruments", "mdm.GsonObjects.Lab.Instrument", "instid"),

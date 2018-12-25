@@ -237,29 +237,6 @@ public class Core {
         return systemFields.stream().filter(p -> p.getName().equals(field)).findFirst().orElse(null) != null;
     }
 
-    public static void ComputeDifference(String originaljson, String revisedjson) {
-        List<String> original = jsonToLines(originaljson);
-        List<String> revised = jsonToLines(revisedjson);
-
-        // Compute diff. Get the Patch object. Patch is the container for computed deltas.
-        Patch patch = DiffUtils.diff(original, revised);
-        List<Delta> changes = patch.getDeltas();
-
-        for (Delta change : changes) {
-            //change.
-        }
-    }
-
-    private static List jsonToLines(String json) {
-        List<String> lines = new LinkedList<String>();
-        for (int i = 0; i < json.length(); i++) {
-            if (i > 0 && i % 50 == 0) {
-                lines.add(json.substring(i - 50, i));
-            }
-        }
-        return lines;
-    }
-
     public static HashMap<String, Object> createDatabaseObject(HashMap<String, String[]> requestParameters, Class cls) {
         HashMap<String, Object> databaseObject = null;
         try {
@@ -274,6 +251,7 @@ public class Core {
                 try {
                     System.out.println(cls.getField(key).getType().toString());
                     String val = value[0];
+                    Class fT = cls.getField(key).getType();
                     if (cls.getField(key).getType().equals(long.class) && !val.equals("") && val != null) {
                         parameters.put(key, Long.parseLong(val));
                     }
@@ -282,6 +260,9 @@ public class Core {
                     }
                     if (cls.getField(key).getType().equals(String.class) && !val.equals("") && val != null) {
                         parameters.put(key, (val));
+                    }
+                    if (fT.equals(boolean.class)) {
+                        parameters.put(key, Boolean.parseBoolean(val));
                     }
                 } catch (NoSuchFieldException ex) {
                     Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
@@ -300,7 +281,6 @@ public class Core {
         return databaseObject;
     }
 
-
     public static HashMap<String, Object> createMailParameters(List<String> receivers, String subject, String content) {
 
         List<String> emails = new ArrayList<>();
@@ -318,7 +298,5 @@ public class Core {
         parameters.put("text", content);
         return parameters;
     }
-
-
 
 }

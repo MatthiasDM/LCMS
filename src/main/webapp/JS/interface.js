@@ -262,8 +262,8 @@ function forms_select(title, id, name, valObjects, val) {
 
 }
 
-function dom_progressbar(bars){
-    var progress = $("<div class='progress'></div>");
+function dom_progressbar(bars, id){
+    var progress = $("<div class='progress' id='"+id+"'></div>");
     Object.keys(bars).forEach(function(index){
         progress.append("<div class='progress-bar-striped' role='progressbar' style='background-color:"+bars[index].color+";width: "+bars[index].value+"%' aria-valuenow='"+bars[index].value+"' aria-valuemin='0' aria-valuemax='100'></div>");        
     });

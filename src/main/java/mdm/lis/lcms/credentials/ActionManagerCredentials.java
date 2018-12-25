@@ -115,6 +115,8 @@ public class ActionManagerCredentials {
             devalidateSession(cookie);
         } catch (IOException ex) {
             Logger.getLogger(ActionManagerCredentials.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ActionManagerCredentials.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -159,7 +161,7 @@ public class ActionManagerCredentials {
         FileUtils.deleteDirectory(new File(contextPath + "\\" + _sessionId));
     }
 
-    private void devalidateSession(String _sessionId) throws IOException {
+    private void devalidateSession(String _sessionId) throws IOException, ClassNotFoundException {
         //MongoMain.insertSession(createSession(_user, loginCookie.getValue()));
 
         DatabaseActions.editSessionValidity(_sessionId, (60 * 60 * 6 * -1));

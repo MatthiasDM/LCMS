@@ -143,12 +143,15 @@ function perToestel(row, data, gridId, refresh) {
         new_grid(colModel, extraOptions, gridData, gridId, col);
         $("#" + gridId).jqGrid('setGridState', 'hidden');
     } else {
+        console.log("refreshing " + gridId);
         extraOptions.gridComplete = function () {
             for (var j = 0; j < gridIds[0].gridexpandedgroups.length; j = j + 1) {
                 $("#" + gridId).jqGrid('expandSubGridRow', gridIds[0].gridexpandedgroups[j]);
                 $("#" + gridId).jqGrid("groupingToggle", gridIds[0].gridexpandedgroups[j], $("#" + gridIds[0].gridexpandedgroups[j]));
             }
         };
+        replaceProgressBar(gridId, gridData);
+        $("#" + gridId).setCaption(extraOptions.caption);
         extraOptions.data = gridData;
         extraOptions.subgridData = subgridData;
         $("#" + gridId).clearGridData();
@@ -161,7 +164,7 @@ function perToestel(row, data, gridId, refresh) {
 function perToestelDataVerwerking(data) {
 
     var output = new Object();
-    var distinctStations = filterUnique(data, "STATION");
+    var distinctStations = filterUniqueJson(data, "STATION");
     var gridData = [];
     var subgridData = [];
     $.each(distinctStations, function (key1, value) {
@@ -227,13 +230,23 @@ function perArts(row, data, gridId, refresh) {
             }
         };
         $("#" + gridId).jqGrid('setGridParam', extraOptions).trigger("reloadGrid");
+        replaceProgressBar(gridId, gridData);
+        $("#" + gridId).setCaption(extraOptions.caption);
+        extraOptions.data = gridData;
+        extraOptions.subgridData = subgridData;
+        $("#" + gridId).clearGridData();
+        $("#" + gridId)
+                .jqGrid('setGridParam', extraOptions)
+                .trigger("reloadGrid");
+
+
     }
 }
 
 function perArtsDataVerwerking(data) {
 
     var output = new Object();
-    var distinctIssuers = filterUnique(data, "ISSUER");
+    var distinctIssuers = filterUniqueJson(data, "ISSUER");
     var gridData = [];
     var subgridData = [];
     $.each(distinctIssuers, function (key1, value) {
@@ -297,7 +310,7 @@ function perKlinischeInfo(row, data, gridId, refresh) {
 function perKlinischoInfoDataVerwerking(data) {
     var output = new Object();
     var gridData = [];
-    var filteredData = Object.filter(data, item => (String(item["INFO"]).length > 0 | String(item["URGENT"]).trim() === "TRUE" & String(item["URGENT"])));
+    var filteredData = Object.filter(data, item => (String(item["INFO"]).length > 0 | String(item["URGENT"]).trim() === "TRUE" & (String(item["ORDER"]).startsWith("K") | String(item["ORDER"]).startsWith("B"))));
     var distinctFilteredData = filterUnique($.map(filteredData, function (el) {
         return el;
     }), "ORDER");
@@ -334,31 +347,45 @@ function perGroep(row, data, gridId, refresh, groep) {
         row.append(col);
         new_grid(colModel, extraOptions, gridData, gridId, col);
         $("#" + gridId).jqGrid('setGridState', 'hidden');
-        setChart("chart"+groep, processedData);  
-        
+        setChart("chart" + groep, processedData);
+
     } else {
         extraOptions.gridComplete = function () {
             for (var j = 0; j < gridIds[1].gridexpandedgroups.length; j = j + 1) {
                 $("#" + gridId).jqGrid('expandSubGridRow', gridIds[1].gridexpandedgroups[j]);
                 $("#" + gridId).jqGrid("groupingToggle", gridIds[1].gridexpandedgroups[j], $("#" + gridIds[1].gridexpandedgroups[j]));
             }
-            //setChart("chart"+groep, processedData);  
-            
         };
         $("#" + gridId).jqGrid('setGridParam', extraOptions).trigger("reloadGrid");
+        replaceProgressBar(gridId, gridData);
+        extraOptions.data = gridData;
+        extraOptions.subgridData = subgridData;
+        $("#" + gridId).setCaption(extraOptions.caption);
+        $("#" + gridId).clearGridData();
+        $("#" + gridId)
+                .jqGrid('setGridParam', extraOptions)
+                .trigger("reloadGrid");
     }
 }
 
 function perGroepVerwerking(data, groep) {
 
     var output = new Object();
-    var distinctIssuers = filterUnique(data, "ISSUER");
+    var distinctIssuers = filterUniqueJson(data, "ISSUER");
     var gridData = [];
     var subgridData = [];
     $.each(distinctIssuers, function (key1, value) {
         var groupOfIssuer = artsen[value];
         if (typeof groupOfIssuer !== 'undefined') {
-            var filteredData = Object.filter(data, item => (item["ISSUER"] === value & String(item["DATE"]).trim().length > 0 & groupOfIssuer.groep === groep));
+
+            var filteredData = Object.filter(data,
+                    item => (
+                                item["ISSUER"] === value &
+                                String(item["DATE"]).trim().length > 0 &
+                                groupOfIssuer.groep === groep
+                                )
+            );
+
             if (Object.keys(filteredData).length > 0) {
                 var info = getInformation(filteredData);
                 info["Aanvrager"] = value;
@@ -392,7 +419,7 @@ function perGroepVerwerking(data, groep) {
 
 function extraJQGridOptions(rawData, processedData, groupBy, caption) {
     var groupInfo = getGroupInformation(processedData.gridData);
-    
+
     var extraOptions = {
         caption: caption + " (" + groupInfo.sumOrders + ")", //+ "<br style='position: relative;'>" + "<div><canvas width='100' height='50' id='chart"+caption+"'></canvas></div>",
         //hiddengrid: true,
@@ -400,9 +427,9 @@ function extraJQGridOptions(rawData, processedData, groupBy, caption) {
             $(this).find("[id='" + rowid + "']").children("td.ui-sgcollapsed").click();
         }
     };
-    
-    
-    
+
+
+
     if (typeof groupBy !== "undefined") {
         extraOptions.grouping = true;
         extraOptions.groupingView = {
@@ -461,4 +488,12 @@ function getGroupInformation(processedData) {
 
     return groupInfo;
 
+}
+
+function replaceProgressBar(gridId, gridData) {
+    var barinfo = getGroupInformation(gridData);
+    var bar1 = barinfo.sumKnownTests / (barinfo.sumKnownTests + barinfo.sumUnknownTests) * 100;
+    var bar2 = barinfo.sumUnknownTests / (barinfo.sumKnownTests + barinfo.sumUnknownTests) * 100;
+    var progress = dom_progressbar([{value: bar1, color: 'rgba(43, 121, 83, 1)'}, {value: bar2, color: 'rgba(66,139,202, 1)'}], 'progress_' + gridId);
+    $("#progress_" + gridId).replaceWith(progress);
 }

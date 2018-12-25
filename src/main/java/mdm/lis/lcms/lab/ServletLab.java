@@ -131,7 +131,7 @@ public class ServletLab extends HttpServlet {
                 }
 
             } else {
-                sb.append(DatabaseWrapper.getCredentialPage());
+                sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
             }
 
             return sb;
