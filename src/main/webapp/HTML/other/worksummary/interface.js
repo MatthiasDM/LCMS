@@ -16,10 +16,10 @@ function refreshData(data, maxAgeInDays) {
     console.log("refreshData()");
     //-----------------KNOKKE----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perGroep(null, data, gridIds[3].gridid, true, "Knokke");
+    perGroep(null, data, gridIds[3].gridid, true, "KNOKKE");
     //-----------------BRUGGE----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perGroep(null, data, gridIds[4].gridid, true, "Brugge");
+    perGroep(null, data, gridIds[4].gridid, true, "BRUGGE");
     //----------------ORDERS MET KLINISCHE INFO-----------------------------------------------------------
     //---------------------------------------------------------------------------
     perKlinischeInfo(data, gridIds[2].gridid, true);
@@ -72,10 +72,10 @@ function parseData(data, maxAgeInDays) {
     //</div>
     //KNOKKE----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perGroep(row1, data, gridIds[3].gridid, false, "Knokke");
+    perGroep(row1, data, gridIds[3].gridid, false, "KNOKKE");
     //BRUGGE----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perGroep(row1, data, gridIds[4].gridid, false, "Brugge");
+    perGroep(row1, data, gridIds[4].gridid, false, "BRUGGE");
 
     //ORDERS MET KLINISCHE INFO-----------------------------------------------------------
     //---------------------------------------------------------------------------
@@ -114,15 +114,15 @@ function filterUniqueJson(data, filterBy) {
     var items = data;
     var result = [];
 
-   
-        Object.keys(data).forEach(function (val) {
-            var key = data[val][filterBy];
-            if (!(key in lookup)) {
-                lookup[key] = 1;
-                result.push(key);
-            }
-        })
-  
+
+    Object.keys(data).forEach(function (val) {
+        var key = data[val][filterBy];
+        if (!(key in lookup)) {
+            lookup[key] = 1;
+            result.push(key);
+        }
+    })
+
     return result;
 }
 
@@ -257,4 +257,13 @@ function gridClickFunctions(e, target) {
 
     // $subGridExpanded = $(e.target).closest("td.sgexpanded");
 
+}
+
+function parseJSONInput(data) {
+    data.forEach(function lines(line, index) {
+        line = line.replace(/[']/g, "\"");
+        line = JSON.parse(line);
+        data[index] = line;
+    });
+    return data;
 }

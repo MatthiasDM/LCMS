@@ -175,6 +175,7 @@ public class ServletLab extends HttpServlet {
         private StringBuilder actionLAB_WORKSUMMARY() throws ClassNotFoundException, NoSuchFieldException, IOException {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode jsonData = mapper.createObjectNode();
+
             List<String> lines = new ArrayList<>();
             String pth = context.getRealPath("/HTML/other/worksummary/worksummarydata/data.txt");
             try (Stream<String> stream = Files.lines(Paths.get(pth), Charset.forName("ISO-8859-1"))) {
@@ -185,7 +186,30 @@ public class ServletLab extends HttpServlet {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            List<String> issuers = new ArrayList<>();
+            try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\issuers.json"), Charset.forName("ISO-8859-1"))) {
+                issuers = stream
+                        .map(String::toUpperCase)
+                        .filter(line -> line.contains("'"))
+                        .collect(Collectors.toList());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            List<String> stations = new ArrayList<>();
+            try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\stations.json"), Charset.forName("ISO-8859-1"))) {
+                stations = stream
+                        .map(String::toUpperCase)
+                        .filter(line -> line.contains("'"))
+                        .collect(Collectors.toList());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             jsonData.put("data", mapper.writeValueAsString(lines));
+            jsonData.put("issuers", mapper.writeValueAsString(issuers));
+            jsonData.put("stations", mapper.writeValueAsString(stations));
             StringBuilder sb = new StringBuilder();
             sb.append(jsonData);
             return sb;

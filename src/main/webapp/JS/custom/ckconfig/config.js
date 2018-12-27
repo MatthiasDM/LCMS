@@ -93,7 +93,9 @@ function config2() { //for inline editing
             {name: 'about', groups: ['about']}
         ];
         config.extraPlugins = 'mdmUploadFiles,codesnippet,pre,codemirror,sourcedialog,widget,dialog,mdmjexcel';
-        config.removeButtons = 'Source,Save,Templates,Cut,Undo,Redo,Copy,Preview,Print,PasteText,Paste,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,NewPage,Outdent,Indent,CreateDiv,Blockquote,JustifyLeft,JustifyCenter,JustifyRight,JustifyBlock,Language,BidiRtl,Anchor,Unlink,BidiLtr,Flash,Table,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Format,Font,Maximize,ShowBlocks,About,RemoveFormat,CopyFormatting,Subscript,Superscript';
+        config.removeButtons = 'Source,Save,Templates,Cut,Undo,Redo,Copy,MenuButton,Preview,Print,PasteText,Paste,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,NewPage,Outdent,Indent,CreateDiv,Blockquote,JustifyLeft,JustifyCenter,JustifyRight,JustifyBlock,Language,BidiRtl,Anchor,Unlink,BidiLtr,Flash,Table,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Format,Font,Maximize,ShowBlocks,About,RemoveFormat,CopyFormatting,Subscript,Superscript';
+        config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';
+
         config.height = 500;
         config.stylesSet = 'mdmConfig2:/styles.js';
     };
@@ -176,6 +178,8 @@ function capturePaste(e) {
 
     Object.keys(images).forEach(function (i) {
         console.log("Item: " + images[i]);
+        var blob = images[i].getAsFile();
+        console.log(blob);
     });
 
 //    for (var i = 0; i < e.originalEvent.clipboardData.items.length; i++) {

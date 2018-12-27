@@ -13,30 +13,29 @@ function worksummary_doLoad(type) {
         beforeSend: function (xhr) {
             xhr.overrideMimeType("application/html");
         }
-    }).done(function (data) {  
+    }).done(function (data) {
         var jsonData = JSON.parse(data);
-        var data = JSON.parse(jsonData.data);
-        data.forEach(function lines(line, index) {
-
-
-            line = line.replace(/[']/g, "\"");
-            line = JSON.parse(line);
-            data[index] = line;
-
-        })
-        if(type === 'new'){
-           parseData(data, 1);  
-            
-        }
-        if(type === 'refresh'){
-            refreshData(data, 2);            
-        }
+        var data = parseJSONInput(JSON.parse(jsonData.data));
+        issuers = parseJSONInput(JSON.parse(jsonData.issuers));
+        stations = parseJSONInput(JSON.parse(jsonData.stations));
         
-        setTimeout(function(){ worksummary_doLoad("refresh"); }, 100000);     
-        setTimeout(function(){ bootstrap_alert.warning('Update in 5 sec.', 'info', 5000); }, 95000); 
+        if (type === 'new') {
+            parseData(data, 1);
 
-        
-       
+        }
+        if (type === 'refresh') {
+            refreshData(data, 2);
+        }
+
+        setTimeout(function () {
+            worksummary_doLoad("refresh");
+        }, 100000);
+        setTimeout(function () {
+            bootstrap_alert.warning('Update in 5 sec.', 'info', 5000);
+        }, 95000);
+
+
+
         console.log(data);
     }).fail(function (data) {
         alert("Sorry. Server unavailable. ");

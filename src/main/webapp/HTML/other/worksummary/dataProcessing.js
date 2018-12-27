@@ -3,126 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+var issuers = {};
+var stations = {};
 
-var stations = {
-    VZ_STJAN: {naam: 'St. Jan', werkpost: 'Verzendingen'},
-    VZ_UZGENT: {naam: 'Eeklo', werkpost: 'Verzendingen'},
-    VZ_HHART_EEKLO: {naam: 'UZ Gent', werkpost: 'Verzendingen'},
-    VZ_MARIEN: {naam: 'Mariën', werkpost: 'Verzendingen'},
-    VZ_AML: {naam: 'UZ Antwerpen', werkpost: 'Verzendingen'},
-    VZ_STLUCAS_BRUGGE: {naam: 'St. Lucas', werkpost: 'Verzendingen'},
-    VZ_KUL: {naam: 'KU Leuven', werkpost: 'Verzendingen'},
-    KN_OSMO: {naam: 'Osmolaliteit', werkpost: 'Scheikunde'},
-    BL_VITROS5600: {naam: 'Vitros', werkpost: 'Blankenberge'},
-    BL_STARRSED: {naam: 'Sedimentatie', werkpost: 'Blankenberge'},
-    "BL_SYSMEX_XN-L550": {naam: 'Hemato', werkpost: 'Blankenberge'},
-    KN_ATELLICA1500: {naam: 'Urines', werkpost: 'Bacterio'},
-    KN_ATELLICA_IM1300: {naam: 'Attelica', werkpost: 'Scheikunde'},
-    VZ_VUB: {naam: 'UZ Brussel', werkpost: 'Verzendingen'},
-    IM: {naam: 'Vitrossen', werkpost: 'Scheikunde'},
-    BL_SYSMEX_XN1000: {naam: 'XN2000', werkpost: 'Hemato'},
-    PHOENIX: {naam: 'Phoenix', werkpost: 'Bacterio'},
-    KN_IH_500: {naam: 'IH-500', werkpost: 'Manuele'},
-    KN_CS2000: {naam: 'Stolling', werkpost: 'Manuele'},
-    KN_PH: {naam: 'Epoc', werkpost: 'POCT'},
-    KN_BACT: {naam: 'Sneltesten', werkpost: 'Bacterio'},
-    KN_MANVARIA: {naam: 'Varia', werkpost: 'Manuele'},
-    KN_POCTGLUCOSE: {naam: 'Glucose', werkpost: 'POCT'},
-    BL_POCTGLUCOSE: {naam: 'Glucose', werkpost: 'POCT'},
-    KN_STARRSED: {naam: 'Sedimentatie', werkpost: 'Hemato'},
-    KN_HEMMAN: {naam: 'Fast', werkpost: 'Hemato'},
-    KN_LIAISON_XL: {naam: 'Liaison', werkpost: 'Scheikunde'},
-    KN_PARAGON: {naam: 'Electroforese', werkpost: 'Scheikunde'},
-    KN_SYSMEX_XN1000: {naam: 'XN2000', werkpost: 'Hemato'},
-    KN_SERO: {naam: 'XN2000', werkpost: 'Manuele'},
-    BL_CS2000: {naam: 'CS2100i', werkpost: 'Blankenberge'},
-    BL_MANVARIA: {naam: 'CS2100i', werkpost: 'Blankenberge'}
-
-
-
-};
-var artsen = {
-    'VERMANDER EVERT': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'GEERTS YVETTE': {naam: 'Vermander Evert', groep: 'Intern verblijvend'},
-    'CALLENS JORIS': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'MAREELS SIGRID': {naam: 'Vermander Evert', groep: 'Intern verblijvend'},
-    'DE LOOSE JEFF': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'DILLEMANS BRUNO': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'VAN RANSBEECK HILDE': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'MOUTON CHARLOTTE': {naam: 'Vermander Evert', groep: 'Intern verblijvend'},
-    'VAN HAUWAERT GEORGES': {naam: 'Vermander Evert', groep: 'Intern verblijvend'},
-    'POCT AANVRAAG': {naam: 'Vermander Evert', groep: 'POCT'},
-    'TERRYN STEFANIE': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'VANDEWALLE SARA': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'GRIJALBA BERNARDO': {naam: 'Vermander Evert', groep: 'Intern verblijvend'},
-    'LEBBINK JOHN': {naam: 'Vermander Evert', groep: 'Urgentie'},
-    'VAN HOECKE EMANUEL': {naam: 'Vermander Evert', groep: 'Urgentie'},
-    'BOUWENS GUY': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'VANDER EECKEN SAM': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'VANDERDONCKT JACQUES': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'HOSTE JO - ANNE': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'VANDERSTIGGEL GENEVIEVE': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'VANQUATHEM KRISTOF': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'DE BRAUWER BARBARA': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'JANSSENS HERLINDE': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'TROUVE CHARLOTTE': {naam: 'Vermander Evert', groep: 'Testen'},
-    'MAENE SABINE': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'VAN DE VIJVER A.': {naam: 'Vermander Evert', groep: 'POCT'},
-    'MESTDACH FRANK': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'VERSTRAETE STEFAN': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'MAERE M.': {naam: 'Vermander Evert', groep: 'Intern verblijvend'},
-    'VAN DYCKE KOEN': {naam: 'Vermander Evert', groep: 'Urgentie'},
-    'VANMAELE LUC': {naam: 'Vermander Evert', groep: 'Urgentie'},
-    'VERLEYE FRANK': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'VERMANDER FRANK': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'ROOIJAKKERS MARIEKE': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'RAPPE KOEN': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'DUJARDIN GUSTAAF': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'POLLET GERY': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'D"HOLLANDER STEPHANIE': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'DELATERE MARC': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'CLAEYS JONAS': {naam: 'Vermander Evert', groep: 'Intern verblijvend'},
-    'PIETERS ROLAND': {naam: 'Pieters Evert', groep: 'Intern verblijvend'},
-    'PORIAU STEFAAN': {naam: 'Vermander Evert', groep: 'Intern verblijvend'},
-    'VAN OOTEGHEM RIK': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'VANDEWIELE BERT': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'VAN ZANDIJCKE MICHEL': {naam: 'Vermander Evert', groep: 'Intern verblijvend'},
-    'BUYSE SOFIE': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'DE VLIEGHERE FILIP': {naam: 'Vermander Evert', groep: 'Intern verblijvend'},
-    'VANDERBRUGGEN KAREN': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'CARDOEN FREDERIK': {naam: 'Vermander Evert', groep: 'Extern ambulant'},
-    'VANDERKEELEN LINDA': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'MASEMAN MADIEKE': {naam: 'Vermander Evert', groep: 'Brugge'},
-    'COOLSAET B.L.R.A.E': {naam: 'Vermander Evert', groep: 'Extern ambulant'},
-    'VANDE WOESTYNE PETER': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'DELDYCKE JAN': {naam: 'Vermander Evert', groep: 'Urgentie'},
-    'DE CRAEMER DIRK': {naam: 'Vermander Evert', groep: 'Kortrijk'},
-    'DEVREESE MARIE': {naam: 'Vermander Evert', groep: 'Brugge'},
-    'KERKHOF FLOR': {naam: 'Vermander Evert', groep: 'Intern verblijvend'},
-    'POLLET DAVID': {naam: 'Vermander Evert', groep: 'Brugge'},
-    'COSTERS NADINE': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'WIRAWAN EVELYNE': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'KUYPERS SABINE': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'MESTDAGH FANNY': {naam: 'Vermander Evert', groep: 'Intern ambulant'},
-    'VANCAILLIE JULIE': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'BOGAERT STEVEN': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'DEGROOTE FILIP': {naam: 'Vermander Evert', groep: 'Brugge'},
-    'MAELEGHEER MARIO': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'SABBE LINDA': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'EERENS JAN': {naam: 'Vermander Evert', groep: 'Intern'},
-    'BRABANT WIM': {naam: 'Vermander Evert', groep: 'Intern'},
-    //----------------------------
-    'GENNART FREDERIC': {naam: 'Vermander Evert', groep: 'Intern'},
-    'DEVOS BART': {naam: 'Vermander Evert', groep: 'Intern'},
-    'DE MAESENEER DAAN': {naam: 'Vermander Evert', groep: 'Intern'},
-    'VANDEPITTE PATRICIA': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'KERCKHAERT WIM': {naam: 'Vermander Evert', groep: 'Intern'},
-    'VANDEPUTTE TOM': {naam: 'Vermander Evert', groep: 'Knokke'},
-    'VANDERLINDEN LIESBETH': {naam: 'Vermander Evert', groep: 'Intern'},
-    'ROBBRECHT JOHAN': {naam: 'Vermander Evert', groep: 'Assebroek'},
-    'VANDENABEELE C': {naam: 'Vermander Evert', groep: 'Eeklo'},
-
-};
 
 function perToestel(row, data, gridId, refresh) {
     console.log("perToestel()");
@@ -170,13 +53,13 @@ function perToestelDataVerwerking(data) {
     $.each(distinctStations, function (key1, value) {
         var filteredData = Object.filter(data, item => (item["STATION"] === value & String(item["DATE"]).trim().length > 0));
         var info = getInformation(filteredData);
-        info["Station"] = value;
-        if (typeof stations[value] != 'undefined') {
-            info["Werkpost"] = stations[value].werkpost;
+        var station = Object.filter(stations, station => station["ID"] === value);
+        if (Object.keys(station).length > 0) {
+            info["Werkpost"] = stations[Object.keys(station)[0]].WERKPOST;
         } else {
             info["Werkpost"] = "Nog klasseren";
         }
-
+        info["Station"] = value;
         gridData.push(info);
         //Testen filteren van eenzelfde order        
         //1 Filter distinct orders
@@ -253,8 +136,9 @@ function perArtsDataVerwerking(data) {
         var filteredData = Object.filter(data, item => (item["ISSUER"] === value & String(item["DATE"]).trim().length > 0));
         var info = getInformation(filteredData);
         info["Aanvrager"] = value;
-        if (typeof artsen[value] != 'undefined') {
-            info["Groep"] = artsen[value].groep;
+        var issuer = Object.filter(issuers, issuer => issuer["ID"] === value);
+        if (Object.keys(issuer).length > 0) {
+            info["Groep"] = issuers[Object.keys(issuer)[0]].GROEP;
         } else {
             info["Groep"] = "Nog klasseren";
         }
@@ -375,21 +259,21 @@ function perGroepVerwerking(data, groep) {
     var gridData = [];
     var subgridData = [];
     $.each(distinctIssuers, function (key1, value) {
-        var groupOfIssuer = artsen[value];
-        if (typeof groupOfIssuer !== 'undefined') {
-
+        var issuer = Object.filter(issuers, issuer => issuer["ID"] === value);          
+        if (Object.keys(issuer).length > 0) {
+            var groupOfIssuer = issuers[Object.keys(issuer)[0]];
             var filteredData = Object.filter(data,
                     item => (
                                 item["ISSUER"] === value &
                                 String(item["DATE"]).trim().length > 0 &
-                                groupOfIssuer.groep === groep
+                                groupOfIssuer.GROEP === groep
                                 )
             );
 
             if (Object.keys(filteredData).length > 0) {
                 var info = getInformation(filteredData);
                 info["Aanvrager"] = value;
-                info["Groep"] = groupOfIssuer.groep;
+                info["Groep"] = groupOfIssuer.GROEP;
                 gridData.push(info);
                 //Testen filteren van eenzelfde order        
                 //1 Filter distinct orders
