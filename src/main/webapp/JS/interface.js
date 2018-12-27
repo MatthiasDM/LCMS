@@ -129,7 +129,6 @@ function parse_query_string(query) {
     return query_string;
 }
 
-
 function sessionCountdown() {
     var diffTime = $("#userInfo-session-timout").text();
     if (diffTime === null) {
@@ -355,3 +354,4 @@ function CSVToArray(strData, strDelimiter) {
     // Return the parsed data.
     return(arrData);
 }
+

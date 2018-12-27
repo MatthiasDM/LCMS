@@ -451,58 +451,7 @@ public class DatabaseActions {
         }
         return results;
     }
-
-    public static ArrayList<Document> getObjectsSpecificList(String _cookie, MongoConf mongoConf, Bson bson) throws ClassNotFoundException {
-
-        List<String> columns = getDocumentPriveleges("view", _cookie, mongoConf.getClassName());
-        ArrayList<Document> results = null;
-        try {
-            MongoCollection<Document> ObjectItems = getObjects(mongoConf);
-            results = ObjectItems.find(bson).projection(
-                    fields(include(columns))
-            ).into(new ArrayList<Document>());
-
-        } catch (Exception e) {
-            LOG.severe(e.getMessage());
-            return results;
-        }
-
-        return results;
-    }
-
-    public static ArrayList<Document> getObjectsSpecificList(String _cookie, MongoConf mongoConf, Bson bson, Bson sort) throws ClassNotFoundException {
-
-        List<String> columns = getDocumentPriveleges(_cookie, "view", mongoConf.getClassName());
-        Document doc = null;
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode jsonData = mapper.createObjectNode();
-        MongoCollection<Document> ObjectItems = getObjects(mongoConf);
-        ArrayList<Document> results = null;
-        results = ObjectItems.find(bson).sort(sort).projection(
-                fields(include(columns))
-        ).into(new ArrayList<Document>());
-
-        return results;
-    }
-
-    public static ArrayList<Document> getObjectsSpecificList(String _cookie, MongoConf mongoConf, Bson bson, Bson sort, int limit) throws ClassNotFoundException {
-
-        List<String> columns = getDocumentPriveleges(_cookie, "view", mongoConf.getClassName());
-        ArrayList<Document> results = null;
-        try {
-            MongoCollection<Document> ObjectItems = getObjects(mongoConf);
-            results = ObjectItems.find(bson).sort(sort).limit(limit).projection(
-                    fields(include(columns))
-            ).into(new ArrayList<Document>());
-
-        } catch (Exception e) {
-            LOG.severe(e.getMessage());
-            return results;
-        }
-
-        return results;
-    }
-
+   
     public static ArrayList<Document> getObjectsSpecificList(String _cookie, MongoConf mongoConf, Bson bson, Bson sort, int limit, String[] excludes) throws ClassNotFoundException {
 
         List<String> columns = getDocumentPriveleges("view", _cookie, mongoConf.getClassName());

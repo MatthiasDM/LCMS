@@ -6,7 +6,7 @@
 
 $(function () {
     possession_doLoad($("#possession-container"));
-    config1();
+    config2();
 });
 
 

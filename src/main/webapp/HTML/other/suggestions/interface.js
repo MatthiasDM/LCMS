@@ -6,7 +6,7 @@
 
 $(function () {
     suggestions_doLoad($("#suggestions-container"));
-    config1();
+    config2();
 });
 
 

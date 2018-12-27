@@ -6,5 +6,5 @@
 
 $(function () {
     //ICTtickets_doLoad($("#ICT-ticket-container"));
-    config1();
+    config2();
 });

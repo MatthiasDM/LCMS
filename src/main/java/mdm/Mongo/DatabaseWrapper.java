@@ -226,14 +226,14 @@ public class DatabaseWrapper {
     }
 
     public static ArrayList<Document> getObjectSpecificRawData(String cookie, mdm.Config.MongoConf _mongoConf, Bson bson) throws ClassNotFoundException, NoSuchFieldException, IOException {
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, bson);
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, bson, null, 0, null);
         return results;
     }
 
     public static Map<String, Object> getObjectHashMap(String cookie, mdm.Config.MongoConf _mongoConf, Bson bson) throws ClassNotFoundException, JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, bson);
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, bson, null, 0, null);
         BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(results.get(0)));
         Map<String, Object> objHashMap = obj.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
         return objHashMap;
