@@ -18,23 +18,13 @@ function worksummary_doLoad(type) {
         var data = parseJSONInput(JSON.parse(jsonData.data));
         issuers = parseJSONInput(JSON.parse(jsonData.issuers));
         stations = parseJSONInput(JSON.parse(jsonData.stations));
-        
-        if (type === 'new') {
-            parseData(data, 1);
+        data = Object.filter(data, item => (
+                    moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._data.days < 1 &
+                    String(item["ORDER"]).startsWith("L") === false & String(item["ORDER"]).startsWith("M") === false &
+                    String(item["STATION"]).includes("POCT") === false && String(item["STATION"]).includes("VZ") === false
+                    ));
 
-        }
-        if (type === 'refresh') {
-            refreshData(data, 2);
-        }
-
-        setTimeout(function () {
-            worksummary_doLoad("refresh");
-        }, 100000);
-        setTimeout(function () {
-            bootstrap_alert.warning('Update in 5 sec.', 'info', 5000);
-        }, 95000);
-
-
+        preProcess(data, type);
 
         console.log(data);
     }).fail(function (data) {
@@ -42,43 +32,19 @@ function worksummary_doLoad(type) {
     });
 }
 
+function preProcess(data, type) {
+    if (type === 'new') {
+        parseData(data, 1);
 
-function editSuggestion(action) {
-    var _tableObject = $("#worksummary-table");
-    var parent = $("#btn-edit-worksummary");
-    var grid = _tableObject;
-    console.log("new worksummary");
-
-    grid.jqGrid('editGridRow', action, {
-        reloadAfterSubmit: false,
-        width: $("body").width() * 0.9,
-        left: parent.offset().left * -1 + $("body").width() * 0.05,
-        top: parent.offset().top * -1 + 40,
-        afterShowForm: function (formid) {
-            $("textarea[title=ckedit]").each(function (index) {
-                CKEDITOR.replace($(this).attr('id'), {
-                    customConfig: ' '
-                });
-            });
-            $("#created_on").val(moment().format('D-M-YY'));
-        },
-        beforeSubmit: function (postdata, formid) {
-            $("textarea[title=ckedit]").each(function (index) {
-                var editorname = $(this).attr('id');
-                var editorinstance = CKEDITOR.instances[editorname];
-                var text = editorinstance.getData();
-                // CKEDITOR.instances[editorname].element.remove()
-                postdata[editorname] = text;
-            });
-            console.log("Checking post data");
-        },
-        afterComplete: function (response, postdata, formid) {
-            $("#cData").trigger("click");
-            return [success, message, new_id];
-        },
-        editData: {action: "GENERAL_EDITSUGGESTION", LCMS_session: $.cookie('LCMS_session')}
+    }
+    if (type === 'refresh') {
+        refreshData(data, 2);
     }
 
-    );
-
+    setTimeout(function () {
+        worksummary_doLoad("refresh");
+    }, 100000);
+    setTimeout(function () {
+        bootstrap_alert.warning('Update in 5 sec.', 'info', 5000);
+    }, 95000);
 }

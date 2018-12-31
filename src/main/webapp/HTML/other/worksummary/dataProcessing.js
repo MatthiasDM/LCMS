@@ -25,6 +25,7 @@ function perToestel(row, data, gridId, refresh) {
         row.append(col);
         new_grid(colModel, extraOptions, gridData, gridId, col);
         $("#" + gridId).jqGrid('setGridState', 'hidden');
+       
     } else {
         console.log("refreshing " + gridId);
         extraOptions.gridComplete = function () {
@@ -378,6 +379,7 @@ function replaceProgressBar(gridId, gridData) {
     var barinfo = getGroupInformation(gridData);
     var bar1 = barinfo.sumKnownTests / (barinfo.sumKnownTests + barinfo.sumUnknownTests) * 100;
     var bar2 = barinfo.sumUnknownTests / (barinfo.sumKnownTests + barinfo.sumUnknownTests) * 100;
+    if(bar1.toString() === "NaN"){bar1 = 100;};
     var progress = dom_progressbar([{value: bar1, color: 'rgba(43, 121, 83, 1)'}, {value: bar2, color: 'rgba(66,139,202, 1)'}], 'progress_' + gridId);
     $("#progress_" + gridId).replaceWith(progress);
 }

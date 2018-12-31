@@ -9,10 +9,7 @@ $(function () {
     worksummary_doLoad('new');
 });
 
-function refreshData(data, maxAgeInDays) {
-
-    data = Object.filter(data, item => (moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._data.days < maxAgeInDays));
-    console.log(data);
+function refreshData(data) {
     console.log("refreshData()");
     //-----------------KNOKKE----------------------------------------------------------
     //---------------------------------------------------------------------------
@@ -32,7 +29,7 @@ function refreshData(data, maxAgeInDays) {
 
 }
 
-function parseData(data, maxAgeInDays) {
+function parseData(data) {
     console.log("parseData()");
     var gridId;
     var row1 = $("<div class='row'></div>");
@@ -64,7 +61,6 @@ function parseData(data, maxAgeInDays) {
             gridexpandedgroups: []
         }
     ];
-    data = Object.filter(data, item => (moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._data.days < maxAgeInDays));
 
     //PROGRESS BAR----------------------------------------------//
     //<div class="progress">
@@ -208,6 +204,7 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     var barinfo = getGroupInformation(_tableOptions.data);
     var bar1 = barinfo.sumKnownTests / (barinfo.sumKnownTests + barinfo.sumUnknownTests) * 100;
     var bar2 = barinfo.sumUnknownTests / (barinfo.sumKnownTests + barinfo.sumUnknownTests) * 100;
+    if(bar1.toString() === "NaN"){bar1 = 100;};
     var progess = dom_progressbar([{value: bar1, color: 'rgba(43, 121, 83, 1)'}, {value: bar2, color: 'rgba(66,139,202, 1)'}], 'progress_' + _grid.attr('id'));
 
     //  rgba(170, 146, 57, 1)
@@ -263,6 +260,9 @@ function parseJSONInput(data) {
     data.forEach(function lines(line, index) {
         line = line.replace(/[']/g, "\"");
         line = JSON.parse(line);
+        Object.keys(line).forEach(function (key) {
+            line[key] = line[key].replace(/[^\w\s]/gi, '')
+        })
         data[index] = line;
     });
     return data;

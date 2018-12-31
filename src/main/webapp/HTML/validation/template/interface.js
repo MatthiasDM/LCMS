@@ -119,7 +119,13 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
                 position: "last",
                 keys: true
             }
+        },
+        editParams: {
+                aftersavefunc: function (id) {
+                    validation_save();                    
+                }     
         }
+        
     };
 
     _grid.inlineNav(_tableOptions.pager, navGridParameters2, {}, addDataOptions);
@@ -181,7 +187,8 @@ function popupEdittRow(action) {
                 // CKEDITOR.instances[editorname].element.remove()
                 postdata[editorname] = text;
             });
-            console.log("Checking post data");
+            validation_save();
+
         },
         afterComplete: function (response, postdata, formid) {
             // $(this).trigger( 'reloadGrid' );
@@ -199,14 +206,10 @@ function inlineEditRow(id) {
         grid.jqGrid('restoreRow', lastSelection);
         var editParameters = {
             keys: true,
-            extraparam: {action: "_editAction", LCMS_session: $.cookie('LCMS_session')}
-//                oneditfunc: function(id){
-//                    $("textarea[title=ckedit]").each(function (index) {
-//                        CKEDITOR.replace($(this).attr('id'), {
-//                            customConfig: ' '
-//                        });
-//                    });
-//                }
+            extraparam: {action: "_editAction", LCMS_session: $.cookie('LCMS_session')},
+            beforeSubmit: function (postdata, formid) {
+                validation_save();
+            }
         };
         grid.jqGrid('editRow', id, editParameters);
         lastSelection = id;
