@@ -199,7 +199,7 @@ public class Core {
     }
 
     public static String getTempDir(String _sessionId, String _contextPath) {
-        return _contextPath + "\\" + _sessionId + "\\";
+        return _contextPath + "/" + _sessionId + "/";
     }
 
     public static String getTempDirWebUrl(String _sessionId) {
