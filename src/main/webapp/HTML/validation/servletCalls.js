@@ -23,10 +23,7 @@ function validations_doLoad(_parent) {
             jsonData.parent = _parent;
             loadParameters(jsonData);
         } else {
-
             var extraOptions = {};
-            //extraOptions.gridComplete = loadContextMenu;//($("#validations-table"), $("#div-grid-wrapper"));
-            //extraOptions.ondblClickRow = editNote;//($("#validations-table")); 
             extraOptions.onSelectRow = editValidation;
             populateTable(jsonData, "VALIDATION_EDITVALIDATIONS", './validations', $("#validations-table"), "#validations-pager", $("#div-grid-wrapper"), "Al uw persoonlijke notities", extraOptions);
         }
@@ -75,11 +72,6 @@ function editValidation(id) {
         validations_getValidation($("#div-validations"), rowData.validationid);
         lastSelection = id;
     }
-
-
-
-
-
 }
 
 
@@ -181,6 +173,8 @@ function loadValidationPage(jsonData, grids) {
                 //groupColumnShow: [false, false],
                 groupText: ['<b>{0} - {1} Item(s)</b>', '<b>{0} - {1} Item(s)</b>'],
                 groupCollapse: true,
+                groupSummaryPos: ["header", "header"],
+                groupSummary: [true, true]
             }
         } else {
             extraOptions.grouping = false;

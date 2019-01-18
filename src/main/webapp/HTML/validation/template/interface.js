@@ -78,6 +78,13 @@ function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId,
     }
 }
 
+//function new_sketch() {
+//    var editor = $($("div[id^='wrapper']")[0]);
+//    var sketch_field = $("<div id='sketch_" + uuidv4() + "'></div>");
+//    editor.append(sketch_field);
+//    LC.init(sketch_field, {imageSize: {width: 500, height: null}})
+//}
+
 function new_editable_field() {
     console.log("new_editable_field()");
     var editor = $($("div[id^='wrapper']")[0]);
@@ -121,11 +128,11 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
             }
         },
         editParams: {
-                aftersavefunc: function (id) {
-                    validation_save();                    
-                }     
+            aftersavefunc: function (id) {
+                validation_save();
+            }
         }
-        
+
     };
 
     _grid.inlineNav(_tableOptions.pager, navGridParameters2, {}, addDataOptions);
@@ -157,11 +164,13 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
 
 function popupEdittRow(action) {
     console.log("popupEditRow()");
+
     $(this).jqGrid('editGridRow', action, {
         reloadAfterSubmit: false,
         width: $("body").width() * 0.9,
         left: $(this).offset().left * -1 + $("body").width() * 0.05,
-        top: $(this).offset().top * -1 + 140,
+        position: 'relative',
+        top: $("#" + action).parent().parent().parent().parent()[0].getBoundingClientRect().top * -1 + 200,
         afterShowForm: function (formid) {
             $("textarea[title=ckedit]").each(function (index) {
                 CKEDITOR.replace($(this).attr('id'), {
@@ -187,13 +196,12 @@ function popupEdittRow(action) {
                 // CKEDITOR.instances[editorname].element.remove()
                 postdata[editorname] = text;
             });
-            validation_save();
-
         },
         afterComplete: function (response, postdata, formid) {
             // $(this).trigger( 'reloadGrid' );
             $("#cData").trigger("click");
             bootstrap_alert.warning('Rij toegevoegd', 'info', 1000);
+            validation_save();
         },
         editData: {action: "_editAction", LCMS_session: $.cookie('LCMS_session')}
     });
@@ -244,7 +252,11 @@ function new_grid_popup(parent, _gridData) {
                 colModel[c].type = val.value;
             }
             if (val.name === 'choices') {
+                var
+                        choices = val.value.split(/\r?\n/);
+                choices.for()
                 colModel[c].choices = val.value.split(/\r?\n/);
+
             }
 
 //            if (val.name === 'summary') {
@@ -264,13 +276,19 @@ function new_grid_popup(parent, _gridData) {
 
                 if (option === 'summary') {
                     summaries.push(val.value);
+                    Object.keys(colModel).forEach(function (i) {
+                        if (colModel[i].name === val.value) {
+                            colModel[i].summaryTpl = [
+                                "<span style=''>Subtotaal: {0}</span>"
+                            ];
+                            colModel[i].summaryType = "sum";
+
+                        }
+                    });
                 }
                 if (option === 'group') {
                     groups.push(val.value);
                 }
-
-
-
 
                 options[val.name.substring(7)] = val.value;
             }
@@ -306,21 +324,21 @@ function new_grid_popup(parent, _gridData) {
             options.groupingView = {
                 groupField: groups,
                 //groupColumnShow: [false, false],
-                groupText: ['<b>{0} - {1} Item(s)</b>', '<b>{0} - {1} Item(s)</b>'],
+                groupText: ['<b>{0} - {1} Item(s) </b>', '<b>{0} - {1} Item(s)</b>'],
                 groupCollapse: false,
-            }
+                groupSummaryPos: ["header", "header"],
+                groupSummary: [true, true]
+            };
+
         } else {
             options.grouping = false;
         }
 
         var data = [];
+        var gridId;
         if (typeof _gridData !== "undefined") {
             var gridData = A = $.extend(true, [], _gridData);//_gridData.clone();
-
-            //gridData.data = mapGridDataToColumns(gridData.data, gridData.columns);
-            //gridData = removeNoSaveCaption(gridData);            
-            //$('#' + _gridData.id).jqGrid('gridDestroy');
-
+            gridId = gridData.id;
             parent.find(("div[id^=gbox_" + gridData.id + "]")).each(function (a, b) {
                 $(b).after("<div name='" + gridData.id + "'></div>");
                 $(b).remove();
@@ -332,7 +350,8 @@ function new_grid_popup(parent, _gridData) {
             new_grid(parent.attr('id'), colModel, options, importCSV, gridData.data, gridData.id, $("div[name=" + gridData.id + "]"));
             $("div[name=" + gridData.id + "]").remove();
         } else {
-            new_grid(parent.attr('id'), colModel, options, importCSV, data, "grid_" + uuidv4());
+            gridId = "grid_" + uuidv4()
+            new_grid(parent.attr('id'), colModel, options, importCSV, data, gridId);
         }
 
         return colModel;

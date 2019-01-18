@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import static mdm.Core.checkSession;
 import static mdm.Core.loadWebFile;
 import mdm.Mongo.DatabaseWrapper;
+import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  *
@@ -57,6 +58,10 @@ public class Servlet extends HttpServlet {
                     jsonData.put("webPage", Core.loadWebFile(""));
                     sb.append(jsonData);
                 } else {
+                    if (action.contains(".")) {
+                        action = "";
+                    }
+                    // action = StringEscapeUtils.escapeHtml(action);
                     jsonData.put("webPage", Core.loadWebFile(action));
                     sb.append(jsonData);
                 }

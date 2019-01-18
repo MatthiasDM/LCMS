@@ -2,25 +2,28 @@
 <link rel="stylesheet" type="text/css" href="./JS/pivottable/pivot.css">
 <script type="text/javascript" src="./JS/pivottable/pivot.js"></script>
 <script type="text/javascript" src="./JS/pivottable/plotly_renderers.js"></script>
-<script src="./HTML/lab/kpi/hemolysis/servletCalls.js"></script>
-<script src="./HTML/lab/kpi/hemolysis/interface.js"></script>
+<script type="text/javascript" src="./JS/PapaParse/papaparse.js"></script>
+<script src="./HTML/lab/kpi/citrate/servletCalls.js"></script>
+<script src="./HTML/lab/kpi/citrate/interface.js"></script>
 <style>
-    #hemolysis-container .row .col-sm-3{
+    #citrate-container .row .col-sm-3{
         min-width: 300px; 
         margin: 10px;
     }
-    #hemolysis-container .card-title a{
+    #citrate-container .card-title a{
         color: white;        
     }
     .ui-jqgrid-bdiv{
         max-height:200px;
     }
+   /* thead > tr > th.pvtTotalLabel, .rowTotal, .pvtGrandTotal { display: none; }
+    tbody > tr > th.pvtTotalLabel, .colTotal, .pvtGrandTotal { display: none; }*/
 </style>
-<div class="container" style="width:100%" id="hemolysis-container">
+<div class="container" style="width:100%" id="citrate-container">
     <div class="row">
         <div class="col-sm-6 mx-auto" id="div-grid-wrapper">
-            <table id="hemolysis-table"></table>
-            <div id="hemolysis-pager"></div>   
+            <table id="citrate-table"></table>
+            <div id="citrate-pager"></div>   
         </div>        
     </div>
     <div class="row">

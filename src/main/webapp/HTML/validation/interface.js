@@ -21,7 +21,8 @@ $(function () {
         // close on click
         closeOnClick: true,
         // width
-        width: "250px",
+        width: "250px",        
+        pushBody:false,
 
         // icons
         icons: {
@@ -43,12 +44,11 @@ $(function () {
         duration: 500,
         // auto close
         autoClose: true,        
-        // push the whole page
-        pushBody: true,
         // close on click
         closeOnClick: true,
         // width
-        width: "250px",
+        width: "250px",        
+        pushBody:false,
         // icons
         icons: {
             left: 'fa fa-angle-left fa-2x',

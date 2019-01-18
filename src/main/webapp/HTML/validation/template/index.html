@@ -4,11 +4,12 @@
         <title>TODO supply a title</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="./HTML/validation/template/interface.js"></script>
-<script src="./HTML/validation/template/gridFunctions.js"></script>
-<script src="./HTML/validation/template/servletCalls.js"></script>
-<script src="./JS/jqGridFree/js/jquery.jqgrid.min.js"></script>
-<script src="./JS/jqgridInitialize.js"></script>
+        <script src="./HTML/validation/template/interface.js"></script>
+        <script src="./HTML/validation/template/gridFunctions.js"></script>
+        <script src="./HTML/validation/template/servletCalls.js"></script>
+        <script src="./JS/jqGridFree/js/jquery.jqgrid.min.js"></script>
+        <script src="./JS/jqgridInitialize.js"></script>
+        
         <link rel="stylesheet" type="text/css" media="screen" href="./HTML/validation/template/style.css" />
     </head>
     <body>
@@ -24,6 +25,7 @@
                     <button type="button" id='btn-new-editable-field' class="btn btn-primary" onclick="validation_save()">Opslaan</button>
                     <button type="button" id='btn-new-editable-field' class="btn btn-primary" onclick="new_editable_field()">Nieuw bewerkbaar veld</button>
                     <button type="button" id='btn-new-jqgrid' class="btn btn-primary" onclick="new_grid('validation-container')">Nieuwe tabel</button>
+                    <button type="button" id='btn-new-jqgrid' class="btn btn-primary" onclick="new_sketch('validation-container')">Nieuwe tekening</button>
 
                     <br/><br/>
                 </div>
@@ -31,7 +33,7 @@
             </div>
 
             <div class="row" id="validations-id">
-               <!-- <div class="col-sm-1 mx-auto"></div>-->
+                <!-- <div class="col-sm-1 mx-auto"></div>-->
                 <!START qc-table-->
                 <div class="col-sm-12 mx-auto">
                     <div id="wrapper-validations-id">

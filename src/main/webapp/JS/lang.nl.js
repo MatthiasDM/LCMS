@@ -85,11 +85,14 @@ lang = {
         title: "Algemene idëeen of opmerkingen over het laboratorium en de werking ervan.",
         subject: "Onderwerp",
         description: "Beschrijving"
-        
+
     },
     validations: {
-        
-        
+
+    },
+    pivottables: {
+        title: "Dubbelklik om een statistiek te laden.",
+        name: "Soort statistiek"
     }
 };
 

@@ -6,14 +6,11 @@
 package mdm;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import difflib.Delta;
-import difflib.DiffUtils;
-import difflib.Patch;
+import org.apache.commons.lang.StringEscapeUtils;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -24,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;

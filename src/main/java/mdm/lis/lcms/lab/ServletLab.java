@@ -34,9 +34,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import mdm.Config.Actions;
 import mdm.Config.MongoConf;
+import mdm.Core;
 import mdm.GsonObjects.Lab.InventoryItem;
 import mdm.GsonObjects.Lab.LabItem;
+import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
+import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 
 /**
@@ -116,8 +119,15 @@ public class ServletLab extends HttpServlet {
                     sb.append(DatabaseWrapper.actionEDITOBJECT(requestParameters, cookie, action.getMongoConf()));
                 } else {
                     if (action.toString().contains("LOAD")) {
-                        sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf()));
+                        sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf(), new BasicDBObject(), new String[]{}));
                     } else {
+
+                        if (action == Actions.PIVOTTABLE_GETTABLE) {
+                            BasicDBObject searchObject = new BasicDBObject();
+                            searchObject.put("page", new BasicDBObject("$eq", requestParameters.get("page")[0]));
+                            sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf(), searchObject, new String[]{}));
+                        }
+
                         if (action == Actions.LAB_CHECKINVENTORY) {
                             sb.append(actionLAB_CHECKINVENTORY());
                         }
@@ -125,8 +135,21 @@ public class ServletLab extends HttpServlet {
                             sb.append(actionLAB_WORKSUMMARY());
                         }
                         if (action == Actions.LAB_KPI_HEMOLYSIS) {
-                            sb.append(actionLAB_KPI_HEMOLYSIS());
+                            sb.append(actionLAB_KPI("hemolysis", "json"));
                         }
+                        if (action == Actions.LAB_KPI_WORKPRESSURE) {
+                            sb.append(actionLAB_KPI("workload", "json"));
+                        }
+                        if (action == Actions.LAB_KPI_TAT) {
+                            sb.append(actionLAB_KPI("tat", "json"));
+                        }
+                        if (action == Actions.LAB_KPI_CITRATE) {
+                            sb.append(actionLAB_KPI("citrate", "json"));
+                        }
+                        if (action == Actions.LAB_KPI_HEMOFP) {
+                            sb.append(actionLAB_KPI("hemoFP", "json"));
+                        }
+                        
                     }
                 }
 
@@ -188,7 +211,7 @@ public class ServletLab extends HttpServlet {
             }
 
             List<String> issuers = new ArrayList<>();
-            try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\issuers.json"), Charset.forName("ISO-8859-1"))) {
+            try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\worksummary\\issuers.json"), Charset.forName("ISO-8859-1"))) {
                 issuers = stream
                         .map(String::toUpperCase)
                         .filter(line -> line.contains("'"))
@@ -198,7 +221,7 @@ public class ServletLab extends HttpServlet {
             }
 
             List<String> stations = new ArrayList<>();
-            try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\stations.json"), Charset.forName("ISO-8859-1"))) {
+            try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\worksummary\\stations.json"), Charset.forName("ISO-8859-1"))) {
                 stations = stream
                         .map(String::toUpperCase)
                         .filter(line -> line.contains("'"))
@@ -215,21 +238,35 @@ public class ServletLab extends HttpServlet {
             return sb;
         }
 
-        private StringBuilder actionLAB_KPI_HEMOLYSIS() throws ClassNotFoundException, NoSuchFieldException, IOException {
+        private StringBuilder actionLAB_KPI(String type, String filetype) throws ClassNotFoundException, NoSuchFieldException, IOException {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode jsonData = mapper.createObjectNode();
             List<String> lines = new ArrayList<>();
-            //C:\Users\Matthias\Documents\NetBeansProjects\LCMS\target\LCMS-1.0-SNAPSHOT\HTML\lab\kpi\data
-            String pth = context.getRealPath("/HTML/lab/kpi/data/hemolysis.txt");
-            try (Stream<String> stream = Files.lines(Paths.get(pth), Charset.forName("ISO-8859-1"))) {
-                lines = stream
-                        .map(String::toUpperCase)
-                        .filter(line -> line.contains("'"))
-                        .collect(Collectors.toList());
-            } catch (IOException e) {
-                e.printStackTrace();
+
+            if (filetype.equals("csv")) {
+                try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\KPI\\" + type + "\\data.csv"), Charset.forName("ISO-8859-1"))) {
+                    lines = stream
+                            .map(String::toUpperCase)
+                            //.filter(line -> line.contains("{"))
+                            .collect(Collectors.toList());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                jsonData.put("data", StringUtils.join(lines, "\n"));
+            } else {
+                if (filetype.equals("json")) {
+                    try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\KPI\\" + type + "\\data.txt"), Charset.forName("ISO-8859-1"))) {
+                        lines = stream
+                                .map(String::toUpperCase)
+                                .filter(line -> line.contains("{"))
+                                .collect(Collectors.toList());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    jsonData.put("data", mapper.writeValueAsString(lines));
+                }
             }
-            jsonData.put("data", mapper.writeValueAsString(lines));
+
             StringBuilder sb = new StringBuilder();
             sb.append(jsonData);
             return sb;

@@ -15,8 +15,6 @@ var numberTemplate = {
     multipleSearch: true,
     searchOperators: true
 };
-
-
 $(function () {
 
     initDateEdit = function (elem) {
@@ -34,18 +32,13 @@ $(function () {
             initDateEdit(elem);
         }, 100);
     };
-
     $.jgrid.defaults.responsive = true;
     $.jgrid.defaults.styleUI = 'Bootstrap4';
-
-
 });
-
-function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _parent, _caption, _extraOptions, _navGridParameters) {
+function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _parent, _caption, _extraOptions, _parameters) {
     var _colModel = generateView2(_data);
     var cols = new Array();
     $.each(JSON.parse(_data.header), function (index, value) {
-
         if (typeof value.tablename != 'undefined') {
             var _name = lang[value.tablename][value.name];
             if (_name != null) {
@@ -55,13 +48,8 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
             }
         } else {
             cols.push(value.name);
-
         }
-
     });
-
-
-
     var jqgridOptions = {
         data: JSON.parse(_data.table),
         datatype: "local",
@@ -78,67 +66,75 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
         searching: listGridFilterToolbarOptions,
         rowNum: 150,
         mtype: 'POST',
+        altRows: true,
         editurl: _editUrl,
         loadonce: true,
         ondblClickRow: editRow,
         pager: _pagerName,
         caption: _caption
 
-
     };
-
-
+    var parameters = {
+        editParameters: {
+            keys: true,
+            extraparam: {action: _editAction, LCMS_session: $.cookie('LCMS_session')}
+        },
+        addParameters: {editData: {action: _editAction, LCMS_session: $.cookie('LCMS_session')}},
+        navGridParameters: {add: true, edit: false, del: false, save: false, cancel: false,
+            addParams: {
+                position: "last",
+                addRowParams: {
+                    keys: true,
+                    extraparam: {action: _editAction, LCMS_session: $.cookie('LCMS_session')}
+                }
+            },
+            editParams: {
+                editRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
+                    extraparam: {action: _editAction, LCMS_session: $.cookie('LCMS_session')}
+                }
+            }
+        }
+    };
     $.each(_extraOptions, function (i, n) {
         jqgridOptions[i] = n;
     });
-
     _tableObject.jqGrid(jqgridOptions);
 
-    var lastSelection;
+    replaceProperties(parameters, _parameters);
 
+
+    var lastSelection;
     function editRow(id) {
         if (id && id !== lastSelection) {
             var grid = _tableObject;
             grid.jqGrid('restoreRow', lastSelection);
-            var editParameters = {
-                keys: true,
-                extraparam: {action: _editAction, LCMS_session: $.cookie('LCMS_session')}
-            };
-            grid.jqGrid('editRow', id, editParameters);
+            grid.jqGrid('editRow', id, parameters.editParameters);
             lastSelection = id;
         }
     }
-    ;
+//    $.each(_navGridParameters, function (i, n) {
+//        parameters.navGridParameters[i] = n;
+//
+//    });
 
-    var addDataOptions = {editData: {action: _editAction, LCMS_session: $.cookie('LCMS_session')}};
-    var navGridParameters = {add: true, edit: false, del: false, save: false, cancel: false, addParams: {position: "last", addRowParams: {
-                keys: true,
-                oneditfunc: function (grid) {
-                    //grid.jqGrid('editGridRow', 'add', {})
-                },
-                extraparam: {action: _editAction, LCMS_session: $.cookie('LCMS_session')}
-            }}};
-    $.each(_navGridParameters, function (i, n) {
-        navGridParameters[i] = n;
-    });
-
-    _tableObject.inlineNav(_pagerName, navGridParameters, {}, addDataOptions);
+    function replaceProperties(original, obj) {
+        for (var property in obj) {
+            if (obj.hasOwnProperty(property)) {
+                if (typeof obj[property] == "object" & typeof original[property] == "object")
+                    replaceProperties(original[property], obj[property]);
+                else
+                    original[property] = obj[property];
+                //console.log(property + "   " + obj[property]);
+            }
+        }
+    }
+    _tableObject.inlineNav(_pagerName, parameters.navGridParameters);
     _tableObject.jqGrid("filterToolbar");
     $(window).bind('resize', function () {
         _tableObject.setGridWidth(_parent.width() - 10);
     }).trigger('resize');
-
     _tableObject.click(function (e) {
-        var $groupHeader = $(e.target).closest("tr.jqgroup");
-        if ($groupHeader.length > 0) {
-            $(this).jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
-            $(this).css('cursor', 'pointer');
-        }
-        $groupHeader = $(e.target).closest("span.tree-wrap");
-        if ($groupHeader.length > 0) {
-            $(this).jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
-        }
-
+        gridClickFunctions(e, $(this))
     });
 
     return _tableObject;
@@ -213,10 +209,24 @@ function generateView2(data) {
 
 
         view.push(column);
-
     });
-
     console.log("Generating view");
     return view;
 }
 
+function gridClickFunctions(e, target) {
+    console.log("gridClickFunctions()");
+    var $groupHeader = $(e.target).closest("tr.jqgroup");
+    if ($groupHeader.length > 0) {
+        target.jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
+        target.css('cursor', 'pointer');
+    }
+
+    $groupHeader = $(e.target).closest("span.tree-wrap");
+    if ($groupHeader.length > 0) {
+        target.jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
+    }
+
+// $subGridExpanded = $(e.target).closest("td.sgexpanded");
+
+}
