@@ -12,26 +12,7 @@ $(function () {
 
         // 'left' or 'right'
         side: "right",
-        // animation speed
-        duration: 500,
-        // auto close
-        autoClose: true,
-        // push the whole page
-        pushBody: true,
-        // close on click
-        closeOnClick: true,
-        // width
-        width: "250px",
 
-        // icons
-        icons: {
-            left: 'fa fa-angle-left fa-2x',
-            right: 'fa fa-angle-right fa-2x',
-            down: 'fa fa-angle-down fa-2x'
-        },
-
-        // 'dracula', 'darkblue', 'zenburn', 'pinklady', 'somebook'
-        theme: '',
 
     });
     $('#notes-list').BootSideMenu.open();
@@ -39,24 +20,7 @@ $(function () {
     $('#toc').BootSideMenu({
         // 'left' or 'right'
         side: "left",
-        // animation speed
-        duration: 500,
-        // auto close
-        autoClose: true,        
-        // push the whole page
-        pushBody: true,
-        // close on click
-        closeOnClick: true,
-        // width
-        width: "250px",
-        // icons
-        icons: {
-            left: 'fa fa-angle-left fa-2x',
-            right: 'fa fa-angle-right fa-2x',
-            down: 'fa fa-angle-down fa-2x'
-        },
-        // 'dracula', 'darkblue', 'zenburn', 'pinklady', 'somebook'
-        theme: '',
+
     });
 
 

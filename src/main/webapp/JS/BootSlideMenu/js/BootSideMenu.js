@@ -19,19 +19,34 @@
         var $DOMBody = $("body", document);
 
         var defaults = {
-            side: "left",
+
+            side: "right",
+            // animation speed
             duration: 500,
-            remember: false,
-            autoClose: false,
+            // auto close
+            autoClose: true,
+            // push the whole page
             pushBody: true,
+            // close on click
             closeOnClick: true,
-            icons: {
-                left: 'glyphicon glyphicon-chevron-left',
-                right: 'glyphicon glyphicon-chevron-right',
-                down: 'glyphicon glyphicon-chevron-down'
-            },
-            theme: 'default',
+            // width
             width: "15%",
+            pushBody: false,
+
+            // icons
+            icons: {
+                left: 'fa fa-angle-left fa-2x',
+                right: 'fa fa-angle-right fa-2x',
+                down: 'fa fa-angle-down fa-2x'
+            },
+
+            // 'dracula', 'darkblue', 'zenburn', 'pinklady', 'somebook'
+            theme: '',
+
+            remember: false,
+
+            theme: 'default',
+
             onTogglerClick: function () {
                 //code to be executed when the toggler arrow was clicked
             },
@@ -81,7 +96,7 @@
         } else if (options.side === "right") {
             $menu.addClass("bootsidemenu-right");
         }
-        
+
         $menu.id = $menu.attr("id");
         $menu.cookieName = "bsm2-" + $menu.id;
         $menu.toggler = $menu.find('[data-whois="toggler"]');
@@ -267,7 +282,7 @@
                 }
             }
             if (options.side === "left") {
-              
+
                 if (options.pushBody) {
                     $DOMBody.animate({marginLeft: bodyProperties.originalMarginLeft}, {duration: options.duration});
                 }
@@ -400,7 +415,8 @@
                 var c = ca[i];
                 while (c.charAt(0) === " ")
                     c = c.substring(1);
-                if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
+                if (c.indexOf(name) === 0)
+                    return c.substring(name.length, c.length);
             }
             return null;
         }
@@ -440,7 +456,7 @@
         };
 
         $.fn.BootSideMenu.close = function () {
-            
+
             closeMenu();
         };
 

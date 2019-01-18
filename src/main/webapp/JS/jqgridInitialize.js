@@ -15,6 +15,7 @@ var numberTemplate = {
     multipleSearch: true,
     searchOperators: true
 };
+
 $(function () {
 
     initDateEdit = function (elem) {
@@ -33,7 +34,7 @@ $(function () {
         }, 100);
     };
     $.jgrid.defaults.responsive = true;
-    $.jgrid.defaults.styleUI = 'Bootstrap4';
+    $.jgrid.defaults.guiStyle = 'bootstrap';
 });
 function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _parent, _caption, _extraOptions, _parameters) {
     var _colModel = generateView2(_data);
@@ -61,8 +62,8 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
         rownumbers: true,
         responsive: true,
         headertitles: true,
+        guiStyle: "",
         iconSet: "fontAwesome",
-        guiStyle: "bootstrap4",
         searching: listGridFilterToolbarOptions,
         rowNum: 150,
         mtype: 'POST',
