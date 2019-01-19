@@ -17,7 +17,11 @@ function config0() { //used in de notes-module
         {name: 'Normaal', element: 'span', attributes: {'class': 'my_style'}},
         {name: 'Marker: Yellow', element: 'span', styles: {'background-color': 'Yellow'}}
     ]);
-
+//    CKEDITOR.scriptLoader.load("./JS/dependencies/iframeresizer/iframeResizer.min.js", function (success)
+//    {
+//        console.log("iframeResizer js loaded");
+//
+//    });
     CKEDITOR.editorConfig = function (config) {
         config.toolbarGroups = [
             {name: 'document', groups: ['mode', 'document', 'doctools']},
@@ -75,7 +79,11 @@ function config2() { //for inline editing
         {name: 'Normaal', element: 'span', attributes: {'class': 'my_style'}},
         {name: 'Marker: Yellow', element: 'span', styles: {'background-color': 'Yellow'}}
     ]);
-
+//    CKEDITOR.scriptLoader.load("./JS/dependencies/iframeresizer/iframeResizer.min.js", function (success)
+//    {
+//        console.log("iframeResizer js loaded");
+//
+//    });
     CKEDITOR.editorConfig = function (config) {
         config.toolbarGroups = [
             {name: 'document', groups: ['mode', 'document', 'doctools']},
@@ -118,11 +126,13 @@ function config2() { //for inline editing
         console.log("loading images");
         $("div[id^=editable]").each(function (index) {
             loadImages($(this).attr('id'));
+           // loadTOC($(this).attr('id'));
             $("#cke_" + $(this).attr('id')).css("border", "1px dotted grey");
             $("#cke_" + $(this).attr('id')).css("padding", "10px");
         });
         $("textarea[title=ckedit]").each(function (index) {
             loadImages($(this).attr('id'));
+           // loadTOC($(this).attr('id'));
             $("#cke_" + $(this).attr('id')).css("border", "1px dotted grey");
             $("#cke_" + $(this).attr('id')).css("padding", "10px");
         });
@@ -181,6 +191,86 @@ function capturePaste(e) {
         var blob = images[i].getAsFile();
         console.log(blob);
     });
+}
+
+function loadTOC(editor) {
+    console.log("Loading TOC");
+    var editorContents = $("#" + editor)
+    var editorHeaders = editorContents.find("h1, h2, h3, h4, h5, h6");
+    if (editorHeaders.length < 1) {
+        editorHeaders = $("#cke_" + editor).find("iframe").contents().find("h1, h2, h3, h4, h5, h6");
+    }
+    var level1 = 0;
+    var level2 = 0;
+    var level3 = 0;
+    var level4 = 0;
+    var level5 = 0;
+    var level6 = 0;
+    $("#toc-list").empty();
+    var headerNumber = "";
+    editorHeaders.each(function (index) {
+        var currentHeader = this.tagName.substr(1, this.tagName.length);
+        if (currentHeader === "1") {
+            level1++;
+            level2 = 0;
+            level3 = 0;
+            level4 = 0;
+            level5 = 0;
+            level6 = 0;
+        }
+        if (currentHeader === "2") {
+            level2++;
+            level3 = 0;
+            level4 = 0;
+            level5 = 0;
+            level6 = 0;
+        }
+        if (currentHeader === "3") {
+            level3++;
+            level4 = 0;
+            level5 = 0;
+            level6 = 0;
+        }
+        if (currentHeader === "4") {
+            level4++;
+            level5 = 0;
+            level6 = 0;
+        }
+        if (currentHeader === '5') {
+            level5++;
+            level6 = 0;
+        }
+        if (currentHeader === '6') {
+            level6++;
+        }
+        var uuid = uuidv4();
+        $(this).attr("id", uuid);
+        var heading = level1 + "." + level2 + "." + level3 + "." + level4 + "." + level5 + "." + level6;
+        while (heading.slice(-1) === "0") {
+            heading = heading.substr(0, heading.length - 2);
+        }
+        heading += ".";
+        $("#toc-list").append("<li class='list-group-item' anchor='#" + uuid + "'>" + heading + " " + $(this).text() + "</li>");
+        this.innerHTML = "<span class='nosave'>" + heading + " </span>" + this.innerHTML;
+
+        var previousHeader = this.tagName.substr(1, this.tagName.length);
+    });
+    loadAnchors(editorContents);
+}
+
+function loadAnchors(editorContents) {
+    console.log("Loading anchors");
+    $('#toc-list li').on('click', function (event) {
+        var target = editorContents.contents().find(this.getAttribute('anchor'));
+        //var target = $(this.getAttribute('anchor'));
+        if (target.length) {
+            event.preventDefault();
+            $('html, body').stop().animate({
+                scrollTop: target.offset().top
+            }, 1000);
+        }
+    });
+}
 
 //    for (var i = 0; i < e.originalEvent.clipboardData.items.length; i++) {
 //        var files = e.clipboardData.files;
@@ -191,4 +281,3 @@ function capturePaste(e) {
 ////            console.log("Discardingimage paste data");
 ////        }
 //    }
-}

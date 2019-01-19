@@ -13,6 +13,8 @@ function validation_save() {
     $("table[id^=grid]").each(function (a, b) {
         try {
             gridData[$(b).attr('id')] = $(b).jqGrid('getGridParam');
+            var legacyTable = buildHtmlTable($(b).jqGrid('getGridParam').data);
+            var a = 1;
 //            $(b).jqGrid('gridDestroy');
 //            $(b).jqGrid('gridUnload');
 //            $(b).remove();

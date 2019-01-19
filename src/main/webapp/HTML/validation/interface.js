@@ -8,14 +8,14 @@
 
 $(function () {
 
-    $('#notes-list').BootSideMenu({
+    $('#validations-list').BootSideMenu({
 
         // 'left' or 'right'
         side: "right",
 
 
     });
-    $('#notes-list').BootSideMenu.open();
+    $('#validations-list').BootSideMenu.open();
 
     $('#toc').BootSideMenu({
         // 'left' or 'right'

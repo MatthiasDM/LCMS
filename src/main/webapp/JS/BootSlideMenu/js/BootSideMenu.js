@@ -20,17 +20,15 @@
 
         var defaults = {
 
-            side: "right",
+        
             // animation speed
-            duration: 500,
+            //duration: 500,
             // auto close
             autoClose: true,
-            // push the whole page
-            pushBody: true,
             // close on click
             closeOnClick: true,
             // width
-            width: "15%",
+            width: "250px",
             pushBody: false,
 
             // icons

@@ -8,11 +8,13 @@
 
 $(function () {
 
+
+
     $('#notes-list').BootSideMenu({
 
         // 'left' or 'right'
+        duration: 0,
         side: "right",
-
 
     });
     $('#notes-list').BootSideMenu.open();
@@ -23,9 +25,8 @@ $(function () {
 
     });
 
-
-
-
+         
+        
     notes_doLoad($("#note-container"));
     config0();
     

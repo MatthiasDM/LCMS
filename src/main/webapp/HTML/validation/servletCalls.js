@@ -11,6 +11,7 @@ function validations_doLoad(_parent) {
     var _cookie = $.cookie('LCMS_session');
     $.ajax({
         method: "POST",
+        async: true,
         url: "./validations",
         data: {action: "VALIDATION_LOADVALIDATIONS", LCMS_session: _cookie},
         beforeSend: function (xhr) {

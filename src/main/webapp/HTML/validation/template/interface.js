@@ -146,6 +146,17 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
         },
         position: "last"
     });
+
+    _grid.navButtonAdd(_tableOptions.pager, {
+        caption: "Export",
+        title: "Export to plain HTML",
+        buttonicon: "ui-icon-plusthick",
+        onClickButton: function () {
+            export_grid(_grid);
+        },
+        position: "last"
+    });
+
     _grid.click(function (e) {
         gridClickFunctions(e, $(this))
     });

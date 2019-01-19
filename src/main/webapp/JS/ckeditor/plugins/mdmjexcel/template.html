@@ -1,12 +1,12 @@
-<script src="../../../../JS/jquery-3.2.1.min.js"></script>
-<script src="../../../../JS/jquery.jexcel.js"></script>
-<script src="../../../JS/old_iframeresizer/iframeResizer.contentWindow.min.js"></script>
-<script src="../../../../JS/jexcel/underscore-min.js"></script>
-<script src="../../../../JS/jexcel/underscore.string.js"></script>
-<script src="../../../../JS/jexcel/jstat.min.js"></script>
-<script src="../../../../JS/jexcel/numeric.min.js"></script>
-<script src="../../../../JS/jexcel/numeral.min.js"></script>
-<script src="../../../../JS/jexcel/excel-formula.min.js"></script>
+<script src="../../../../JS/dependencies/jquery/jquery.js"></script>
+<script src="../../../../JS/dependencies/jexcel/jquery.jexcel.js"></script>
+<script src="../../../../JS/dependencies/iframeresizer/iframeResizer.contentWindow.min.js"></script>
+<script src="../../../../JS/dependencies/jexcel/underscore-min.js"></script>
+<script src="../../../../JS/dependencies/jexcel/underscore.string.js"></script>
+<script src="../../../../JS/dependencies/jexcel/jstat.min.js"></script>
+<script src="../../../../JS/dependencies/jexcel/numeric.min.js"></script>
+<script src="../../../../JS/dependencies/jexcel/numeral.min.js"></script>
+<script src="../../../../JS/dependencies/jexcel/excel-formula.min.js"></script>
 <link rel="stylesheet" type="text/css" media="screen" href="../../../../CSS/jquery.jexcel.css" />
 <table id='jexceltable'></table>
 <script>
@@ -32,6 +32,7 @@
     //  $("#jexceldata").val(data);
     console.log("debuggin");
     var update = function (obj, cel, val) {
+        console.log("updateing jexcel");
         var data = $('#jexceltable').jexcel("getData");
         $(parent.document.getElementById("jexceldata")).text(JSON.stringify(data));
     }
