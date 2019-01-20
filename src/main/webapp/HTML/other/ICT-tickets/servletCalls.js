@@ -26,13 +26,14 @@ function ICTtickets_doLoad(_parent) {
                 grouping: true,
                 groupingView: {
                     groupField: ['status', 'category'],
-                    groupColumnShow: [false,  false],
+                    groupColumnShow: [false, false],
                     groupText: ['<b>{0} - {1} Item(s)</b>', '<b>{0} - {1} Item(s)</b>'],
                     groupCollapse: true,
-                }};
+                }
+            };
             extraOptions.onSelectRow = editTicket;
             var navGridParameters = {
-                add: false                
+                add: false
             }
             populateTable(jsonData, "ICT_EDITTICKETS", './ict', $("#ICT-ticket-table"), "#ICT-ticket-pager", $("#div-grid-wrapper"), "ICT-tickets in het labo", extraOptions, navGridParameters);
 //            $("#ICT-ticket-table_iladd").on("click", function () {

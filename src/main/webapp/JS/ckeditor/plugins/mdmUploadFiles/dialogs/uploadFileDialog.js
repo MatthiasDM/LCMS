@@ -118,7 +118,7 @@ function insertFileInEditor(rowId) {
             var jsonData = JSON.parse(request.responseText);
             var filePath = jsonData.filePath;
             if (type === ".png" || type === ".jpg" || type === ".JPG" || type === ".gif") {
-                currentEditor.insertHtml("<img name='" + dataFromTheRow.name + "' fileid='"+dataFromTheRow.fileid+"' src='" + filePath + "'/>");
+                currentEditor.insertHtml("<div style='overflow-x:scroll'><img name='" + dataFromTheRow.name + "' fileid='"+dataFromTheRow.fileid+"' src='" + filePath + "'/></div>");
             } else {
                 currentEditor.insertHtml("<a name='" + dataFromTheRow.name + "'  href='" + filePath + "' fileid='"+dataFromTheRow.fileid+"'>" + dataFromTheRow.name + "</a>");
             }

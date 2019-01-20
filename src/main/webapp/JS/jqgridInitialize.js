@@ -72,7 +72,10 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
         loadonce: true,
         ondblClickRow: editRow,
         pager: _pagerName,
-        caption: _caption
+        caption: _caption,
+        pgbuttons: false,
+        pgtext: "",
+        pginput: false
 
     };
     var parameters = {
@@ -134,6 +137,10 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
     $(window).bind('resize', function () {
         _tableObject.setGridWidth(_parent.width() - 10);
     }).trigger('resize');
+
+    _tableObject.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").click(function () {
+        $(".ui-jqgrid-titlebar-close", this).click();
+    });
     _tableObject.click(function (e) {
         gridClickFunctions(e, $(this))
     });
@@ -227,6 +234,8 @@ function gridClickFunctions(e, target) {
     if ($groupHeader.length > 0) {
         target.jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
     }
+
+
 
 // $subGridExpanded = $(e.target).closest("td.sgexpanded");
 

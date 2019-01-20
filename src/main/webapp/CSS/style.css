@@ -23,8 +23,57 @@ and open the template in the editor.
 
 #navbar-extra{
     overflow-x: auto;
-    
+
+}
+
+h1, .h1 {
+    word-break: break-all;
+}
+
+jqgrid-bootstrap tr.jqgrow>td {
+    padding: 0.8em .3em;
+}
+.ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-view {
+    font-size: 1em;
+}
+
+.ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-pager {
+    font-size: 1em;
+}
+.ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-pager .btn, .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-view .btn {
+    font-size: 1em;
 }
 
 
+/*CAPTION*/
+.ui-jqdialog.ui-jqgrid-bootstrap .ui-jqdialog-titlebar .ui-jqdialog-title, .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-errorbar .ui-jqgrid-error, .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-titlebar .ui-jqgrid-title {
+    font-size: 2em;
+}
 
+.ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-bootstrap-corner-top {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    padding: .6em;
+}
+
+.ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-caption {
+    background-color: #2C3E50;
+    color: #18BC9C;
+    -ms-border-top-left-radius: 0px;
+    -ms-border-top-right-radius: 0px;
+}
+
+.ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-bootstrap-corner-bottom {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+.ui-jqgrid .ui-jqgrid-caption .ui-jqgrid-titlebar-close {
+    right: .6em;
+}
+
+.ui-jqgrid.ui-jqgrid-bootstrap {
+    border: 1px solid #ddd;
+    -ms-border-radius: 0px;
+    border-radius: 0px; 
+}

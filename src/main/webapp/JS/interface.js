@@ -191,7 +191,7 @@ $.fn.textWidth = function (text, font) {
 function create_modal(parent, title, text) {
 
     var modal = $("<div class='modal' tabindex='-1' role='dialog'></div>");
-    var modal_dialog = $("<div class='modal-dialog' role='document'></div>");
+    var modal_dialog = $("<div class='modal-dialog modal-lg' role='document'></div>");
     var modal_content = $("<div class='modal-content'></div>");
     var modal_header = $("<div class='modal-header'></div>");
     var modal_title = $("<h5 class='modal-title'>" + title + "</h5>");

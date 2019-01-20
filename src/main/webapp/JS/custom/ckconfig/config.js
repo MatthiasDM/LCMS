@@ -175,6 +175,7 @@ function downloadToTemp(file) {
             var filePath = jsonData.filePath;
             console.log("Changing filepath from " + file.attr("src") + " to " + filePath);
             file.attr("src", filePath);
+            
 
         }
     }

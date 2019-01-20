@@ -181,7 +181,7 @@ function popupEdittRow(action) {
         width: $("body").width() * 0.9,
         left: $(this).offset().left * -1 + $("body").width() * 0.05,
         position: 'relative',
-        top: $("#" + action).parent().parent().parent().parent()[0].getBoundingClientRect().top * -1 + 200,
+        top: $("#" + action).parent().parent().parent().parent()[0].getBoundingClientRect().top * -1 + 100,
         afterShowForm: function (formid) {
             $("textarea[title=ckedit]").each(function (index) {
                 CKEDITOR.replace($(this).attr('id'), {
