@@ -193,7 +193,8 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     var navGridParameters2 = {edit: false, add: false, save: false, cancel: false};
 
     //_grid.inlineNav(_tableOptions.pager, navGridParameters2, {}, addDataOptions);
-    _grid.jqGrid('filterToolbar');
+    _grid.jqGrid('filterToolbar');   
+    //_grid.jqGrid('sortableRows', {});
     _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").addClass("card-header card-primary text-white text-center");
     _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").css("background-color", "white");
     //.ui-jqgrid.ui-jqgrid-bootstrap border: none

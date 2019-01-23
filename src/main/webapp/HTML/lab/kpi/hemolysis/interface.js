@@ -10,7 +10,7 @@
  */
 $(function () {
     console.log("loading hemolysis");
-    kpi_hemolysis_loadSettings($("#div-grid-wrapper"));
+    kpi_loadSettings($("#div-grid-wrapper"), "hemolysis", "PIVOTTABLE_GETTABLE", "PIVOTTABLE_EDIT", "LAB_KPI_HEMOLYSIS");
 })
 
 function loadPivotTable(_data, _settings) {
@@ -18,28 +18,7 @@ function loadPivotTable(_data, _settings) {
     var dateFormat = $.pivotUtilities.derivers.dateFormat;
     var bin = $.pivotUtilities.derivers.bin;
     var tpl = $.pivotUtilities.aggregatorTemplates;
-//
-//    var relativeHemolyse = function () {
-//        return function () {
-//            return {
-//                countHemolysisAll: 0,
-//                countHemolysisPos: 0,
-//                push: function (record) {
-//                    if ((record.HEMOLYSE > 50)) {
-//                        this.countHemolysisPos += parseFloat(record.HEMOLYSE);
-//                    }
-//                    this.countHemolysisAll += (record.HEMOLYSE);
-//                },
-//                value: function () {
-//                    return this.countHemolysisPos / this.countHemolysisAll;
-//                },
-//                format: function (x) {
-//                    return x;
-//                },
-//                numInputs: 0
-//            };
-//        };
-//    };
+
 
     var extraOptions = {
         derivedAttributes: {

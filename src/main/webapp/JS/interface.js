@@ -74,9 +74,11 @@ function loadParameters(jsonData) {
 function replaceAll(str, find, replace) {
     return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }
+
 function escapeRegExp(str) {
     return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
 }
+
 function setJumbo(page) {
 
     if (page === null || typeof page === 'undefined') {
@@ -261,10 +263,20 @@ function forms_select(title, id, name, valObjects, val) {
 
 }
 
-function dom_progressbar(bars, id){
-    var progress = $("<div class='progress' id='"+id+"'></div>");
-    Object.keys(bars).forEach(function(index){
-        progress.append("<div class='progress-bar-striped' role='progressbar' style='background-color:"+bars[index].color+";width: "+bars[index].value+"%' aria-valuenow='"+bars[index].value+"' aria-valuemin='0' aria-valuemax='100'></div>");        
+function forms_jqgrid(id, data) {
+    var form_group = $("<div id='" + id + "' class='form-group'></div>");
+    var label = $("<label for='" + title + "'>" + title + "</label>");
+    var jqgrid = $("<table id='jqgrid-" + id + "'></table>");
+    jqgrid.jqGrid(data);
+    form_group.append(label);
+    form_group.append(jqgrid);
+    return form_group;
+}
+
+function dom_progressbar(bars, id) {
+    var progress = $("<div class='progress' id='" + id + "'></div>");
+    Object.keys(bars).forEach(function (index) {
+        progress.append("<div class='progress-bar-striped' role='progressbar' style='background-color:" + bars[index].color + ";width: " + bars[index].value + "%' aria-valuenow='" + bars[index].value + "' aria-valuemin='0' aria-valuemax='100'></div>");
     });
     return progress;
 }
@@ -355,3 +367,20 @@ function CSVToArray(strData, strDelimiter) {
     return(arrData);
 }
 
+function loadImages(editor, editorObject) {
+    if (editor !== "") {
+        var images = $("#" + editor).find('[fileid]');
+        if (images.length < 1) {
+            images = $("#cke_" + editor).find("iframe").contents().find('[fileid]');
+        }
+    } else {
+        var images = editorObject.find('[fileid]');
+    }
+
+    images.each(function (index) {
+        downloadToTemp($(this));
+    });
+
+    return images;
+
+}

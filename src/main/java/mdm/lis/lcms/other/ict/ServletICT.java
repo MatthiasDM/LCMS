@@ -6,6 +6,7 @@
 package mdm.lis.lcms.other.ict;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mongodb.BasicDBObject;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -100,7 +101,7 @@ public class ServletICT extends HttpServlet {
                     Workflows.workflowICTTicket(requestParameters, operation, cookie);
                 } else {
                     if (action.toString().contains("LOAD")) {
-                        sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf()));
+                        sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf(), new BasicDBObject(), new String[]{}));
                     }
                 }
 

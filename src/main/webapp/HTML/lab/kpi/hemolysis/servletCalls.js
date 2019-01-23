@@ -31,10 +31,9 @@ function kpi_hemolysis_loadSettings(_parent) {
                     lastSelection = id;
                 }
             }
-
             var extraOptions = {
                 viewrecords: true,
-                ondblClickRow: editRow
+                //ondblClickRow: editRow
             };
 
             var parameters = {
@@ -43,6 +42,7 @@ function kpi_hemolysis_loadSettings(_parent) {
                     add: true,
                     save: true,
                     del: true,
+                    cancel: true,
                     addParams: {
                         addRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
                             extraparam: {action: "PIVOTTABLE_EDIT", settings: getConfig, page: "hemolysis", LCMS_session: $.cookie('LCMS_session')}
@@ -59,6 +59,17 @@ function kpi_hemolysis_loadSettings(_parent) {
                 }
             };
             populateTable(jsonData, "PIVOTTABLE_EDIT", './lab', $("#hemolysis-table"), "#hemolysis-pager", $("#div-grid-wrapper"), "Configuraties", extraOptions, parameters);
+
+            $("#hemolysis-table").navButtonAdd("#hemolysis-pager", {
+               caption: "",
+                title: "View record",
+                buttonicon: "fa-eye",
+                onClickButton: function () {
+                    var rowid = $("#hemolysis-table").jqGrid('getGridParam', 'selrow');
+                    editRow(rowid);
+                },
+                position: "last"
+            });
 
             if (JSON.parse(jsonData.table).length < 1) {
                 kpi_hemolysis_doLoad();

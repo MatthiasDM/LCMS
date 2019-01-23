@@ -9,7 +9,6 @@ $(function () {
             window.open(e.target.href, 'new' + e.screenX);
         }
     });
-
 });
 
 function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId, location) {
@@ -108,6 +107,7 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     _tableOptions.ondblClickRow = popupEdittRow;
     _grid.jqGrid(_tableOptions);
     _grid.jqGrid('filterToolbar');
+    _grid.jqGrid('sortableRows', {});
     var lastSelection;
     var addDataOptions = {editData: {action: "_editAction", LCMS_session: $.cookie('LCMS_session')}};
 
@@ -181,6 +181,7 @@ function popupEdittRow(action) {
         width: $("body").width() * 0.9,
         left: $(this).offset().left * -1 + $("body").width() * 0.05,
         position: 'relative',
+        modal: true,
         top: $("#" + action).parent().parent().parent().parent()[0].getBoundingClientRect().top * -1 + 100,
         afterShowForm: function (formid) {
             $("textarea[title=ckedit]").each(function (index) {
@@ -263,11 +264,7 @@ function new_grid_popup(parent, _gridData) {
                 colModel[c].type = val.value;
             }
             if (val.name === 'choices') {
-                var
-                        choices = val.value.split(/\r?\n/);
-                choices.for()
-                colModel[c].choices = val.value.split(/\r?\n/);
-
+                colModel[c].choices = val.value.split(/\r\n/);
             }
 
 //            if (val.name === 'summary') {
@@ -509,6 +506,21 @@ function addRow(parent, elementID, nameVal, typeVal, choiceList, visibleVal, col
         } else {
             parent.find("div[id='" + "choicelist-" + elementID + "']").remove();
         }
+        if (this.value === 'internal_list') {
+            var obj = [];
+            //var htmlData = $('<output>').append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"))));
+            $("table[id^=grid]").each(function (a, b) {
+                var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
+                var id = $(b).attr('id');
+                if (typeof id !== "undefined") {
+                    obj.push({id, name});
+                }
+            });
+            element2.after(forms_select("Kies tabel: ", "select-" + elementID, "select-" + elementID, obj, ""));
+
+        }else {
+            parent.find("div[id='" + "select-" + elementID + "']").remove();
+        }
 //        if (this.value === 'number') {
 //            element2.after(forms_checkbox('Samenvatting', "summary-" + elementID, "option_summary", false));
 //        } else {
@@ -567,4 +579,37 @@ function gridClickFunctions(e, target) {
         target.jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
     }
 
+}
+
+function exportToHTML() {
+    console.log("exportToHTML()");
+    var htmlData = $("<output id='tempOutput'>");
+    htmlData.append("<link rel='stylesheet' href='./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css'>");
+    htmlData.append("<link rel='stylesheet' href='./CSS/style.css'>");
+    htmlData.append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"))));
+    var htmlTables = {};
+    $("table[id^=grid]").each(function (a, b) {
+        if ($(b).jqGrid('getGridParam') !== null) {
+            htmlTables[$(b).attr('id')] = buildHtmlTable($(b).jqGrid('getGridParam').data);
+        }
+    });
+    htmlData.find(("div[id^=gbox_grid]")).each(function (a, b) {
+        var htmlTable = "<table class='table'>" + htmlTables[$(b).attr('id').substring(5)][0].innerHTML + "</table>";
+        $(b).after("<div name='" + $(b).attr('id') + "' style='overflow-x:auto'>" + htmlTable + "</div>");
+        $(b).remove();
+    });
+    var images = loadImages("", htmlData);
+    var imagesWrapper = $("<div></div>");
+    images.each(function (index) {
+        htmlData.find("img[fileid=" + $(images[index]).attr('fileid') + "]").replaceWith($(images[index]));
+    });
+    htmlData.find("[contenteditable]").attr("contenteditable", false);
+    openFile("test.html", "<div class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + htmlData[0].innerHTML + "</div><div class='col-sm-1 mx-auto'></div></div>");
+
+}
+
+function openFile(filename, text) {
+    var x = window.open('about:blank', '_blank');
+    x.document.write(text);
+    x.document.close();
 }

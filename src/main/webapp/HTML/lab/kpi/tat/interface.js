@@ -5,7 +5,9 @@
  */
 $(function () {
     console.log("loading tat");
-    kpi_tat_loadSettings($("#div-grid-wrapper"));
+    //kpi_tat_loadSettings($("#div-grid-wrapper"));
+    kpi_loadSettings($("#div-grid-wrapper"), "tat", "PIVOTTABLE_GETTABLE", "PIVOTTABLE_EDIT", "LAB_KPI_TAT");
+
 })
 
 function loadPivotTable(_data, _settings) {

@@ -5,7 +5,9 @@
  */
 $(function () {
     console.log("loading hemoFP");
-    kpi_hemoFP_loadSettings($("#div-grid-wrapper"));
+    //kpi_hemoFP_loadSettings($("#div-grid-wrapper"));
+    kpi_loadSettings($("#div-grid-wrapper"), "hemoFP", "PIVOTTABLE_GETTABLE", "PIVOTTABLE_EDIT", "LAB_KPI_HEMOFP");
+
 })
 
 function loadPivotTable(_data, _settings) {

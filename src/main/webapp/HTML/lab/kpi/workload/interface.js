@@ -5,7 +5,9 @@
  */
 $(function () {
     console.log("loading workload");
-    kpi_workload_loadSettings($("#div-grid-wrapper"));
+    //kpi_workload_loadSettings($("#div-grid-wrapper"));
+    kpi_loadSettings($("#div-grid-wrapper"), "workload", "PIVOTTABLE_GETTABLE", "PIVOTTABLE_EDIT", "LAB_KPI_WORKPRESSURE");
+
 })
 
 function loadPivotTable(_data, _settings) {

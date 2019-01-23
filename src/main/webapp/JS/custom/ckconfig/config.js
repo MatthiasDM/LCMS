@@ -118,10 +118,10 @@ function config2() { //for inline editing
         }
     };
     CKEDITOR.config.contentsCss = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css';
-    CKEDITOR.scriptLoader.load("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js", function (success)
-    {
-        console.log("bootstrap js loaded");
-    });
+//    CKEDITOR.scriptLoader.load("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js", function (success)
+//    {
+//        console.log("bootstrap js loaded");
+//    });
     CKEDITOR.on('instanceReady', function () {
         console.log("loading images");
         $("div[id^=editable]").each(function (index) {
@@ -152,36 +152,9 @@ function config2() { //for inline editing
 
 
 
-function loadImages(editor) {
-    var images = $("#" + editor).find('[fileid]');
-    if (images.length < 1) {
-        images = $("#cke_" + editor).find("iframe").contents().find('[fileid]');
-    }
-    images.each(function (index) {
-        downloadToTemp($(this));
-    });
 
-}
 
-function downloadToTemp(file) {
-    var formData = new FormData();
-    formData.append('action', 'FILE_DOWNLOADTEMP');
-    formData.append('LCMS_session', $.cookie('LCMS_session'));
-    formData.append('filename', file.attr("name"));
-    var request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4) {
-            var jsonData = JSON.parse(request.responseText);
-            var filePath = jsonData.filePath;
-            console.log("Changing filepath from " + file.attr("src") + " to " + filePath);
-            file.attr("src", filePath);
-            
 
-        }
-    }
-    request.open('POST', "./upload", /* async = */ false);
-    request.send(formData);
-}
 
 function capturePaste(e) {
     var items = e.originalEvent.clipboardData.items;

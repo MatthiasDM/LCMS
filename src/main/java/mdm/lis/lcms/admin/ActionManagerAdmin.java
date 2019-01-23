@@ -142,7 +142,7 @@ public class ActionManagerAdmin {
         } else {
             if (action == mdm.Config.Actions.ADMIN_LOADUSERS) {
                 if (Core.checkSession(cookie)) {
-                    sb.append(DatabaseWrapper.getObjectData(cookie, mdm.Config.MongoConf.USERS, "user_table"));
+                    sb.append(DatabaseWrapper.getObjectData(cookie, mdm.Config.MongoConf.USERS, "user_table", new BasicDBObject(), new String[]{}));
                 } else {
                     sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
                 }

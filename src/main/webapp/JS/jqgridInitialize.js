@@ -34,7 +34,7 @@ $(function () {
         }, 100);
     };
     $.jgrid.defaults.responsive = true;
-    $.jgrid.defaults.guiStyle = 'bootstrap';
+    $.jgrid.defaults.guiStyle = 'bootstrap4';
 });
 function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _parent, _caption, _extraOptions, _parameters) {
     var _colModel = generateView2(_data);
@@ -62,7 +62,8 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
         rownumbers: true,
         responsive: true,
         headertitles: true,
-        guiStyle: "",
+        guiStyle: "bootstrap4",
+        //iconSet: "glyph",
         iconSet: "fontAwesome",
         searching: listGridFilterToolbarOptions,
         rowNum: 150,

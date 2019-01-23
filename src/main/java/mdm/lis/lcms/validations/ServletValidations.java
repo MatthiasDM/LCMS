@@ -117,7 +117,9 @@ public class ServletValidations extends HttpServlet {
                     sb.append(DatabaseWrapper.actionEDITOBJECT(requestParameters, cookie, action.getMongoConf()));
                 } else {
                     if (action.toString().contains("LOAD")) {
-                        sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf()));
+                        //sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf()));
+                        BasicDBObject searchObject = new BasicDBObject();
+                        sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf(), searchObject, new String[]{"contents"}));
                     }
                     if (action == mdm.Config.Actions.VALIDATION_GETVALIDATION) {
                         sb.append(actionGETVALIDATION());

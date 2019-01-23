@@ -39,7 +39,12 @@ and open the template in the editor.
         display:  inline-block;
     }
     
-    
+  /*PIVOTTABLE*/
+.pvtUi {
+    display: block;
+    width: 100%;
+    overflow: auto;
+}  
     
     
 

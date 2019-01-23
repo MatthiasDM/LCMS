@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 
-
 function buildHtmlTable(json) {
   var table = $("<table></table>");
   var columns = addAllColumnHeaders(json, table);
@@ -14,7 +13,7 @@ function buildHtmlTable(json) {
     for (var colIndex = 0; colIndex < columns.length; colIndex++) {
       var cellValue = json[i][columns[colIndex]];
       if (cellValue == null) cellValue = "";
-      row$.append($('<td/>').html(cellValue));
+      row$.append($("<td style='word-wrap: break-word;min-width: 50px;max-width: 160px;' />").html(cellValue));
     }
     table.append(row$);
   }
@@ -40,4 +39,36 @@ function addAllColumnHeaders(myList, table) {
   table.append(headerTr$);
 
   return columnSet;
+}
+
+function jqGridOptionsSimple(){
+    var jqgridOptions = {
+        data: JSON.parse(_data.table),
+        datatype: "local",
+        colModel: _colModel,
+        colNames: cols,
+        viewrecords: true, // show the current page, data rang and total records on the toolbar
+        autowidth: true,
+        autoheight: true,
+        rownumbers: true,
+        responsive: true,
+        headertitles: true,
+        guiStyle: "bootstrap4",
+        //iconSet: "glyph",
+        iconSet: "fontAwesome",
+        searching: listGridFilterToolbarOptions,
+        rowNum: 150,
+        mtype: 'POST',
+        altRows: true,
+        editurl: _editUrl,
+        loadonce: true,
+        ondblClickRow: editRow,
+        pager: _pagerName,
+        caption: _caption,
+        pgbuttons: false,
+        pgtext: "",
+        pginput: false
+
+    };
+    return jqgridOptions;
 }

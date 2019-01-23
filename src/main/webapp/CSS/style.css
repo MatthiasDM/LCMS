@@ -30,6 +30,12 @@ h1, .h1 {
     word-break: break-all;
 }
 
+/*JQGRID*/
+
+.jqgrow{
+    cursor:pointer;
+}
+
 jqgrid-bootstrap tr.jqgrow>td {
     padding: 0.8em .3em;
 }
@@ -77,3 +83,17 @@ jqgrid-bootstrap tr.jqgrow>td {
     -ms-border-radius: 0px;
     border-radius: 0px; 
 }
+
+ .ui-jqgrid tr.jqgrow td { word-wrap: break-word; /* IE 5.5+ and CSS3 */ white-space: pre-wrap; /* CSS3 */ white-space: -moz-pre-wrap; /* Mozilla, since 1999 */ white-space: -pre-wrap; /* Opera 4-6 */ white-space: -o-pre-wrap; /* Opera 7 */ overflow: hidden; height: auto; vertical-align: middle; padding-top: 3px; padding-bottom: 3px; }
+  
+.ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-pager .fa, .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-view .fa {
+    font-size: 1.2em;
+}
+
+ /*PIVOTTABLE*/
+.pvtUi {
+    display: block;
+    width: 100%;
+    overflow: auto;
+}  
+    

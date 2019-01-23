@@ -108,7 +108,7 @@ public class ServletTasks extends HttpServlet {
                     sb.append(DatabaseWrapper.actionEDITOBJECT(requestParameters, cookie, action.getMongoConf()));
                 } else {
                     if (action.toString().contains("LOAD")) {
-                        sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf()));
+                        sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf(), new BasicDBObject(), new String[]{}));
                     } else {
 
                     }
