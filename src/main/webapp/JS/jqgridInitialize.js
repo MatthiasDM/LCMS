@@ -188,6 +188,18 @@ function generateView2(data) {
         if (value.type === "boolean") {
             column.template = "booleanCheckbox";
         }
+
+        if (value.type === "internal_list") {
+            value.type = "select"
+            column.editoptions = {title: "internal_list"};
+            column.internalListName = value.internalListName;
+            column.internalListAttribute = value.internalListAttribute;
+
+        }
+        if (value.type === "external_list") {
+            value.type = "select"
+            column.editoptions = {title: "external_list"};
+        }
         if (value.type === "select") {
             column.edittype = "select";
             column.formatter = "select";
@@ -195,7 +207,12 @@ function generateView2(data) {
             if (value.choices.constructor.name === "String") {
                 value.choices = JSON.parse(value.choices);
             }
-            column.editoptions = {multiple: value.multiple, value: (value.choices)};
+            if (typeof column.editoptions === "undefined") {
+                column.editoptions = {};
+            }
+            column.editoptions.multiple = value.multiple;
+            column.editoptions.value = (value.choices);
+            column.editoptions.size = value.choices.length < 19 ? value.choices.length + 2 : 20;
         }
         if (value.type === "password") {
             column.edittype = "password";

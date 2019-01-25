@@ -1,3 +1,6 @@
+var colModels = [];
+var references = [];
+
 $(function () {
     //ICTtickets_doLoad($("#ICT-ticket-container"));
     console.log("loading CK config1");
@@ -77,13 +80,6 @@ function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId,
     }
 }
 
-//function new_sketch() {
-//    var editor = $($("div[id^='wrapper']")[0]);
-//    var sketch_field = $("<div id='sketch_" + uuidv4() + "'></div>");
-//    editor.append(sketch_field);
-//    LC.init(sketch_field, {imageSize: {width: 500, height: null}})
-//}
-
 function new_editable_field() {
     console.log("new_editable_field()");
     var editor = $($("div[id^='wrapper']")[0]);
@@ -138,9 +134,9 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     _grid.inlineNav(_tableOptions.pager, navGridParameters2, {}, addDataOptions);
 
     _grid.navButtonAdd(_tableOptions.pager, {
-        caption: "Options",
+        caption: "",
         title: "Click here to change columns",
-        buttonicon: "ui-icon-plusthick",
+        buttonicon: "fa-cogs",
         onClickButton: function () {
             new_grid_popup(_parent, _tableOptions);
         },
@@ -148,9 +144,9 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     });
 
     _grid.navButtonAdd(_tableOptions.pager, {
-        caption: "Export",
+        caption: "",
         title: "Export to plain HTML",
-        buttonicon: "ui-icon-plusthick",
+        buttonicon: "fa-download",
         onClickButton: function () {
             export_grid(_grid);
         },
@@ -236,9 +232,9 @@ function inlineEditRow(id) {
     }
 }
 
-function new_grid_popup(parent, _gridData) {
+function new_grid_popup(_parent, _gridData) {
     console.log("new_grid_popup()");
-    var modal = create_modal(parent, "Tabel invoegen of wijzigen", "");
+    var modal = create_modal(_parent, "Tabel invoegen of wijzigen", "");
 
     var form = createForm(modal.find("div[class='modal-body']"), _gridData);
     modal.modal('show');
@@ -246,129 +242,139 @@ function new_grid_popup(parent, _gridData) {
     modal.find("button[id=btn-save]").on('click', function (e) {
         e.preventDefault();
         modal.modal('hide');
-        var modalArray = form.serializeArray();
-        var importCSV = [];
-        //importCSV
-        var options = new Object();
-        var colModel = new Object();
-        var c = -1;
-        var summaries = [];
-        var groups = [];
-        $.each(modalArray, function (i, val) {
-            if (val.name === 'name') {
-                c++;
-                colModel[c] = new Object();
-                colModel[c].name = val.value;
-            }
-            if (val.name === 'type') {
-                colModel[c].type = val.value;
-            }
-            if (val.name === 'choices') {
-                colModel[c].choices = val.value.split(/\r\n/);
-            }
+        var colModelWrapper = createColModel(form, _gridData, _parent);
+        var gridId = createGridBasedOnModel(_gridData, colModelWrapper, _parent);
+        grids.gridId = _gridData;
 
-//            if (val.name === 'summary') {
-//                if(val.value === "on"){
-//                    colModel[c].summaryType = 'sum';
-//                }                
-//            }
 
-            if (val.name.match("^option")) {
-                var option = val.name.substring(7);
-                if (option === 'hidden') {
-                    if (val.value === "on") {
-                        colModel[c].hidden = true;
-                        colModel[c].visibleOnForm = true;
-                    }
-                }
-
-                if (option === 'summary') {
-                    summaries.push(val.value);
-                    Object.keys(colModel).forEach(function (i) {
-                        if (colModel[i].name === val.value) {
-                            colModel[i].summaryTpl = [
-                                "<span style=''>Subtotaal: {0}</span>"
-                            ];
-                            colModel[i].summaryType = "sum";
-
-                        }
-                    });
-                }
-                if (option === 'group') {
-                    groups.push(val.value);
-                }
-
-                options[val.name.substring(7)] = val.value;
-            }
-            if (val.name.match("^import")) {
-                if (val.value.length > 0) {
-                    importCSV = CSVToArray(val.value, ",");
-                }
-            }
-
-//            colModel[0].name = 
-//            $("#" + i).append(document.createTextNode(" - " + val));
-        });
-        //  delete colModel[c];
-        console.log(colModel);
-        if (summaries.length > 0) {
-            options.summaries = summaries;
-            options.footerrow = true;
-            options.userDataOnFooter = true;
-            options.loadComplete = function () {
-                var sumJson = {};
-                var grid = $(this);
-                summaries.forEach(function (a) {
-                    sumJson[a] = grid.jqGrid("getCol", a, false, "sum");
-                });
-                $(this).jqGrid("footerData", "set", sumJson);
-            };
-        } else {
-            options.footerrow = false;
-        }
-        if (groups.length > 0) {
-            options.groups = groups;
-            options.grouping = true;
-            options.groupingView = {
-                groupField: groups,
-                //groupColumnShow: [false, false],
-                groupText: ['<b>{0} - {1} Item(s) </b>', '<b>{0} - {1} Item(s)</b>'],
-                groupCollapse: false,
-                groupSummaryPos: ["header", "header"],
-                groupSummary: [true, true]
-            };
-
-        } else {
-            options.grouping = false;
-        }
-
-        var data = [];
-        var gridId;
-        if (typeof _gridData !== "undefined") {
-            var gridData = A = $.extend(true, [], _gridData);//_gridData.clone();
-            gridId = gridData.id;
-            parent.find(("div[id^=gbox_" + gridData.id + "]")).each(function (a, b) {
-                $(b).after("<div name='" + gridData.id + "'></div>");
-                $(b).remove();
-            });
-            parent.find(("div[id^=pager_gbox_" + gridData.id + "]")).each(function (a, b) {
-                $(b).remove();
-            });
-            $('#' + _gridData.id).jqGrid('GridUnload');
-            new_grid(parent.attr('id'), colModel, options, importCSV, gridData.data, gridData.id, $("div[name=" + gridData.id + "]"));
-            $("div[name=" + gridData.id + "]").remove();
-        } else {
-            gridId = "grid_" + uuidv4()
-            new_grid(parent.attr('id'), colModel, options, importCSV, data, gridId);
-        }
-
-        return colModel;
     });
 
     modal.on('hidden.bs.modal', function (e) {
         modal.remove();
     });
 
+}
+
+function createGridBasedOnModel(_gridData, _colModelWrapper, _parent) {
+    var data = [];
+    var importCSV = [];
+    var gridId;
+    if (typeof _gridData !== "undefined") {
+        var gridData = A = $.extend(true, [], _gridData);//_gridData.clone();
+        gridId = gridData.id;
+        _parent.find(("div[id^=gbox_" + gridData.id + "]")).each(function (a, b) {
+            $(b).after("<div name='" + gridData.id + "'></div>");
+            $(b).remove();
+        });
+        _parent.find(("div[id^=pager_gbox_" + gridData.id + "]")).each(function (a, b) {
+            $(b).remove();
+        });
+        $('#' + _gridData.id).jqGrid('GridUnload');
+        new_grid(_parent.attr('id'), _colModelWrapper.colModel, _colModelWrapper.options, importCSV, gridData.data, gridData.id, $("div[name=" + gridData.id + "]"));
+        $("div[name=" + gridData.id + "]").remove();
+    } else {
+        gridId = "grid_" + uuidv4();
+        new_grid(_parent.attr('id'), _colModelWrapper.colModel, _colModelWrapper.options, importCSV, data, gridId);
+    }
+    return gridId;
+}
+
+function createColModel(form, _gridData, parent) {
+    console.log("createColModel()");
+    var modalArray = form.serializeArray();
+    var options = new Object();
+    var colModel = new Object();
+    var c = -1;
+    var summaries = [];
+    var groups = [];
+    $.each(modalArray, function (i, val) {
+        if (val.name === 'name') {
+            c++;
+            colModel[c] = new Object();
+            colModel[c].name = val.value;
+        }
+        if (val.name === 'type') {
+            colModel[c].type = val.value;
+        }
+        if (val.name === 'choices') {
+            colModel[c].choices = val.value.split(/\r\n/);
+        }
+        if (val.name === 'internalListName') {
+            colModel[c].internalListName = val.value;
+        }
+        if (val.name === 'internalListAttribute') {
+            colModel[c].internalListAttribute = val.value;
+            colModel[c].choices = getValuesOfAttributeInList(colModel[c].internalListName, colModel[c].internalListAttribute);
+        }
+
+        if (val.name.match("^option")) {
+            var option = val.name.substring(7);
+            if (option === 'hidden') {
+                if (val.value === "on") {
+                    colModel[c].hidden = true;
+                    colModel[c].visibleOnForm = true;
+                }
+            }
+            if (option === 'multiple') {
+                colModel[c].multiple = true;
+            }
+
+            if (option === 'summary') {
+                summaries.push(val.value);
+                Object.keys(colModel).forEach(function (i) {
+                    if (colModel[i].name === val.value) {
+                        colModel[i].summaryTpl = [
+                            "<span style=''>Subtotaal: {0}</span>"
+                        ];
+                        colModel[i].summaryType = "sum";
+
+                    }
+                });
+            }
+            if (option === 'group') {
+                groups.push(val.value);
+            }
+
+            options[val.name.substring(7)] = val.value;
+        }
+        if (val.name.match("^import")) {
+            if (val.value.length > 0) {
+                importCSV = CSVToArray(val.value, ",");
+            }
+        }
+    });
+    console.log(colModel);
+    if (summaries.length > 0) {
+        options.summaries = summaries;
+        options.footerrow = true;
+        options.userDataOnFooter = true;
+        options.loadComplete = function () {
+            var sumJson = {};
+            var grid = $(this);
+            summaries.forEach(function (a) {
+                sumJson[a] = grid.jqGrid("getCol", a, false, "sum");
+            });
+            $(this).jqGrid("footerData", "set", sumJson);
+        };
+    } else {
+        options.footerrow = false;
+    }
+    if (groups.length > 0) {
+        options.groups = groups;
+        options.grouping = true;
+        options.groupingView = {
+            groupField: groups,
+            //groupColumnShow: [false, false],
+            groupText: ['<b>{0} - {1} Item(s) </b>', '<b>{0} - {1} Item(s)</b>'],
+            groupCollapse: false,
+            groupSummaryPos: ["header", "header"],
+            groupSummary: [true, true]
+        };
+
+    } else {
+        options.grouping = false;
+    }
+    return {"colModel": colModel, "options": options};
 }
 
 function createForm(parent, _griddata) {
@@ -391,7 +397,9 @@ function createForm(parent, _griddata) {
         for (var key in colModel) {
             if (typeof colModel[key].name !== 'undefined') {
                 if (colModel[key].name !== "rn") {
-                    addRow(form, uuidv4(), colModel[key].name, colModel[key].edittype || colModel[key].formatter || colModel[key].template, colModel[key].editoptions, colModel[key].hidden, colModel[key]);
+                    addRow(form,
+                            uuidv4(),
+                            colModel[key]);
                 }
             }
         }
@@ -424,6 +432,7 @@ function createForm(parent, _griddata) {
     var deleteTableButton = $("<button type='button' class='btn btn-danger'>Verwijder tabel</button>");
     form.append(deleteTableButton);
     deleteTableButton.on('click', function (e) {
+        $("#" + _griddata.id).remove();
         $("#" + _griddata.id).jqGrid('gridDestroy');
         $("#" + _griddata.id).jqGrid('gridUnload');
     });
@@ -468,21 +477,36 @@ function addElement(parent, element, colWidth, clazz) {
     return parent;
 }
 
-function addRow(parent, elementID, nameVal, typeVal, choiceList, visibleVal, colModel) {
+function addRow(parent, elementID, colModelValue) {
     console.log("addRow()");
+
+    var nameVal = colModelValue.name;
+    var typeVal = colModelValue.edittype || colModelValue.formatter || colModelValue.template;
+    var choiceList = colModelValue.editoptions;
+    var visibleVal = colModelValue.hidden;
+
+
+
     var row = dom_div("row row-striped");
 
     var element1 = $("<input type='text' class='form-control' name='name' id='name-" + elementID + "' placeholder='fieldname'>");
     element1.val(nameVal);
     row = addElement(row, element1, 4, "form-group");
 
-    var element2 = $("<select class='form-control' name='type' id='type-" + elementID + "'><option value='text'>Tekst</option><option value='number'>Getal</option><option value='euro'>Euro</option><option value='cktext_code'>Code</option><option value='date'>Datum</option><option value='cktext'>Tekst met opmaak</option><option value='select'>Keuzelijst</option><option value='internal_list'>Interne lijst</option><option value='external_list'>Externe lijst</option></select>");
-    if (typeVal === "textarea" && colModel.editoptions.title === "ckedit") {
+    var element2 = $("<select class='form-control' name='type' id='type-" + elementID + "'><option value='text'>Tekst</option><option value='number'>Getal</option><option value='euro'>Euro</option><option value='cktext_code'>Code</option><option value='date'>Datum</option><option value='cktext'>Tekst met opmaak</option><option value='select'>Keuzelijst</option><option value='internal_list' multiple='true'>Interne lijst</option><option value='external_list'>Externe lijst</option></select>");
+    if (typeVal === "textarea" && colModelValue.editoptions.title === "ckedit") {
         typeVal = "cktext";
     }
-    if (typeVal === "textarea" && colModel.editoptions.title === "ckedit_code") {
+    if (typeVal === "textarea" && colModelValue.editoptions.title === "ckedit_code") {
         typeVal = "cktext_code";
     }
+    if (typeVal === "select" && colModelValue.editoptions.title === "internal_list") {
+        typeVal = "internal_list";
+    }
+    if (typeVal === "select" && colModelValue.editoptions.title === "external_list") {
+        typeVal = "external_list";
+    }
+
     if (typeof typeVal !== "undefined") {
         if (typeVal.sorttype === "number") {
             typeVal = "number";
@@ -507,33 +531,29 @@ function addRow(parent, elementID, nameVal, typeVal, choiceList, visibleVal, col
             parent.find("div[id='" + "choicelist-" + elementID + "']").remove();
         }
         if (this.value === 'internal_list') {
-            var obj = [];
-            //var htmlData = $('<output>').append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"))));
-            $("table[id^=grid]").each(function (a, b) {
-                var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
-                var id = $(b).attr('id');
-                if (typeof id !== "undefined") {
-                    obj.push({id, name});
-                }
-            });
-            element2.after(forms_select("Kies tabel: ", "select-" + elementID, "select-" + elementID, obj, ""));
+            createInternalList(parent, element2, elementID);         
 
-        }else {
+        } else {
             parent.find("div[id='" + "select-" + elementID + "']").remove();
+            parent.find("div[id='" + "select-attribute-" + elementID + "']").remove();
         }
-//        if (this.value === 'number') {
-//            element2.after(forms_checkbox('Samenvatting', "summary-" + elementID, "option_summary", false));
-//        } else {
-//            parent.find("div[id='" + "summary-" + elementID + "']").remove();
-//        }
+
     });
-
-
 
 
     if (typeVal === "select") {
         element2.after(forms_textarea('Keuzelijst', "choicelist-" + elementID, "choices", choiceList.value));
     }
+    if (typeVal === "internal_list") {
+        element2.after(forms_select("Kies attribuut: ", "select-attribute-" + elementID, "internalListAttribute", getAttributesOfGrid(colModelValue.internalListName), colModelValue.internalListAttribute));
+        element2.after(forms_select("Kies tabel: ", "select-" + elementID, "internalListName", getGridsInDocument(), colModelValue.internalListName));
+        element2.after(forms_hidden("option_multiple","option_multiple", true));
+    }
+    if (typeVal === "external_list") {
+
+    }
+
+
 
 
 
@@ -551,8 +571,59 @@ function addRow(parent, elementID, nameVal, typeVal, choiceList, visibleVal, col
 
 }
 
-function mapGridDataToColumns(data, columns) {
+function createInternalList(parent, insetAfterObject, elementID) {
+    var obj = getGridsInDocument();
 
+    var forms_select_internal_list = forms_select("Kies tabel: ", "select-" + elementID, "internalListName", obj, "");
+    insetAfterObject.after(forms_select_internal_list);   
+    $("#select-" + forms_select_internal_list.attr("id")).on('change', function (e) {
+        parent.find("div[id='" + "select-attribute-" + elementID + "']").remove();
+        var obj = getAttributesOfGrid(this.value);
+        var forms_select_attribute = forms_select("Kies attribuut: ", "select-attribute-" + elementID, "internalListAttribute", obj, "");
+        forms_select_internal_list.after(forms_select_attribute);
+    });
+
+}
+
+function getGridsInDocument() {
+    var obj = [];
+    $("table[id^=grid]").each(function (a, b) {
+        var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
+        var id = $(b).attr('id');
+        if (typeof id !== "undefined") {
+            obj.push({id, name});
+        }
+    });
+    return obj;
+}
+
+function getAttributesOfGrid(_gridName) {
+    var obj = [];
+    $("table[id^=grid]").each(function (a, b) {
+        var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
+        if (name === _gridName) {
+            var names = $(b).jqGrid('getGridParam').colNames;
+            names.forEach(function (a) {
+                if (a !== "") {
+                    var name = a;
+                    var id = a;
+                    obj.push({id, name});
+                }
+            });
+        }
+    });
+    return obj;
+}
+
+function getValuesOfAttributeInList(_list, _attribute) {
+    var distinctAttributes;
+    $("table[id^=grid]").each(function (a, b) {
+        var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
+        if (name === _list) {
+            distinctAttributes = filterUniqueJson($(b).jqGrid("getGridParam").data, _attribute);
+        }
+    });
+    return distinctAttributes;
 }
 
 function gridClickFunctions(e, target) {

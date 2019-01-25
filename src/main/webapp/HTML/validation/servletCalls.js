@@ -75,7 +75,6 @@ function editValidation(id) {
     }
 }
 
-
 function validations_getValidation(_parent, _id) {
 
     var _cookie = $.cookie('LCMS_session');
@@ -102,14 +101,13 @@ function validations_getValidation(_parent, _id) {
             console.log("Regenerating grids...");
 
             try {
-                var validations_content = $.parseJSON(jsonData.replaces["validations-content"])
+                var validations_content = $.parseJSON(jsonData.replaces["validations-content"]);
                 jsonData.webPage = replaceAll(jsonData.webPage, "validations-content", validations_content.html);
                 grids = validations_content.grids;
+                
             } catch (e) {
                 jsonData.webPage = replaceAll(jsonData.webPage, "validations-content", jsonData.replaces["validations-content"]);
             }
-
-
 
             _parent.click();
         }
@@ -185,20 +183,6 @@ function loadValidationPage(jsonData, grids) {
         generate_grid(jsonData.parent, grid, value, extraOptions);
     });
 }
-
-//function validations_createMetaDataHeader(_metadata) {
-//    var container = $("<div></div>");
-//
-//    var div = $("<div class='container'></div>");
-//    var row = $("<div class='row'></div>");
-//    var metadata = JSON.parse(_metadata);
-//    row.append($("<div class='col'><button class='btn btn-secondary' type='button' onclick='validations_save(\"editor-" + metadata.docid + "\")'>Opslaan</button></div>"));
-//    row.append($("<div class='col'><h5>" + metadata.title + "</h5></div>"));
-//    row.append($("<div class='col'>Author: " + metadata.author + "</div>"));
-//    div.append(row);
-//    container.append(div);
-//    return container.html();
-//}
 
 function validations_save(instance) {
 // PREPARE FORM DATA

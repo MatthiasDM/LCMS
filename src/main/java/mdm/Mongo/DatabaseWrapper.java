@@ -184,6 +184,12 @@ public class DatabaseWrapper {
         }
         for (Field systemField : systemFields) {
             filteredObj.remove(systemField);
+            if (systemField.getName().equals("edited_on")) {
+                filteredObj.put(systemField.getName(), Instant.now().toEpochMilli() / 1000);
+            }
+            if (systemField.getName().equals("edited_by")) {
+                filteredObj.put(systemField.getName(), DatabaseActions.getSession(cookie).getUserid());
+            }
         }
         filteredObj.put(_mongoConf.getIdName(), obj.get(_mongoConf.getIdName()));
         Object originalDocument = getObject(_mongoConf, filteredObj.get(_mongoConf.getIdName()).toString());
@@ -198,7 +204,7 @@ public class DatabaseWrapper {
     public static void addObject(Document doc, MongoConf _mongoConf, String cookie) throws ClassNotFoundException {
         ObjectMapper mapper = new ObjectMapper();
         List<String> columns = getDocumentPriveleges("create", cookie, _mongoConf.getClassName());
-        List<Field> systemFields = mdm.Core.getSystemFields(_mongoConf.getClassName(), "edit");
+        List<Field> systemFields = mdm.Core.getSystemFields(_mongoConf.getClassName(), "create");
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         Document filteredDoc = new Document();
         for (String key : doc.keySet()) {
@@ -208,8 +214,15 @@ public class DatabaseWrapper {
         }
         for (Field systemField : systemFields) {
             filteredDoc.put(systemField.getName(), doc.get(systemField.getName()));
+            if (systemField.getName().equals("created_by")) {
+                filteredDoc.put(systemField.getName(), DatabaseActions.getSession(cookie).getUserid());
+            }
+            if (systemField.getName().equals("created_on")) {
+                filteredDoc.put(systemField.getName(), Instant.now().toEpochMilli() / 1000);
+            }
         }
         filteredDoc.put(_mongoConf.getIdName(), doc.get(_mongoConf.getIdName()));
+
         DatabaseActions.insertObjectItem(_mongoConf, filteredDoc);
 
     }
@@ -248,7 +261,7 @@ public class DatabaseWrapper {
         }
         return sb;
     }
-   
+
     public static StringBuilder actionLOADOBJECT(String cookie, MongoConf _mongoConf, Bson filter, String[] excludes) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
         if (cookie == null) {

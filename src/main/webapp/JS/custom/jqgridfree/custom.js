@@ -12,7 +12,10 @@ function buildHtmlTable(json) {
     var row$ = $('<tr/>');
     for (var colIndex = 0; colIndex < columns.length; colIndex++) {
       var cellValue = json[i][columns[colIndex]];
-      if (cellValue == null) cellValue = "";
+      if (cellValue === null) cellValue = "";
+      if(cellValue.match(/\d{12}/g)){
+          cellValue = moment.unix(cellValue).format('d-M-Y H:m');
+      }
       row$.append($("<td style='word-wrap: break-word;min-width: 50px;max-width: 160px;' />").html(cellValue));
     }
     table.append(row$);

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-function worksummary_doLoad(type) {
+function worksummary_doLoad(type, soort) {
     console.log("worksummary load");
     var _cookie = $.cookie('LCMS_session');
     $.ajax({
@@ -18,13 +18,53 @@ function worksummary_doLoad(type) {
         var data = parseJSONInput(JSON.parse(jsonData.data));
         issuers = parseJSONInput(JSON.parse(jsonData.issuers));
         stations = parseJSONInput(JSON.parse(jsonData.stations));
-        data = Object.filter(data, item => (
+
+        var dataDagelijks = Object.filter(data, item => (
                     moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._data.days < 1 &
                     String(item["ORDER"]).startsWith("L") === false & String(item["ORDER"]).startsWith("M") === false &
                     String(item["STATION"]).includes("POCT") === false && String(item["STATION"]).includes("VZ") === false
                     ));
 
-        preProcess(data, type);
+        var dataWekelijks = Object.filter(data, item => (
+                    moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._data.days >= 1 &
+                    moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._data.days < 7 &
+                    String(item["ORDER"]).startsWith("L") === false & String(item["ORDER"]).startsWith("M") === false &
+                    String(item["STATION"]).includes("POCT") === false && String(item["STATION"]).includes("VZ") === false
+                    ));
+
+        var dataVerzendingen = Object.filter(data, item => (
+                    moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._data.days >= 1 &
+                    moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._data.days < 7 &
+                    String(item["STATION"]).includes("VZ") === true && String(item["STATION"]).includes("POCT") === false
+                    ));
+
+        var dataDringend = Object.filter(data, item => (
+                    String(item["ORDER"]).startsWith("L") === false & String(item["ORDER"]).startsWith("M") === false &
+                    String(item["STATION"]).includes("POCT") === false && String(item["STATION"]).includes("VZ") === false &
+                    String(item["URGENT"]) === "TRUE"
+                    ));
+
+        var dataCommentaar = Object.filter(data, item => (
+                    String(item["ORDER"]).startsWith("L") === false & String(item["ORDER"]).startsWith("M") === false &
+                    String(item["STATION"]).includes("POCT") === false && String(item["STATION"]).includes("VZ") === false &
+                    String(item["INFO"]).length > 0
+                    ));
+            
+        if (typeof soort !== "undefined") {
+            if(soort === "dagelijks"){
+                preProcessDagelijks(dataDagelijks, type);                
+            }
+            if(soort === "wekelijks"){
+                preProcessWekelijks(dataWekelijks, type);                
+            }
+
+        } else {
+            preProcessDagelijks(dataDagelijks, type);
+            preProcessWekelijks(dataWekelijks, type);
+
+        }
+
+
 
         console.log(data);
     }).fail(function (data) {
@@ -32,17 +72,34 @@ function worksummary_doLoad(type) {
     });
 }
 
-function preProcess(data, type) {
+function preProcessDagelijks(data, type) {
     if (type === 'new') {
-        parseData(data, 1);
+        parseDataDagelijks(data, false);
 
     }
     if (type === 'refresh') {
-        refreshData(data, 2);
+        parseDataDagelijks(data, true);
     }
 
     setTimeout(function () {
-        worksummary_doLoad("refresh");
+        worksummary_doLoad("refresh", "dagelijks");
+    }, 100000);
+    setTimeout(function () {
+        bootstrap_alert.warning('Update in 5 sec.', 'info', 5000);
+    }, 95000);
+}
+
+function preProcessWekelijks(data, type) {
+    if (type === 'new') {
+        parseDataWekelijks(data, false);
+
+    }
+    if (type === 'refresh') {
+        parseDataWekelijks(data, true);
+    }
+
+    setTimeout(function () {
+        worksummary_doLoad("refresh", "wekelijks");
     }, 100000);
     setTimeout(function () {
         bootstrap_alert.warning('Update in 5 sec.', 'info', 5000);

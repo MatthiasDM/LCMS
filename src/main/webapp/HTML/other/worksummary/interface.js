@@ -9,114 +9,83 @@ $(function () {
     worksummary_doLoad('new');
 });
 
-function refreshData(data) {
-    console.log("refreshData()");
-    //-----------------KNOKKE----------------------------------------------------------
-    //---------------------------------------------------------------------------
-    perGroep(null, data, gridIds[3].gridid, true, "KNOKKE");
-    //-----------------BRUGGE----------------------------------------------------------
-    //---------------------------------------------------------------------------
-    perGroep(null, data, gridIds[4].gridid, true, "BRUGGE");
-    //----------------ORDERS MET KLINISCHE INFO-----------------------------------------------------------
-    //---------------------------------------------------------------------------
-    perKlinischeInfo(data, gridIds[2].gridid, true);
-    //----------------ORDERS PER TOESTEL-----------------------------------------------------------
-    //---------------------------------------------------------------------------    
-    perToestel(null, data, gridIds[0].gridid, true);
-    //-----------------ORDERS PER ARTS----------------------------------------------------------
-    //---------------------------------------------------------------------------
-    perArts(null, data, gridIds[1].gridid, true);
+function parseDataDagelijks(data, refresh) {
 
-}
+    if (!refresh) {
+        console.log("parseData()");
+        var gridId;
+        var row1 = $("<div class='row'></div>");
+        var row2 = $("<div class='row'></div>");
+        var row3 = $("<div class='row'></div>");
+        $("#worksummary-container-dagelijks").append(row1);
+        $("#worksummary-container-dagelijks").append(row2);
+        $("#worksummary-container-dagelijks").append(row3);
 
-function parseData(data) {
-    console.log("parseData()");
-    var gridId;
-    var row1 = $("<div class='row'></div>");
-    var row2 = $("<div class='row'></div>");
-    var row3 = $("<div class='row'></div>");
-    $("#worksummary-container").append(row1);
-    $("#worksummary-container").append(row2);
-    $("#worksummary-container").append(row3);
+        for (var i = 0; i < 5; i++)
+            gridIds.push({gridid: "grid_" + uuidv4(), gridexpandedgroups: []});
 
-    gridIds = [
-        {
-            gridid: "grid_" + uuidv4(),
-            gridexpandedgroups: []
-        },
-        {
-            gridid: "grid_" + uuidv4(),
-            gridexpandedgroups: []
-        },
-        {
-            gridid: "grid_" + uuidv4(),
-            gridexpandedgroups: []
-        },
-        {
-            gridid: "grid_" + uuidv4(),
-            gridexpandedgroups: []
-        },
-        {
-            gridid: "grid_" + uuidv4(),
-            gridexpandedgroups: []
-        }
-    ];
+
+    }
 
     //KNOKKE----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perGroep(row1, data, gridIds[3].gridid, false, "KNOKKE");
+    perGroep(row1, data, gridIds[3].gridid, refresh, "KNOKKE");
     //BRUGGE----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perGroep(row1, data, gridIds[4].gridid, false, "BRUGGE");
+    perGroep(row1, data, gridIds[4].gridid, refresh, "BRUGGE");
 
     //ORDERS MET KLINISCHE INFO-----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perKlinischeInfo(row2, data, gridIds[2].gridid, false);
+    perKlinischeInfo(row2, data, gridIds[2].gridid, refresh);
     //ORDERS PER TOESTEL-----------------------------------------------------------
     //---------------------------------------------------------------------------    
-    perToestel(row3, data, gridIds[0].gridid, false);
+    perToestel(row3, data, gridIds[0].gridid, refresh);
     //ORDERS PER ARTS----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perArts(row3, data, gridIds[1].gridid, false);
+    perArts(row3, data, gridIds[1].gridid, refresh);
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
-
 }
 
-function filterUnique(data, filterBy) {
-    var lookup = {};
-    var items = data;
-    var result = [];
+function parseDataWekelijks(data, refresh) {
 
-    for (var item, i = 0; item = items[i++]; ) {
-
-        //$.each((item), function (key, value) {
-        var key = item[filterBy];
-        if (!(key in lookup)) {
-            lookup[key] = 1;
-            result.push(key);
-        }
+    if (!refresh) {
+        console.log("parseData()");
+        var gridId;
+        var row1 = $("<div class='row'></div>");
+        var row2 = $("<div class='row'></div>");
+        var row3 = $("<div class='row'></div>");
+        $("#worksummary-container-wekelijks").append(row1);
+        $("#worksummary-container-wekelijks").append(row2);
+        $("#worksummary-container-wekelijks").append(row3);
+        for (var i = 0; i < 5; i++)
+            gridIds.push({gridid: "grid_" + uuidv4(), gridexpandedgroups: []});
 
     }
-    return result;
+
+    //KNOKKE----------------------------------------------------------
+    //---------------------------------------------------------------------------
+    perGroep(row1, data, gridIds[7].gridid, refresh, "KNOKKE");
+    //BRUGGE----------------------------------------------------------
+    //---------------------------------------------------------------------------
+    perGroep(row1, data, gridIds[8].gridid, refresh, "BRUGGE");
+
+    //ORDERS MET KLINISCHE INFO-----------------------------------------------------------
+    //---------------------------------------------------------------------------
+    perKlinischeInfo(row2, data, gridIds[6].gridid, refresh);
+    //ORDERS PER TOESTEL-----------------------------------------------------------
+    //---------------------------------------------------------------------------    
+    perToestel(row3, data, gridIds[4].gridid, refresh);
+    //ORDERS PER ARTS----------------------------------------------------------
+    //---------------------------------------------------------------------------
+    perArts(row3, data, gridIds[5].gridid, refresh);
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
 }
 
-function filterUniqueJson(data, filterBy) {
-    var lookup = {};
-    var items = data;
-    var result = [];
 
 
-    Object.keys(data).forEach(function (val) {
-        var key = data[val][filterBy];
-        if (!(key in lookup)) {
-            lookup[key] = 1;
-            result.push(key);
-        }
-    })
 
-    return result;
-}
 
 function getInformation(data, idField) {
     var info = new Object();
@@ -193,7 +162,7 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     var navGridParameters2 = {edit: false, add: false, save: false, cancel: false};
 
     //_grid.inlineNav(_tableOptions.pager, navGridParameters2, {}, addDataOptions);
-    _grid.jqGrid('filterToolbar');   
+    _grid.jqGrid('filterToolbar');
     //_grid.jqGrid('sortableRows', {});
     _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").addClass("card-header card-primary text-white text-center");
     _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").css("background-color", "white");
@@ -201,7 +170,10 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     var barinfo = getGroupInformation(_tableOptions.data);
     var bar1 = barinfo.sumKnownTests / (barinfo.sumKnownTests + barinfo.sumUnknownTests) * 100;
     var bar2 = barinfo.sumUnknownTests / (barinfo.sumKnownTests + barinfo.sumUnknownTests) * 100;
-    if(bar1.toString() === "NaN"){bar1 = 100;};
+    if (bar1.toString() === "NaN") {
+        bar1 = 100;
+    }
+    ;
     var progess = dom_progressbar([{value: bar1, color: 'rgba(43, 121, 83, 1)'}, {value: bar2, color: 'rgba(66,139,202, 1)'}], 'progress_' + _grid.attr('id'));
 
     //  rgba(170, 146, 57, 1)
@@ -233,15 +205,17 @@ function gridClickFunctions(e, target) {
         var index = gridIds.map(function (e) {
             return e.gridid;
         }).indexOf(target.attr('id'));
-
         var indexofClickItem = gridIds[index].gridexpandedgroups.find(function (a) {
             return a === $groupHeader.attr("id")
         });
+
         if (typeof indexofClickItem !== "undefined") {
             gridIds[index].gridexpandedgroups.splice(indexofClickItem, 1);
         } else {
             gridIds[index].gridexpandedgroups.push($groupHeader.attr("id"));
         }
+
+
     }
 
     $groupHeader = $(e.target).closest("span.tree-wrap");

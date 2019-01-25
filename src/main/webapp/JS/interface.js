@@ -248,6 +248,14 @@ function forms_textbox(title, id, name, val) {
     return form_group;
 }
 
+function forms_hidden(id, name, val) {
+    var form_group = $("<div id='" + id + "' class='form-group'></div>");
+    var hidden = $("<input class=\"form-control\" type=\"hidden\" value=\"\" name='" + name + "' id='" + id + "' >");
+    form_group.append(hidden);
+    hidden.val(val);
+    return form_group;
+}
+
 function forms_select(title, id, name, valObjects, val) {
     console.log("forms_select()");
     var form_group = $("<div id='" + id + "' class='form-group'></div>");

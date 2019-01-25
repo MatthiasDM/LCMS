@@ -49,7 +49,8 @@ public class Workflows {
 
             List<String> receivers = new ArrayList<>();
             receivers.addAll(Arrays.asList(requestParameters.get("involved_persons")));
-            receivers.add(requestParameters.get("created_by")[0]);
+            String created_by = DatabaseActions.getSession(cookie).getUserid();
+            receivers.add(created_by);
             receivers.add(requestParameters.get("approver")[0]);
             String content = "Beste,<br><br>Er is een nieuw ICT-ticket aangemaakt.<br><br><b>Titel:</b> " + requestParameters.get("subject")[0] + "<br><br><b>Inhoud:</b><br><br>" + requestParameters.get("overview")[0];
             HashMap<String, Object> parameters = Core.createMailParameters(receivers, "Update ICT-melding: " + requestParameters.get("subject")[0], content);
