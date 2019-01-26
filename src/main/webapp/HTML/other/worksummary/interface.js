@@ -1,13 +1,29 @@
 var gridIds = [];
-
+var jumboColumn;
 Object.filter = (obj, predicate) =>
     Object.keys(obj)
             .filter(key => predicate(obj[key]))
             .reduce((res, key) => (res[key] = obj[key], res), {});
 
 $(function () {
+    replaceJumbo();
     worksummary_doLoad('new');
 });
+
+function replaceJumbo(){
+    var jumbotron = $("#jumbotron");
+    var container = dom_div("container");
+    jumbotron.append(container);
+    var row = dom_row(uuidv4());
+    container.append(row);
+    var col1 = dom_col(uuidv4(), 6);
+    row.append(col1);
+    $("#text-jumbo-heading").appendTo(col1);
+    $("#text-jumbo-info").appendTo(col1);
+    jumboColumn = dom_col(uuidv4(), 6);
+    row.append(jumboColumn);
+    
+}
 
 function parseDataDagelijks(data, refresh) {
 
@@ -26,23 +42,25 @@ function parseDataDagelijks(data, refresh) {
 
 
     }
+    
+    //ORDERS MET KLINISCHE INFO-----------------------------------------------------------
+    //---------------------------------------------------------------------------
+    perKlinischeInfo(row2, data, gridIds[2].gridid, refresh, $("#div-quickview"));
 
     //KNOKKE----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perGroep(row1, data, gridIds[3].gridid, refresh, "KNOKKE");
+    perGroep(row1, data, gridIds[3].gridid, refresh, "KNOKKE", 3);
     //BRUGGE----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perGroep(row1, data, gridIds[4].gridid, refresh, "BRUGGE");
+    perGroep(row1, data, gridIds[4].gridid, refresh, "BRUGGE", 4);
 
-    //ORDERS MET KLINISCHE INFO-----------------------------------------------------------
-    //---------------------------------------------------------------------------
-    perKlinischeInfo(row2, data, gridIds[2].gridid, refresh);
+
     //ORDERS PER TOESTEL-----------------------------------------------------------
     //---------------------------------------------------------------------------    
-    perToestel(row3, data, gridIds[0].gridid, refresh);
+    perToestel(row3, data, gridIds[0].gridid, refresh, 0);
     //ORDERS PER ARTS----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perArts(row3, data, gridIds[1].gridid, refresh);
+    perArts(row3, data, gridIds[1].gridid, refresh, 1);
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 }
@@ -65,27 +83,28 @@ function parseDataWekelijks(data, refresh) {
 
     //KNOKKE----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perGroep(row1, data, gridIds[7].gridid, refresh, "KNOKKE");
+    perGroep(row1, data, gridIds[7].gridid, refresh, "KNOKKE", 7);
     //BRUGGE----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perGroep(row1, data, gridIds[8].gridid, refresh, "BRUGGE");
+    perGroep(row1, data, gridIds[8].gridid, refresh, "BRUGGE", 8);
 
     //ORDERS MET KLINISCHE INFO-----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perKlinischeInfo(row2, data, gridIds[6].gridid, refresh);
+    //perKlinischeInfo(row2, data, gridIds[6].gridid, refresh);
     //ORDERS PER TOESTEL-----------------------------------------------------------
     //---------------------------------------------------------------------------    
-    perToestel(row3, data, gridIds[4].gridid, refresh);
+    perToestel(row3, data, gridIds[4].gridid, refresh, 4);
     //ORDERS PER ARTS----------------------------------------------------------
     //---------------------------------------------------------------------------
-    perArts(row3, data, gridIds[5].gridid, refresh);
+    perArts(row3, data, gridIds[5].gridid, refresh, 5);
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 }
 
-
-
-
+function parseDringendeStalen(data, refresh){
+    var btn = dom_button("btn-urgent", "exclamation", "danger");
+    jumboColumn.append(btn);
+}
 
 function getInformation(data, idField) {
     var info = new Object();
@@ -184,12 +203,12 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
         $(".ui-jqgrid-titlebar-close", this).click();
     });
     _grid.click(function (e) {
-        gridClickFunctions(e, $(this))
+        gridClickFunctions(e, $(this));
     });
 
-    $(window).bind('resize', function () {
-        _grid.setGridWidth(_parent.width() - 5);
-    }).trigger('resize');
+//    $(window).bind('resize', function () {
+//        _grid.setGridWidth(_parent.width() - 5);
+//    }).trigger('resize');
 
 
 

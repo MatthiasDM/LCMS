@@ -13,8 +13,8 @@ function buildHtmlTable(json) {
     for (var colIndex = 0; colIndex < columns.length; colIndex++) {
       var cellValue = json[i][columns[colIndex]];
       if (cellValue === null) cellValue = "";
-      if(cellValue.match(/\d{12}/g)){
-          cellValue = moment.unix(cellValue).format('d-M-Y H:m');
+      if(typeof cellValue === "number" && String(cellValue).match(/\d{13}/g)){
+          cellValue = moment.unix(cellValue/1000).format('d-M-Y H:m');
       }
       row$.append($("<td style='word-wrap: break-word;min-width: 50px;max-width: 160px;' />").html(cellValue));
     }

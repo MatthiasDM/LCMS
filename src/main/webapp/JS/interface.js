@@ -289,8 +289,100 @@ function dom_progressbar(bars, id) {
     return progress;
 }
 
-function dom_div(_class) {
-    return $("<div class='" + _class + "'></div>");
+function dom_moveUpDownList(id, data) {
+    console.log("dom_moveUpDownList()");
+    var wrapper = dom_div("", id);
+
+    //-------------------
+    var container = dom_div("container");
+    var row1 = dom_row();
+    row1.css('padding', '5px');
+    var col1 = dom_col("", 6);
+    var col2 = dom_col("", 6);
+    col1.attr('align', 'center');
+    col2.attr('align', 'center');
+    var btn1 = dom_button("up", "arrow-up", "", "outline-secondary");
+    var btn2 = dom_button("down", "arrow-down", "", "outline-secondary");
+    //-------------------
+    var row2 = dom_row();
+    var col3 = dom_col("", 12);
+    var ul = $("<ul class='list-group' id='element-list'></ul> ");
+
+//    data.forEach(function (object, index) {
+//        for (var property in object) {
+//            if (object.hasOwnProperty(property)) {
+//                ul.append("<li class='list-group-item' id='" + property + "'>" + object[property] + "</li>");
+//            }
+//        }
+//    });
+
+    data.each(function (index, obj) {
+        ul.append("<li class='list-group-item' element='" + obj.id + "'>" + "<span>" + (index + 1) + "</span>" + ": " + obj.innerText.substring(0, 20).trim() + "</li>");
+    });
+
+    //-------------------
+
+    container.append(row1);
+    row1.append(col1);
+    col1.append(btn1);
+    row1.append(col2);
+    col2.append(btn2);
+    container.append(row2);
+    row2.append(col3);
+    col3.append(ul);
+    wrapper.append(container);
+
+    wrapper.find("#up").on('click', function () {
+        var $currentElement = $('#element-list .active');
+        moveUp($currentElement);
+    });
+
+    wrapper.find("#down").on('click', function () {
+        var $currentElement = $('#element-list .active');
+        moveDown($currentElement);
+    });
+
+    var moveUp = function ($currentElement) {
+        var hook = $currentElement.prev('.list-group-item');
+        if (hook.length) {
+            var elementToMove = $currentElement.detach();
+            hook.before(elementToMove);
+            var toBeMovedDown = $("#" + hook.attr('element'));
+            var toBeMovedUp = $("#" + $currentElement.attr('element'));
+            toBeMovedUp.detach().insertBefore(toBeMovedDown);
+        }
+
+
+
+    };
+
+    var moveDown = function ($currentElement) {
+        var hook = $currentElement.next('.list-group-item');
+        if (hook.length) {
+            var elementToMove = $currentElement.detach();
+            hook.after(elementToMove);
+            var toBeMovedUp = $("#" + hook.attr('element'));
+            var toBeMovedDown = $("#" + $currentElement.attr('element'));
+            toBeMovedDown.detach().insertAfter(toBeMovedUp);
+        }
+    };
+
+
+    return wrapper;
+}
+
+function dom_div(_class, _id) {
+    return $("<div class='" + _class + "' id='" + _id + "'></div>");
+}
+function dom_row(id) {
+    return $("<div id='" + id + "' class='row'></div>");
+}
+function dom_col(id, size) {
+    return $("<div id='" + id + "' class='col-sm-" + size + " mx-auto'></div>");
+}
+
+function dom_button(id, icon, text, color) {
+    return ("<button type='button' id='" + id + "' class='btn btn-" + color + "'><span class='fa fa-lg fa-fw fa-" + icon + "'>" + text + "</span></button>");
 }
 
 function CSVToArray(strData, strDelimiter) {

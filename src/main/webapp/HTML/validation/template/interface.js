@@ -12,6 +12,8 @@ $(function () {
             window.open(e.target.href, 'new' + e.screenX);
         }
     });
+    $("#validation-elements").remove();
+    $('#toc').append(dom_moveUpDownList("validation-elements",$("div[id^=gbox_grid], div[id^=editable]")));
 });
 
 function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId, location) {
@@ -236,14 +238,17 @@ function new_grid_popup(_parent, _gridData) {
     console.log("new_grid_popup()");
     var modal = create_modal(_parent, "Tabel invoegen of wijzigen", "");
 
-    var form = createForm(modal.find("div[class='modal-body']"), _gridData);
+    var form = createForm(modal.find("div[class='modal-body']"), _gridData, modal);
     modal.modal('show');
 
     modal.find("button[id=btn-save]").on('click', function (e) {
         e.preventDefault();
         modal.modal('hide');
-        var colModelWrapper = createColModel(form, _gridData, _parent);
-        var gridId = createGridBasedOnModel(_gridData, colModelWrapper, _parent);
+
+        var colModelWrapper = createColModel(form, _gridData, _parent); //1. create new colModel
+        var newColumns = filterUniqueJson(colModelWrapper.colModel, "name"); //2. remove unused rows of data
+        _gridData.data = removeUnusedDataFromJqGrid(newColumns, _gridData.data, colModelWrapper.options.renames);
+        var gridId = createGridBasedOnModel(_gridData, colModelWrapper, _parent); //3. create new grid based on colModel
         grids.gridId = _gridData;
 
 
@@ -287,6 +292,8 @@ function createColModel(form, _gridData, parent) {
     var c = -1;
     var summaries = [];
     var groups = [];
+    var renames = new Object();
+
     $.each(modalArray, function (i, val) {
         if (val.name === 'name') {
             c++;
@@ -318,6 +325,9 @@ function createColModel(form, _gridData, parent) {
             if (option === 'multiple') {
                 colModel[c].multiple = true;
             }
+            if (option === 'rename') {      
+                renames[val.value] = colModel[c].name;
+            }
 
             if (option === 'summary') {
                 summaries.push(val.value);
@@ -344,6 +354,9 @@ function createColModel(form, _gridData, parent) {
         }
     });
     console.log(colModel);
+    if ($.isEmptyObject(renames) === false) {
+        options.renames = renames;
+    }
     if (summaries.length > 0) {
         options.summaries = summaries;
         options.footerrow = true;
@@ -377,7 +390,7 @@ function createColModel(form, _gridData, parent) {
     return {"colModel": colModel, "options": options};
 }
 
-function createForm(parent, _griddata) {
+function createForm(_parent, _griddata, _modal) {
     console.log("createForm()");
     if (typeof _griddata === 'undefined') {
         _griddata = {};
@@ -433,12 +446,14 @@ function createForm(parent, _griddata) {
     form.append(deleteTableButton);
     deleteTableButton.on('click', function (e) {
         $("#" + _griddata.id).remove();
-        $("#" + _griddata.id).jqGrid('gridDestroy');
-        $("#" + _griddata.id).jqGrid('gridUnload');
+        $("#" + _griddata.id).jqGrid('GridUnload');
+        $("#" + _griddata.id).jqGrid('GridDestroy');
+        _modal.modal('hide');
+       
     });
 
 
-    parent.append(form);
+    _parent.append(form);
     return form;
 }
 
@@ -523,6 +538,15 @@ function addRow(parent, elementID, colModelValue) {
     var element4 = $("<button type='button' class='btn btn-secondary'>X</button>");
     row = addElement(row, element4, 2, "form-group");
 
+    element1.on('change', function (e) {
+        if ($("#option_rename-name-" + elementID).length < 1 && typeof nameVal !== "undefined") {
+            if (element1.val !== nameVal) {
+                element1.after(forms_hidden("option_rename-name-" + elementID, "option_rename", nameVal));
+            }
+
+        }
+    });
+
     element2.on('change', function (e) {
         var val = this.value;
         if (this.value === 'select') {
@@ -531,7 +555,7 @@ function addRow(parent, elementID, colModelValue) {
             parent.find("div[id='" + "choicelist-" + elementID + "']").remove();
         }
         if (this.value === 'internal_list') {
-            createInternalList(parent, element2, elementID);         
+            createInternalList(parent, element2, elementID);
 
         } else {
             parent.find("div[id='" + "select-" + elementID + "']").remove();
@@ -541,13 +565,14 @@ function addRow(parent, elementID, colModelValue) {
     });
 
 
+
     if (typeVal === "select") {
         element2.after(forms_textarea('Keuzelijst', "choicelist-" + elementID, "choices", choiceList.value));
     }
     if (typeVal === "internal_list") {
         element2.after(forms_select("Kies attribuut: ", "select-attribute-" + elementID, "internalListAttribute", getAttributesOfGrid(colModelValue.internalListName), colModelValue.internalListAttribute));
         element2.after(forms_select("Kies tabel: ", "select-" + elementID, "internalListName", getGridsInDocument(), colModelValue.internalListName));
-        element2.after(forms_hidden("option_multiple","option_multiple", true));
+        element2.after(forms_hidden("option_multiple", "option_multiple", true));
     }
     if (typeVal === "external_list") {
 
@@ -575,7 +600,7 @@ function createInternalList(parent, insetAfterObject, elementID) {
     var obj = getGridsInDocument();
 
     var forms_select_internal_list = forms_select("Kies tabel: ", "select-" + elementID, "internalListName", obj, "");
-    insetAfterObject.after(forms_select_internal_list);   
+    insetAfterObject.after(forms_select_internal_list);
     $("#select-" + forms_select_internal_list.attr("id")).on('change', function (e) {
         parent.find("div[id='" + "select-attribute-" + elementID + "']").remove();
         var obj = getAttributesOfGrid(this.value);
@@ -683,4 +708,28 @@ function openFile(filename, text) {
     var x = window.open('about:blank', '_blank');
     x.document.write(text);
     x.document.close();
+}
+
+function removeUnusedDataFromJqGrid(_columns, _data, _renames) {
+    console.log("removeUnusedDataFromJqGrid()");
+    var data = _data;
+    data.forEach(function (object, index) {
+        for (var property in object) {
+            if (object.hasOwnProperty(property)) {
+
+                if (typeof _renames !== "undefined") {
+                    if (typeof _renames[property] !== "undefined") {
+                        object[_renames[property]] = object[property];
+                        delete object[property];
+                    } 
+                }
+
+                if (_columns.includes(property) === false) {
+                    delete object[property];
+                }
+
+            }
+        }
+    });
+    return data;
 }

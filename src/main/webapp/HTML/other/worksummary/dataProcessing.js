@@ -7,7 +7,7 @@ var issuers = {};
 var stations = {};
 
 
-function perToestel(row, data, gridId, refresh) {
+function perToestel(row, data, gridId, refresh, gridIdIndex) {
     console.log("perToestel()");
     var col = $("<div class='col-sm-6 mx-auto'></div>");
     var colModel = [
@@ -15,7 +15,7 @@ function perToestel(row, data, gridId, refresh) {
         {name: "Orders", type: "number"},
         {name: "Gekende testen", type: "number"},
         {name: "Openstaande testen", type: "number"},
-        {name: "Werkpost", type: "text"},
+        {name: "Werkpost", type: "text"}
     ]
     var processedData = perToestelDataVerwerking(data);
     var gridData = processedData.gridData;
@@ -29,9 +29,9 @@ function perToestel(row, data, gridId, refresh) {
     } else {
         console.log("refreshing " + gridId);
         extraOptions.gridComplete = function () {
-            for (var j = 0; j < gridIds[0].gridexpandedgroups.length; j = j + 1) {
-                $("#" + gridId).jqGrid('expandSubGridRow', gridIds[0].gridexpandedgroups[j]);
-                $("#" + gridId).jqGrid("groupingToggle", gridIds[0].gridexpandedgroups[j], $("#" + gridIds[0].gridexpandedgroups[j]));
+            for (var j = 0; j < gridIds[gridIdIndex].gridexpandedgroups.length; j = j + 1) {
+                $("#" + gridId).jqGrid('expandSubGridRow', gridIds[gridIdIndex].gridexpandedgroups[j]);
+                $("#" + gridId).jqGrid("groupingToggle", gridIds[gridIdIndex].gridexpandedgroups[j], $("#" + gridIds[gridIdIndex].gridexpandedgroups[j]));
             }
         };
         replaceProgressBar(gridId, gridData);
@@ -86,7 +86,7 @@ function perToestelDataVerwerking(data) {
     return output;
 }
 
-function perArts(row, data, gridId, refresh) {
+function perArts(row, data, gridId, refresh, gridIdIndex) {
     console.log("perArts()");
     var col = $("<div class='col-sm-6 mx-auto'></div>");
     var colModel = [
@@ -94,7 +94,7 @@ function perArts(row, data, gridId, refresh) {
         {name: "Orders", type: "number"},
         {name: "Gekende testen", type: "number"},
         {name: "Openstaande testen", type: "number"},
-        {name: "Groep", type: "text"},
+        {name: "Groep", type: "text"}
     ]
 
     var processedData = perArtsDataVerwerking(data);
@@ -108,9 +108,9 @@ function perArts(row, data, gridId, refresh) {
         $("#" + gridId).jqGrid('setGridState', 'hidden');
     } else {
         extraOptions.gridComplete = function () {
-            for (var j = 0; j < gridIds[1].gridexpandedgroups.length; j = j + 1) {
-                $("#" + gridId).jqGrid('expandSubGridRow', gridIds[1].gridexpandedgroups[j]);
-                $("#" + gridId).jqGrid("groupingToggle", gridIds[1].gridexpandedgroups[j], $("#" + gridIds[1].gridexpandedgroups[j]));
+            for (var j = 0; j < gridIds[gridIdIndex].gridexpandedgroups.length; j = j + 1) {
+                $("#" + gridId).jqGrid('expandSubGridRow', gridIds[gridIdIndex].gridexpandedgroups[j]);
+                $("#" + gridId).jqGrid("groupingToggle", gridIds[gridIdIndex].gridexpandedgroups[j], $("#" + gridIds[gridIdIndex].gridexpandedgroups[j]));
             }
         };
         $("#" + gridId).jqGrid('setGridParam', extraOptions).trigger("reloadGrid");
@@ -169,8 +169,9 @@ function perArtsDataVerwerking(data) {
     return output;
 }
 
-function perKlinischeInfo(row, data, gridId, refresh) {
-    var col = $("<div class='col-sm-12 mx-auto'></div>");
+function perKlinischeInfo(row, data, gridId, refresh, parent) {
+       
+    
     var colModel = [
         {name: "Order", type: "text"},
         {name: "Aanvrager", type: "text"},
@@ -179,10 +180,10 @@ function perKlinischeInfo(row, data, gridId, refresh) {
     var processedData = perKlinischoInfoDataVerwerking(data);
     var gridData = processedData.gridData;
     if (refresh === false) {
-        row.append(col);
-        new_grid(colModel, {caption: "Orders met commentaar", cmTemplate: {autoResizable: true}, autoResizing: {compact: true, resetWidthOrg: true}, autowidth: true, autoresizeOnLoad: true}, gridData, gridId, col);
-        $("#" + gridId).setGridWidth(col.width() - 5);
-        $("#" + gridId).trigger('resize');
+    
+        new_grid(colModel, {caption: "Orders met commentaar", cmTemplate: {autoResizable: true}, autoResizing: {compact: true, resetWidthOrg: true}, autowidth: true, autoresizeOnLoad: true}, gridData, gridId, parent);
+        //$("#" + gridId).setGridWidth(col.width() - 5);
+        //$("#" + gridId).trigger('resize');
     } else {
         $("#" + gridId)
                 .jqGrid('setGridParam', {data: gridData})
@@ -212,7 +213,7 @@ function perKlinischoInfoDataVerwerking(data) {
     return output;
 }
 
-function perGroep(row, data, gridId, refresh, groep) {
+function perGroep(row, data, gridId, refresh, groep, gridIdIndex) {
     console.log("perGroep()");
     var col = $("<div class='col-sm-6 mx-auto'></div>");
     var colModel = [
@@ -221,7 +222,7 @@ function perGroep(row, data, gridId, refresh, groep) {
         {name: "Gekende testen", type: "number"},
         {name: "Openstaande testen", type: "number"},
                 //{name: "Groep", type: "text"},
-    ]
+    ];
 
     var processedData = perGroepVerwerking(data, groep);
     var gridData = processedData.gridData;
@@ -232,13 +233,13 @@ function perGroep(row, data, gridId, refresh, groep) {
         row.append(col);
         new_grid(colModel, extraOptions, gridData, gridId, col);
         $("#" + gridId).jqGrid('setGridState', 'hidden');
-        setChart("chart" + groep, processedData);
+        //setChart("chart" + groep, processedData);
 
     } else {
         extraOptions.gridComplete = function () {
-            for (var j = 0; j < gridIds[1].gridexpandedgroups.length; j = j + 1) {
-                $("#" + gridId).jqGrid('expandSubGridRow', gridIds[1].gridexpandedgroups[j]);
-                $("#" + gridId).jqGrid("groupingToggle", gridIds[1].gridexpandedgroups[j], $("#" + gridIds[1].gridexpandedgroups[j]));
+            for (var j = 0; j < gridIds[gridIdIndex].gridexpandedgroups.length; j = j + 1) {
+                $("#" + gridId).jqGrid('expandSubGridRow', gridIds[gridIdIndex].gridexpandedgroups[j]);
+                $("#" + gridId).jqGrid("groupingToggle", gridIds[gridIdIndex].gridexpandedgroups[j], $("#" + gridIds[gridIdIndex1].gridexpandedgroups[j]));
             }
         };
         $("#" + gridId).jqGrid('setGridParam', extraOptions).trigger("reloadGrid");
@@ -289,7 +290,7 @@ function perGroepVerwerking(data, groep) {
                     var tests = "";
                     $.each(filteredTestsPerOrder, function (key3, value) {
                         tests += value["TEST"] + " ";
-                    })
+                    });
                     //4 Voeg tests toe aan distinctOrders
                     orderData.push({ORDER: value, TESTEN: tests});
                 });

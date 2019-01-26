@@ -212,7 +212,9 @@ function generateView2(data) {
             }
             column.editoptions.multiple = value.multiple;
             column.editoptions.value = (value.choices);
-            column.editoptions.size = value.choices.length < 19 ? value.choices.length + 2 : 20;
+            if (value.multiple === true) {
+                column.editoptions.size = value.choices.length < 19 ? value.choices.length + 2 : 20;
+            }
         }
         if (value.type === "password") {
             column.edittype = "password";

@@ -67,23 +67,22 @@ function config0() { //used in de notes-module
 
 function config2() { //for inline editing
     console.log("function config2");
-    CKEDITOR.stylesSet.add('mdmConfig2', [
-        // Block-level styles
-        {name: 'Hoofdding 1', element: 'h1', styles: {'color': 'rgb(54,95,145)'}},
-        {name: 'Hoofdding 2', element: 'h2', styles: {'color': 'rgb(79,129,189)'}},
-        {name: 'Hoofdding 3', element: 'h3', styles: {'color': 'rgb(79,129,189)'}},
-        {name: 'Hoofdding 4', element: 'h4', styles: {'color': 'rgb(79,129,189)', 'font-style': 'italic'}},
-        {name: 'Hoofdding 5', element: 'h5', styles: {'color': 'rgb(36,63,96)'}},
+    if (typeof CKEDITOR.stylesSet.registered["mdmConfig2"] === "undefined") {
+        CKEDITOR.stylesSet.add('mdmConfig2', [
+            // Block-level styles
+            {name: 'Hoofdding 1', element: 'h1', styles: {'color': 'rgb(54,95,145)'}},
+            {name: 'Hoofdding 2', element: 'h2', styles: {'color': 'rgb(79,129,189)'}},
+            {name: 'Hoofdding 3', element: 'h3', styles: {'color': 'rgb(79,129,189)'}},
+            {name: 'Hoofdding 4', element: 'h4', styles: {'color': 'rgb(79,129,189)', 'font-style': 'italic'}},
+            {name: 'Hoofdding 5', element: 'h5', styles: {'color': 'rgb(36,63,96)'}},
 
-        // Inline styles
-        {name: 'Normaal', element: 'span', attributes: {'class': 'my_style'}},
-        {name: 'Marker: Yellow', element: 'span', styles: {'background-color': 'Yellow'}}
-    ]);
-//    CKEDITOR.scriptLoader.load("./JS/dependencies/iframeresizer/iframeResizer.min.js", function (success)
-//    {
-//        console.log("iframeResizer js loaded");
-//
-//    });
+            // Inline styles
+            {name: 'Normaal', element: 'span', attributes: {'class': 'my_style'}},
+            {name: 'Marker: Yellow', element: 'span', styles: {'background-color': 'Yellow'}}
+        ]);
+    }
+
+
     CKEDITOR.editorConfig = function (config) {
         config.toolbarGroups = [
             {name: 'document', groups: ['mode', 'document', 'doctools']},
@@ -126,19 +125,19 @@ function config2() { //for inline editing
         console.log("loading images");
         $("div[id^=editable]").each(function (index) {
             loadImages($(this).attr('id'));
-           // loadTOC($(this).attr('id'));
+            // loadTOC($(this).attr('id'));
             $("#cke_" + $(this).attr('id')).css("border", "1px dotted grey");
             $("#cke_" + $(this).attr('id')).css("padding", "10px");
         });
         $("textarea[title=ckedit]").each(function (index) {
             loadImages($(this).attr('id'));
-           // loadTOC($(this).attr('id'));
+            // loadTOC($(this).attr('id'));
             $("#cke_" + $(this).attr('id')).css("border", "1px dotted grey");
             $("#cke_" + $(this).attr('id')).css("padding", "10px");
         });
 
         $('iframe').contents().click(function (e) {
-            if (typeof e.target.href != 'undefined' && e.ctrlKey == true) {
+            if (typeof e.target.href !== 'undefined' && e.ctrlKey === true) {
                 window.open(e.target.href, 'new' + e.screenX);
             }
         });
