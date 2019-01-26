@@ -10,7 +10,7 @@ $(function () {
     worksummary_doLoad('new');
 });
 
-function replaceJumbo(){
+function replaceJumbo() {
     var jumbotron = $("#jumbotron");
     var container = dom_div("container");
     jumbotron.append(container);
@@ -22,7 +22,7 @@ function replaceJumbo(){
     $("#text-jumbo-info").appendTo(col1);
     jumboColumn = dom_col(uuidv4(), 6);
     row.append(jumboColumn);
-    
+
 }
 
 function parseDataDagelijks(data, refresh) {
@@ -42,7 +42,7 @@ function parseDataDagelijks(data, refresh) {
 
 
     }
-    
+
     //ORDERS MET KLINISCHE INFO-----------------------------------------------------------
     //---------------------------------------------------------------------------
     perKlinischeInfo(row2, data, gridIds[2].gridid, refresh, $("#div-quickview"));
@@ -101,10 +101,20 @@ function parseDataWekelijks(data, refresh) {
     //---------------------------------------------------------------------------
 }
 
-function parseDringendeStalen(data, refresh){
-    var btn = dom_button("btn-urgent", "exclamation", "danger");
-    jumboColumn.append(btn);
+function createJumboButton(refresh, data, btnId, btnIcon, btnText, btnStyle) {
+    console.log("createJumboButton()");
+    if (!refresh) {
+        var btn = dom_button(btnId, btnIcon, btnText, btnStyle);
+        
+        jumboColumn.append(btn);
+    }
+    var info = getInformation(data);
+    $("#" + btnId).css("margin-right", "5px");
+    $("#" + btnId + " span").text(info["Orders"]);
+
 }
+
+
 
 function getInformation(data, idField) {
     var info = new Object();

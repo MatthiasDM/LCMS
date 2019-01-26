@@ -49,20 +49,32 @@ function worksummary_doLoad(type, soort) {
                     String(item["STATION"]).includes("POCT") === false && String(item["STATION"]).includes("VZ") === false &
                     String(item["INFO"]).length > 0
                     ));
-            
-        if (typeof soort !== "undefined") {
-            if(soort === "dagelijks"){
-                preProcessDagelijks(dataDagelijks, type);                
-            }
-            if(soort === "wekelijks"){
-                preProcessWekelijks(dataWekelijks, type);                
-            }
 
-        } else {
-            preProcessDagelijks(dataDagelijks, type);
-            preProcessWekelijks(dataWekelijks, type);
+        setDringend(type, dataDringend);
+        setCommentaar(type, dataCommentaar);
+        
+        setTimeout(function () {
+            worksummary_doLoad("refresh", "dagelijks");
+        }, 100000);
+        setTimeout(function () {
+            bootstrap_alert.warning('Update in 5 sec.', 'info', 5000);
+        }, 95000);
 
-        }
+
+
+//        if (typeof soort !== "undefined") {
+//            if (soort === "dagelijks") {
+//                preProcessDagelijks(dataDagelijks, type);
+//            }
+//            if (soort === "wekelijks") {
+//                preProcessWekelijks(dataWekelijks, type);
+//            }
+//
+//        } else {
+//            preProcessDagelijks(dataDagelijks, type);
+//            preProcessWekelijks(dataWekelijks, type);
+//
+//        }
 
 
 
@@ -71,6 +83,29 @@ function worksummary_doLoad(type, soort) {
         alert("Sorry. Server unavailable. ");
     });
 }
+
+function setDringend(type, data) {
+    if (type === 'new') {
+        createJumboButton(false, data, "btn-urgent", "exclamation", "", "danger");
+
+    }
+    if (type === 'refresh') {
+        createJumboButton(true, data, "btn-urgent", "exclamation", "", "danger");
+    }
+
+}
+
+function setCommentaar(type, data) {
+    if (type === 'new') {
+        createJumboButton(false, data, "btn-comment", "comment", "", "warning");
+
+    }
+    if (type === 'refresh') {
+        createJumboButton(true, data, "btn-comment", "comment", "", "warning");
+    }
+
+}
+
 
 function preProcessDagelijks(data, type) {
     if (type === 'new') {
