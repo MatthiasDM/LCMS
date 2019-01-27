@@ -13,7 +13,7 @@ $(function () {
         }
     });
     $("#validation-elements").remove();
-    $('#toc').append(dom_moveUpDownList("validation-elements",$("div[id^=gbox_grid], div[id^=editable]")));
+    $('#toc').append(dom_moveUpDownList("validation-elements", $("div[id^=gbox_grid], div[id^=editable]")));
 });
 
 function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId, location) {
@@ -247,7 +247,9 @@ function new_grid_popup(_parent, _gridData) {
 
         var colModelWrapper = createColModel(form, _gridData, _parent); //1. create new colModel
         var newColumns = filterUniqueJson(colModelWrapper.colModel, "name"); //2. remove unused rows of data
-        _gridData.data = removeUnusedDataFromJqGrid(newColumns, _gridData.data, colModelWrapper.options.renames);
+        if (typeof _gridData !== "undefined") {
+            _gridData.data = removeUnusedDataFromJqGrid(newColumns, _gridData.data, colModelWrapper.options.renames);
+        }
         var gridId = createGridBasedOnModel(_gridData, colModelWrapper, _parent); //3. create new grid based on colModel
         grids.gridId = _gridData;
 
@@ -325,7 +327,7 @@ function createColModel(form, _gridData, parent) {
             if (option === 'multiple') {
                 colModel[c].multiple = true;
             }
-            if (option === 'rename') {      
+            if (option === 'rename') {
                 renames[val.value] = colModel[c].name;
             }
 
@@ -417,10 +419,10 @@ function createForm(_parent, _griddata, _modal) {
             }
         }
     } else {
-        addRow(form, uuidv4());
+        addRow(form, uuidv4(), {});
     }
     addRowButton.on('click', function (e) {
-        addRow(form, uuidv4());
+        addRow(form, uuidv4(), {});
     });
 
     //OPTIE SAMENVATTING START
@@ -449,7 +451,7 @@ function createForm(_parent, _griddata, _modal) {
         $("#" + _griddata.id).jqGrid('GridUnload');
         $("#" + _griddata.id).jqGrid('GridDestroy');
         _modal.modal('hide');
-       
+
     });
 
 
@@ -721,7 +723,7 @@ function removeUnusedDataFromJqGrid(_columns, _data, _renames) {
                     if (typeof _renames[property] !== "undefined") {
                         object[_renames[property]] = object[property];
                         delete object[property];
-                    } 
+                    }
                 }
 
                 if (_columns.includes(property) === false) {

@@ -308,14 +308,6 @@ function dom_moveUpDownList(id, data) {
     var col3 = dom_col("", 12);
     var ul = $("<ul class='list-group' id='element-list'></ul> ");
 
-//    data.forEach(function (object, index) {
-//        for (var property in object) {
-//            if (object.hasOwnProperty(property)) {
-//                ul.append("<li class='list-group-item' id='" + property + "'>" + object[property] + "</li>");
-//            }
-//        }
-//    });
-
     data.each(function (index, obj) {
         ul.append("<li class='list-group-item' element='" + obj.id + "'>" + "<span>" + (index + 1) + "</span>" + ": " + obj.innerText.substring(0, 20).trim() + "</li>");
     });
@@ -383,6 +375,20 @@ function dom_col(id, size) {
 
 function dom_button(id, icon, text, color) {
     return ("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "'>" + text + "</i><span></span></button>");
+}
+
+function dom_card(header, body){
+       var card = $("<div class='card'></div>");
+       var cardHeader = $("<div class='card-header'></header");
+       var cardBody = $("<div class='card-body'></div>");
+       //var cardText = $("");
+       card.append(cardHeader);
+       card.append(cardBody);
+       
+       cardHeader.append(header);
+       cardBody.append(body);
+       
+       return card;
 }
 
 function CSVToArray(strData, strDelimiter) {

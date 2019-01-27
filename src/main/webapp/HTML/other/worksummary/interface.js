@@ -7,6 +7,7 @@ Object.filter = (obj, predicate) =>
 
 $(function () {
     replaceJumbo();
+    createJumboCard();
     worksummary_doLoad('new');
 });
 
@@ -22,6 +23,26 @@ function replaceJumbo() {
     $("#text-jumbo-info").appendTo(col1);
     jumboColumn = dom_col(uuidv4(), 6);
     row.append(jumboColumn);
+
+}
+
+function createJumboCard() {
+
+
+   
+
+    var container = dom_div("container", "infoButtons");
+//    var row1 = dom_row(uuidv4());
+//    container.append(row1);
+//    var col1 = dom_col(uuidv4(), 12);
+//    row1.append(col1);
+//    container.append(row1);
+    
+     var card = dom_card(container, "");
+     card.find(".card-body").addClass("collapse");
+    
+    jumboColumn.append(card);
+
 
 }
 
@@ -101,12 +122,14 @@ function parseDataWekelijks(data, refresh) {
     //---------------------------------------------------------------------------
 }
 
+
+
 function createJumboButton(refresh, data, btnId, btnIcon, btnText, btnStyle) {
     console.log("createJumboButton()");
     if (!refresh) {
         var btn = dom_button(btnId, btnIcon, btnText, btnStyle);
-        
-        jumboColumn.append(btn);
+
+        $("#infoButtons").append(btn);
     }
     var info = getInformation(data);
     $("#" + btnId).css("margin-right", "5px");

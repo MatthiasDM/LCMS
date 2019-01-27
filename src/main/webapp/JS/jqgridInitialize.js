@@ -234,6 +234,12 @@ function generateView2(data) {
             column.editrules = {edithidden: true};
         }
 
+        if (typeof value.summaryTpl !== "undefined") {
+            column.summaryTpl = value.summaryTpl;
+        }
+        if (typeof value.summaryType !== "undefined") {
+            column.summaryType = value.summaryType;
+        }
 
 
         view.push(column);
