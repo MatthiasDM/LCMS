@@ -3,6 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
+
 function worksummary_doLoad(type, soort) {
     console.log("worksummary load");
     var _cookie = $.cookie('LCMS_session');
@@ -38,6 +40,22 @@ function worksummary_doLoad(type, soort) {
                     String(item["STATION"]).includes("VZ") === true && String(item["STATION"]).includes("POCT") === false
                     ));
 
+
+        var dataDagelijksBrugge = Object.filter(data, item => (
+                    //moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._data.days < 1 &
+                    //String(item["ORDER"]).startsWith("L") === false & String(item["ORDER"]).startsWith("M") === false &
+                    //String(item["STATION"]).includes("POCT") === false && String(item["STATION"]).includes("VZ") === false
+                    Object.keys(Object.filter(issuers, issuer => (issuer["ID"] === String(item["ISSUER"]) && issuer["GROEP"] === "BRUGGE"))) > 0
+                    ));
+
+        var dataDagelijksKnokke = Object.filter(data, item => (
+                    //moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._data.days < 1 &
+                    //String(item["ORDER"]).startsWith("L") === false & String(item["ORDER"]).startsWith("M") === false &
+                    //String(item["STATION"]).includes("POCT") === false && String(item["STATION"]).includes("VZ") === false
+                    Object.keys(Object.filter(issuers, issuer => (issuer["ID"] === String(item["ISSUER"]) && issuer["GROEP"] === "KNOKKE"))) > 0
+                    ));
+
+
         var dataDringend = Object.filter(data, item => (
                     String(item["ORDER"]).startsWith("L") === false & String(item["ORDER"]).startsWith("M") === false &
                     String(item["STATION"]).includes("POCT") === false && String(item["STATION"]).includes("VZ") === false &
@@ -50,9 +68,27 @@ function worksummary_doLoad(type, soort) {
                     String(item["INFO"]).length > 0
                     ));
 
-        setDringend(type, dataDringend);
-        setCommentaar(type, dataCommentaar);
-        
+        var dataCyberlab = Object.filter(data, item => (
+                    String(item["ORDER"]).startsWith("L") === false & String(item["ORDER"]).startsWith("M") === false &
+                    String(item["STATION"]).includes("POCT") === false && String(item["STATION"]).includes("VZ") === false &
+                    String(item["CYBERLAB"]) === "TRUE"
+                    ));
+
+        var dataDoorbelwaarde = Object.filter(data, item => (
+                    String(item["ORDER"]).startsWith("L") === false & String(item["ORDER"]).startsWith("M") === false &
+                    String(item["STATION"]).includes("POCT") === false && String(item["STATION"]).includes("VZ") === false &
+                    String(item["ERNST"]) === "50"
+                    ));
+
+        createQuickview(type, dataDringend, "btn-urgent", "exclamation", "danger", "grid_quickview", "div-quickview", "");
+        createQuickview(type, dataCommentaar, "btn-comment", "comment", "warning", "grid_quickview", "div-quickview","");
+        createQuickview(type, dataCyberlab, "btn-cyberlab", "barcode", "info", "grid_quickview", "div-quickview","");
+        createQuickview(type, dataDoorbelwaarde, "btn-doorbelwaarde", "phone", "danger", "grid_quickview", "div-quickview","");
+        createQuickview(type, dataDagelijksBrugge, "btn-brugge", "fa-stack-1x", "info", "grid_quickview", "div-quickview","<b>B</b>");
+        createQuickview(type, dataDagelijksKnokke, "btn-knokke", "fa-stack-1x", "info", "grid_quickview", "div-quickview", "<b>K</b>");
+
+
+
         setTimeout(function () {
             worksummary_doLoad("refresh", "dagelijks");
         }, 100000);
@@ -84,27 +120,8 @@ function worksummary_doLoad(type, soort) {
     });
 }
 
-function setDringend(type, data) {
-    if (type === 'new') {
-        createJumboButton(false, data, "btn-urgent", "exclamation", "", "danger");
 
-    }
-    if (type === 'refresh') {
-        createJumboButton(true, data, "btn-urgent", "exclamation", "", "danger");
-    }
 
-}
-
-function setCommentaar(type, data) {
-    if (type === 'new') {
-        createJumboButton(false, data, "btn-comment", "comment", "", "warning");
-
-    }
-    if (type === 'refresh') {
-        createJumboButton(true, data, "btn-comment", "comment", "", "warning");
-    }
-
-}
 
 
 function preProcessDagelijks(data, type) {

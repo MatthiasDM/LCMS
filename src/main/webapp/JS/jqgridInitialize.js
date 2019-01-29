@@ -150,6 +150,7 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
 }
 
 function generateView2(data) {
+    console.log("generateView2()");
     var cols = new Array();
     var view = [];
     $.each(JSON.parse(data.header), function (index, value) {

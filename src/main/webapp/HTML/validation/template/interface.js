@@ -59,7 +59,10 @@ function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId,
             datatype: "local",
             colModel: colModel,
             colNames: colNames,
-            viewrecords: true, // show the current page, data rang and total records on the toolbar        
+            viewrecords: true, // show the current page, data rang and total records on the toolbar     
+            pgText: "",
+            pginput: false,
+            pgbuttons: false,
             autoheight: true,
             autowidth: true,
             responsive: true,
@@ -107,7 +110,10 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     _grid.jqGrid('filterToolbar');
     _grid.jqGrid('sortableRows', {});
     var lastSelection;
-    var addDataOptions = {editData: {action: "_editAction", LCMS_session: $.cookie('LCMS_session')}};
+    var addDataOptions = {
+        editData: {action: "_editAction", LCMS_session: $.cookie('LCMS_session')},
+        addData: {rowID: uuidv4()}
+    };
 
     var navGridParameters2 = {
         add: true,
@@ -154,6 +160,19 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
         },
         position: "last"
     });
+
+    _grid.navButtonAdd(_tableOptions.pager, {
+        caption: "",
+        title: "Delete record",
+        buttonicon: "fa-trash",
+        onClickButton: function () {
+            var rowid = _grid.jqGrid('getGridParam', 'selrow');
+            _grid.jqGrid('delRowData', rowid);
+        },
+        position: "last"
+    });
+
+
 
     _grid.click(function (e) {
         gridClickFunctions(e, $(this))
@@ -643,11 +662,15 @@ function getAttributesOfGrid(_gridName) {
 }
 
 function getValuesOfAttributeInList(_list, _attribute) {
-    var distinctAttributes;
+    var distinctAttributes = {};
     $("table[id^=grid]").each(function (a, b) {
         var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
         if (name === _list) {
-            distinctAttributes = filterUniqueJson($(b).jqGrid("getGridParam").data, _attribute);
+            var data = new Object();
+            $(b).jqGrid("getGridParam").data.forEach(function (a, b) {
+                distinctAttributes[a.id] = a[_attribute];
+            });  
+            // distinctAttributes = filterUniqueJson($(b).jqGrid("getGridParam").data, _attribute);
         }
     });
     return distinctAttributes;
@@ -717,20 +740,23 @@ function removeUnusedDataFromJqGrid(_columns, _data, _renames) {
     var data = _data;
     data.forEach(function (object, index) {
         for (var property in object) {
-            if (object.hasOwnProperty(property)) {
+            if(property !== "id"){ //The rowID may never be deleted!
+                if (object.hasOwnProperty(property)) {
 
-                if (typeof _renames !== "undefined") {
-                    if (typeof _renames[property] !== "undefined") {
-                        object[_renames[property]] = object[property];
+                    if (typeof _renames !== "undefined") {
+                        if (typeof _renames[property] !== "undefined") {
+                            object[_renames[property]] = object[property];
+                            delete object[property];
+                        }
+                    }
+
+                    if (_columns.includes(property) === false) {
                         delete object[property];
                     }
-                }
 
-                if (_columns.includes(property) === false) {
-                    delete object[property];
-                }
-
+                }                
             }
+
         }
     });
     return data;

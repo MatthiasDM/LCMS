@@ -27,24 +27,28 @@ function replaceJumbo() {
 }
 
 function createJumboCard() {
-
-
-   
-
     var container = dom_div("container", "infoButtons");
 //    var row1 = dom_row(uuidv4());
 //    container.append(row1);
 //    var col1 = dom_col(uuidv4(), 12);
 //    row1.append(col1);
 //    container.append(row1);
-    
-     var card = dom_card(container, "");
-     card.find(".card-body").addClass("collapse");
-    
+
+    var card = dom_card(container, "");
+    card.find(".card-body").addClass("collapse");
+    card.find(".card-body").attr('id', "infoButtons-body");
+    card.find(".card-body").css('padding', "0");
+    card.find(".card-body").css('width', "100%");
     jumboColumn.append(card);
 
 
 }
+
+function showTable(parent, data, height) {
+
+}
+
+
 
 function parseDataDagelijks(data, refresh) {
 
@@ -130,10 +134,14 @@ function createJumboButton(refresh, data, btnId, btnIcon, btnText, btnStyle) {
         var btn = dom_button(btnId, btnIcon, btnText, btnStyle);
 
         $("#infoButtons").append(btn);
+    }else{
+        $("#" + btnId + " span").text("");
     }
     var info = getInformation(data);
     $("#" + btnId).css("margin-right", "5px");
-    $("#" + btnId + " span").text(info["Orders"]);
+    $("#" + btnId).css("margin-bottom", "5px");
+    
+    $("#" + btnId + " span").text($("#" + btnId + " span").text() + info["Orders"]);
 
 }
 
@@ -184,6 +192,8 @@ function new_grid(colModel, extraOptions, gridData, gridId, parent) {
         viewrecords: true, // show the current page, data rang and total records on the toolbar        
         autoheight: true,
         autowidth: true,
+        //width: '100%',
+        shrinkToFit: true,
         responsive: true,
         headertitles: true,
         iconSet: "fontAwesome",
@@ -191,12 +201,13 @@ function new_grid(colModel, extraOptions, gridData, gridId, parent) {
         searching: listGridFilterToolbarOptions,
         rowNum: 1000,
         mtype: 'POST',
+        loadComplete: function (data) {grid.trigger('resize');},
         //editurl: "_editUrl",
         loadonce: true,
         //onSelectRow: popupEdittRow,
         // ondblClickRow: inlineEditRow,
         // pager: "#" + pager.attr('id'),
-        caption: ""
+        //caption: ""
 
     };
     generate_grid(editor, grid, tableOptions, extraOptions);
@@ -213,12 +224,19 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     var addDataOptions = {editData: {action: "_editAction", LCMS_session: $.cookie('LCMS_session')}};
     var navGridParameters2 = {edit: false, add: false, save: false, cancel: false};
 
-    //_grid.inlineNav(_tableOptions.pager, navGridParameters2, {}, addDataOptions);
+
     _grid.jqGrid('filterToolbar');
-    //_grid.jqGrid('sortableRows', {});
+    //$(".ui-jqgrid-titlebar").hide();
+    //_grid.setCaption(""); 
+//    $("#gview_" + _grid.attr('id')).children("div.ui-jqgrid-hdiv").hide();
+//    $("#gview_" + _grid.attr('id')).children("div.ui-jqgrid-titlebar").hide();
+//    $("#gview_" + _grid.attr('id')).children("td").hide();
+//    $("#gview_" + _grid.attr('id')).find("td").css("border", "0px");
+//    $("#gbox_" + _grid.attr('id')).css("border", "0px");
+    //.ui-jqgrid { border-width: 0px; }
     _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").addClass("card-header card-primary text-white text-center");
     _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").css("background-color", "white");
-    //.ui-jqgrid.ui-jqgrid-bootstrap border: none
+
     var barinfo = getGroupInformation(_tableOptions.data);
     var bar1 = barinfo.sumKnownTests / (barinfo.sumKnownTests + barinfo.sumUnknownTests) * 100;
     var bar2 = barinfo.sumUnknownTests / (barinfo.sumKnownTests + barinfo.sumUnknownTests) * 100;
@@ -227,23 +245,22 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     }
     ;
     var progess = dom_progressbar([{value: bar1, color: 'rgba(43, 121, 83, 1)'}, {value: bar2, color: 'rgba(66,139,202, 1)'}], 'progress_' + _grid.attr('id'));
-
-    //  rgba(170, 146, 57, 1)
     _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").append(progess);
 
     _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").click(function () {
 
         $(".ui-jqgrid-titlebar-close", this).click();
     });
+
     _grid.click(function (e) {
         gridClickFunctions(e, $(this));
     });
 
-//    $(window).bind('resize', function () {
-//        _grid.setGridWidth(_parent.width() - 5);
-//    }).trigger('resize');
+    $(window).bind('resize', function () {
+        _grid.setGridWidth(_parent.width() - 5);
+    }).trigger('resize');
 
-
+    _grid.trigger('resize');
 
 
 }
@@ -290,3 +307,44 @@ function parseJSONInput(data) {
     });
     return data;
 }
+
+
+var previousBtnId = "";
+function createQuickview(_type, _data, btnId, btnIcon, btnColor, gridId, collapseTarget, btnTxt) {
+    if (_type === 'new') {
+        createJumboButton(false, _data, btnId, btnIcon, btnTxt, btnColor);
+        $("#" + btnId).attr('data-toggle', 'collapse');
+        $("#" + btnId).attr('aria-controls', collapseTarget);
+        $("#" + btnId).attr('data-target', '#' + collapseTarget);
+        $("#" + btnId).on('click', function (e) {
+
+            if (!$("#" + collapseTarget).hasClass('show')) {
+                if ($("#" + gridId).length < 1) {
+                    gridIds.push({gridId: {gridid: gridId, gridexpandedgroups: []}});
+                    perOrder($('#' + collapseTarget), _data, gridId, false);
+                }
+            } else {
+                if ($("#" + gridId).length > 0) {
+                    $("#" + gridId).jqGrid("GridDestroy");
+                }
+                if (previousBtnId !== btnId) {
+                    e.stopPropagation();
+                    $('#' + collapseTarget).collapse('show');
+                    gridIds.push({gridId: {gridid: gridId, gridexpandedgroups: []}});
+                    perOrder($('#' + collapseTarget), _data, gridId, false);
+
+
+                }
+            }
+            previousBtnId = btnId;
+        });
+
+
+
+
+    }
+    if (_type === 'refresh') {
+        createJumboButton(true, _data, btnId, btnIcon, btnTxt, btnColor);
+    }
+}
+

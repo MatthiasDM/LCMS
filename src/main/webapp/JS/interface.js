@@ -374,7 +374,7 @@ function dom_col(id, size) {
 }
 
 function dom_button(id, icon, text, color) {
-    return ("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "'>" + text + "</i><span></span></button>");
+    return ("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "'>"+text+"</i><span></span></button>");
 }
 
 function dom_card(header, body){

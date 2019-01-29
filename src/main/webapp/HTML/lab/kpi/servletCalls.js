@@ -25,16 +25,16 @@ function kpi_loadSettings(_parent, page, getAction, editAction, kpiAction) {
             var lastSelection;
             function editRow(id) {
                 if (id && id !== lastSelection) {
-                    var grid = $("#"+page+"-table");
+                    var grid = $("#" + page + "-table");
                     var rowData = grid.getRowData(id);
-                    
+
                     kpi_doLoad(kpiAction, rowData['settings'])
                     lastSelection = id;
                 }
             }
             var extraOptions = {
-                viewrecords: true,
-                //ondblClickRow: editRow
+                viewrecords: true
+                        //ondblClickRow: editRow
             };
 
             var parameters = {
@@ -59,18 +59,21 @@ function kpi_loadSettings(_parent, page, getAction, editAction, kpiAction) {
                     extraparam: {action: editAction, settings: getConfig, page: page, LCMS_session: $.cookie('LCMS_session')}
                 }
             };
-            populateTable(jsonData, editAction, './lab', $("#"+page+"-table"), "#"+page+"-pager", $("#div-grid-wrapper"), "Configuraties", extraOptions, parameters);
+            populateTable(jsonData, editAction, './lab', $("#" + page + "-table"), "#" + page + "-pager", $("#div-grid-wrapper"), "Configuraties", extraOptions, parameters);
 
-            $("#"+page+"-table").navButtonAdd("#"+page+"-pager", {
-               caption: "",
+            $("#" + page + "-table").navButtonAdd("#" + page + "-pager", {
+                caption: "",
                 title: "View record",
                 buttonicon: "fa-eye",
                 onClickButton: function () {
-                    var rowid = $("#"+page+"-table").jqGrid('getGridParam', 'selrow');
+                    var rowid = $("#" + page + "-table").jqGrid('getGridParam', 'selrow');
                     editRow(rowid);
                 },
                 position: "last"
             });
+
+
+            
 
             if (JSON.parse(jsonData.table).length < 1) {
                 kpi_doLoad(kpiAction);
