@@ -135,6 +135,68 @@ jqgrid-bootstrap tr.jqgrow>td {
     font-size: 1.2em;
 }
 
+
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 30-jan-2019, 12:53:21
+    Author     : Matthias
+*/
+
+@media screen and (max-width: 600px) {
+    /* Force table to not be like tables anymore */
+    table,
+     thead,
+     tbody,
+     th,
+     td,
+     tr {
+        display: block;
+    }
+
+    /* Hide table headers (but not display: none;, for accessibility) */
+     .EditTable thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+     .EditTable tr { border: 1px solid #ccc; }
+
+     .EditTable td {
+        /* Behave like a "row" */
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 50%;
+        white-space: normal;
+        text-align:left;
+    }
+
+     .EditTable td:before {
+        /* Now like a table header */
+        /*position: absolute;*/
+        /* Top/left values mimic padding */
+        top: 6px;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align:left;
+        font-weight: bold;
+    }
+
+    /*
+    Label the data
+    */
+     .EditTable td:before { content: attr(data-title); }
+}
+
+
+
 /*PIVOTTABLE*/
 .pvtUi {
     display: block;

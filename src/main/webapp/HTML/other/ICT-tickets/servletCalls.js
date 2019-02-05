@@ -109,6 +109,7 @@ function editTicket(action) {
         afterShowForm: function (formid) {
             $("div[id^=editmod]").css('position','absolute');
             $("div[id^=editmod]").css('top','70px');
+            $("div[id^=editmod]").css('width','90%');
             $("div[id^=editmod]").css('margin-bottom','50px');
 
             $("textarea[title=ckedit]").each(function (index) {

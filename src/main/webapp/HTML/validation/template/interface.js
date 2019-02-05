@@ -201,6 +201,10 @@ function popupEdittRow(action) {
         modal: true,
         //top: $("#" + action).parent().parent().parent().parent()[0].getBoundingClientRect().top * -1 + 100,
         afterShowForm: function (formid) {
+                        $("div[id^=editmod]").css('position','absolute');
+            $("div[id^=editmod]").css('top','70px');
+            $("div[id^=editmod]").css('width','90%');
+            $("div[id^=editmod]").css('margin-bottom','50px');
             $("textarea[title=ckedit]").each(function (index) {
                 CKEDITOR.replace($(this).attr('id'), {
                     customConfig: ' ',
