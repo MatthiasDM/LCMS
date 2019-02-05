@@ -13,6 +13,14 @@ and open the template in the editor.
 .navbar-toggler {
     background: #fff; /* pick your color */
 }
+.navbar{
+    background: white;
+    opacity: 0.9; 
+}
+
+.sticky-top{
+    z-index: 900;
+}
 
 #floating_alert{
     position:fixed;
@@ -46,25 +54,25 @@ h5, .h5 {
 
 /*BOOTSTRAP*/
 html {
-  font-size: 1rem;
+    font-size: 1rem;
 }
 
 @include media-breakpoint-up(sm) {
-  html {
-    font-size: 1.2rem;
-  }
+    html {
+        font-size: 1.2rem;
+    }
 }
 
 @include media-breakpoint-up(md) {
-  html {
-    font-size: 1.4rem;
-  }
+    html {
+        font-size: 1.4rem;
+    }
 }
 
 @include media-breakpoint-up(lg) {
-  html {
-    font-size: 1.6rem;
-  }
+    html {
+        font-size: 1.6rem;
+    }
 }
 
 /*JQGRID*/
@@ -121,16 +129,16 @@ jqgrid-bootstrap tr.jqgrow>td {
     border-radius: 0px; 
 }
 
- .ui-jqgrid tr.jqgrow td { word-wrap: break-word; /* IE 5.5+ and CSS3 */ white-space: pre-wrap; /* CSS3 */ white-space: -moz-pre-wrap; /* Mozilla, since 1999 */ white-space: -pre-wrap; /* Opera 4-6 */ white-space: -o-pre-wrap; /* Opera 7 */ overflow: hidden; height: auto; vertical-align: middle; padding-top: 3px; padding-bottom: 3px; }
-  
+.ui-jqgrid tr.jqgrow td { word-wrap: break-word; /* IE 5.5+ and CSS3 */ white-space: pre-wrap; /* CSS3 */ white-space: -moz-pre-wrap; /* Mozilla, since 1999 */ white-space: -pre-wrap; /* Opera 4-6 */ white-space: -o-pre-wrap; /* Opera 7 */ overflow: hidden; height: auto; vertical-align: middle; padding-top: 3px; padding-bottom: 3px; }
+
 .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-pager .fa, .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-view .fa {
     font-size: 1.2em;
 }
 
- /*PIVOTTABLE*/
+/*PIVOTTABLE*/
 .pvtUi {
     display: block;
     width: 100%;
     overflow: auto;
 }  
-    
+

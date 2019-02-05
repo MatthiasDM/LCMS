@@ -105,8 +105,12 @@ function editTicket(action) {
         reloadAfterSubmit: false,
         width: $("body").width() * 0.9,
         left: parent.offset().left * -1 + $("body").width() * 0.05,
-        top: parent.offset().top * -1 + 40,
+        //top: parent.offset().top * -1 + 40,
         afterShowForm: function (formid) {
+            $("div[id^=editmod]").css('position','absolute');
+            $("div[id^=editmod]").css('top','70px');
+            $("div[id^=editmod]").css('margin-bottom','50px');
+
             $("textarea[title=ckedit]").each(function (index) {
                 CKEDITOR.replace($(this).attr('id'), {
                     customConfig: ' '
