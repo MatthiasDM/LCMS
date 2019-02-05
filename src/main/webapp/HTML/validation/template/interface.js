@@ -469,6 +469,7 @@ function createForm(_parent, _griddata, _modal) {
         $("#" + _griddata.id).remove();
         $("#" + _griddata.id).jqGrid('GridUnload');
         $("#" + _griddata.id).jqGrid('GridDestroy');
+        $("#gbox_" + _griddata.id).remove();
         _modal.modal('hide');
 
     });
@@ -707,6 +708,7 @@ function exportToHTML() {
     var htmlData = $("<output id='tempOutput'>");
     htmlData.append("<link rel='stylesheet' href='./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css'>");
     htmlData.append("<link rel='stylesheet' href='./CSS/style.css'>");
+    htmlData.append("<link rel='stylesheet' href='./HTML/validation/template/export.css'>");
     htmlData.append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"))));
     var htmlTables = {};
     $("table[id^=grid]").each(function (a, b) {
@@ -730,7 +732,8 @@ function exportToHTML() {
 }
 
 function openFile(filename, text) {
-    var x = window.open('about:blank', '_blank');
+    
+    var x = window.open('http://localhost:8080/LCMS/index.html?p=temp', '_blank');
     x.document.write(text);
     x.document.close();
 }
@@ -761,3 +764,5 @@ function removeUnusedDataFromJqGrid(_columns, _data, _renames) {
     });
     return data;
 }
+
+

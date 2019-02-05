@@ -28,6 +28,43 @@ and open the template in the editor.
 
 h1, .h1 {
     word-break: break-all;
+    font-size: 2em;
+}
+
+h2, .h2 {
+    font-size: 1.8rem;    
+}
+h3, .h3 {
+    font-size: 1.6rem;    
+}
+h4, .h4 {
+    font-size: 1.5rem;    
+}
+h5, .h5 {
+    font-size: 1.2rem;    
+}
+
+/*BOOTSTRAP*/
+html {
+  font-size: 1rem;
+}
+
+@include media-breakpoint-up(sm) {
+  html {
+    font-size: 1.2rem;
+  }
+}
+
+@include media-breakpoint-up(md) {
+  html {
+    font-size: 1.4rem;
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  html {
+    font-size: 1.6rem;
+  }
 }
 
 /*JQGRID*/

@@ -214,7 +214,7 @@ function generateView2(data) {
             column.editoptions.multiple = value.multiple;
             column.editoptions.value = (value.choices);
             if (value.multiple === true) {
-                column.editoptions.size = value.choices.length < 19 ? value.choices.length + 2 : 20;
+                column.editoptions.size = value.choices.length < 8 ? value.choices.length + 2 : 10;
             }
         }
         if (value.type === "password") {

@@ -69,8 +69,7 @@ function config2() { //for inline editing
     console.log("function config2");
     if (typeof CKEDITOR.stylesSet.registered["mdmConfig2"] === "undefined") {
         CKEDITOR.stylesSet.add('mdmConfig2', [
-            // Block-level styles
-            {name: 'Hoofdding 1', element: 'h1', styles: {'color': 'rgb(54,95,145)'}},
+            // Block-level styles            {name: 'Hoofdding 1', element: 'h1', styles: {'color': 'rgb(54,95,145)'}},
             {name: 'Hoofdding 2', element: 'h2', styles: {'color': 'rgb(79,129,189)'}},
             {name: 'Hoofdding 3', element: 'h3', styles: {'color': 'rgb(79,129,189)'}},
             {name: 'Hoofdding 4', element: 'h4', styles: {'color': 'rgb(79,129,189)', 'font-style': 'italic'}},

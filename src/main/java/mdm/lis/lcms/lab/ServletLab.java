@@ -9,10 +9,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
-import java.io.FileReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
-import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -34,10 +32,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import mdm.Config.Actions;
 import mdm.Config.MongoConf;
-import mdm.Core;
 import mdm.GsonObjects.Lab.InventoryItem;
 import mdm.GsonObjects.Lab.LabItem;
-import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
@@ -149,7 +145,7 @@ public class ServletLab extends HttpServlet {
                         if (action == Actions.LAB_KPI_HEMOFP) {
                             sb.append(actionLAB_KPI("hemoFP", "json"));
                         }
-                        
+
                     }
                 }
 
@@ -242,6 +238,7 @@ public class ServletLab extends HttpServlet {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode jsonData = mapper.createObjectNode();
             List<String> lines = new ArrayList<>();
+            List<String> allLines = new ArrayList<>();
 
             if (filetype.equals("csv")) {
                 try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\KPI\\" + type + "\\data.csv"), Charset.forName("ISO-8859-1"))) {
@@ -255,15 +252,27 @@ public class ServletLab extends HttpServlet {
                 jsonData.put("data", StringUtils.join(lines, "\n"));
             } else {
                 if (filetype.equals("json")) {
-                    try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\KPI\\" + type + "\\data.txt"), Charset.forName("ISO-8859-1"))) {
-                        lines = stream
-                                .map(String::toUpperCase)
-                                .filter(line -> line.contains("{"))
-                                .collect(Collectors.toList());
-                    } catch (IOException e) {
-                        e.printStackTrace();
+
+                    File folder = new File("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\KPI\\" + type);
+                    File[] listOfFiles = folder.listFiles();
+                    for (File file : listOfFiles) {
+                        if (file.isFile()) {
+                            System.out.println(file.getName());
+
+                            try (Stream<String> stream = Files.lines(file.toPath(), Charset.forName("ISO-8859-1"))) {
+                                lines = stream
+                                        .map(String::toUpperCase)
+                                        .filter(line -> line.contains("{"))
+                                        .collect(Collectors.toList());
+                                allLines.addAll(lines);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
                     }
-                    jsonData.put("data", mapper.writeValueAsString(lines));
+
+                    jsonData.put("data", mapper.writeValueAsString(allLines));
                 }
             }
 

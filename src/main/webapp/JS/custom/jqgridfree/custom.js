@@ -16,7 +16,7 @@ function buildHtmlTable(json) {
       if(typeof cellValue === "number" && String(cellValue).match(/\d{13}/g)){
           cellValue = moment.unix(cellValue/1000).format('d-M-Y H:m');
       }
-      row$.append($("<td style='word-wrap: break-word;min-width: 50px;max-width: 160px;' />").html(cellValue));
+      row$.append($("<td data-title='"+columns[colIndex]+"'/>").html(cellValue));
     }
     table.append(row$);
   }
@@ -39,7 +39,7 @@ function addAllColumnHeaders(myList, table) {
       }
     }
   }
-  table.append(headerTr$);
+  table.append("<thead>" + headerTr$ + "</thead>");
 
   return columnSet;
 }

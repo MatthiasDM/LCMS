@@ -271,6 +271,21 @@ function forms_select(title, id, name, valObjects, val) {
 
 }
 
+function forms_select_single(title, id, name, valObjects, val) {
+    console.log("forms_select()");
+    var form_group = $("<div id='" + id + "' class='form-group'></div>");
+    var label = $("<label for='" + title + "'>" + title + "</label>");
+    var select = $("<select class='form-control' name='" + id + "' id='select-" + id + "'></select>");
+    Object.keys(valObjects).forEach(function (key) {
+        select.append($("<option value='" + valObjects[key].id + "'>" + valObjects[key].name + "</option>"));
+    });
+    form_group.append(label);
+    form_group.append(select);
+    select.val(val);
+    return form_group;
+
+}
+
 function forms_jqgrid(id, data) {
     var form_group = $("<div id='" + id + "' class='form-group'></div>");
     var label = $("<label for='" + title + "'>" + title + "</label>");
@@ -281,6 +296,7 @@ function forms_jqgrid(id, data) {
     return form_group;
 }
 
+
 function dom_progressbar(bars, id) {
     var progress = $("<div class='progress' id='" + id + "'></div>");
     Object.keys(bars).forEach(function (index) {
@@ -288,7 +304,6 @@ function dom_progressbar(bars, id) {
     });
     return progress;
 }
-
 function dom_moveUpDownList(id, data) {
     console.log("dom_moveUpDownList()");
     var wrapper = dom_div("", id);
@@ -362,7 +377,6 @@ function dom_moveUpDownList(id, data) {
 
     return wrapper;
 }
-
 function dom_div(_class, _id) {
     return $("<div class='" + _class + "' id='" + _id + "'></div>");
 }
@@ -372,23 +386,42 @@ function dom_row(id) {
 function dom_col(id, size) {
     return $("<div id='" + id + "' class='col-sm-" + size + " mx-auto'></div>");
 }
-
 function dom_button(id, icon, text, color) {
-    return ("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "'>"+text+"</i><span></span></button>");
+    return ("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "'>" + text + "</i><span></span></button>");
+}
+function dom_card(header, body) {
+    var card = $("<div class='card'></div>");
+    var cardHeader = $("<div class='card-header'></header");
+    var cardBody = $("<div class='card-body'></div>");
+    //var cardText = $("");
+    card.append(cardHeader);
+    card.append(cardBody);
+
+    cardHeader.append(header);
+    cardBody.append(body);
+
+    return card;
 }
 
-function dom_card(header, body){
-       var card = $("<div class='card'></div>");
-       var cardHeader = $("<div class='card-header'></header");
-       var cardBody = $("<div class='card-body'></div>");
-       //var cardText = $("");
-       card.append(cardHeader);
-       card.append(cardBody);
-       
-       cardHeader.append(header);
-       cardBody.append(body);
-       
-       return card;
+function dom_nav(pills) {
+    var div = dom_div("", "pills-" + uuidv4());
+    var nav = $("<ul class='nav nav-pills mb-3' id='' role='tablist'>");
+    $.each(pills, function (id, val) {
+        //{'home': 'thuis', 'urgent': 'dringend'};
+        nav.append("<li class='nav-item'><a class='nav-link' id='"+id+"-pill' data-toggle='pill' href='#"+id+"-tab' role='tab' aria-controls='"+id+"-tab' aria-selected='true'>"+val+"</a></li>");
+    });
+    
+    var tab = $("<div class='tab-content' id='pills-tabContent'>");
+    $.each(pills, function (id, val) {
+        tab.append("<div class='tab-pane fade' id='"+id+"-tab' role='tabpanel' aria-labelledby='"+id+"-pill'>test "+id+"</div>");
+    });
+    
+    div.append(nav);
+    div.append(tab);
+    
+    return div;
+    
+    
 }
 
 function CSVToArray(strData, strDelimiter) {

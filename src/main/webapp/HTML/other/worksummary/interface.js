@@ -1,5 +1,13 @@
-var gridIds = [];
+var gridIds = {};
 var jumboColumn;
+var issuers = {};
+var stations = {};
+var dataOnverwerkt;
+var dataVerwerkt = new Object();
+var chkVerzendingen = new Object();
+var selTijd = new Object();
+var selectedBtn;
+
 Object.filter = (obj, predicate) =>
     Object.keys(obj)
             .filter(key => predicate(obj[key]))
@@ -27,13 +35,16 @@ function replaceJumbo() {
 }
 
 function createJumboCard() {
-    var container = dom_div("container", "infoButtons");
-//    var row1 = dom_row(uuidv4());
-//    container.append(row1);
-//    var col1 = dom_col(uuidv4(), 12);
-//    row1.append(col1);
-//    container.append(row1);
 
+    var container = dom_div("container", "infoButtons");
+    var row1 = dom_row("infoButtonsRow1");
+    var row2 = dom_row("infoButtonsRow2");
+    row2.css("padding-bottom", '5px');
+    var row3 = dom_row("tapPage1");
+
+    container.append(row1);
+    container.append(row2);
+    container.append(row3);
     var card = dom_card(container, "");
     card.find(".card-body").addClass("collapse");
     card.find(".card-body").attr('id', "infoButtons-body");
@@ -41,111 +52,224 @@ function createJumboCard() {
     card.find(".card-body").css('width', "100%");
     jumboColumn.append(card);
 
-
 }
 
-function showTable(parent, data, height) {
+function createJumboElements(type) {
 
-}
-
-
-
-function parseDataDagelijks(data, refresh) {
-
-    if (!refresh) {
-        console.log("parseData()");
-        var gridId;
-        var row1 = $("<div class='row'></div>");
-        var row2 = $("<div class='row'></div>");
-        var row3 = $("<div class='row'></div>");
-        $("#worksummary-container-dagelijks").append(row1);
-        $("#worksummary-container-dagelijks").append(row2);
-        $("#worksummary-container-dagelijks").append(row3);
-
-        for (var i = 0; i < 5; i++)
-            gridIds.push({gridid: "grid_" + uuidv4(), gridexpandedgroups: []});
+    createQuickview(type, "dringend", "btn-urgent", "exclamation", "danger", "dringend", "div-quickview", "", $("#infoButtonsRow1"));
+    createQuickview(type, "commentaar", "btn-comment", "comment", "warning", "commentaar", "div-quickview", "", $("#infoButtonsRow1"));
+    createQuickview(type, "cyberlab", "btn-cyberlab", "barcode", "info", "cyberlab", "div-quickview", "", $("#infoButtonsRow1"));
+    createQuickview(type, "doorbelwaarde", "btn-doorbelwaarde", "phone", "danger", "doorbelwaarde", "div-quickview", "", $("#infoButtonsRow1"));
+    createQuickview(type, "brugge", "btn-brugge", "fa-stack-1x", "info", "brugge", "div-quickview", "<b>B</b>", $("#infoButtonsRow1"));
+    createQuickview(type, "knokke", "btn-knokke", "fa-stack-1x", "info", "knokke", "div-quickview", "<b>K</b>", $("#infoButtonsRow1"));
 
 
+    if (type === 'new') {
+        createJumboNav(false, $("#tapPage1"));
+        chkVerzendingen = createJumboCheck(false, "Incl. verzendingen", "verzendingen", "verzendingen", false, $("#infoButtonsRow2"));
+        selTijd = createJumboSelect(false, "", "minTimeOpen", "minTimeOpen", [{id: 'alles', name: 'Alles'}, {id: 'onbekend', name: "Moet nog toekomen"}, {id: 1, name: "<1 uur"}, {id: 2, name: "<2 uur"}, {id: 4, name: "<4 uur"}, {id: 24, name: "[4-24] uur"}, {id: 48, name: "[1-2] dagen"}, {id: 96, name: "[2-4] dagen"}, {id: 192, name: "[4-8] dagen"}, {id: 'oud', name: ">8 dagen"}], 2, $("#infoButtonsRow2"));
     }
 
-    //ORDERS MET KLINISCHE INFO-----------------------------------------------------------
-    //---------------------------------------------------------------------------
-    perKlinischeInfo(row2, data, gridIds[2].gridid, refresh, $("#div-quickview"));
-
-    //KNOKKE----------------------------------------------------------
-    //---------------------------------------------------------------------------
-    perGroep(row1, data, gridIds[3].gridid, refresh, "KNOKKE", 3);
-    //BRUGGE----------------------------------------------------------
-    //---------------------------------------------------------------------------
-    perGroep(row1, data, gridIds[4].gridid, refresh, "BRUGGE", 4);
-
-
-    //ORDERS PER TOESTEL-----------------------------------------------------------
-    //---------------------------------------------------------------------------    
-    perToestel(row3, data, gridIds[0].gridid, refresh, 0);
-    //ORDERS PER ARTS----------------------------------------------------------
-    //---------------------------------------------------------------------------
-    perArts(row3, data, gridIds[1].gridid, refresh, 1);
-    //---------------------------------------------------------------------------
-    //---------------------------------------------------------------------------
 }
 
-function parseDataWekelijks(data, refresh) {
-
-    if (!refresh) {
-        console.log("parseData()");
-        var gridId;
-        var row1 = $("<div class='row'></div>");
-        var row2 = $("<div class='row'></div>");
-        var row3 = $("<div class='row'></div>");
-        $("#worksummary-container-wekelijks").append(row1);
-        $("#worksummary-container-wekelijks").append(row2);
-        $("#worksummary-container-wekelijks").append(row3);
-        for (var i = 0; i < 5; i++)
-            gridIds.push({gridid: "grid_" + uuidv4(), gridexpandedgroups: []});
-
-    }
-
-    //KNOKKE----------------------------------------------------------
-    //---------------------------------------------------------------------------
-    perGroep(row1, data, gridIds[7].gridid, refresh, "KNOKKE", 7);
-    //BRUGGE----------------------------------------------------------
-    //---------------------------------------------------------------------------
-    perGroep(row1, data, gridIds[8].gridid, refresh, "BRUGGE", 8);
-
-    //ORDERS MET KLINISCHE INFO-----------------------------------------------------------
-    //---------------------------------------------------------------------------
-    //perKlinischeInfo(row2, data, gridIds[6].gridid, refresh);
-    //ORDERS PER TOESTEL-----------------------------------------------------------
-    //---------------------------------------------------------------------------    
-    perToestel(row3, data, gridIds[4].gridid, refresh, 4);
-    //ORDERS PER ARTS----------------------------------------------------------
-    //---------------------------------------------------------------------------
-    perArts(row3, data, gridIds[5].gridid, refresh, 5);
-    //---------------------------------------------------------------------------
-    //---------------------------------------------------------------------------
-}
-
-
-
-function createJumboButton(refresh, data, btnId, btnIcon, btnText, btnStyle) {
+function createJumboButton(refresh, data, btnId, btnIcon, btnText, btnStyle, appendTo) {
     console.log("createJumboButton()");
     if (!refresh) {
         var btn = dom_button(btnId, btnIcon, btnText, btnStyle);
 
-        $("#infoButtons").append(btn);
-    }else{
+        appendTo.append(btn);
+    } else {
         $("#" + btnId + " span").text("");
     }
     var info = getInformation(data);
     $("#" + btnId).css("margin-right", "5px");
     $("#" + btnId).css("margin-bottom", "5px");
-    
+
     $("#" + btnId + " span").text($("#" + btnId + " span").text() + info["Orders"]);
 
 }
 
+function createJumboCheck(refresh, chkTitle, chkId, chkName, chkVal, appendTo) {
+    console.log("createJumboCheck()");
+    if (!refresh) {
+        var chk = forms_checkbox(chkTitle, chkId, chkName, chkVal);
+        appendTo.append(chk);
+        chk.change(function () {
+            loadPage(dataOnverwerkt, "refresh");
+            if (typeof selectedBtn !== "undefined") {
+                //dataVerwerkt[_data]
+                var gridId = selectedBtn.attr('linked-grid');
+                var gridData = perOrderDataVerwerking(dataVerwerkt[gridId]).gridData;
+                $("#" + gridId)
+                        .jqGrid("clearGridData")
+                        .jqGrid('setGridParam', {data: gridData})
+                        .trigger("reloadGrid");
+            }
 
+        });
+        chk.css("display", "inline-flex");
+    }
+
+    $("#" + chkId).css("margin-right", "5px");
+    $("#" + chkId).css("margin-bottom", "5px");
+
+    return chk.find("input")[0];
+}
+
+function createJumboSelect(refresh, selTitle, selId, selName, selObj, selVal, appendTo) {
+
+    var obj = new Array();
+    if (!refresh) {
+        var sel = forms_select_single(selTitle, selId, selName, selObj, selVal);
+        appendTo.append(sel);
+
+        sel.on('change', function () {
+            loadPage(dataOnverwerkt, "refresh");
+            if (typeof selectedBtn !== "undefined") {
+                //dataVerwerkt[_data]
+                var gridId = selectedBtn.attr('linked-grid');
+                var gridData = perOrderDataVerwerking(dataVerwerkt[gridId]).gridData;
+                $("#" + gridId)
+                        .jqGrid("clearGridData")
+                        .jqGrid('setGridParam', {data: gridData})
+                        .trigger("reloadGrid");
+            }
+        });
+
+
+
+
+        sel.css("display", "inline-flex");
+    }
+    return sel.find("select");
+
+}
+
+function createJumboNav(refresh, appendTo) {
+    if (!refresh) {
+        var nav = dom_nav({'Werkposten': 'Werkposten', 'Verblijvend': 'Verblijvend', 'Ambulant': 'Ambulant'});
+        appendTo.append(nav);
+    }
+}
+
+function parseData(data) {
+
+
+    if (!chkVerzendingen.checked) {
+        data = Object.filter(data, item => (
+                    String(item["ORDER"]).startsWith("L") === false & String(item["ORDER"]).startsWith("M") === false &
+                    String(item["STATION"]).startsWith("VZ") === false &
+                    String(item["STATION"]).includes("POCT") === false
+                    ));
+    }
+
+    if (typeof selTijd.val !== "undefined") {
+        var openTijd = selTijd.val();
+        var tijdInterval = true;
+        if (openTijd === "oud") {
+            data = Object.filter(data, item => (
+                        moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 > 192 && moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true));
+        }
+        if (openTijd === "alles") {
+            data = Object.filter(data, item => (
+                        moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === false | moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true));
+        }
+        if (openTijd === "onbekend") {
+            data = Object.filter(data, item => (
+                        moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === false));
+        }
+        if (openTijd === "1") {
+            data = Object.filter(data, item => (
+                        moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 < 1 && moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true
+                        ));
+        }
+        if (openTijd === "2") {
+            data = Object.filter(data, item => (
+                        moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 < 2 && moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true
+                        ));
+        }
+        if (openTijd === "4") {
+            data = Object.filter(data, item => (
+                        moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 < 4 && moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true
+                        ));
+        }
+        if (openTijd === "24") {
+            data = Object.filter(data, item => (
+                        moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 >= 4 &&
+                        moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 < 24 &&
+                        moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true
+                        ));
+        }
+        if (openTijd === "48") {
+            data = Object.filter(data, item => (
+                        moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 >= 24 &&
+                        moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 < 48 &&
+                        moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true
+                        ));
+        }
+        if (openTijd === "96") {
+            data = Object.filter(data, item => (
+                        moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 >= 48 &&
+                        moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 < 96 &&
+                        moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true));
+        }
+        if (openTijd === "192") {
+            data = Object.filter(data, item => (
+                        moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 >= 96 &&
+                        moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 < 192 &&
+                        moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true));
+        }
+    } else {
+        data = Object.filter(data, item => (
+                    moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 < 2 && moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true
+                    ));
+    }
+
+
+
+    dataVerwerkt.brugge = Object.filter(data, item => (
+                Object.keys(Object.filter(issuers, issuer => (issuer["ID"] === String(item["ISSUER"]) && issuer["GROEP"] === "BRUGGE"))) > 0
+                ));
+
+    dataVerwerkt.knokke = Object.filter(data, item => (
+                Object.keys(Object.filter(issuers, issuer => (issuer["ID"] === String(item["ISSUER"]) && issuer["GROEP"] === "KNOKKE"))) > 0
+                ));
+
+
+    dataVerwerkt.dringend = Object.filter(data, item => (
+                String(item["STATION"]).includes("POCT") === false & String(item["URGENT"]) === "TRUE"
+                ));
+
+    dataVerwerkt.commentaar = Object.filter(data, item => (
+                String(item["STATION"]).includes("POCT") === false & String(item["INFO"]).length > 0
+                ));
+
+    dataVerwerkt.cyberlab = Object.filter(data, item => (
+                String(item["STATION"]).includes("POCT") === false & String(item["CYBERLAB"]) === "TRUE"
+                ));
+
+    dataVerwerkt.doorbelwaarde = Object.filter(data, item => (
+                String(item["STATION"]).includes("POCT") === false & String(item["ERNST"]) === "50"
+                ));
+
+//    dataVerwerkt.spoed = Object.filter(data, item => (
+//                String(item["STATION"]).includes("POCT") === false & String(item["ERNST"]) === "50"
+//                ));
+//
+//    dataVerwerkt.ambulant = Object.filter(data, item => (
+//                String(item["STATION"]).includes("POCT") === false & String(item["ERNST"]) === "50"
+//                ));
+//
+//    dataVerwerkt.verblijvend = Object.filter(data, item => (
+//                String(item["STATION"]).includes("POCT") === false & String(item["ERNST"]) === "50"
+//                ));
+}
+
+function loadPage(data, type) {
+    parseData(data);
+    createJumboElements(type);
+
+}
 
 function getInformation(data, idField) {
     var info = new Object();
@@ -201,7 +325,9 @@ function new_grid(colModel, extraOptions, gridData, gridId, parent) {
         searching: listGridFilterToolbarOptions,
         rowNum: 1000,
         mtype: 'POST',
-        loadComplete: function (data) {grid.trigger('resize');},
+        loadComplete: function (data) {
+            grid.trigger('resize');
+        },
         //editurl: "_editUrl",
         loadonce: true,
         //onSelectRow: popupEdittRow,
@@ -310,41 +436,42 @@ function parseJSONInput(data) {
 
 
 var previousBtnId = "";
-function createQuickview(_type, _data, btnId, btnIcon, btnColor, gridId, collapseTarget, btnTxt) {
+function createQuickview(_type, _data, btnId, btnIcon, btnColor, gridId, collapseTarget, btnTxt, appendTo) {
     if (_type === 'new') {
-        createJumboButton(false, _data, btnId, btnIcon, btnTxt, btnColor);
+        createJumboButton(false, dataVerwerkt[_data], btnId, btnIcon, btnTxt, btnColor, appendTo);
         $("#" + btnId).attr('data-toggle', 'collapse');
         $("#" + btnId).attr('aria-controls', collapseTarget);
         $("#" + btnId).attr('data-target', '#' + collapseTarget);
+        $("#" + btnId).attr('linked-grid', gridId);
         $("#" + btnId).on('click', function (e) {
-
+            console.log("btn clicked");
+            selectedBtn = $("#" + btnId);
             if (!$("#" + collapseTarget).hasClass('show')) {
                 if ($("#" + gridId).length < 1) {
-                    gridIds.push({gridId: {gridid: gridId, gridexpandedgroups: []}});
-                    perOrder($('#' + collapseTarget), _data, gridId, false);
+                    gridIds[gridId] = {gridId, gridexpandedgroups: []};
+                    perOrder($('#' + collapseTarget), dataVerwerkt[_data], gridId, false);
                 }
             } else {
-                if ($("#" + gridId).length > 0) {
-                    $("#" + gridId).jqGrid("GridDestroy");
-                }
+                Object.keys(gridIds).forEach(function (id) {
+
+                    $("#" + id).jqGrid("GridDestroy");
+                    console.log("GridDestroy");
+                })
+
                 if (previousBtnId !== btnId) {
                     e.stopPropagation();
                     $('#' + collapseTarget).collapse('show');
-                    gridIds.push({gridId: {gridid: gridId, gridexpandedgroups: []}});
-                    perOrder($('#' + collapseTarget), _data, gridId, false);
-
+                    gridIds[gridId] = {gridId, gridexpandedgroups: []};
+                    perOrder($('#' + collapseTarget), dataVerwerkt[_data], gridId, false);
 
                 }
             }
             previousBtnId = btnId;
         });
 
-
-
-
     }
     if (_type === 'refresh') {
-        createJumboButton(true, _data, btnId, btnIcon, btnTxt, btnColor);
+        createJumboButton(true, dataVerwerkt[_data], btnId, btnIcon, btnTxt, btnColor, appendTo);
     }
 }
 

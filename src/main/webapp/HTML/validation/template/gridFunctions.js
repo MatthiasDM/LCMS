@@ -30,3 +30,5 @@ function getGridColumns(gridId) {
 //    console.log(filtered);
     return grids[gridId].colNames;
 }
+
+
