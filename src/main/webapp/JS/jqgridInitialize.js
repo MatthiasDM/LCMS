@@ -191,14 +191,14 @@ function generateView2(data) {
         }
 
         if (value.type === "internal_list") {
-            value.type = "select"
+            value.type = "select";
             column.editoptions = {title: "internal_list"};
             column.internalListName = value.internalListName;
             column.internalListAttribute = value.internalListAttribute;
 
         }
         if (value.type === "external_list") {
-            value.type = "select"
+            value.type = "select";
             column.editoptions = {title: "external_list"};
         }
         if (value.type === "select") {

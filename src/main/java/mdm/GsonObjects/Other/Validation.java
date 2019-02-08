@@ -20,7 +20,6 @@ public class Validation {
     public String title;
     @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String contents;
-
     @MdmAnnotations(
             type = "select",
             reference = {"Mongo", "USERS", "userid", "username"},
@@ -28,6 +27,12 @@ public class Validation {
             visibleOnTable = false
     )
     public String approver;
+    @MdmAnnotations(
+            editRole = "ICTMANAGER",
+            type = "select",
+            choices = {"Algemeen","Glims", "Nomenclatuur", "Labo", "Software"}
+    )
+    public String category;
     @MdmAnnotations(
             type = "date",
             visibleOnTable = false,
@@ -62,10 +67,12 @@ public class Validation {
     public Validation() {
     }
 
-    public Validation(String validationid, String contents, String approver, long approved_on, long created_on, String created_by, long edited_on) {
+    public Validation(String validationid, String title, String contents, String approver, String category, long approved_on, long created_on, String created_by, long edited_on) {
         this.validationid = validationid;
+        this.title = title;
         this.contents = contents;
         this.approver = approver;
+        this.category = category;
         this.approved_on = approved_on;
         this.created_on = created_on;
         this.created_by = created_by;
@@ -78,6 +85,14 @@ public class Validation {
 
     public void setValidationid(String validationid) {
         this.validationid = validationid;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getContents() {
@@ -94,6 +109,14 @@ public class Validation {
 
     public void setApprover(String approver) {
         this.approver = approver;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public long getApproved_on() {
@@ -128,4 +151,5 @@ public class Validation {
         this.edited_on = edited_on;
     }
 
+  
 }

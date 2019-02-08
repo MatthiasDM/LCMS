@@ -17,15 +17,12 @@ $(function () {
     });
     $('#validations-list').BootSideMenu.open();
 
-    $('#toc').BootSideMenu({
+    $('#sidebar').BootSideMenu({
         // 'left' or 'right'
-        side: "left",
+        side: "left"
 
     });
-
-
-
-    
+   
 
 
     validations_doLoad($("#validations-container"));

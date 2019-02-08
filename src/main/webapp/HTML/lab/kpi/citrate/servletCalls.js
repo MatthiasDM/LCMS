@@ -27,7 +27,7 @@ function kpi_citrate_loadSettings(_parent) {
                 if (id && id !== lastSelection) {
                     var grid = $("#citrate-table");
                     var rowData = grid.getRowData(id);
-                    kpi_citrate_doLoad(rowData['settings'])
+                    kpi_citrate_doLoad(rowData['settings']);
                     lastSelection = id;
                 }
             }

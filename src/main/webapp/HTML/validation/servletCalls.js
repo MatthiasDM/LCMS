@@ -24,14 +24,40 @@ function validations_doLoad(_parent) {
             jsonData.parent = _parent;
             loadParameters(jsonData);
         } else {
-            var extraOptions = {};
+            var extraOptions = {
+                grouping: true,
+                groupingView: {
+                    groupField: ['category'],
+                    groupColumnShow: [false],
+                    groupText: ['<b>{0} - {1} Item(s)</b>'],
+                    groupCollapse: false
+                }
+            };
+            //fa fa-lg fa-fw fa-pencil
             extraOptions.onSelectRow = editValidation;
             populateTable(jsonData, "VALIDATION_EDITVALIDATIONS", './validations', $("#validations-table"), "#validations-pager", $("#div-grid-wrapper"), "Al uw persoonlijke notities", extraOptions);
+            $("#validations-table").navButtonAdd("#validations-pager", {
+                caption: "",
+                title: "Edit properties",
+                buttonicon: "fa-pencil",
+                onClickButton: function () {
+                    var rowid = $("#validations-table").jqGrid('getGridParam', 'selrow');
+                    if(rowid !== null){
+                       popupEdit(rowid, $("#validations-table"), $(this), "VALIDATION_EDITVALIDATIONS"); 
+                    }else{
+                        bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);                        
+                    }
+                    
+                },
+                position: "last"
+            });
         }
     }).fail(function (data) {
         alert("Sorry. Server unavailable. ");
     });
 }
+
+
 
 function editRow() {
 
@@ -104,7 +130,7 @@ function validations_getValidation(_parent, _id) {
                 var validations_content = $.parseJSON(jsonData.replaces["validations-content"]);
                 jsonData.webPage = replaceAll(jsonData.webPage, "validations-content", validations_content.html);
                 grids = validations_content.grids;
-                
+
             } catch (e) {
                 jsonData.webPage = replaceAll(jsonData.webPage, "validations-content", jsonData.replaces["validations-content"]);
             }
@@ -180,7 +206,7 @@ function loadValidationPage(jsonData, grids) {
         }
 
 
-        generate_grid(jsonData.parent, grid, value, extraOptions);
+        generate_grid(editor, grid, value, extraOptions);
     });
 }
 

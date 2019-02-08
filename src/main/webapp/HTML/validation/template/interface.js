@@ -8,13 +8,35 @@ $(function () {
     loadGrids();
     $("div[id^=editable]").click(function (e) {
         console.log("clicked");
-        if (typeof e.target.href != 'undefined' && e.ctrlKey == true) {
+        if (typeof e.target.href !== 'undefined' && e.ctrlKey === true) {
             window.open(e.target.href, 'new' + e.screenX);
         }
     });
     $("#validation-elements").remove();
-    $('#toc').append(dom_moveUpDownList("validation-elements", $("div[id^=gbox_grid], div[id^=editable]")));
+    $("#sidebar .menu-wrapper").empty();
+    $("#sidebar .menu-wrapper").append($("#div-validation-menu"));
+    $("#sidebar .menu-wrapper").append(dom_moveUpDownList("validation-elements", $("div[id^=gbox_grid], div[id^=editable]")));
+
+    $("#importTableButton").change(function () {
+
+        $.each(this.files, function (index, file) {
+            var reader = new FileReader();
+            var name = file.name;
+            reader.onload = function (e) {
+                var text = reader.result;
+                console.log(text);
+                bootstrap_alert.warning(name, "info", 1000);
+                createGridBasedOnImportFile($($("div[id^='wrapper']")[0]), createDataAndModelFromCSV(text), name);
+            };
+            reader.readAsText(file);
+
+        });
+
+    });
+
 });
+
+
 
 function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId, location) {
     console.log("new_grid()");
@@ -60,9 +82,9 @@ function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId,
             colModel: colModel,
             colNames: colNames,
             viewrecords: true, // show the current page, data rang and total records on the toolbar     
-            pgText: "",
-            pginput: false,
-            pgbuttons: false,
+            //pgText: "",
+            //pginput: false,
+            //pgbuttons: false,
             autoheight: true,
             autowidth: true,
             responsive: true,
@@ -70,7 +92,7 @@ function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId,
             searching: listGridFilterToolbarOptions,
             iconSet: "fontAwesome",
             guiStyle: "bootstrap4",
-            rowNum: 1000,
+            rowNum: 30,
             rownumbers: true,
             mtype: 'POST',
             altRows: true,
@@ -201,10 +223,10 @@ function popupEdittRow(action) {
         modal: true,
         //top: $("#" + action).parent().parent().parent().parent()[0].getBoundingClientRect().top * -1 + 100,
         afterShowForm: function (formid) {
-                        $("div[id^=editmod]").css('position','absolute');
-            $("div[id^=editmod]").css('top','70px');
-            $("div[id^=editmod]").css('width','90%');
-            $("div[id^=editmod]").css('margin-bottom','50px');
+            $("div[id^=editmod]").css('position', 'absolute');
+            $("div[id^=editmod]").css('top', '70px');
+            $("div[id^=editmod]").css('width', '90%');
+            $("div[id^=editmod]").css('margin-bottom', '50px');
             $("textarea[title=ckedit]").each(function (index) {
                 CKEDITOR.replace($(this).attr('id'), {
                     customConfig: ' ',
@@ -307,6 +329,11 @@ function createGridBasedOnModel(_gridData, _colModelWrapper, _parent) {
         new_grid(_parent.attr('id'), _colModelWrapper.colModel, _colModelWrapper.options, importCSV, data, gridId);
     }
     return gridId;
+}
+
+function createGridBasedOnImportFile(_parent, importData, caption) {
+    var gridId = "grid_" + uuidv4();
+    new_grid(_parent.attr('id'), importData.colModel, {caption: caption}, [], importData.data, gridId);
 }
 
 function createColModel(form, _gridData, parent) {
@@ -674,7 +701,7 @@ function getValuesOfAttributeInList(_list, _attribute) {
             var data = new Object();
             $(b).jqGrid("getGridParam").data.forEach(function (a, b) {
                 distinctAttributes[a.id] = a[_attribute];
-            });  
+            });
             // distinctAttributes = filterUniqueJson($(b).jqGrid("getGridParam").data, _attribute);
         }
     });
@@ -736,7 +763,7 @@ function exportToHTML() {
 }
 
 function openFile(filename, text) {
-    
+
     var x = window.open('http://localhost:8080/LCMS/index.html?p=temp', '_blank');
     x.document.write(text);
     x.document.close();
@@ -747,7 +774,7 @@ function removeUnusedDataFromJqGrid(_columns, _data, _renames) {
     var data = _data;
     data.forEach(function (object, index) {
         for (var property in object) {
-            if(property !== "id"){ //The rowID may never be deleted!
+            if (property !== "id") { //The rowID may never be deleted!
                 if (object.hasOwnProperty(property)) {
 
                     if (typeof _renames !== "undefined") {
@@ -761,7 +788,7 @@ function removeUnusedDataFromJqGrid(_columns, _data, _renames) {
                         delete object[property];
                     }
 
-                }                
+                }
             }
 
         }
