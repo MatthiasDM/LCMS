@@ -6,26 +6,33 @@
 
 
 function page_doLoadPage(_page, parent) {
-    var _cookie = $.cookie('LCMS_session');
-    console.log("Loading page...");
-    $.ajax({
-        method: "POST",
-        url: "./page",
-        data: {page: _page, LCMS_session: _cookie},
-        beforeSend: function (xhr) {
-            xhr.overrideMimeType("application/html");
-        }
-    }).done(function (data) {
-        //parent.append(data);
-
+    function onDone(data) {
         var jsonData = JSON.parse(data, parent);
         jsonData.parent = parent;
         loadParameters(jsonData);
-
         setJumbo(_page);
-    }).fail(function (data) {
-        alert("Sorry. Server unavailable. ");
-    });
+    }
+    LCMSRequest("./page", {page: _page}, onDone);
+//    var _cookie = $.cookie('LCMS_session');
+//    console.log("Loading page...");
+//    $.ajax({
+//        method: "POST",
+//        url: "./page",
+//        data: {page: _page, LCMS_session: _cookie},
+//        beforeSend: function (xhr) {
+//            xhr.overrideMimeType("application/html");
+//        }
+//    }).done(function (data) {
+//        //parent.append(data);
+//
+//        var jsonData = JSON.parse(data, parent);
+//        jsonData.parent = parent;
+//        loadParameters(jsonData);
+//
+//        setJumbo(_page);
+//    }).fail(function (data) {
+//        alert("Sorry. Server unavailable. ");
+//    });
 
 }
 
@@ -63,8 +70,8 @@ function getUrlParam(url_string) {
     if (typeof p == "undefined") {
         p = "";
     }
-    if(p == "undefined"){
-        p = "";        
+    if (p == "undefined") {
+        p = "";
     }
 
     return p;
@@ -83,7 +90,7 @@ function downloadToTemp(file) {
             var filePath = jsonData.filePath;
             console.log("Changing filepath from " + file.attr("src") + " to " + filePath);
             file.attr("src", filePath);
-            
+
 
         }
     }

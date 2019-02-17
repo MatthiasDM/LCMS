@@ -9,7 +9,7 @@ lang = {
         other: "Andere modules",
         "other/qcmanager": "Beheer van de QC-informatie",
         "other/ICT-tickets": "ICT-tickets",
-        validation: "Validatiedossiers",
+        validation: "Documentenbibliotheek",
         "other/worksummary": "Openstaande orders"
     },
     jumbo_info: {

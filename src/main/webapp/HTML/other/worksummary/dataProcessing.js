@@ -134,10 +134,23 @@ function perOrder(parent, data, gridId, refresh) {
             });
         };
         extraOptions.caption = "test";
+        if (gridId === "pertoestel") {
+            extraOptions.grouping = true;
+            extraOptions.groupingView = {
+                groupField: ['Toestel'],
+                groupColumnShow: [false],
+                groupText: ['<b>{0} - {1} Item(s)</b>'],
+                groupCollapse: true
+            };
+            colModel.push({name: "Toestel", type: "text"});
+        }
+
 //        extraOptions.onSelectRow = function (rowid) {
 //            $(this).find("[id='" + rowid + "']").children("td.ui-sgcollapsed").click();
 //        };
     }
+
+
 
     if (refresh === false) {
 
@@ -170,7 +183,7 @@ function perOrderDataVerwerking(data) {
         info["Order"] = value;
         info["Aanvrager"] = filteredTestsPerOrder[Object.keys(filteredTestsPerOrder)[0]]["ISSUER"];
         info["Info"] = filteredTestsPerOrder[Object.keys(filteredTestsPerOrder)[0]]["INFO"];
-
+        info["Toestel"] = filteredTestsPerOrder[Object.keys(filteredTestsPerOrder)[0]]["STATION"];
 
         var oldest = moment("01-01-2100");
         Object.keys(filteredTestsPerOrder).forEach(function (index) {
@@ -184,9 +197,9 @@ function perOrderDataVerwerking(data) {
         });
         if (oldest !== 99999999999999) {
             var openTime = moment.duration(moment() - oldest)._data;
-            var days = openTime.days > 0 ? openTime.days + "d "  : "";
-            var hours = openTime.hours > 0 ? openTime.hours + "h "  : "";
-            var minutes = openTime.minutes > 0 ? openTime.minutes + "m"  : "";
+            var days = openTime.days > 0 ? openTime.days + "d " : "";
+            var hours = openTime.hours > 0 ? openTime.hours + "h " : "";
+            var minutes = openTime.minutes > 0 ? openTime.minutes + "m" : "";
             info["Open"] = days + hours + minutes;
         } else {
             info["Open"] = -1;

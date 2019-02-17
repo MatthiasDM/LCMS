@@ -36,7 +36,12 @@ $(function () {
     $.jgrid.defaults.responsive = true;
     $.jgrid.defaults.guiStyle = 'bootstrap4';
 });
+
+function LcmsJqGrid1(_tableOptions) {
+}
+
 function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _parent, _caption, _extraOptions, _parameters) {
+
     var _colModel = generateView2(_data);
     var cols = new Array();
     $.each(JSON.parse(_data.header), function (index, value) {
@@ -82,20 +87,20 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
     var parameters = {
         editParameters: {
             keys: true,
-            extraparam: {action: _editAction, LCMS_session: $.cookie('LCMS_session')}
+            extraparam: {test: "1", oper: 'add', action: _editAction, LCMS_session: $.cookie('LCMS_session')}
         },
-        addParameters: {editData: {action: _editAction, LCMS_session: $.cookie('LCMS_session')}},
+        addParameters: {test: "2", editData: {action: _editAction, LCMS_session: $.cookie('LCMS_session')}},
         navGridParameters: {add: true, edit: false, del: false, save: false, cancel: false,
             addParams: {
                 position: "last",
                 addRowParams: {
                     keys: true,
-                    extraparam: {action: _editAction, LCMS_session: $.cookie('LCMS_session')}
+                    extraparam: {test: "3", oper: 'add', action: _editAction, LCMS_session: $.cookie('LCMS_session')}
                 }
             },
             editParams: {
                 editRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
-                    extraparam: {action: _editAction, LCMS_session: $.cookie('LCMS_session')}
+                    extraparam: {test: "4", action: _editAction, LCMS_session: $.cookie('LCMS_session')}
                 }
             }
         }
@@ -266,4 +271,128 @@ function gridClickFunctions(e, target) {
 
 // $subGridExpanded = $(e.target).closest("td.sgexpanded");
 
+}
+
+class LCMSGrid {   
+    constructor(gridData) {
+        this.gridData = gridData;
+    }
+
+    addGridButton(icon, title, caption, onClickFunction) {
+        var gridData = this.gridData;
+        $("#"+gridData.tableObject).navButtonAdd("#" + gridData.pagerID, {
+            caption: caption,
+            title: title,
+            buttonicon: icon, 
+            onClickButton: function () {
+                onClickFunction();                
+            },
+            position: "last"
+        });
+    }
+    createGrid() {
+         console.log("createGrid()");
+        var gridData = this.gridData;
+        var _colModel = generateView2(this.gridData.data);
+        var cols = new Array();
+        $.each(JSON.parse(gridData.data.header), function (index, value) {
+            if (typeof value.tablename !== 'undefined') {
+                var _name = lang[value.tablename][value.name];
+                if (typeof _name !== "undefined") {
+                    cols.push(_name);
+                } else {
+                    cols.push(value.name);
+                }
+            } else {
+                cols.push(value.name);
+            }
+        });
+        var jqgridOptions = {
+            data: JSON.parse(gridData.data.table),
+            datatype: "local",
+            colModel: _colModel,
+            colNames: cols,
+            viewrecords: true, // show the current page, data rang and total records on the toolbar
+            autowidth: true,
+            autoheight: true,
+            rownumbers: true,
+            responsive: true,
+            headertitles: true,
+            guiStyle: "bootstrap4",
+            //iconSet: "glyph",
+            iconSet: "fontAwesome",
+            searching: listGridFilterToolbarOptions,
+            rowNum: 150,
+            mtype: 'POST',
+            altRows: true,
+            editurl: gridData.editUrl,
+            loadonce: true,
+            ondblClickRow: editRow,
+            pager: "#" + gridData.pagerID,
+            caption: "",
+            pgbuttons: false,
+            pgtext: "",
+            pginput: false
+
+        };
+        var parameters = {
+            navGridParameters: {add: true, edit: false, del: false, save: false, cancel: false,
+                addParams: {
+                    position: "last",
+                    addRowParams: {
+                        keys: true,
+                        extraparam: {oper: 'add', action: gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
+                    }
+                },
+                editParams: {
+                    editRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
+                        extraparam: {action: gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
+                    }
+                }
+            }
+        };
+        $.each(gridData.jqGridOptions, function (i, n) {
+            jqgridOptions[i] = n;
+        });
+        $("#" + gridData.tableObject).jqGrid(jqgridOptions);
+
+        replaceProperties(parameters, gridData.jqGridParameters);
+
+
+        var lastSelection;
+        function editRow(id) {
+            if (id && id !== lastSelection) {
+                var grid = $("#" + gridData.tableObject);
+                grid.jqGrid('restoreRow', lastSelection);
+                grid.jqGrid('editRow', id, parameters.editParameters);
+                lastSelection = id;
+            }
+        }
+
+        function replaceProperties(original, obj) {
+            for (var property in obj) {
+                if (obj.hasOwnProperty(property)) {
+                    if (typeof obj[property] === "object" & typeof original[property] === "object")
+                        replaceProperties(original[property], obj[property]);
+                    else
+                        original[property] = obj[property];
+                    //console.log(property + "   " + obj[property]);
+                }
+            }
+        }
+        $("#"+gridData.tableObject).inlineNav("#" + gridData.pagerID, parameters.navGridParameters);
+        $("#"+gridData.tableObject).jqGrid("filterToolbar");
+        $(window).bind('resize', function () {
+            $("#" + gridData.tableObject).setGridWidth(gridData.wrapperObject.width() - 10);
+        }).trigger('resize');
+
+        $("#"+gridData.tableObject).closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").click(function () {
+            $(".ui-jqgrid-titlebar-close", this).click();
+        });
+        $("#"+gridData.tableObject).click(function (e) {
+            gridClickFunctions(e, $(this));
+        });
+
+        return $("#" + gridData.tableObject);
+    }
 }

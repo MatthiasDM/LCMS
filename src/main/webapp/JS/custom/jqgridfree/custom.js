@@ -77,22 +77,22 @@ function jqGridOptionsSimple() {
     return jqgridOptions;
 }
 
-function popupEdit(action, _tableObject, _parentObject, _editAction) {
+function popupEdit(_action, _tableObject, _parentObject, _editAction, _afterSubmitFunction) {
     var _tableObject = _tableObject;
     var parent = _parentObject;
     var grid = _tableObject;
     console.log("new item");
 
-    grid.jqGrid('editGridRow', action, {
+    grid.jqGrid('editGridRow', _action, {
         reloadAfterSubmit: false,
-        width: $("body").width() * 0.9,
-        left: parent.offset().left * -1 + $("body").width() * 0.05,
-        //top: parent.offset().top * -1 + 40,
         afterShowForm: function (formid) {
             $("div[id^=editmod]").css('position', 'absolute');
-            $("div[id^=editmod]").css('top', '70px');
+            $("div[id^=editmod]").css('top', '5%');
             $("div[id^=editmod]").css('width', '90%');
-            $("div[id^=editmod]").css('margin-bottom', '50px');
+            $("div[id^=editmod]").css('display', 'inline-block');
+            $("div[id^=editmod]").css('margin-left', '5%');
+            $("div[id^=editmod]").css('margin-right', '5%');
+            $("div[id^=editmod]").css('left', '');
 
             $("textarea[title=ckedit]").each(function (index) {
                 CKEDITOR.replace($(this).attr('id'), {
@@ -100,20 +100,23 @@ function popupEdit(action, _tableObject, _parentObject, _editAction) {
                 });
             });
             $("#created_on").val(moment().format('D-M-YY'));
+            scrollTo($($("input")[0]));
         },
         beforeSubmit: function (postdata, formid) {
             $("textarea[title=ckedit]").each(function (index) {
                 var editorname = $(this).attr('id');
                 var editorinstance = CKEDITOR.instances[editorname];
                 var text = editorinstance.getData();
-                // CKEDITOR.instances[editorname].element.remove()
+                text = removeElements("nosave", text);
                 postdata[editorname] = text;
             });
             console.log("Checking post data");
         },
         afterComplete: function (response, postdata, formid) {
             $("#cData").trigger("click");
-            return [success, message, new_id];
+            bootstrap_alert.warning('Rij toegevoegd', 'info', 1000);
+            _afterSubmitFunction();
+
         },
         editData: {action: _editAction, LCMS_session: $.cookie('LCMS_session')}
     }
@@ -127,12 +130,12 @@ function createDataAndModelFromCSV(val) {
     var importCSV = CSVToArray(val, ",");
     var colNames = new Array();
     var colModel = [];
-  
+
     var data = new Array();
     var c = 0;
     importCSV.forEach(function split(a) {
         var line = a;
-        var lineObject = {};        
+        var lineObject = {};
         line.forEach(function split(a, b) {
             var column = {};
             if (c < 1) {
@@ -149,7 +152,21 @@ function createDataAndModelFromCSV(val) {
             data.push(lineObject);
         }
         c++;
-    });    
+    });
     return {colModel: colModel, colNames: colNames, data: data};
 }
 
+function getValuesOfAttributeInList(_list, _attribute) {
+    var distinctAttributes = {};
+    $("table[id^=grid]").each(function (a, b) {
+        var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
+        if (name === _list) {
+            var data = new Object();
+            $(b).jqGrid("getGridParam").data.forEach(function (a, b) {
+                distinctAttributes[a.id] = a[_attribute];
+            });
+            // distinctAttributes = filterUniqueJson($(b).jqGrid("getGridParam").data, _attribute);
+        }
+    });
+    return distinctAttributes;
+}

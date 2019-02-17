@@ -40,10 +40,13 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.UUID;
 import java.util.logging.Level;
 import mdm.Config.MongoConf;
 import static mdm.Core.getUserRoles;
+import mdm.DiffMatchPatch;
+
 
 import mdm.GsonObjects.Lab.Instrument;
 import mdm.GsonObjects.Lab.InventoryItem;
@@ -451,11 +454,11 @@ public class DatabaseActions {
         }
         return results;
     }
-   
+
     public static ArrayList<Document> getObjectsSpecificList(String _cookie, MongoConf mongoConf, Bson bson, Bson sort, int limit, String[] excludes) throws ClassNotFoundException {
 
         List<String> columns = getDocumentPriveleges("view", _cookie, mongoConf.getClassName());
-        if(excludes != null){
+        if (excludes != null) {
             for (String exclude : excludes) {
                 columns.remove(exclude);
             }
@@ -516,6 +519,25 @@ public class DatabaseActions {
         return results;
     }
 
+    public static Document addBackLog(MongoConf _mongoConf, Object _document) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        Document document = Document.parse((mapper.writeValueAsString(_document)));
+        Backlog backlog = new Backlog();
+        backlog.setBacklogid(UUID.randomUUID().toString());
+        backlog.setObject_type(_mongoConf.getClassName());
+        backlog.setObject_id(document.getString(_mongoConf.getIdName()));
+        backlog.setCreated_on(System.currentTimeMillis());
+        backlog.setChanges(mapper.writeValueAsString(_document));
+        return Document.parse(mapper.writeValueAsString(backlog));
+    }
+    
+    public static String patchText(Object _old, Object _patches){
+            DiffMatchPatch dmp = new DiffMatchPatch();
+            LinkedList<DiffMatchPatch.Patch> patches = (LinkedList) dmp.patch_fromText(_patches.toString());
+            Object[] newDoc = dmp.patch_apply(patches, _old.toString());
+            return newDoc[0].toString();
+    }
+
     public static Document getObjectDifference(MongoConf mongoConf, Object original, Object revised) {
         ObjectMapper mapper = new ObjectMapper();
         Document document = null;
@@ -525,32 +547,36 @@ public class DatabaseActions {
             Document newDocDocument = Document.parse((mapper.writeValueAsString(revised)));
             HashMap<String, Patch<String>> patches = new HashMap<>();
 
-//            oldDocDocument.forEach((k, v) -> {
-//                String revisedEntry = "";
-//                if (newDocDocument.get(k) != null) {
-//                    revisedEntry = newDocDocument.get(k).toString();
-//                }
-//                if (v == null) {
-//                    v = "";
-//                }
-//                List<String> originalList = Arrays.asList(v.toString().split("\\n"));
-//                List<String> revisedList = Arrays.asList(revisedEntry.split("\\n"));
-//                patches.put(k, DiffUtils.diff(originalList, revisedList));
-//                newDocDocument.remove(k);
-//            });
             newDocDocument.forEach((k, v) -> {
-                String originalEntry = "";
+                try {
+                    MdmAnnotations mdmAnnotations = Class.forName(mongoConf.getClassName()).getField(k).getAnnotation(MdmAnnotations.class);
+                    if (!mdmAnnotations.DMP()) {
+                        String originalEntry = "";
+                        if (newDocDocument.containsKey(k)) {
+                            originalEntry = oldDocDocument.get(k).toString();
+                        }
+                        if (v == null) {
+                            v = "";
+                        }
+                        //Eigenschap van het object ophalen adhv de key (attribuutnaam) en mongoconf.
+                        //indien het veld een veld is die eigenschap "x" heeft, dan passen we de diff match patch toe.
+                        //aan het origineel document worden de patches toegepast.
+                        //dan wordt het document opgeslaan.
 
-                if (newDocDocument.containsKey(k)) {
-                    originalEntry = oldDocDocument.get(k).toString();
-                }
-                if (v == null) {
-                    v = "";
-                }
-                List<String> originalList = Arrays.asList(originalEntry.split("(\\n|\\:|\\;)"));
-                List<String> revisedList = Arrays.asList(v.toString().split("(\\n|\\:|\\;)"));
+                        List<String> originalList = Arrays.asList(originalEntry.split("(\\n|\\:|\\;)"));
+                        List<String> revisedList = Arrays.asList(v.toString().split("(\\n|\\:|\\;)"));
+                        List<String> originalList2 = Arrays.asList(originalEntry.split("(?<=\n|:|;)"));
+                        patches.put(k, DiffUtils.diff(originalList, revisedList));
+                    }
 
-                patches.put(k, DiffUtils.diff(originalList, revisedList));
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (NoSuchFieldException ex) {
+                    Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SecurityException ex) {
+                    Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
             });
 
             HashMap<String, Patch<String>> registeredPatches = new HashMap<>();

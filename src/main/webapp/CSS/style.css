@@ -105,6 +105,15 @@ jqgrid-bootstrap tr.jqgrow>td {
     font-size: 1em;
 }
 
+/*div[id^="editmod"]{
+    position: absolute;
+    top: 5%;
+    width: 90%;
+    display: inline-block;
+    margin-left: 5%;
+    margin-right: 5%;
+    left: '';
+}*/
 
 /*CAPTION*/
 .ui-jqdialog.ui-jqgrid-bootstrap .ui-jqdialog-titlebar .ui-jqdialog-title, .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-errorbar .ui-jqgrid-error, .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-titlebar .ui-jqgrid-title {

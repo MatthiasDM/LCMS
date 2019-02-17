@@ -98,7 +98,7 @@ public class ActionManagerAdmin {
         return sb;
     }
 
-    private StringBuilder actionADMIN_EDITUSERS() throws IOException, ClassNotFoundException {
+    private StringBuilder actionADMIN_EDITUSERS() throws IOException, ClassNotFoundException, NoSuchFieldException {
         StringBuilder sb = new StringBuilder();
         if (cookie != null) {
             if (checkUserRole(cookie, mdm.Config.Roles.ADMIN)) {

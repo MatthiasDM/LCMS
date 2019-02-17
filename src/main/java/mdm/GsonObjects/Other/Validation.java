@@ -18,7 +18,7 @@ public class Validation {
     public String validationid;
     @MdmAnnotations(type = "string", visibleOnTable = true, visibleOnForm = true)
     public String title;
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
+    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false, DMP = true)
     public String contents;
     @MdmAnnotations(
             type = "select",

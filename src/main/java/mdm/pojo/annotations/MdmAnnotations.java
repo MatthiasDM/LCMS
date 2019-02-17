@@ -51,4 +51,6 @@ public @interface MdmAnnotations {
 
     int minimumCreateRoleVal() default 2;
 
+    //HITORY MANAGENT
+    boolean DMP() default false;
 }

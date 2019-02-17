@@ -62,10 +62,12 @@ function createJumboElements(type) {
     createQuickview(type, "doorbelwaarde", "btn-doorbelwaarde", "phone", "danger", "doorbelwaarde", "div-quickview", "", $("#infoButtonsRow1"));
     createQuickview(type, "brugge", "btn-brugge", "fa-stack-1x", "info", "brugge", "div-quickview", "<b>B</b>", $("#infoButtonsRow1"));
     createQuickview(type, "knokke", "btn-knokke", "fa-stack-1x", "info", "knokke", "div-quickview", "<b>K</b>", $("#infoButtonsRow1"));
+//function createQuickview(_type, _data, btnId, btnIcon, btnColor, gridId, collapseTarget, btnTxt, appendTo) {
 
+    createQuickview(type, "pertoestel", "btn-toestel", "fa-stack-1x", "info", "pertoestel", "div-quickview", "<b>T</b>", $("#tapPage1"));
 
     if (type === 'new') {
-        createJumboNav(false, $("#tapPage1"));
+      //  createJumboNav(false, $("#tapPage1"));
         chkVerzendingen = createJumboCheck(false, "Incl. verzendingen", "verzendingen", "verzendingen", false, $("#infoButtonsRow2"));
         selTijd = createJumboSelect(false, "", "minTimeOpen", "minTimeOpen", [{id: 'alles', name: 'Alles'}, {id: 'onbekend', name: "Moet nog toekomen"}, {id: 1, name: "<1 uur"}, {id: 2, name: "<2 uur"}, {id: 4, name: "<4 uur"}, {id: 24, name: "[4-24] uur"}, {id: 48, name: "[1-2] dagen"}, {id: 96, name: "[2-4] dagen"}, {id: 192, name: "[4-8] dagen"}, {id: 'oud', name: ">8 dagen"}], 2, $("#infoButtonsRow2"));
     }
@@ -252,9 +254,14 @@ function parseData(data) {
                 String(item["STATION"]).includes("POCT") === false & String(item["ERNST"]) === "50"
                 ));
 
-//    dataVerwerkt.spoed = Object.filter(data, item => (
-//                String(item["STATION"]).includes("POCT") === false & String(item["ERNST"]) === "50"
-//                ));
+    dataVerwerkt.doorbelwaarde = Object.filter(data, item => (
+                String(item["STATION"]).includes("POCT") === false & String(item["ERNST"]) === "50"
+                ));
+
+
+    dataVerwerkt.pertoestel = Object.filter(data, item => (
+                String(item["STATION"]).includes("POCT") === false
+                ));
 //
 //    dataVerwerkt.ambulant = Object.filter(data, item => (
 //                String(item["STATION"]).includes("POCT") === false & String(item["ERNST"]) === "50"

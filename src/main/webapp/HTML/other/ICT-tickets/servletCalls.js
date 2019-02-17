@@ -21,121 +21,41 @@ function ICTtickets_doLoad(_parent) {
         if (typeof jsonData.webPage !== 'undefined') {
             jsonData.parent = _parent;
             loadParameters(jsonData);
-        } else {
-            var extraOptions = {
-                grouping: true,
-                groupingView: {
-                    groupField: ['status', 'category'],
-                    groupColumnShow: [false, false],
-                    groupText: ['<b>{0} - {1} Item(s)</b>', '<b>{0} - {1} Item(s)</b>'],
-                    groupCollapse: true,
+        } else {            
+            var gridData = {
+                data: jsonData,
+                editAction: "ICT_EDITTICKETS",
+                editUrl: "./ict",
+                tableObject: ("ICT-ticket-table"),
+                pagerID: "ICT-ticket-pager",
+                wrapperObject: $("#div-grid-wrapper"),
+                jqGridOptions: {
+                    grouping: true,
+                    groupingView: {
+                        groupField: ['status', 'category'],
+                        groupColumnShow: [false, false],
+                        groupText: ['<b>{0} - {1} Item(s)</b>', '<b>{0} - {1} Item(s)</b>'],
+                        groupCollapse: true
+                    },
+                    onSelectRow: function (rowid) {
+                        return popupEdit(rowid, $("#ICT-ticket-table"), _parent, "ICT_EDITTICKETS");
+                    },
+                    caption: "ICT-tickets in het labo"
+                },
+                jqGridParameters: {
+                    navGridParameters: {add: false}
                 }
             };
-            extraOptions.onSelectRow = editTicket;
-            var navGridParameters = {
-                add: false
-            }
-            populateTable(jsonData, "ICT_EDITTICKETS", './ict', $("#ICT-ticket-table"), "#ICT-ticket-pager", $("#div-grid-wrapper"), "ICT-tickets in het labo", extraOptions, navGridParameters);
-//            $("#ICT-ticket-table_iladd").on("click", function () {
-//                editTicket('new');
-//            });
-        }
-    }).fail(function (data) {
-        alert("Sorry. Server unavailable. ");
-    });
-}
-function ticketPopup() {
-    setTimeout(function () {
-        var _tableObject = $("#ICT-ticket-table");
-        var grid = _tableObject;
-        var rowKey = grid.getGridParam("selrow");
-        if (rowKey) {
-            grid.editGridRow(rowKey,
-                    {
-                        closeAfterEdit: true,
-                        extraparam: {action: "ICT_EDITTICKETS", LCMS_session: $.cookie('LCMS_session')}
-                    });
-        } else {
-            console.log("No rows are selected");
-        }
-    }, 500);
-
-}
-
-function ICTtickets_getTicket(_parent, _id) {
-
-    var _cookie = $.cookie('LCMS_session');
-    $.ajax({
-        method: "POST",
-        url: "./ict",
-        data: {action: "ICT_GETTICKET", LCMS_session: _cookie, id: _id},
-        beforeSend: function (xhr) {
-            xhr.overrideMimeType("application/html");
-        }
-    }).done(function (data) {
-        //_parent.append(data);
-        _parent.empty();
-        console.log("Start loading ticket");
-        var jsonData = JSON.parse(data, _parent);
-        jsonData.parent = _parent;
-        if (typeof (jsonData.parameters) !== "undefined") {
-            jsonData.parameters["note-metadata"] = note_createMetaDataHeader(jsonData.parameters["ictticket-metadata"]);
-        }
-        if (typeof (jsonData.replaces) !== "undefined") {
-            jsonData.webPage = replaceAll(jsonData.webPage, "ictticket-id", jsonData.replaces["ictticket-id"]);
-            jsonData.webPage = replaceAll(jsonData.webPage, "ictticket-content", jsonData.replaces["ictticket-content"]);
-            _parent.click();
-        }
-        loadParameters(jsonData);
-        //$("#modal-notes").modal();
-        console.log("Fetched one ticket.");
-    }).fail(function (data) {
-        alert("Sorry. Server unavailable. ");
-    });
-
-}
-
-function editTicket(action) {
-    var _tableObject = $("#ICT-ticket-table");
-    var parent = $("#btn-edit-ticket");
-    var grid = _tableObject;
-    console.log("new ticket");
-
-    grid.jqGrid('editGridRow', action, {
-        reloadAfterSubmit: false,
-        width: $("body").width() * 0.9,
-        left: parent.offset().left * -1 + $("body").width() * 0.05,
-        //top: parent.offset().top * -1 + 40,
-        afterShowForm: function (formid) {
-            $("div[id^=editmod]").css('position','absolute');
-            $("div[id^=editmod]").css('top','70px');
-            $("div[id^=editmod]").css('width','90%');
-            $("div[id^=editmod]").css('margin-bottom','50px');
-
-            $("textarea[title=ckedit]").each(function (index) {
-                CKEDITOR.replace($(this).attr('id'), {
-                    customConfig: ' '
-                });
+            let ticketGrid = new LCMSGrid(gridData);
+            ticketGrid.createGrid();
+            ticketGrid.addGridButton("fa-plus", "Nieuw ticket", "", function () {
+                return popupEdit('new', $("#ICT-ticket-table"), $(this), "ICT_EDITTICKETS", function(){return null;});
             });
-            $("#created_on").val(moment().format('D-M-YY'));
-        },
-        beforeSubmit: function (postdata, formid) {
-            $("textarea[title=ckedit]").each(function (index) {
-                var editorname = $(this).attr('id');
-                var editorinstance = CKEDITOR.instances[editorname];
-                var text = editorinstance.getData();
-                // CKEDITOR.instances[editorname].element.remove()
-                postdata[editorname] = text;
-            });
-            console.log("Checking post data");
-        },
-        afterComplete: function (response, postdata, formid) {
-            $("#cData").trigger("click");
-            return [success, message, new_id];
-        },
-        editData: {action: "ICT_EDITTICKETS", LCMS_session: $.cookie('LCMS_session')}
+
+        }
     }
-
-    );
-
+    ).fail(function (data) {
+        alert("Sorry. Server unavailable. ");
+    });
 }
+

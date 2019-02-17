@@ -1,9 +1,10 @@
 var colModels = [];
 var references = [];
 
+
 $(function () {
     //ICTtickets_doLoad($("#ICT-ticket-container"));
-    console.log("loading CK config1");
+    console.log("loading CK config2");
     config2();
     loadGrids();
     $("div[id^=editable]").click(function (e) {
@@ -16,7 +17,6 @@ $(function () {
     $("#sidebar .menu-wrapper").empty();
     $("#sidebar .menu-wrapper").append($("#div-validation-menu"));
     $("#sidebar .menu-wrapper").append(dom_moveUpDownList("validation-elements", $("div[id^=gbox_grid], div[id^=editable]")));
-
     $("#importTableButton").change(function () {
 
         $.each(this.files, function (index, file) {
@@ -86,6 +86,8 @@ function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId,
             //pginput: false,
             //pgbuttons: false,
             autoheight: true,
+            multiselect: true,
+            multiPageSelection: true,
             autowidth: true,
             responsive: true,
             headertitles: true,
@@ -96,9 +98,7 @@ function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId,
             rownumbers: true,
             mtype: 'POST',
             altRows: true,
-            //editurl: "_editUrl",
             loadonce: true,
-            //onSelectRow: popupEdittRow,
             ondblClickRow: inlineEditRow,
             pager: "#" + pager.attr('id'),
             caption: ""
@@ -127,7 +127,9 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     });
     //_tableOptions.caption += ("<span class='nosave'><button type='button' id='btn_options' style='padding-right: 20px;' class='close' aria-label='Close'><span aria-hidden='true'>info</span></button></span>");
     // _tableOptions.onSelectRow = popupEdittRow;
-    _tableOptions.ondblClickRow = popupEdittRow;
+    _tableOptions.ondblClickRow = function (rowid) {
+        return popupEdit(rowid, _grid, _parent, "", validation_save);
+    };//popupEdittRow;
     _grid.jqGrid(_tableOptions);
     _grid.jqGrid('filterToolbar');
     _grid.jqGrid('sortableRows', {});
@@ -178,7 +180,22 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
         title: "Export to plain HTML",
         buttonicon: "fa-download",
         onClickButton: function () {
-            export_grid(_grid);
+            var selRows = _grid.jqGrid("getGridParam", "selarrrow");
+            var data = _grid.jqGrid("getGridParam", "data");
+            var selRowsData = Object.filter(data, item => selRows.includes(String(item.id)) === true);
+            var arr = [];
+            $.each(selRowsData, function (key, value) {
+                arr.push(value);
+            });
+            var csv = Papa.unparse(JSON.stringify(arr));
+            let csvContent = "data:text/csv;charset=utf-8," + csv;
+            var encodedUri = encodeURI(csvContent);
+            var link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", _grid.jqGrid("getGridParam", "caption"));
+            document.body.appendChild(link); // Required for FF
+            link.click();
+            document.body.removeChild(link);
         },
         position: "last"
     });
@@ -194,13 +211,23 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
         position: "last"
     });
 
+    _grid.navButtonAdd(_tableOptions.pager, {
+        caption: "",
+        title: "Enable multiselect",
+        buttonicon: "fa-list-ul",
+        onClickButton: function () {
+            // var rowid = _grid.jqGrid('getGridParam', 'selrow');
+            //_grid.jqGrid('setGridParam', {multiselect: true}).trigger('reloadGrid');
+            toggle_multiselect(_grid.jqGrid('getGridParam', 'id'));
+        },
+        position: "last"
+    });
 
 
     _grid.click(function (e) {
-        gridClickFunctions(e, $(this))
+        gridClickFunctions(e, $(this));
     });
-    //_grid.jqGrid('gridDnD',{connectWith:'#'+_grid.attr('id')}); 
-    //_grid.inlineNav(_tableOptions.pager, navGridParameters, {}, addDataOptions);
+
 
     $(window).bind('resize', function () {
         _grid.setGridWidth(_parent.width());
@@ -209,57 +236,13 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     $("#btn_options").on('click', function (e) {
         new_grid_popup(_parent, _tableOptions);
     });
+    //if (Object.keys(Object.filter(_grid.jqGrid('getGridParam').colModel, item => item.name === "cb")).length === 0) {
+//        toggle_multiselect(_grid.attr('id'));
+//        toggle_multiselect(_grid.attr('id'));
+    //}
 
-}
 
-function popupEdittRow(action) {
-    console.log("popupEditRow()");
 
-    $(this).jqGrid('editGridRow', action, {
-        reloadAfterSubmit: false,
-        width: $("body").width() * 0.9,
-        left: $(this).offset().left * -1 + $("body").width() * 0.05,
-        position: 'relative',
-        modal: true,
-        //top: $("#" + action).parent().parent().parent().parent()[0].getBoundingClientRect().top * -1 + 100,
-        afterShowForm: function (formid) {
-            $("div[id^=editmod]").css('position', 'absolute');
-            $("div[id^=editmod]").css('top', '70px');
-            $("div[id^=editmod]").css('width', '90%');
-            $("div[id^=editmod]").css('margin-bottom', '50px');
-            $("textarea[title=ckedit]").each(function (index) {
-                CKEDITOR.replace($(this).attr('id'), {
-                    customConfig: ' ',
-                    allowedContent: true
-                });
-            });
-            $("textarea[title=ckedit_code]").each(function (index) {
-                //$("textarea[title=ckedit_code]")[0].value = "<pre> <code>" + $("textarea[title=ckedit_code]")[0].value + "</code></pre>";
-                CKEDITOR.replace($(this).attr('id'), {
-                    customConfig: ' ',
-                    allowedContent: true,
-                    startupMode: 'source'
-                });
-            });
-            $("#created_on").val(moment().format('D-M-YY'));
-        },
-        beforeSubmit: function (postdata, formid) {
-            $("textarea[title=ckedit]").each(function (index) {
-                var editorname = $(this).attr('id');
-                var editorinstance = CKEDITOR.instances[editorname];
-                var text = editorinstance.getData();
-                // CKEDITOR.instances[editorname].element.remove()
-                postdata[editorname] = text;
-            });
-        },
-        afterComplete: function (response, postdata, formid) {
-            // $(this).trigger( 'reloadGrid' );
-            $("#cData").trigger("click");
-            bootstrap_alert.warning('Rij toegevoegd', 'info', 1000);
-            validation_save();
-        },
-        editData: {action: "_editAction", LCMS_session: $.cookie('LCMS_session')}
-    });
 }
 
 function inlineEditRow(id) {
@@ -290,6 +273,10 @@ function new_grid_popup(_parent, _gridData) {
         e.preventDefault();
         modal.modal('hide');
 
+        var multiselect = false;
+        if (typeof _gridData !== "undefined") {
+            multiselect = $('#' + _gridData.id + ' .cbox:visible').length > 0;
+        }
         var colModelWrapper = createColModel(form, _gridData, _parent); //1. create new colModel
         var newColumns = filterUniqueJson(colModelWrapper.colModel, "name"); //2. remove unused rows of data
         if (typeof _gridData !== "undefined") {
@@ -297,6 +284,7 @@ function new_grid_popup(_parent, _gridData) {
         }
         var gridId = createGridBasedOnModel(_gridData, colModelWrapper, _parent); //3. create new grid based on colModel
         grids.gridId = _gridData;
+        set_multiselect(gridId, multiselect);
 
 
     });
@@ -305,6 +293,22 @@ function new_grid_popup(_parent, _gridData) {
         modal.remove();
     });
 
+}
+
+function toggle_multiselect(gridId) {
+    $('#' + gridId).jqGrid("setGridParam", {multiselect: true});
+    if ($('#' + gridId + ' .cbox:visible').length > 0)
+    {
+        $('#' + gridId).jqGrid('hideCol', 'cb');
+        jQuery('.jqgrow').click(function () {
+            jQuery('#' + gridId).jqGrid('resetSelection');
+            this.checked = true;
+        });
+    } else
+    {
+        $('#' + gridId).jqGrid('showCol', 'cb');
+        jQuery('.jqgrow').unbind('click');
+    }
 }
 
 function createGridBasedOnModel(_gridData, _colModelWrapper, _parent) {
@@ -328,6 +332,7 @@ function createGridBasedOnModel(_gridData, _colModelWrapper, _parent) {
         gridId = "grid_" + uuidv4();
         new_grid(_parent.attr('id'), _colModelWrapper.colModel, _colModelWrapper.options, importCSV, data, gridId);
     }
+
     return gridId;
 }
 
@@ -364,6 +369,7 @@ function createColModel(form, _gridData, parent) {
         if (val.name === 'internalListAttribute') {
             colModel[c].internalListAttribute = val.value;
             colModel[c].choices = getValuesOfAttributeInList(colModel[c].internalListName, colModel[c].internalListAttribute);
+            
         }
 
         if (val.name.match("^option")) {
@@ -439,6 +445,35 @@ function createColModel(form, _gridData, parent) {
     } else {
         options.grouping = false;
     }
+    
+    //internal list logic for subgrid
+//            extraOptions.subGrid = true;
+//        extraOptions.subGridOptions = {
+//            hasSubgrid: function (options) {
+//                return true;
+//            }
+//        };
+//        extraOptions.subGridRowExpanded = function (subgridDivId, rowId) {
+//            var subgridTableId = subgridDivId + "_t";
+//            $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
+//            $("[id='" + subgridTableId + "']").jqGrid({
+//                datatype: 'local',
+//                data: processedData.subgridData[rowId],
+//                colNames: ['Order', 'Testen'],
+//                colModel: [
+//                    {name: 'Order', width: 100},
+//                    {name: 'Testen', width: 200}
+//                ],
+//                gridview: true,
+//                rownumbers: true,
+//                autoencode: true,
+//                responsive: true,
+//                headertitles: true,
+//                iconSet: "fontAwesome",
+//                guiStyle: "bootstrap4"
+//            });
+//        };
+
     return {"colModel": colModel, "options": options};
 }
 
@@ -461,7 +496,7 @@ function createForm(_parent, _griddata, _modal) {
         var colModel = _griddata.colModel;
         for (var key in colModel) {
             if (typeof colModel[key].name !== 'undefined') {
-                if (colModel[key].name !== "rn") {
+                if (colModel[key].name !== "rn" && colModel[key].name !== "cb") {
                     addRow(form,
                             uuidv4(),
                             colModel[key]);
@@ -693,21 +728,6 @@ function getAttributesOfGrid(_gridName) {
     return obj;
 }
 
-function getValuesOfAttributeInList(_list, _attribute) {
-    var distinctAttributes = {};
-    $("table[id^=grid]").each(function (a, b) {
-        var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
-        if (name === _list) {
-            var data = new Object();
-            $(b).jqGrid("getGridParam").data.forEach(function (a, b) {
-                distinctAttributes[a.id] = a[_attribute];
-            });
-            // distinctAttributes = filterUniqueJson($(b).jqGrid("getGridParam").data, _attribute);
-        }
-    });
-    return distinctAttributes;
-}
-
 function gridClickFunctions(e, target) {
     var $groupHeader = $(e.target).closest("tr.jqgroup");
     if ($groupHeader.length > 0) {
@@ -795,5 +815,4 @@ function removeUnusedDataFromJqGrid(_columns, _data, _renames) {
     });
     return data;
 }
-
 

@@ -168,34 +168,54 @@ public class DatabaseWrapper {
         return objHashMap;
     }
 
-    public static void editObjectData(HashMap<String, Object> mongoObject, MongoConf _mongoConf, String cookie) throws JsonProcessingException, ClassNotFoundException {
+    public static void editObjectData(HashMap<String, Object> mongoObject, MongoConf _mongoConf, String cookie) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException {
         ObjectMapper mapper = new ObjectMapper();
         List<String> columns = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
         List<Field> systemFields = mdm.Core.getSystemFields(_mongoConf.getClassName(), "edit");
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(mongoObject));
         BasicDBObject filteredObj = new BasicDBObject();
+        BasicDBObject backlogObj = new BasicDBObject();
+        Object oldObject = getObject(_mongoConf, mongoObject.get(_mongoConf.getIdName()).toString());
+        Document oldDocument = Document.parse((mapper.writeValueAsString(oldObject)));
+
         for (String key : obj.keySet()) {
             if (columns.indexOf(key) != -1) {
                 if (obj.get(key) != null) {
-                    filteredObj.put(key, obj.get(key));
+                    MdmAnnotations mdmAnnotations = Class.forName(_mongoConf.getClassName()).getField(key).getAnnotation(MdmAnnotations.class);
+                    if (!mdmAnnotations.DMP()) {
+                        filteredObj.put(key, obj.get(key));
+                    } else {
+                        String patchedObj = DatabaseActions.patchText(oldDocument.get(key), obj.get(key));
+                        filteredObj.put(key, patchedObj);
+                    }
+
+                    backlogObj.put(key, obj.get(key));
                 }
             }
         }
+
         for (Field systemField : systemFields) {
-            filteredObj.remove(systemField);
+            filteredObj.remove(systemField.getName());
             if (systemField.getName().equals("edited_on")) {
-                filteredObj.put(systemField.getName(), Instant.now().toEpochMilli() / 1000);
+                filteredObj.put(systemField.getName(), Instant.now().toEpochMilli() / 1);
+                backlogObj.put(systemField.getName(), Instant.now().toEpochMilli() / 1);
+
             }
             if (systemField.getName().equals("edited_by")) {
                 filteredObj.put(systemField.getName(), DatabaseActions.getSession(cookie).getUserid());
+                backlogObj.put(systemField.getName(), DatabaseActions.getSession(cookie).getUserid());
+
             }
         }
+
         filteredObj.put(_mongoConf.getIdName(), obj.get(_mongoConf.getIdName()));
-        Object originalDocument = getObject(_mongoConf, filteredObj.get(_mongoConf.getIdName()).toString());
+        backlogObj.put(_mongoConf.getIdName(), obj.get(_mongoConf.getIdName()));
+
         DatabaseActions.updateObjectItem(_mongoConf, filteredObj);
-        Map<String, Object> filteredObjHashMap = filteredObj.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
-        Document backlog = getObjectDifference(_mongoConf, originalDocument, filteredObjHashMap);
+        Document backlog = DatabaseActions.addBackLog(_mongoConf, backlogObj);
+//        Map<String, Object> filteredObjHashMap = filteredObj.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+//        Document backlog = getObjectDifference(_mongoConf, originalDocument, filteredObjHashMap);
         if (backlog != null) {
             getObjects(MongoConf.BACKLOG).insertOne(backlog);
         }
@@ -218,7 +238,7 @@ public class DatabaseWrapper {
                 filteredDoc.put(systemField.getName(), DatabaseActions.getSession(cookie).getUserid());
             }
             if (systemField.getName().equals("created_on")) {
-                filteredDoc.put(systemField.getName(), Instant.now().toEpochMilli() / 1000);
+                filteredDoc.put(systemField.getName(), Instant.now().toEpochMilli() / 1);
             }
         }
         filteredDoc.put(_mongoConf.getIdName(), doc.get(_mongoConf.getIdName()));
@@ -227,7 +247,7 @@ public class DatabaseWrapper {
 
     }
 
-    public static StringBuilder actionEDITOBJECT(HashMap<String, String[]> requestParameters, String cookie, MongoConf _mongoConf) throws IOException, ClassNotFoundException {
+    public static StringBuilder actionEDITOBJECT(HashMap<String, String[]> requestParameters, String cookie, MongoConf _mongoConf) throws IOException, ClassNotFoundException, NoSuchFieldException {
         StringBuilder sb = new StringBuilder();
         if (cookie != null) {
             if (Core.checkUserRoleValue(cookie, 2)) {

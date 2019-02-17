@@ -2,7 +2,7 @@ $(function () {
     // sessionCountdown();
 
     Object.filter = (obj, predicate) =>
-        Object.keys(obj)
+        Object.keys(obj)                
                 .filter(key => predicate(obj[key]))
                 .reduce((res, key) => (res[key] = obj[key], res), {});
 
@@ -147,9 +147,9 @@ function sessionCountdown() {
 bootstrap_alert = function () {};
 bootstrap_alert.warning = function (message, alert, timeout) {
     var id = uuidv4();
-    $('<div id="floating_alert_'+id+'" class="alert alert-' + alert + ' alert-dismissible fade show" role="alert"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">X</button>' + message + '&nbsp;&nbsp;</div>').appendTo($("#alertWrapper"));
+    $('<div id="floating_alert_' + id + '" class="alert alert-' + alert + ' alert-dismissible fade show" role="alert"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">X</button>' + message + '&nbsp;&nbsp;</div>').appendTo($("#alertWrapper"));
     setTimeout(function () {
-        $("#floating_alert_"+id).alert('close');        
+        $("#floating_alert_" + id).alert('close');
     }, timeout);
 };
 (function ($, undefined) {
@@ -323,9 +323,9 @@ function dom_moveUpDownList(id, data) {
     var row2 = dom_row();
     var col3 = dom_col("", 12);
     var ul = $("<ul class='list-group' id='element-list'></ul> ");
-
+    
     data.each(function (index, obj) {
-        ul.append("<li class='list-group-item' element='" + obj.id + "'>" + "<span>" + (index + 1) + "</span>" + ": " + obj.innerText.substring(0, 20).trim() + "</li>");
+        ul.append("<li class='list-group-item' style='padding:0.5rem' element='" + obj.id + "'>" + "<span>" + (index + 1) + "</span>" + ": " + obj.innerText.substring(0, 20).trim() + "</li>");
     });
 
     //-------------------
@@ -390,6 +390,18 @@ function dom_col(id, size) {
 function dom_button(id, icon, text, color) {
     return ("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "'>" + text + "</i><span></span></button>");
 }
+function dom_list(id, items) {
+    var ul = $("<ul class='list-group' id='" + id + "'></ul> ");
+
+    if (typeof items !== "undefined") {
+        items.forEach(function (index, obj) {
+            ul.append("<li class='list-group-item' element='" + obj.id + "'>" + "<span>" + (index + 1) + "</span>" + ": " + obj.name + "</li>");
+        });
+    }
+
+    return ul;
+}
+;
 function dom_card(header, body) {
     var card = $("<div class='card'></div>");
     var cardHeader = $("<div class='card-header'></header");
@@ -403,29 +415,42 @@ function dom_card(header, body) {
 
     return card;
 }
-
 function dom_nav(pills) {
     var div = dom_div("", "pills-" + uuidv4());
     var nav = $("<ul class='nav nav-pills mb-3' id='' role='tablist'>");
     $.each(pills, function (id, val) {
         //{'home': 'thuis', 'urgent': 'dringend'};
-        nav.append("<li class='nav-item'><a class='nav-link' id='"+id+"-pill' data-toggle='pill' href='#"+id+"-tab' role='tab' aria-controls='"+id+"-tab' aria-selected='true'>"+val+"</a></li>");
+        nav.append("<li class='nav-item'><a class='nav-link' id='" + id + "-pill' data-toggle='pill' href='#" + id + "-tab' role='tab' aria-controls='" + id + "-tab' aria-selected='true'>" + val + "</a></li>");
     });
-    
+
     var tab = $("<div class='tab-content' id='pills-tabContent'>");
     $.each(pills, function (id, val) {
-        tab.append("<div class='tab-pane fade' id='"+id+"-tab' role='tabpanel' aria-labelledby='"+id+"-pill'>test "+id+"</div>");
+        tab.append("<div class='tab-pane fade' id='" + id + "-tab' role='tabpanel' aria-labelledby='" + id + "-pill'>test " + id + "</div>");
     });
-    
+
     div.append(nav);
     div.append(tab);
-    
+
     return div;
-    
-    
+
+
 }
 
+function dom_mainPageContainer(containerID, mainPageContentDivId) {
+    var container = dom_div("",containerID);
+    var row1 = dom_row();
+    row1.css('padding', '5px');
+    var col1 = dom_col("", 1);
+    var col2 = dom_col(mainPageContentDivId, 10);
+    var col3 = dom_col("", 1);
 
+    row1.append(col1);
+    row1.append(col2);
+    row1.append(col3);
+    container.append(row1);
+
+    return container;
+}
 
 function loadImages(editor, editorObject) {
     if (editor !== "") {
