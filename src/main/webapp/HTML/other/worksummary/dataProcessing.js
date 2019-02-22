@@ -41,7 +41,7 @@ function extraJQGridOptions(rawData, processedData, groupBy, caption) {
             $("[id='" + subgridTableId + "']").jqGrid({
                 datatype: 'local',
                 data: processedData.subgridData[rowId],
-                colNames: ['ORDER', 'TESTEN'],
+                colNames: ['ORDER', 'TEST', ''],
                 colModel: [
                     {name: 'ORDER', width: 100},
                     {name: 'TESTEN', width: 200}
@@ -52,7 +52,8 @@ function extraJQGridOptions(rawData, processedData, groupBy, caption) {
                 responsive: true,
                 headertitles: true,
                 iconSet: "fontAwesome",
-                guiStyle: "bootstrap4"
+                guiStyle: "bootstrap4",
+
             });
         }
     }
@@ -97,10 +98,10 @@ function replaceProgressBar(gridId, gridData) {
 function perOrder(parent, data, gridId, refresh) {
     console.log("perOrder()");
     var colModel = [
-        {name: "Order", type: "text", key: true},
-        {name: "Aanvrager", type: "text"},
-        {name: "Info", type: "text"},
-        {name: "Open", type: "number"}
+        {name: "Order", type: "text", key: true, width: 100},
+        {name: "Aanvrager", type: "text", width: 150},
+        {name: "Info", type: "text", width: 250},
+        {name: "Open", type: "number", width: 50}
     ]
     var processedData = perOrderDataVerwerking(data);
     var gridData = processedData.gridData;
@@ -119,10 +120,11 @@ function perOrder(parent, data, gridId, refresh) {
             $("[id='" + subgridTableId + "']").jqGrid({
                 datatype: 'local',
                 data: processedData.subgridData[rowId],
-                colNames: ['Order', 'Testen'],
+                colNames: ['Order', 'Test', 'Open'],
                 colModel: [
-                    {name: 'Order', width: 100},
-                    {name: 'Testen', width: 200}
+                    {name: 'Order', width: 100, visible: false},
+                    {name: 'Test', width: 200},
+                    {name: 'Open', width: 100}
                 ],
                 gridview: true,
                 rownumbers: true,
@@ -131,6 +133,7 @@ function perOrder(parent, data, gridId, refresh) {
                 headertitles: true,
                 iconSet: "fontAwesome",
                 guiStyle: "bootstrap4"
+
             });
         };
         extraOptions.caption = "test";
@@ -143,7 +146,16 @@ function perOrder(parent, data, gridId, refresh) {
                 groupCollapse: true
             };
             colModel.push({name: "Toestel", type: "text"});
+        } else {
+            extraOptions.grouping = true;
+            extraOptions.groupingView = {
+                groupField: ['Aanvrager'],
+                groupColumnShow: [true],
+                groupText: ['<b>{0} - {1} Item(s)</b>'],
+                groupCollapse: false
+            };
         }
+
 
 //        extraOptions.onSelectRow = function (rowid) {
 //            $(this).find("[id='" + rowid + "']").children("td.ui-sgcollapsed").click();
@@ -206,15 +218,25 @@ function perOrderDataVerwerking(data) {
         }
 
 
-        //info["Open"] = moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))
-        var tests = "";
+
+        var orderData = [];
         $.each(filteredTestsPerOrder, function (key3, value) {
-            tests += value["TEST"] + " ";
+            var openTime = moment.duration(moment()-moment(value.DATE.trim(), "DDMMYYHHmmss"))._data;
+            if (typeof openTime !== "undefined") {
+                var days = openTime.days > 0 ? openTime.days + "d " : "";
+                var hours = openTime.hours > 0 ? openTime.hours + "h " : "";
+                var minutes = openTime.minutes > 0 ? openTime.minutes + "m" : "";
+                orderData.push({Order: value.ORDER, Test: value["TEST"], Open: days + hours + minutes});
+            } else {
+                orderData.push({Order: value.ORDER, Test: value["TEST"], Open: ""});
+            }
+
+
         });
 
-        //orderData.push({ORDER: value, TESTEN: tests});
 
-        subgridData[value] = [{Order: value, Testen: tests}];
+
+        subgridData[value] = orderData;
         gridData.push(info);
     });
 

@@ -6,6 +6,7 @@
 package mdm.lis.lcms.lab;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -123,7 +125,6 @@ public class ServletLab extends HttpServlet {
                             searchObject.put("page", new BasicDBObject("$eq", requestParameters.get("page")[0]));
                             sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf(), searchObject, new String[]{}));
                         }
-
                         if (action == Actions.LAB_CHECKINVENTORY) {
                             sb.append(actionLAB_CHECKINVENTORY());
                         }
@@ -144,6 +145,12 @@ public class ServletLab extends HttpServlet {
                         }
                         if (action == Actions.LAB_KPI_HEMOFP) {
                             sb.append(actionLAB_KPI("hemoFP", "json"));
+                        }
+                        if (action == Actions.LAB_GETCHAT) {
+                            sb.append(actionLAB_GETCHAT());
+                        }
+                        if (action == Actions.LAB_SENDCHAT) {
+                            sb.append(actionLAB_SENDCHAT());
                         }
 
                     }
@@ -225,10 +232,21 @@ public class ServletLab extends HttpServlet {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            
+            List<String> tats = new ArrayList<>();
+            try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\worksummary\\tats.json"), Charset.forName("ISO-8859-1"))) {
+                tats = stream
+                        .map(String::toUpperCase)
+                        .filter(line -> line.contains("'"))
+                        .collect(Collectors.toList());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             jsonData.put("data", mapper.writeValueAsString(lines));
             jsonData.put("issuers", mapper.writeValueAsString(issuers));
             jsonData.put("stations", mapper.writeValueAsString(stations));
+            jsonData.put("tats", mapper.writeValueAsString(tats));
             StringBuilder sb = new StringBuilder();
             sb.append(jsonData);
             return sb;
@@ -278,6 +296,36 @@ public class ServletLab extends HttpServlet {
 
             StringBuilder sb = new StringBuilder();
             sb.append(jsonData);
+            return sb;
+        }
+
+        private StringBuilder actionLAB_GETCHAT() throws ClassNotFoundException, NoSuchFieldException, IOException {
+            StringBuilder sb = new StringBuilder();
+            BasicDBObject searchObject = new BasicDBObject();
+            searchObject.put("correspondent", new BasicDBObject("$eq", requestParameters.get("correspondent")));
+            sb.append(DatabaseWrapper.getObjectData(cookie, action.getMongoConf(), action.getMongoConf().getCollection(), searchObject, new String[]{}));
+            return sb;
+        }
+
+        private StringBuilder actionLAB_SENDCHAT() throws ClassNotFoundException, NoSuchFieldException, IOException {
+            StringBuilder sb = new StringBuilder();
+            Class cls = Class.forName(action.getMongoConf().getClassName());
+            requestParameters.remove("oper");
+            requestParameters.remove("id");
+            requestParameters.remove("action");
+            HashMap<String, Object> parameters = new HashMap<>();
+            requestParameters.forEach((key, value) -> {
+                parameters.put(key, value[0]);
+            });
+            parameters.put("sessionid", parameters.get("LCMS_session"));
+            parameters.remove("LCMS_session");
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+            Object labitem = mapper.readValue(mapper.writeValueAsString(parameters), cls);//createNoteObject(requestParameters.get("docid")[0], "create");
+            Document document = Document.parse(mapper.writeValueAsString(labitem));
+            document.append(action.getMongoConf().getIdName(), UUID.randomUUID().toString());
+            DatabaseWrapper.addObject(document, action.getMongoConf(), cookie);
+            sb.append(mapper.writeValueAsString(document));
             return sb;
         }
 

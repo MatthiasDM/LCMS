@@ -267,7 +267,9 @@ function forms_select(title, id, name, valObjects, val) {
     });
     form_group.append(label);
     form_group.append(select);
-    select.val(val);
+    if(typeof val !== "undefined"){
+      select.val(val);
+    }    
     return form_group;
 
 }

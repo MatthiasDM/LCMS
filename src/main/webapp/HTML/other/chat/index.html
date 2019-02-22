@@ -1,0 +1,39 @@
+<script src="./JS/ckeditor/ckeditor.js"></script>
+<script src="./HTML/other/chat/interface.js"></script>
+<script src="./HTML/other/chat/servletCalls.js"></script>
+<link rel="stylesheet" type="text/css" media="screen" href="./HTML/other/chat/style.css" />
+<input type='hidden' id='correspondent'/>
+<div id="wrapper">
+    <div class="container" id="ICT-chat-container">
+        <div class="row">
+            <div class="col-sm-1 mx-auto">
+
+            </div>
+            <!START qc-table-->
+            <div class="col-sm-10 mx-auto" id="div-grid-wrapper">            
+                <div class="form-control" id="chatbox">
+                    <div id="who-is-online">
+                        
+                    </div>
+                    <div id="chat-history">
+                        
+                    </div>  
+                </div>   
+            </div>
+            <div class="col-sm-1 mx-auto"></div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-sm-1 mx-auto"></div>
+            <div class="col-sm-10 mx-auto" id="div-chat-menu">
+                <div class="form-group">
+                    <label for="comment">Bericht:</label>
+                    <textarea class="form-control" rows="3" id="txt-message"></textarea>
+                </div>
+                <button type="button" id="btn-send" class="btn btn-light">Verzenden</button>
+            </div>
+            <div class="col-sm-1 mx-auto"></div>
+        </div>
+    </div> 
+</div>

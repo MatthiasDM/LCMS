@@ -20,6 +20,7 @@ function worksummary_doLoad(type, soort) {
         var data = parseJSONInput(JSON.parse(jsonData.data));
         issuers = parseJSONInput(JSON.parse(jsonData.issuers));
         stations = parseJSONInput(JSON.parse(jsonData.stations));
+        tats = parseJSONInput(JSON.parse(jsonData.tats));
         dataOnverwerkt = data;
         loadPage(dataOnverwerkt, type);
 

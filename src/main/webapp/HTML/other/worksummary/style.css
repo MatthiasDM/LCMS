@@ -37,3 +37,9 @@ and open the template in the editor.
     font-size:1.5em;
 
 }
+
+
+.ui-jqgrid.ui-jqgrid-bootstrap tr.jqfoot>td, .ui-jqgrid.ui-jqgrid-bootstrap tr.jqgfirstrow>td, .ui-jqgrid.ui-jqgrid-bootstrap tr.jqgroup>td, .ui-jqgrid.ui-jqgrid-bootstrap tr.jqgrow>td
+{
+    padding: .2em .2em;        
+}

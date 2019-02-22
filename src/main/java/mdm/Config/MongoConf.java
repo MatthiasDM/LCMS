@@ -26,7 +26,9 @@ public enum MongoConf {
     BACKLOG("backlog", "backlog", "mdm.GsonObjects.Other.Backlog", "backlogid"),
     SUGGESTIONS("lcms", "suggestions", "mdm.GsonObjects.Other.Suggestion", "suggestionid"),
     VALIDATIONS("lcms", "validations", "mdm.GsonObjects.Other.Validation", "validationid"),
-    PIVOTTABLES("lcms", "pivottables", "mdm.GsonObjects.Other.PivotTable", "pivottableid");
+    PIVOTTABLES("lcms", "pivottables", "mdm.GsonObjects.Other.PivotTable", "pivottableid"),
+    CHATS("lcms", "chats", "mdm.GsonObjects.Other.Chat", "chatid");
+    
     private final String database;
     private final String collection;
     private final String className;

@@ -14,6 +14,7 @@ var numberTemplate = {
     stringResult: true,
     multipleSearch: true,
     searchOperators: true
+    
 };
 
 $(function () {
@@ -148,7 +149,7 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
         $(".ui-jqgrid-titlebar-close", this).click();
     });
     _tableObject.click(function (e) {
-        gridClickFunctions(e, $(this))
+        gridClickFunctions(e, $(this));
     });
 
     return _tableObject;
@@ -247,6 +248,9 @@ function generateView2(data) {
             column.summaryType = value.summaryType;
         }
 
+        if(typeof value.width !== 'undefined'){
+            column.width = value.width;            
+        }
 
         view.push(column);
     });
@@ -267,6 +271,7 @@ function gridClickFunctions(e, target) {
         target.jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
     }
 
+    
 
 
 // $subGridExpanded = $(e.target).closest("td.sgexpanded");

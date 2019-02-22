@@ -2,6 +2,7 @@ function validation_save() {
     console.log("validation_save()");
 // PREPARE FORM DATA
     var validationid = $($("div[id^='wrapper']")[0]).attr("id").substring(8);
+    trimColumns();
     var data = JSON.stringify(getDataFromPage());
     var patches = getPatches(originalDocument, data);
     var _cookie = $.cookie('LCMS_session');
@@ -21,25 +22,38 @@ function validation_save() {
     });
 }
 
+function trimColumns() {
+    $.each(gridController.grids, function (index, item) {
+        var colModel = item.colModel;
+        var colNames = item.colNames;
+        var colModelArray = [];
+        var colNameArray = [];
+        var c = 0;
+        colModel = Object.filter(colModel, model => model.name !== "rn" & model.name !== "cb");
+        $.each(colModel, function (i, j) {
+            colModelArray[c] = colModel[i];
+            colNameArray.push(j.name);
+            c++;
+        });
+        item.colNames = colNameArray;
+        item.colModel = colModelArray;
+    });
+}
+
 function getDataFromPage() {
     var htmlData = $('<output>').append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"))));
     var gridData = {};
-    $("table[id^=grid]").each(function (a, b) {
-        try {
-//            var keys = Object.keys(Object.filter($(b).jqGrid('getGridParam').colModel, item => item.name === "cb"));
-//            if($(b).jqGrid('getGridParam').colModel[keys[0]].hidden){
-//                
-//            }
-//            if (!$(b).jqGrid('getGridParam').colModel[keys[0]].hidden) {                
-//                toggle_multiselect($(b).attr('id'));
-//                $('#' + $(b).attr('id')).jqGrid("setGridParam", {multiselect: false});
-//            } else {
-//                set_multiselect($(b).attr('id'), false);
-//            }
-            set_multiselect($(b).attr('id'), false);
-            gridData[$(b).attr('id')] = $(b).jqGrid('getGridParam');
-        } catch (err) {
-        }
+//    $("table[id^=grid]").each(function (a, b) {
+//        try {
+//            //set_multiselect($(b).attr('id'), false);
+//
+//        } catch (err) {
+//        }
+//    });
+    gridController.checkGrids();
+    $.each(gridController.grids, function (index, item) {
+        item.colModel
+        console.log(item);
     });
     htmlData.find(("div[id^=gbox_grid]")).each(function (a, b) {
         $(b).after("<div name='" + $(b).attr('id') + "'></div>");
@@ -47,7 +61,7 @@ function getDataFromPage() {
     });
     var data = {};
     data['html'] = htmlData.prop("innerHTML");
-    data['grids'] = gridData;
+    data['grids'] = gridController.grids;
     data['html'] = removeElements("nosave", data['html']);
 
     return data;

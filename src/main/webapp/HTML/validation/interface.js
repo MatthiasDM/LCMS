@@ -6,9 +6,10 @@
 
 var lastSelection;
 var originalDocument = "";
+let gridController = new LCMSgridController();
 $(function () {
 
-    let gridController = new LCMSgridController();
+    
     gridController.checkGrids();
     loadPage();
 
@@ -69,8 +70,8 @@ function makeGrid(editor, gridId, gridParam) {
         pager: '#' + 'pager_' + gridId,
         autowidth: true,
         autoheight: true,
-        rownumbers: Object.keys(Object.filter(gridParam.colModel, item => item.name === "rn")).length === 0,
-        multiselect: false
+        rownumbers: true,
+        //multiselect: false
     };
 
     if (typeof gridParam.summaries !== "undefined") {
@@ -84,7 +85,7 @@ function makeGrid(editor, gridId, gridParam) {
                 sumJson[a] = grid.jqGrid("getCol", a, false, "sum");
             });
             $(this).jqGrid("footerData", "set", sumJson);
-            
+
         };
     }
 
@@ -103,9 +104,42 @@ function makeGrid(editor, gridId, gridParam) {
         extraOptions.grouping = false;
     }
 
+    if (typeof gridParam.subgridref !== "undefined") {
+        extraOptions.subGrid = true;
+        extraOptions.subGridOptions = {
+            hasSubgrid: function (options) {
+                return true;
+            }
+        };
+//        isHasSubGrid = function (rowid) {
+//            var cell = $(this).jqGrid('getCell', rowid, 1);
+//            if (cell && cell.substring(0, 1) === "B") {
+//                return false;
+//            }
+//            return true;
+//        };
+        extraOptions.subGridRowExpanded = function (subgridDivId, rowId) {
+            var subgridTableId = subgridDivId + "_t";
+            $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
+            $("[id='" + subgridTableId + "']").jqGrid({
+                datatype: 'local',
+                data: [],
+                colNames: gridParam.subgridref.colNames,
+                colModel: gridParam.subgridref.colModel,
+                gridview: true,
+                rownumbers: true,
+                autoencode: true,
+                responsive: true,
+                headertitles: true,
+                iconSet: "fontAwesome",
+                guiStyle: "bootstrap4"
+            });
+        };
+    }
+
 
     generate_grid(editor, grid, gridParam, extraOptions);
-
+    toggle_multiselect(grid.attr('id'));
 }
 
 
@@ -166,17 +200,17 @@ function buildDocumentPage(data, _parent) {
         try {
             var validations_content = {};
             if (jsonData.replaces["validations-content"] !== "") {
-                validations_content = $.parseJSON(jsonData.replaces["validations-content"]); 
+                validations_content = $.parseJSON(jsonData.replaces["validations-content"]);
                 originalDocument = JSON.stringify(validations_content);
-            }else{
+            } else {
                 validations_content.html = "";
                 validations_content.grids = {};
                 originalDocument = '';
             }
             jsonData.webPage = replaceAll(jsonData.webPage, "validations-content", validations_content.html);
-            
+
             grids = validations_content.grids;
-            
+
         } catch (e) {
             bootstrap_alert.warning("Something went wrong", "error", "1000");
         }

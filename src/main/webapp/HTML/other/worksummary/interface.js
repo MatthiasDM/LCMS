@@ -2,6 +2,7 @@ var gridIds = {};
 var jumboColumn;
 var issuers = {};
 var stations = {};
+var tats = {};
 var dataOnverwerkt;
 var dataVerwerkt = new Object();
 var chkVerzendingen = new Object();
@@ -60,16 +61,17 @@ function createJumboElements(type) {
     createQuickview(type, "commentaar", "btn-comment", "comment", "warning", "commentaar", "div-quickview", "", $("#infoButtonsRow1"));
     createQuickview(type, "cyberlab", "btn-cyberlab", "barcode", "info", "cyberlab", "div-quickview", "", $("#infoButtonsRow1"));
     createQuickview(type, "doorbelwaarde", "btn-doorbelwaarde", "phone", "danger", "doorbelwaarde", "div-quickview", "", $("#infoButtonsRow1"));
-    createQuickview(type, "brugge", "btn-brugge", "fa-stack-1x", "info", "brugge", "div-quickview", "<b>B</b>", $("#infoButtonsRow1"));
-    createQuickview(type, "knokke", "btn-knokke", "fa-stack-1x", "info", "knokke", "div-quickview", "<b>K</b>", $("#infoButtonsRow1"));
+    createQuickview(type, "tats", "btn-tats", "clock-o", "danger", "tats", "div-quickview", "", $("#infoButtonsRow1"));
 //function createQuickview(_type, _data, btnId, btnIcon, btnColor, gridId, collapseTarget, btnTxt, appendTo) {
-
+    createQuickview(type, "brugge", "btn-brugge", "fa-stack-1x", "info", "brugge", "div-quickview", "<b>B</b>", $("#tapPage1"));
+    createQuickview(type, "knokke", "btn-knokke", "fa-stack-1x", "info", "knokke", "div-quickview", "<b>K</b>", $("#tapPage1"));
     createQuickview(type, "pertoestel", "btn-toestel", "fa-stack-1x", "info", "pertoestel", "div-quickview", "<b>T</b>", $("#tapPage1"));
 
+
     if (type === 'new') {
-      //  createJumboNav(false, $("#tapPage1"));
+        //  createJumboNav(false, $("#tapPage1"));
         chkVerzendingen = createJumboCheck(false, "Incl. verzendingen", "verzendingen", "verzendingen", false, $("#infoButtonsRow2"));
-        selTijd = createJumboSelect(false, "", "minTimeOpen", "minTimeOpen", [{id: 'alles', name: 'Alles'}, {id: 'onbekend', name: "Moet nog toekomen"}, {id: 1, name: "<1 uur"}, {id: 2, name: "<2 uur"}, {id: 4, name: "<4 uur"}, {id: 24, name: "[4-24] uur"}, {id: 48, name: "[1-2] dagen"}, {id: 96, name: "[2-4] dagen"}, {id: 192, name: "[4-8] dagen"}, {id: 'oud', name: ">8 dagen"}], 2, $("#infoButtonsRow2"));
+        selTijd = createJumboSelect(false, "", "minTimeOpen", "minTimeOpen", [{id: 'alles', name: 'Alles'}, {id: 'onbekend', name: "Moet nog toekomen"}, {id: 'toegekomen', name: "Is al toegekomen"}, {id: 1, name: "<1 uur"}, {id: 2, name: "<2 uur"}, {id: 4, name: "<4 uur"}, {id: 24, name: "[4-24] uur"}, {id: 48, name: "[1-2] dagen"}, {id: 192, name: "[4-8] dagen"}, {id: 'oud', name: ">8 dagen"}, {id: 'heel oud', name: ">16 dagen"}], 2, $("#infoButtonsRow2"));
     }
 
 }
@@ -168,6 +170,10 @@ function parseData(data) {
     if (typeof selTijd.val !== "undefined") {
         var openTijd = selTijd.val();
         var tijdInterval = true;
+        if (openTijd === "heel oud") {
+            data = Object.filter(data, item => (
+                        moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 > 384 && moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true));
+        }
         if (openTijd === "oud") {
             data = Object.filter(data, item => (
                         moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 3600000 > 192 && moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true));
@@ -179,6 +185,10 @@ function parseData(data) {
         if (openTijd === "onbekend") {
             data = Object.filter(data, item => (
                         moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === false));
+        }
+        if (openTijd === "toegekomen") {
+            data = Object.filter(data, item => (
+                        moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true));
         }
         if (openTijd === "1") {
             data = Object.filter(data, item => (
@@ -262,6 +272,10 @@ function parseData(data) {
     dataVerwerkt.pertoestel = Object.filter(data, item => (
                 String(item["STATION"]).includes("POCT") === false
                 ));
+
+    dataVerwerkt.tats = Object.filter(data, item => (
+                moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 60000 > (findTatTime(String(item["TEST"])).TAT * 3) && moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true
+                ));
 //
 //    dataVerwerkt.ambulant = Object.filter(data, item => (
 //                String(item["STATION"]).includes("POCT") === false & String(item["ERNST"]) === "50"
@@ -323,8 +337,7 @@ function new_grid(colModel, extraOptions, gridData, gridId, parent) {
         viewrecords: true, // show the current page, data rang and total records on the toolbar        
         autoheight: true,
         autowidth: true,
-        //width: '100%',
-        shrinkToFit: true,
+        // shrinkToFit: true,
         responsive: true,
         headertitles: true,
         iconSet: "fontAwesome",
@@ -332,11 +345,15 @@ function new_grid(colModel, extraOptions, gridData, gridId, parent) {
         searching: listGridFilterToolbarOptions,
         rowNum: 1000,
         mtype: 'POST',
-        loadComplete: function (data) {
-            grid.trigger('resize');
+
+        gridComplete: function (data) {
+            window.dispatchEvent(new Event('resize'));
         },
         //editurl: "_editUrl",
         loadonce: true,
+        onSelectRow: function (rowId) {
+            grid.jqGrid('toggleSubGridRow', rowId);
+        }
         //onSelectRow: popupEdittRow,
         // ondblClickRow: inlineEditRow,
         // pager: "#" + pager.attr('id'),
@@ -359,6 +376,9 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
 
 
     _grid.jqGrid('filterToolbar');
+    //_grid.setGridWidth($("#div-quickview").width() - 5);
+
+
     //$(".ui-jqgrid-titlebar").hide();
     //_grid.setCaption(""); 
 //    $("#gview_" + _grid.attr('id')).children("div.ui-jqgrid-hdiv").hide();
@@ -367,6 +387,8 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
 //    $("#gview_" + _grid.attr('id')).find("td").css("border", "0px");
 //    $("#gbox_" + _grid.attr('id')).css("border", "0px");
     //.ui-jqgrid { border-width: 0px; }
+
+
     _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").addClass("card-header card-primary text-white text-center");
     _grid.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").css("background-color", "white");
 
@@ -390,10 +412,9 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     });
 
     $(window).bind('resize', function () {
-        _grid.setGridWidth(_parent.width() - 5);
-    }).trigger('resize');
+        _grid.setGridWidth($("#div-quickview").width() - 5);
+    });
 
-    _grid.trigger('resize');
 
 
 }
@@ -441,6 +462,18 @@ function parseJSONInput(data) {
     return data;
 }
 
+function findTatTime(_test) {
+    var tat = Object.filter(tats, item => item.TEST === _test);
+    if (Object.keys(tat).length > 0)
+    {
+        return Object.values(tat)[0];
+    } else {
+        var obj = {};
+        obj.TEST = _test;
+        obj.TAT = 999999999;
+        return obj;
+    }
+}
 
 var previousBtnId = "";
 function createQuickview(_type, _data, btnId, btnIcon, btnColor, gridId, collapseTarget, btnTxt, appendTo) {
@@ -462,6 +495,7 @@ function createQuickview(_type, _data, btnId, btnIcon, btnColor, gridId, collaps
                 Object.keys(gridIds).forEach(function (id) {
 
                     $("#" + id).jqGrid("GridDestroy");
+                    $("#container_" + id).remove();
                     console.log("GridDestroy");
                 })
 

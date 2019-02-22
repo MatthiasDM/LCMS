@@ -62,6 +62,8 @@ public enum Actions {
     LAB_KPI_TAT,
     LAB_KPI_CITRATE,
     LAB_KPI_HEMOFP,
+    LAB_GETCHAT(MongoConf.CHATS),
+    LAB_SENDCHAT(MongoConf.CHATS),
     //QCMANAGER RELATED
     QC_GETLOTINFO,
     QC_CHANGELOTINFO,

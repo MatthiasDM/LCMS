@@ -103,6 +103,7 @@ function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId,
             pager: "#" + pager.attr('id'),
             caption: ""
         };
+
         generate_grid(editor, grid, tableOptions, extraOptions);
     }
 }
@@ -125,11 +126,10 @@ function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
     $.each(_extraOptions, function (i, val) {
         _tableOptions[i] = val;
     });
-    //_tableOptions.caption += ("<span class='nosave'><button type='button' id='btn_options' style='padding-right: 20px;' class='close' aria-label='Close'><span aria-hidden='true'>info</span></button></span>");
-    // _tableOptions.onSelectRow = popupEdittRow;
+
     _tableOptions.ondblClickRow = function (rowid) {
         return popupEdit(rowid, _grid, _parent, "", validation_save);
-    };//popupEdittRow;
+    };
     _grid.jqGrid(_tableOptions);
     _grid.jqGrid('filterToolbar');
     _grid.jqGrid('sortableRows', {});
@@ -271,20 +271,16 @@ function new_grid_popup(_parent, _gridData) {
 
     modal.find("button[id=btn-save]").on('click', function (e) {
         e.preventDefault();
-        modal.modal('hide');
+        modal.modal('hide'); 
 
-        var multiselect = false;
-        if (typeof _gridData !== "undefined") {
-            multiselect = $('#' + _gridData.id + ' .cbox:visible').length > 0;
-        }
         var colModelWrapper = createColModel(form, _gridData, _parent); //1. create new colModel
         var newColumns = filterUniqueJson(colModelWrapper.colModel, "name"); //2. remove unused rows of data
         if (typeof _gridData !== "undefined") {
             _gridData.data = removeUnusedDataFromJqGrid(newColumns, _gridData.data, colModelWrapper.options.renames);
         }
         var gridId = createGridBasedOnModel(_gridData, colModelWrapper, _parent); //3. create new grid based on colModel
-        grids.gridId = _gridData;
-        set_multiselect(gridId, multiselect);
+      
+
 
 
     });
@@ -296,7 +292,9 @@ function new_grid_popup(_parent, _gridData) {
 }
 
 function toggle_multiselect(gridId) {
+    console.log("toggle_multiselect()");
     $('#' + gridId).jqGrid("setGridParam", {multiselect: true});
+    
     if ($('#' + gridId + ' .cbox:visible').length > 0)
     {
         $('#' + gridId).jqGrid('hideCol', 'cb');
@@ -349,6 +347,7 @@ function createColModel(form, _gridData, parent) {
     var c = -1;
     var summaries = [];
     var groups = [];
+    var subgridref = {};
     var renames = new Object();
 
     $.each(modalArray, function (i, val) {
@@ -369,9 +368,7 @@ function createColModel(form, _gridData, parent) {
         if (val.name === 'internalListAttribute') {
             colModel[c].internalListAttribute = val.value;
             colModel[c].choices = getValuesOfAttributeInList(colModel[c].internalListName, colModel[c].internalListAttribute);
-            
         }
-
         if (val.name.match("^option")) {
             var option = val.name.substring(7);
             if (option === 'hidden') {
@@ -395,14 +392,16 @@ function createColModel(form, _gridData, parent) {
                             "<span style=''>Subtotaal: {0}</span>"
                         ];
                         colModel[i].summaryType = "sum";
-
                     }
                 });
             }
             if (option === 'group') {
                 groups.push(val.value);
             }
-
+            if (option === 'subgridref') {
+                subgridref.colNames = $("#" + val.value).jqGrid("getGridParam").colNames;
+                subgridref.colModel = $("#" + val.value).jqGrid("getGridParam").colModel;
+            }
             options[val.name.substring(7)] = val.value;
         }
         if (val.name.match("^import")) {
@@ -411,7 +410,7 @@ function createColModel(form, _gridData, parent) {
             }
         }
     });
-    console.log(colModel);
+ 
     if ($.isEmptyObject(renames) === false) {
         options.renames = renames;
     }
@@ -445,36 +444,77 @@ function createColModel(form, _gridData, parent) {
     } else {
         options.grouping = false;
     }
-    
-    //internal list logic for subgrid
-//            extraOptions.subGrid = true;
-//        extraOptions.subGridOptions = {
-//            hasSubgrid: function (options) {
-//                return true;
+
+    if (typeof subgridref.colNames !== "undefined") {
+        options.subGrid = true;
+        options.subGridOptions = {
+            hasSubgrid: function (options) {
+                return true;
+            }
+        };
+//        isHasSubGrid = function (rowid) {
+//            var cell = $(this).jqGrid('getCell', rowid, 1);
+//            if (cell && cell.substring(0, 1) === "B") {
+//                return false;
 //            }
+//            return true;
 //        };
-//        extraOptions.subGridRowExpanded = function (subgridDivId, rowId) {
-//            var subgridTableId = subgridDivId + "_t";
-//            $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
-//            $("[id='" + subgridTableId + "']").jqGrid({
-//                datatype: 'local',
-//                data: processedData.subgridData[rowId],
-//                colNames: ['Order', 'Testen'],
-//                colModel: [
-//                    {name: 'Order', width: 100},
-//                    {name: 'Testen', width: 200}
-//                ],
-//                gridview: true,
-//                rownumbers: true,
-//                autoencode: true,
-//                responsive: true,
-//                headertitles: true,
-//                iconSet: "fontAwesome",
-//                guiStyle: "bootstrap4"
-//            });
-//        };
+        options.subGridRowExpanded = function (subgridDivId, rowId) {
+            var subgridTableId = subgridDivId + "_t";
+            $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
+            $("[id='" + subgridTableId + "']").jqGrid({
+                datatype: 'local',
+                data: [],
+                colNames: subgridref.colNames,
+                colModel: subgridref.colModel,
+                gridview: true,
+                rownumbers: true,
+                autoencode: true,
+                responsive: true,
+                headertitles: true,
+                iconSet: "fontAwesome",
+                guiStyle: "bootstrap4"
+            });
+        };
+
+    }
 
     return {"colModel": colModel, "options": options};
+}
+
+function option_subgrid(options, _colNames, _colModel, _data) {
+
+    options.subGrid = true;
+    options.subGridOptions = {
+        hasSubgrid: function (options) {
+            return true;
+        }
+    };
+    options.subGridRowExpanded = function (subgridDivId, rowId) {
+        var subgridTableId = subgridDivId + "_t";
+        $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
+        $("[id='" + subgridTableId + "']").jqGrid({
+            datatype: 'local',
+            //data: processedData.subgridData[rowId],
+            data: _data,
+            //colNames: ['Order', 'Testen'],
+            colNames: _colNames,
+            colModel: _colModel,
+//            colModel: [
+//                {name: 'Order', width: 100},
+//                {name: 'Testen', width: 200}
+//            ],
+            gridview: true,
+            rownumbers: true,
+            autoencode: true,
+            responsive: true,
+            headertitles: true,
+            iconSet: "fontAwesome",
+            guiStyle: "bootstrap4"
+        });
+    };
+
+    return options;
 }
 
 function createForm(_parent, _griddata, _modal) {
@@ -522,6 +562,8 @@ function createForm(_parent, _griddata, _modal) {
     });
     form.append(forms_select("Samenvatting van: ", "option_summary", "option_summary", obj, _griddata.summaries));
     //OPTIE SAMENVATTING EINDE
+    form.append(forms_select("Groeperen op: ", "option_group", "option_group", obj, _griddata.groups));
+    
     form.append(forms_select("Groeperen op: ", "option_group", "option_group", obj, _griddata.groups));
 
     var deleteContentButton = $("<button type='button' style='margin-right: 5px;' class='btn btn-warning'>Verwijder inhoud</button>");

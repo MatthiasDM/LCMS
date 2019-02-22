@@ -157,6 +157,7 @@ function createDataAndModelFromCSV(val) {
 }
 
 function getValuesOfAttributeInList(_list, _attribute) {
+    console.log("getValuesOfAttributeInList()");
     var distinctAttributes = {};
     $("table[id^=grid]").each(function (a, b) {
         var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
@@ -169,4 +170,32 @@ function getValuesOfAttributeInList(_list, _attribute) {
         }
     });
     return distinctAttributes;
+}
+
+function getValuesOfAllAttributesInList(_list, _attribute) {
+    var distinctAttributes = {};
+    $("table[id^=grid]").each(function (a, b) {
+        var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
+        if (name === _list) {
+            var data = new Object();
+            $(b).jqGrid("getGridParam").data.forEach(function (a, b) {
+                distinctAttributes[a.id] = a[_attribute];
+            });
+            // distinctAttributes = filterUniqueJson($(b).jqGrid("getGridParam").data, _attribute);
+        }
+    });
+    return distinctAttributes;
+}
+
+function getJQGridParamByCaption(_name){
+    var gridParam = {}; 
+    console.log("getJQGridParamByCaption()");
+    $("table[id^=grid]").each(function (a, b) {
+        var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
+        if (name === _name) {
+            gridParam =  $(b).jqGrid("getGridParam");            
+            return false;
+        }
+    });
+    return gridParam;
 }

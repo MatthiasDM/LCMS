@@ -147,6 +147,23 @@ function CSVToArray(strData, strDelimiter) {
     return(arrData);
 }
 
+var getUrlParameter = function getUrlParameter(sParam) {
+    var sPageURL = window.location.search.substring(1),
+            sURLVariables = sPageURL.split('&'),
+            sParameterName,
+            i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+        }
+
+    }
+
+}
+
 class LCMSgridController {
     constructor() {
         this.grids = {};
@@ -180,6 +197,7 @@ class LCMSgridController {
                     }
                 });
             } catch (err) {
+                console.log(err);
             }
         });
 
@@ -198,15 +216,56 @@ class LCMSgridController {
             console.log(b);
             var column = Object.filter(me.grids[b.list].colModel, model => model.name === b.attr);
             var newValues = getValuesOfAttributeInList(b.refList, b.refAttr);
+            var newValuesAllAtrributes = getValuesOfAttributeInList(b.refList, b.refAttr);
             var oldValues = Object.values(column)[0].editoptions.value;
-            if (newValues !== oldValues) {
+            if (JSON.stringify(newValues) !== JSON.stringify(oldValues)) {
                 console.log("Updating references... ");
                 Object.values(column)[0].editoptions.value = newValues;
                 $("#" + b.list).jqGrid("getGridParam").colModel[Object.keys(column)[0]] = Object.values(column)[0];
                 $("#" + b.list).trigger("reloadGrid");
+//                $.each(rowsWithReferences, function (index, row) {
+//                    var refs = row['Tabel1-ref'].split(',');
+//                    $.each(refs, function (index, ref) {
+//                        if (typeof refListSubGridData[ref] !== 'undefined') {
+//                            refListSubGridData[ref].push(row);
+//                        } else {
+//                            refListSubGridData[ref] = [];
+//                            refListSubGridData[ref].push(row);
+//                        }
+//
+//
+//                    });
+//                });
+//                var rowsWithReferences = Object.filter($("#" + b.list).jqGrid("getGridParam").data, data => data['Tabel1-ref'] !== "");
+//                var refListSubGridData = {};
+//                $.each(rowsWithReferences, function (index, row) {
+//                    var refs = row['Tabel1-ref'].split(',');
+//                    $.each(refs, function (index, ref) {
+//                        if (typeof refListSubGridData[ref] !== 'undefined') {
+//                            refListSubGridData[ref].push(row);
+//                        } else {
+//                            refListSubGridData[ref] = [];
+//                            refListSubGridData[ref].push(row);
+//                        }
+//                    });
+//                });
+//                //aan de reflist moeten we nu een subgrid toevoegen
+//                var refListOptions = getJQGridParamByCaption(b.refList);
+//                refListOptions = option_subgrid(
+//                        $("#" + refListOptions.id).jqGrid("getGridParam"),
+//                        $("#" + b.list).jqGrid("getGridParam").colNames,
+//                        $("#" + b.list).jqGrid("getGridParam").colModel,
+//                        refListSubGridData);
+//                if ($("#" + refListOptions.id)[0].grid == undefined) {
+//                    $("#" + refListOptions.id).jqGrid(options);
+//                } else {
+//                    var refListOptionsCopy = jQuery.extend(true, {}, refListOptions);
+//                }
+
             }
 
-        });
+        }
+        );
 
     }
 }
