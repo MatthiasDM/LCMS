@@ -6,20 +6,7 @@ While this software is designed for use in a Belgian hospital laboratory, it may
 
 The system will consist out of multiple modules, the first one bein a document management system.
 
-Modules:
 
-  *Document management system
-    *Status: ongoing
-    *To Do's
-      *Full referential tables
-      *Auto saving
-      *Upload image/document on paste
-      *Startup mode: readonly
-      *Work flow integration
-      *Access rights integration
-    *Done
-      *JqGrid integration
-      *Diff-match-patch integration
       
       
       
