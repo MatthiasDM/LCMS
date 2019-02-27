@@ -38,31 +38,14 @@ $(function () {
 
 
 
-function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId, location) {
+function new_grid(parentID, colModel, extraOptions, importCSV, _gridData, gridId, location) {
     console.log("new_grid()");
+
     if (typeof colModel === 'undefined') {
         new_grid_popup($("#" + parentID));
     } else {
+
         var editor = $($("div[id^='wrapper']")[0]);
-        var data = [];
-        var colData = {};
-        colData.header = JSON.stringify(colModel);
-        colModel = generateView2(colData);
-        var colNames = [];
-        for (var key in colModel) {
-            if (typeof colModel[key].name !== 'undefined') {
-                colNames[key] = colModel[key].name;
-            }
-        }
-        importCSV.forEach(function split(a) {
-            var line = a;
-            var lineObject = {};
-            line.forEach(function split(a, b) {
-                lineObject[colNames[b]] = a;
-            });
-            data.push(lineObject);
-        });
-        console.log(data);
         var uuid = gridId;
         var grid = $("<table id='" + uuid + "'></table>");
         var pager = $("<div id='pager_" + uuid + "'></div>");
@@ -73,39 +56,70 @@ function new_grid(parentID, colModel, extraOptions, importCSV, gridData, gridId,
             editor.append(grid);
             editor.append(pager);
         }
-
-        gridData = Object.assign(gridData, data);
-        var tableOptions = {
-            id: grid.attr('id'),
-            data: gridData,
-            datatype: "local",
-            colModel: colModel,
-            colNames: colNames,
-            viewrecords: true, // show the current page, data rang and total records on the toolbar     
-            //pgText: "",
-            //pginput: false,
-            //pgbuttons: false,
-            autoheight: true,
-            multiselect: true,
-            multiPageSelection: true,
-            autowidth: true,
-            responsive: true,
-            headertitles: true,
-            searching: listGridFilterToolbarOptions,
-            iconSet: "fontAwesome",
-            guiStyle: "bootstrap4",
-            rowNum: 30,
-            rownumbers: true,
-            mtype: 'POST',
-            altRows: true,
-            loadonce: true,
-            ondblClickRow: inlineEditRow,
-            pager: "#" + pager.attr('id'),
-            caption: ""
+        var data = [];
+        importCSV.forEach(function split(a) {
+            var line = a;
+            var lineObject = {};
+            line.forEach(function split(a, b) {
+                lineObject[colNames[b]] = a;
+            });
+            data.push(lineObject);
+        });
+        _gridData = Object.assign(_gridData, data);
+        var gridData = {
+            data: {table: _gridData, header: colModel},
+            editAction: " ",
+            editUrl: " ",
+            tableObject: gridId,
+            pagerID: pager.attr('id'),
+            wrapperObject: editor,
+            jqGridOptions: {
+                pager: "#" + pager.attr('id'),
+                autowidth: true,
+                autoheight: true,
+                rownumbers: true,
+                //colModel: colModel,
+                caption: extraOptions.caption
+            },
+            jqGridParameters: {
+                navGridParameters: {
+                    add: true,
+                    save: true,
+                    del: true,
+                    cancel: true,
+                    addParams: {
+                        rowID: function (options) {
+                            return "row_" + uuidv4();
+                        },
+                        position: "last",
+                        addRowParams: {
+                            rowID: function (options) {
+                                return "row_" + uuidv4();
+                            },
+                            position: "last",
+                            keys: true
+                        }
+                    },
+                    editParams: {
+                        aftersavefunc: function (id) {
+                            validation_save();
+                        }
+                    }
+                }
+            }
         };
+        $.each(extraOptions, function (i, n) {
+            gridData.jqGridOptions[i] = n;
+        });
+        let documentGrid = new LCMSGrid(gridData);
+        var gridObject = documentGrid.createGrid();
+        addGridButtons(documentGrid, gridObject, gridData, editor);
 
-        generate_grid(editor, grid, tableOptions, extraOptions);
+
     }
+
+
+
 }
 
 function new_editable_field() {
@@ -119,130 +133,6 @@ function new_editable_field() {
         var editor = ev.editor;
         editor.setReadOnly(false);
     });
-}
-
-function generate_grid(_parent, _grid, _tableOptions, _extraOptions) {
-    console.log("generate_grid");
-    $.each(_extraOptions, function (i, val) {
-        _tableOptions[i] = val;
-    });
-
-    _tableOptions.ondblClickRow = function (rowid) {
-        return popupEdit(rowid, _grid, _parent, "", validation_save);
-    };
-    _grid.jqGrid(_tableOptions);
-    _grid.jqGrid('filterToolbar');
-    _grid.jqGrid('sortableRows', {});
-    var lastSelection;
-    var addDataOptions = {
-        editData: {action: "_editAction", LCMS_session: $.cookie('LCMS_session')},
-        addData: {rowID: uuidv4()}
-    };
-
-    var navGridParameters2 = {
-        add: true,
-        del: true,
-        addParams: {
-            rowID: function (options) {
-                return "row_" + uuidv4();
-            },
-            position: "last",
-            addRowParams: {
-                rowID: function (options) {
-                    return "row_" + uuidv4();
-                },
-                position: "last",
-                keys: true
-            }
-        },
-        editParams: {
-            aftersavefunc: function (id) {
-                validation_save();
-            }
-        }
-
-    };
-
-    _grid.inlineNav(_tableOptions.pager, navGridParameters2, {}, addDataOptions);
-
-    _grid.navButtonAdd(_tableOptions.pager, {
-        caption: "",
-        title: "Click here to change columns",
-        buttonicon: "fa-cogs",
-        onClickButton: function () {
-            new_grid_popup(_parent, _tableOptions);
-        },
-        position: "last"
-    });
-
-    _grid.navButtonAdd(_tableOptions.pager, {
-        caption: "",
-        title: "Export to plain HTML",
-        buttonicon: "fa-download",
-        onClickButton: function () {
-            var selRows = _grid.jqGrid("getGridParam", "selarrrow");
-            var data = _grid.jqGrid("getGridParam", "data");
-            var selRowsData = Object.filter(data, item => selRows.includes(String(item.id)) === true);
-            var arr = [];
-            $.each(selRowsData, function (key, value) {
-                arr.push(value);
-            });
-            var csv = Papa.unparse(JSON.stringify(arr));
-            let csvContent = "data:text/csv;charset=utf-8," + csv;
-            var encodedUri = encodeURI(csvContent);
-            var link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", _grid.jqGrid("getGridParam", "caption"));
-            document.body.appendChild(link); // Required for FF
-            link.click();
-            document.body.removeChild(link);
-        },
-        position: "last"
-    });
-
-    _grid.navButtonAdd(_tableOptions.pager, {
-        caption: "",
-        title: "Delete record",
-        buttonicon: "fa-trash",
-        onClickButton: function () {
-            var rowid = _grid.jqGrid('getGridParam', 'selrow');
-            _grid.jqGrid('delRowData', rowid);
-        },
-        position: "last"
-    });
-
-    _grid.navButtonAdd(_tableOptions.pager, {
-        caption: "",
-        title: "Enable multiselect",
-        buttonicon: "fa-list-ul",
-        onClickButton: function () {
-            // var rowid = _grid.jqGrid('getGridParam', 'selrow');
-            //_grid.jqGrid('setGridParam', {multiselect: true}).trigger('reloadGrid');
-            toggle_multiselect(_grid.jqGrid('getGridParam', 'id'));
-        },
-        position: "last"
-    });
-
-
-    _grid.click(function (e) {
-        gridClickFunctions(e, $(this));
-    });
-
-
-    $(window).bind('resize', function () {
-        _grid.setGridWidth(_parent.width());
-    }).trigger('resize');
-
-    $("#btn_options").on('click', function (e) {
-        new_grid_popup(_parent, _tableOptions);
-    });
-    //if (Object.keys(Object.filter(_grid.jqGrid('getGridParam').colModel, item => item.name === "cb")).length === 0) {
-//        toggle_multiselect(_grid.attr('id'));
-//        toggle_multiselect(_grid.attr('id'));
-    //}
-
-
-
 }
 
 function inlineEditRow(id) {
@@ -271,7 +161,7 @@ function new_grid_popup(_parent, _gridData) {
 
     modal.find("button[id=btn-save]").on('click', function (e) {
         e.preventDefault();
-        modal.modal('hide'); 
+        modal.modal('hide');
 
         var colModelWrapper = createColModel(form, _gridData, _parent); //1. create new colModel
         var newColumns = filterUniqueJson(colModelWrapper.colModel, "name"); //2. remove unused rows of data
@@ -279,7 +169,7 @@ function new_grid_popup(_parent, _gridData) {
             _gridData.data = removeUnusedDataFromJqGrid(newColumns, _gridData.data, colModelWrapper.options.renames);
         }
         var gridId = createGridBasedOnModel(_gridData, colModelWrapper, _parent); //3. create new grid based on colModel
-      
+
 
 
 
@@ -294,7 +184,7 @@ function new_grid_popup(_parent, _gridData) {
 function toggle_multiselect(gridId) {
     console.log("toggle_multiselect()");
     $('#' + gridId).jqGrid("setGridParam", {multiselect: true});
-    
+
     if ($('#' + gridId + ' .cbox:visible').length > 0)
     {
         $('#' + gridId).jqGrid('hideCol', 'cb');
@@ -324,6 +214,9 @@ function createGridBasedOnModel(_gridData, _colModelWrapper, _parent) {
             $(b).remove();
         });
         $('#' + _gridData.id).jqGrid('GridUnload');
+
+
+
         new_grid(_parent.attr('id'), _colModelWrapper.colModel, _colModelWrapper.options, importCSV, gridData.data, gridData.id, $("div[name=" + gridData.id + "]"));
         $("div[name=" + gridData.id + "]").remove();
     } else {
@@ -399,8 +292,10 @@ function createColModel(form, _gridData, parent) {
                 groups.push(val.value);
             }
             if (option === 'subgridref') {
-                subgridref.colNames = $("#" + val.value).jqGrid("getGridParam").colNames;
-                subgridref.colModel = $("#" + val.value).jqGrid("getGridParam").colModel;
+                subgridref.colNames = getJQGridParamByCaption(val.value).colNames;
+                subgridref.colModel = getJQGridParamByCaption(val.value).colModel;
+                subgridref.gridId = getJQGridParamByCaption(val.value).id;
+
             }
             options[val.name.substring(7)] = val.value;
         }
@@ -410,7 +305,7 @@ function createColModel(form, _gridData, parent) {
             }
         }
     });
- 
+
     if ($.isEmptyObject(renames) === false) {
         options.renames = renames;
     }
@@ -446,29 +341,29 @@ function createColModel(form, _gridData, parent) {
     }
 
     if (typeof subgridref.colNames !== "undefined") {
+        options.subgridref = true;
         options.subGrid = true;
         options.subGridOptions = {
             hasSubgrid: function (options) {
-                return true;
+                var attr = Object.filter(gridController.references, ref => ref.list === subgridref.gridId)[0].attr;
+                var filteredData = Object.filter(gridController.grids[subgridref.gridId].data, row => row[attr].includes(options.rowid));
+                return !isEmptyObj(filteredData);
+                
             }
         };
-//        isHasSubGrid = function (rowid) {
-//            var cell = $(this).jqGrid('getCell', rowid, 1);
-//            if (cell && cell.substring(0, 1) === "B") {
-//                return false;
-//            }
-//            return true;
-//        };
         options.subGridRowExpanded = function (subgridDivId, rowId) {
             var subgridTableId = subgridDivId + "_t";
             $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
+            var attr = Object.filter(gridController.references, ref => ref.list === subgridref.gridId)[0].attr;
+            var filteredData = Object.filter(gridController.grids[subgridref.gridId].data, row => row[attr].includes(rowId));
+            console.log([filteredData[0]]);
             $("[id='" + subgridTableId + "']").jqGrid({
                 datatype: 'local',
-                data: [],
+                data: [filteredData[0]],
                 colNames: subgridref.colNames,
                 colModel: subgridref.colModel,
                 gridview: true,
-                rownumbers: true,
+                rownumbers: false,
                 autoencode: true,
                 responsive: true,
                 headertitles: true,
@@ -536,7 +431,7 @@ function createForm(_parent, _griddata, _modal) {
         var colModel = _griddata.colModel;
         for (var key in colModel) {
             if (typeof colModel[key].name !== 'undefined') {
-                if (colModel[key].name !== "rn" && colModel[key].name !== "cb") {
+                if (colModel[key].name !== "rn" && colModel[key].name !== "cb" && colModel[key].name !== "subgrid") {
                     addRow(form,
                             uuidv4(),
                             colModel[key]);
@@ -563,8 +458,19 @@ function createForm(_parent, _griddata, _modal) {
     form.append(forms_select("Samenvatting van: ", "option_summary", "option_summary", obj, _griddata.summaries));
     //OPTIE SAMENVATTING EINDE
     form.append(forms_select("Groeperen op: ", "option_group", "option_group", obj, _griddata.groups));
-    
-    form.append(forms_select("Groeperen op: ", "option_group", "option_group", obj, _griddata.groups));
+
+    if (isEmptyObj(Object.filter(gridController.references, reference => reference.list === _griddata.id))) {
+        var gridReferences = [];
+        gridController.references.forEach(function (item) {
+            var id = item.list;
+            var name = gridController.grids[id].caption;
+            gridReferences.push({id, name});
+
+        });
+        form.append(forms_select("Subgrid van: ", "option_subgridref", "option_subgridref", gridReferences, _griddata.subgrid));
+    }
+
+
 
     var deleteContentButton = $("<button type='button' style='margin-right: 5px;' class='btn btn-warning'>Verwijder inhoud</button>");
     form.append(deleteContentButton);

@@ -71,7 +71,7 @@ public class Workflows {
                     receivers.addAll(Arrays.asList(requestParameters.get("involved_persons")));
                     String content = "";
                     if (!requestParameters.get("status")[0].equals("3")) {
-                        content = "Beste,<br><br>Bovenstaand ICT-ticket is van status gewijzigd. <br><br> <b>Inhoud</b><br>" + requestParameters.get("followup")[0];
+                        content = "Beste,<br><br>Bovenstaand ICT-ticket is van status gewijzigd. <br><br> <b>Onderwerp</b><br>" + requestParameters.get("overview")[0] + "<br><br> <b>Opvolging</b><br>" + requestParameters.get("followup")[0];
                     } else {
                         receivers.add(requestParameters.get("approver")[0]);
                         content = "Beste,<br><br>Bovenstaand ICT-ticket moet door u gekeurd worden. Gelieve dit document te controleren en te keuren.";

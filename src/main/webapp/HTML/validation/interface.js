@@ -9,10 +9,8 @@ var originalDocument = "";
 let gridController = new LCMSgridController();
 $(function () {
 
-    
     gridController.checkGrids();
     loadPage();
-
     $(document).mouseup(function (e)
     {
         var container = $("#div-grid-wrapper");
@@ -55,93 +53,108 @@ function loadValidationPage(jsonData, grids) {
 
     var editor = $($("div[id^='wrapper']")[0]);
     $.each(grids, function (key, value) {
-        makeGrid(editor, key, value);
+        makeGrid2(editor, key, value);
     });
 }
 
-function makeGrid(editor, gridId, gridParam) {
+function makeGrid2(editor, gridId, gridParam) {
     var grid = $("<table id='" + gridId + "'></table>");
     var pager = $("<div id='pager_" + gridId + "'></div>");
     editor.find("div[name*=" + gridId + "]").after(grid);
     editor.find("div[name*=" + gridId + "]").after(pager);
     editor.find("div[name*=" + gridId + "]").remove();
-
-    var extraOptions = {
-        pager: '#' + 'pager_' + gridId,
-        autowidth: true,
-        autoheight: true,
-        rownumbers: true,
-        //multiselect: false
-    };
-
-    if (typeof gridParam.summaries !== "undefined") {
-        extraOptions.summaries = gridParam.summaries;
-        extraOptions.footerrow = true;
-        extraOptions.userDataOnFooter = true;
-        extraOptions.loadComplete = function () {
-            var sumJson = {};
-            var grid = $(this);
-            gridParam.summaries.forEach(function (a) {
-                sumJson[a] = grid.jqGrid("getCol", a, false, "sum");
-            });
-            $(this).jqGrid("footerData", "set", sumJson);
-
-        };
-    }
-
-    if (typeof gridParam.groups !== "undefined") {
-
-        extraOptions.grouping = true;
-        extraOptions.groupingView = {
-            groupField: gridParam.groups,
-            //groupColumnShow: [false, false],
-            groupText: ['<b>{0} - {1} Item(s)</b>', '<b>{0} - {1} Item(s)</b>'],
-            groupCollapse: true,
-            groupSummaryPos: ["header", "header"],
-            groupSummary: [true, true]
-        }
-    } else {
-        extraOptions.grouping = false;
-    }
-
-    if (typeof gridParam.subgridref !== "undefined") {
-        extraOptions.subGrid = true;
-        extraOptions.subGridOptions = {
-            hasSubgrid: function (options) {
-                return true;
+    var gridData = {
+        data: {table: gridParam.data, header: gridParam.colModel},
+        editAction: " ",
+        editUrl: " ",
+        tableObject: gridId,
+        pagerID: gridParam.pager.replace("#", ""),
+        wrapperObject: editor,
+        jqGridOptions: {
+            pager: '#' + 'pager_' + gridId,
+            autowidth: true,
+            autoheight: true,
+            rownumbers: true,
+            colModel: gridParam.colModel,
+            caption: gridParam.caption,
+            subGrid: gridParam.subGrid
+            
+        },
+        jqGridParameters: {
+            navGridParameters: {
+                add: true,
+                save: true,
+                del: true,
+                cancel: true,
+                addParams: {
+                    rowID: function (options) {
+                        return "row_" + uuidv4();
+                    },
+                    position: "last",
+                    addRowParams: {
+                        rowID: function (options) {
+                            return "row_" + uuidv4();
+                        },
+                        position: "last",
+                        keys: true
+                    }
+                },
+                editParams: {
+                    aftersavefunc: function (id) {
+                        validation_save();
+                    }
+                }
             }
-        };
-//        isHasSubGrid = function (rowid) {
-//            var cell = $(this).jqGrid('getCell', rowid, 1);
-//            if (cell && cell.substring(0, 1) === "B") {
-//                return false;
-//            }
-//            return true;
-//        };
-        extraOptions.subGridRowExpanded = function (subgridDivId, rowId) {
-            var subgridTableId = subgridDivId + "_t";
-            $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
-            $("[id='" + subgridTableId + "']").jqGrid({
-                datatype: 'local',
-                data: [],
-                colNames: gridParam.subgridref.colNames,
-                colModel: gridParam.subgridref.colModel,
-                gridview: true,
-                rownumbers: true,
-                autoencode: true,
-                responsive: true,
-                headertitles: true,
-                iconSet: "fontAwesome",
-                guiStyle: "bootstrap4"
-            });
-        };
-    }
-
-
-    generate_grid(editor, grid, gridParam, extraOptions);
+        }
+    };
+    let documentGrid = new LCMSGrid(gridData);
+    var gridObject = documentGrid.createGrid();
+    addGridButtons(documentGrid, gridObject, gridData, editor);
     toggle_multiselect(grid.attr('id'));
 }
 
+function addGridButtons(documentGrid, gridObject, gridData, editor) {
+    documentGrid.addGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
+        var rowid = gridObject.jqGrid('getGridParam', 'selrow');
+        if (rowid !== null) {
+            return popupEdit(rowid, gridObject, $(this), gridData.editAction, validation_save);
+        } else {
+            return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
+        }
+    });
+
+    documentGrid.addGridButton("fa-cogs", "Click here to change columns", "", function () {
+        new_grid_popup(editor, gridObject.jqGrid('getGridParam'));
+    });
+
+    documentGrid.addGridButton("fa-download", "Download selection as csv", "", function () {
+        var selRows = gridObject.jqGrid("getGridParam", "selarrrow");
+        var data = gridObject.jqGrid("getGridParam", "data");
+        var selRowsData = Object.filter(data, item => selRows.includes(String(item.id)) === true);
+        var arr = [];
+        $.each(selRowsData, function (key, value) {
+            arr.push(value);
+        });
+        var csv = Papa.unparse(JSON.stringify(arr));
+        let csvContent = "data:text/csv;charset=utf-8," + csv;
+        var encodedUri = encodeURI(csvContent);
+        var link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", gridObject.jqGrid("getGridParam", "caption") + ".csv");
+        document.body.appendChild(link); // Required for FF
+        link.click();
+        document.body.removeChild(link);
+    });
+
+    documentGrid.addGridButton("fa-trash", "Click here to change columns", "", function () {
+        var rowid = gridObject.jqGrid('getGridParam', 'selrow');
+        gridObject.jqGrid('delRowData', rowid);
+    });
+
+    documentGrid.addGridButton("fa-list-ul", "Click here to change columns", "", function () {
+        toggle_multiselect(gridObject.jqGrid('getGridParam', 'id'));
+    });
+}
 
 function loadPage() {
     var pageData = {
@@ -231,4 +244,62 @@ function set_multiselect(gridId, set) {
             this.checked = true;
         });
     }
+}
+
+function getDataFromPage() {
+    var htmlData = $('<output>').append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"))));
+    gridController.checkGrids();
+    htmlData.find(("div[id^=gbox_grid]")).each(function (a, b) {
+        $(b).after("<div name='" + $(b).attr('id') + "'></div>");
+        $(b).remove();
+    });
+    var data = {};
+    data['html'] = htmlData.prop("innerHTML");
+    data['grids'] = getTrimmedGridControllerGrids();
+    data['html'] = removeElements("nosave", data['html']);
+    return data;
+}
+
+function validation_save() {
+    console.log("validation_save()");
+// PREPARE FORM DATA
+    var validationid = $($("div[id^='wrapper']")[0]).attr("id").substring(8);
+    var data = JSON.stringify(getDataFromPage());
+    var patches = getPatches(originalDocument, data);
+    var _cookie = $.cookie('LCMS_session');
+    $.ajax({
+        method: "POST",
+        url: "./validations",
+        data: {action: "VALIDATION_EDITVALIDATIONS", LCMS_session: _cookie, contents: patches, validationid: validationid, oper: 'edit'},
+        beforeSend: function (xhr) {
+            xhr.overrideMimeType("application/html");
+        }
+    }).done(function (_data) {
+        originalDocument = data;
+        bootstrap_alert.warning('Validatie opgeslaan', 'success', 2000);
+        console.log("Changes saved.");
+    }).fail(function (data) {
+        alert("Sorry. Server unavailable. ");
+    });
+}
+
+function getTrimmedGridControllerGrids() {
+    var gridControllerCopy = jQuery.extend(true, {}, gridController);
+    $.each(gridControllerCopy.grids, function (index, item) {
+        var colModel = item.colModel;
+        var colNames = item.colNames;
+        var colModelArray = [];
+        var colNameArray = [];
+        var c = 0;
+        var colModelCopy = jQuery.extend(true, {}, colModel);
+        colModelCopy = Object.filter(colModelCopy, model => model.name !== "rn" & model.name !== "cb" & model.name !== "subgrid");
+        $.each(colModelCopy, function (i, j) {
+            colModelArray[c] = colModel[i];
+            colNameArray.push(j.name);
+            c++;
+        });
+        item.colNames = colNameArray;
+        item.colModel = colModelArray;
+    });
+    return gridControllerCopy.grids;
 }

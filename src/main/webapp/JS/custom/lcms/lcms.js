@@ -3,6 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
+
 function filterAttributeJson(data, filterBy) {
     var lookup = {};
     var items = data;
@@ -213,7 +215,7 @@ class LCMSgridController {
     updateReferences() {
         var me = this;
         $.each(me.references, function (a, b) {
-            console.log(b);
+            //console.log(b);
             var column = Object.filter(me.grids[b.list].colModel, model => model.name === b.attr);
             var newValues = getValuesOfAttributeInList(b.refList, b.refAttr);
             var newValuesAllAtrributes = getValuesOfAttributeInList(b.refList, b.refAttr);
@@ -221,7 +223,8 @@ class LCMSgridController {
             if (JSON.stringify(newValues) !== JSON.stringify(oldValues)) {
                 console.log("Updating references... ");
                 Object.values(column)[0].editoptions.value = newValues;
-                $("#" + b.list).jqGrid("getGridParam").colModel[Object.keys(column)[0]] = Object.values(column)[0];
+                $("#" + b.list).jqGrid("getGridParam").colModel[Object.keys(column)[0]].editoptions.value = newValues;//Object.values(column)[0];
+                
                 $("#" + b.list).trigger("reloadGrid");
 //                $.each(rowsWithReferences, function (index, row) {
 //                    var refs = row['Tabel1-ref'].split(',');
@@ -327,6 +330,343 @@ class LCMSSidebarPage {
         return wrapper;
     }
 
+}
+
+class LCMSGrid {
+    /*
+     * gridData
+     * *****************************
+     *  var gridData = {
+     data: object,
+     editAction: "string",
+     editUrl: "string",
+     tableObject: "string", --> change to tableID
+     pagerID: "string",
+     wrapperObject: object
+     jqGridOptions: { //example options
+     grouping: true,
+     groupingView: {
+     groupField: ['status', 'category'],
+     groupColumnShow: [false, false],
+     groupText: ['<b>{0} - {1} Item(s)</b>', '<b>{0} - {1} Item(s)</b>'],
+     groupCollapse: true
+     },
+     onSelectRow: function (rowid) {
+     return popupEdit(rowid, tableObject, _parent, "editActionString");
+     },
+     caption: "this is a caption"
+     },
+     jqGridParameters: {
+     navGridParameters: {add: false}
+     }
+     */
+
+
+
+    constructor(gridData) {
+        this.gridData = gridData;
+    }
+
+    addGridButton(icon, title, caption, onClickFunction) {
+        var gridData = this.gridData;
+        $("#" + gridData.tableObject).navButtonAdd("#" + gridData.pagerID, {
+            caption: caption,
+            title: title,
+            buttonicon: icon,
+            onClickButton: function () {
+                onClickFunction();
+            },
+            position: "last"
+        });
+    }
+
+    createColModel(_data) {
+        console.log("createColModel()");
+        var cols = new Array();
+        var view = [];
+        $.each(_data, function (index, value) {
+            var column = {};
+            column.label = value.name;
+            column.name = value.name;
+            //column.editable = true;
+
+            if (value.type === "date") {
+                column.formatoptions = {srcformat: "u1000", newformat: "d-m-y"};
+                column.formatter = "date";
+                column.sorttype = "date";
+                column.editoptions = {dataInit: initDateEdit};
+            }
+            if (value.type === "number") {
+                column.template = numberTemplate;
+            }
+            if (value.type === "datetime") {
+                column.formatoptions = {srcformat: "u1000", newformat: "d-m-y h:i"};
+                column.formatter = "date";
+                column.sorttype = "date";
+                column.editoptions = {dataInit: initDateEdit};
+            }
+
+            if (value.type === "text") {
+                column.edittype = "text";
+            }
+            if (value.type === "cktext") {
+                column.edittype = "textarea";
+                column.editoptions = {title: "ckedit"};
+            }
+            if (value.type === "cktext_code") {
+                column.edittype = "textarea";
+                column.editoptions = {title: "ckedit_code"};
+            }
+            if (value.type === "boolean") {
+                column.template = "booleanCheckbox";
+            }
+
+            if (value.type === "internal_list") {
+                value.type = "select";
+                column.editoptions = {title: "internal_list"};
+                column.internalListName = value.internalListName;
+                column.internalListAttribute = value.internalListAttribute;
+
+            }
+            if (value.type === "external_list") {
+                value.type = "select";
+                column.editoptions = {title: "external_list"};
+            }
+            if (value.type === "select") {
+                column.edittype = "select";
+                column.formatter = "select";
+                column.width = "200";
+                if (value.choices.constructor.name === "String") {
+                    value.choices = JSON.parse(value.choices);
+                }
+                if (typeof column.editoptions === "undefined") {
+                    column.editoptions = {};
+                }
+                column.editoptions.multiple = value.multiple;
+                column.editoptions.value = (value.choices);
+                if (value.multiple === true) {
+                    column.editoptions.size = value.choices.length < 8 ? value.choices.length + 2 : 10;
+                }
+            }
+            if (value.type === "password") {
+                column.edittype = "password";
+            }
+            if (value.key === true) {
+                column.key = true;
+            }
+            if (value.visibleOnTable === false || value.hidden === true) {
+                column.hidden = true;
+            }
+            if (value.editable === false) {
+                column.editable = false;
+            } else {
+                column.editable = true;
+            }
+            if (value.visibleOnForm === true) {
+                column.editrules = {edithidden: true};
+            }
+
+            if (typeof value.summaryTpl !== "undefined") {
+                column.summaryTpl = value.summaryTpl;
+            }
+            if (typeof value.summaryType !== "undefined") {
+                column.summaryType = value.summaryType;
+            }
+
+            if (typeof value.width !== 'undefined' && typeof value.lso === "undefined") {
+                column.width = value.width;
+            }
+
+            view.push(column);
+        });
+        console.log("Generating view");
+        return view;
+    }
+
+    createGrid() {
+        console.log("createGrid()");
+        var gridData = this.gridData;
+        var colModelData = {};
+        var tabelData = {};
+        if (typeof this.gridData.data.header === "string") {
+            colModelData = JSON.parse(this.gridData.data.header);
+        } else {
+            colModelData = this.gridData.data.header;
+        }
+        if (typeof this.gridData.data.table === "string") {
+            tabelData = JSON.parse(this.gridData.data.table);
+        } else {
+            tabelData = this.gridData.data.table;
+        }
+      
+        var _colModel = this.createColModel(colModelData);
+        var cols = new Array();
+        $.each(colModelData, function (index, value) {
+            if (typeof value.tablename !== 'undefined') {
+                var _name = lang[value.tablename][value.name];
+                if (typeof _name !== "undefined") {
+                    cols.push(_name);
+                } else {
+                    cols.push(value.name);
+                }
+            } else {
+                cols.push(value.name);
+            }
+        });
+        var jqgridOptions = {
+            data: tabelData,
+            datatype: "local",
+            colModel: _colModel,
+            colNames: cols,
+            viewrecords: true, // show the current page, data rang and total records on the toolbar
+            autowidth: true,
+            autoheight: true,
+            rownumbers: true,
+            responsive: true,
+            headertitles: true,
+            guiStyle: "bootstrap4",
+            //iconSet: "glyph",
+            iconSet: "fontAwesome",
+            searching: listGridFilterToolbarOptions,
+            rowNum: 150,
+            mtype: 'POST',
+            altRows: true,
+            editurl: gridData.editUrl,
+            loadonce: true,
+            ondblClickRow: editRow,
+            pager: "#" + gridData.pagerID,
+            caption: "",
+            pgbuttons: false,
+            pgtext: "",
+            pginput: false
+
+        };
+
+        var parameters = {
+            navGridParameters: {add: true, edit: false, del: false, save: false, cancel: false,
+                addParams: {
+                    position: "last",
+                    addRowParams: {
+                        keys: true,
+                        extraparam: {oper: 'add', action: gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
+                    }
+                },
+                editParams: {
+                    editRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
+                        extraparam: {action: gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
+                    }
+                }
+            }
+        };
+
+        if (typeof gridData.jqGridOptions.summaries !== "undefined") {
+            jqgridOptions.summaries = gridData.jqGridOptions.summaries;
+            jqgridOptions.footerrow = true;
+            jqgridOptions.userDataOnFooter = true;
+            jqgridOptions.loadComplete = function () {
+                var sumJson = {};
+                var grid = $(this);
+                gridData.jqGridOptions.summaries.forEach(function (a) {
+                    sumJson[a] = grid.jqGrid("getCol", a, false, "sum");
+                });
+                $(this).jqGrid("footerData", "set", sumJson);
+
+            };
+        }
+
+        if (typeof gridData.jqGridOptions.groups !== "undefined") {
+
+            jqgridOptions.grouping = true;
+            jqgridOptions.groupingView = {
+                groupField: gridData.jqGridOptions.groups,
+                //groupColumnShow: [false, false],
+                groupText: ['<b>{0} - {1} Item(s)</b>', '<b>{0} - {1} Item(s)</b>'],
+                groupCollapse: true,
+                groupSummaryPos: ["header", "header"],
+                groupSummary: [true, true]
+            }
+        } else {
+            jqgridOptions.grouping = false;
+        }
+
+        if (typeof gridData.jqGridOptions.subgrid !== "undefined") {
+            jqgridOptions.subGrid = true;
+            jqgridOptions.subGridOptions = {
+                hasSubgrid: function (options) {
+                    return true;
+                }
+            };
+//        isHasSubGrid = function (rowid) {
+//            var cell = $(this).jqGrid('getCell', rowid, 1);
+//            if (cell && cell.substring(0, 1) === "B") {
+//                return false;
+//            }
+//            return true;
+//        };
+            jqgridOptions.subGridRowExpanded = function (subgridDivId, rowId) {
+                var subgridTableId = subgridDivId + "_t";
+                $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
+                $("[id='" + subgridTableId + "']").jqGrid({
+                    datatype: 'local',
+                    data: [],
+                    colNames: gridData.jqGridOptions.subgridref.colNames,
+                    colModel: gridData.jqGridOptions.subgridref.colModel,
+                    gridview: true,
+                    rownumbers: true,
+                    autoencode: true,
+                    responsive: true,
+                    headertitles: true,
+                    iconSet: "fontAwesome",
+                    guiStyle: "bootstrap4"
+                });
+            };
+        }
+
+        $.each(gridData.jqGridOptions, function (i, n) {
+            jqgridOptions[i] = n;
+        });
+        $("#" + gridData.tableObject).jqGrid(jqgridOptions);
+
+        replaceProperties(parameters, gridData.jqGridParameters);
+
+
+        var lastSelection;
+        function editRow(id) {
+            if (id && id !== lastSelection) {
+                var grid = $("#" + gridData.tableObject);
+                grid.jqGrid('restoreRow', lastSelection);
+                grid.jqGrid('editRow', id, parameters.editParameters);
+                lastSelection = id;
+            }
+        }
+
+        function replaceProperties(original, obj) {
+            for (var property in obj) {
+                if (obj.hasOwnProperty(property)) {
+                    if (typeof obj[property] === "object" & typeof original[property] === "object")
+                        replaceProperties(original[property], obj[property]);
+                    else
+                        original[property] = obj[property];
+                    //console.log(property + "   " + obj[property]);
+                }
+            }
+        }
+
+        $("#" + gridData.tableObject).inlineNav("#" + gridData.pagerID, parameters.navGridParameters);
+        $("#" + gridData.tableObject).jqGrid("filterToolbar");
+        $(window).bind('resize', function () {
+            $("#" + gridData.tableObject).setGridWidth(gridData.wrapperObject.width() - 10);
+        }).trigger('resize');
+
+        $("#" + gridData.tableObject).closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").click(function () {
+            $(".ui-jqgrid-titlebar-close", this).click();
+        });
+        $("#" + gridData.tableObject).click(function (e) {
+            gridClickFunctions(e, $(this));
+        });
+
+        return $("#" + gridData.tableObject);
+    }
 }
 
 function LCMSRequest(_url, _data, _onDone) {

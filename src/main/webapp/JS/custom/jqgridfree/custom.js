@@ -157,7 +157,7 @@ function createDataAndModelFromCSV(val) {
 }
 
 function getValuesOfAttributeInList(_list, _attribute) {
-    console.log("getValuesOfAttributeInList()");
+    //console.log("getValuesOfAttributeInList()");
     var distinctAttributes = {};
     $("table[id^=grid]").each(function (a, b) {
         var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
@@ -198,4 +198,12 @@ function getJQGridParamByCaption(_name){
         }
     });
     return gridParam;
+}
+
+function isEmptyObj(obj) {
+    for(var key in obj) {
+        if(obj.hasOwnProperty(key))
+            return false;
+    }
+    return true;
 }
