@@ -58,7 +58,7 @@ public class Servlet extends HttpServlet {
                     jsonData.put("webPage", Core.loadWebFile(""));
                     sb.append(jsonData);
                 } else {
-                    if (action.contains(".")) {
+                    if (action.contains(".") || action.contains(";")) {
                         action = "";
                     }
                     // action = StringEscapeUtils.escapeHtml(action);

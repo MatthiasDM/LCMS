@@ -10,10 +10,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import org.apache.commons.lang.StringEscapeUtils;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -55,12 +57,22 @@ public class Core {
 
     public static String readFile(String urlName) {
         try {
+//            String urlString2Decode = urlName;
+//            String decodedURL = URLDecoder.decode(urlString2Decode, "UTF-8");
+//            URL url = new URL(decodedURL);
+//            URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
+//            String decodedURLAsString = uri.toASCIIString();
+//            String unsafeURLString = new URL(urlName).toURI().toASCIIString();
             String out = new Scanner(new URL(urlName).openStream(), "UTF-8").useDelimiter("\\A").next();
             return out;
         } catch (IOException ex) {
             ex.printStackTrace();
             return null;
         }
+//        catch (URISyntaxException ex) {
+//            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+//            return null;
+//        }
     }
 
     public static String loadWebFile(String url) {
