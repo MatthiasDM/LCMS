@@ -64,7 +64,41 @@ function users_doLoad(_parent) {
             jsonData.parent = _parent;
             loadParameters(jsonData);
         } else {
-            populateTable(jsonData, "ADMIN_EDITUSERS", './admin', $("#user-table"), "#user-pager", $("#div-grid-user-wrapper"), "Gebruikers in het labo", {});
+
+            var gridData = {
+                data: jsonData,
+                editAction: "ADMIN_EDITUSERS",
+                editUrl: "./admin",
+                tableObject: "user-table",
+                pagerID: "user-pager",
+                wrapperObject: $("#div-grid-user-wrapper"),
+                jqGridOptions: {
+                    grouping: false,
+                    groupingView: {
+                        groupField: ['username'],
+                        groupColumnShow: [false],
+                        groupText: ['<b>{0} - {1} Item(s)</b>'],
+                        groupCollapse: false
+                    },
+                    onSelectRow: function (rowid) {
+                        return popupEdit(rowid, $("#user-table"), _parent, "ADMIN_EDITUSERS");
+                    },
+                    caption: "Account"
+                },
+                jqGridParameters: {
+                    navGridParameters: {add: false}
+                }
+            };
+            let ticketGrid = new LCMSGrid(gridData);
+            ticketGrid.createGrid();
+            ticketGrid.addGridButton("fa-plus", "Nieuw ticket", "", function () {
+                return popupEdit('new', $("#ICT-ticket-table"), $(this), "ICT_EDITTICKETS", function () {
+                    return null;
+                });
+            });
+
+
+          //  populateTable(jsonData, "ADMIN_EDITUSERS", './admin', $("#user-table"), "#user-pager", $("#div-grid-user-wrapper"), "Gebruikers in het labo", {});
         }
     }).fail(function (data) {
         alert("Sorry. Server unavailable. ");

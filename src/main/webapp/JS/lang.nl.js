@@ -40,7 +40,10 @@ lang = {
         title: "Titel"
     },
     user_table: {
-
+        username: "Gebruikersnaam",
+        password: "Wachtwoord",
+        roles: "Rollen",
+        email: "E-mail"
     },
     tasks: {
         title: "Openstaande taken"

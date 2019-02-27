@@ -29,7 +29,8 @@ public class User {
     public String username;
     @MdmAnnotations(
             type = "password",
-            visibleOnTable = true,
+            visibleOnTable = false,
+            visibleOnForm = true,
             editRole = "ICTMANAGER")
     public String password;
     @MdmAnnotations(
