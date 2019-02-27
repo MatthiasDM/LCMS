@@ -63,7 +63,7 @@ IT-problems are registered by any user who has right to do so. The follow-up of 
 
 - [ ] Create extra field for subcategory specification, this is to group problems more easily. 
 - [ ] Complete the workflow. 
-      - [ ] Use the module "Tasks" for centralisation of workflow-tasks. 
-      - [ ] A "Task" is found in a jqGrid where are "Tasks" are shown. An IT-related task will redirect to the problem in the Nonconformity management module. A validation task to confirm a problem is solved will show the follow-up of the problem and will have a link that send a server-request to change the status of the ticket, which will 'complete' the task.
+- [ ] Use the module "Tasks" for centralisation of workflow-tasks. 
+- [ ] A "Task" is found in a jqGrid where are "Tasks" are shown. An IT-related task will redirect to the problem in the Nonconformity management module. A validation task to confirm a problem is solved will show the follow-up of the problem and will have a link that send a server-request to change the status of the ticket, which will 'complete' the task.
 - [ ] Change mark-up of email notifications.
 
