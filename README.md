@@ -38,7 +38,7 @@ These workflows need to be hard-coded into Java. When i have time i will think a
 
 - [x] Working on the editabiliy of documents. Two main libraries are used: CKeditor4 and Free-JqGrid.
 - [x] (partial) Make it possible to reference from one table to another withing the samen document
-- [] Upload image on paste  
+- [ ] Upload image on paste  
 - [x] Export entire document to HTML.
 - [x] Export table (jqGrid) to csv.
 - [x] (partial) Modify jqGrid definition at will.
@@ -46,10 +46,10 @@ These workflows need to be hard-coded into Java. When i have time i will think a
 
 ### Rights management
 
-- [] Databasify the rights system. 
+- [ ] Databasify the rights system. 
 
 ### Nonconformity management
 At the moment this module is only used to monitor IT-related problems. 
 
-- [] Create extra field to defined the action type. 
-- [] Complete the workflows
+- [ ] Create extra field to defined the action type. 
+- [ ] Complete the workflows
