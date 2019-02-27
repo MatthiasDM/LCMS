@@ -55,7 +55,7 @@ At the moment this module is only used to monitor IT-related problems.
 - [ ] Complete the workflows
 
 #### IT-problems
-IT-problems are registered by any user who has right to do so. The follow-up of these problems happen by the IT-personel. At the moment there are four statusfields of a ticket. These are used in de workflow below:
+IT-problems are registered by any user who has right to do so. The follow-up of these problems happen by the IT-personel. At the moment there are four statusfields of an IT-problem. These are used in de workflow below:
 - Registered: IT-personel is informed of the problem.
 - Analysis: Status change done by IT-personel. Inidcates the problem is under investigation. In this stage the follow-up field is edited and appended to. 
 - Validation: Status changed caused by IT-personel. The solution is to be validated by the assigned person, prefferable a non-IT-personel. 
@@ -64,6 +64,6 @@ IT-problems are registered by any user who has right to do so. The follow-up of 
 - [ ] Create extra field for subcategory specification, this is to group problems more easily. 
 - [ ] Complete the workflow. 
 - [ ] Use the module "Tasks" for centralisation of workflow-tasks. 
-- [ ] A "Task" is found in a jqGrid where are "Tasks" are shown. An IT-related task will redirect to the problem in the Nonconformity management module. A validation task to confirm a problem is solved will show the follow-up of the problem and will have a link that send a server-request to change the status of the ticket, which will 'complete' the task.
+- [ ] A "Task" is found in a jqGrid where all "Tasks" are shown. An IT-related task will redirect to the problem in the Nonconformity management module. A validation task to confirm a problem is solved will show the follow-up of the problem and will have a link that send a server-request to change the status of the ticket, which will 'complete' the task.
 - [ ] Change mark-up of email notifications.
 
