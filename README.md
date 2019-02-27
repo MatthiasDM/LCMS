@@ -20,9 +20,9 @@ The system will consist out of multiple modules, the first one being a document 
 
 ### Behind the scenes
 
-1. Rights management
+#### 1. Rights management
 All fields of the tables defined in Java are under access control. At the moment this is hard-coded into Java, but the goal is to create a module where these access rights are defined in the database, and are thus modifiable for those who have the rights to do so. 
-2. Workflows
+#### 2. Workflows
 These workflows need to be hard-coded into Java. When i have time i will think about a way to define these workflows in a more abstract way.
 
 ### Lab specific
