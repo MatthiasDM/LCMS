@@ -17,12 +17,11 @@ function config0() { //used in de notes-module
         {name: 'Normaal', element: 'span', attributes: {'class': 'my_style'}},
         {name: 'Marker: Yellow', element: 'span', styles: {'background-color': 'Yellow'}}
     ]);
-//    CKEDITOR.scriptLoader.load("./JS/dependencies/iframeresizer/iframeResizer.min.js", function (success)
-//    {
-//        console.log("iframeResizer js loaded");
-//
-//    });
+
     CKEDITOR.editorConfig = function (config) {
+
+        config.templates_files = ['./ckeditor/plugins/templates/templates/defaultLCMS.js'];
+
         config.toolbarGroups = [
             {name: 'document', groups: ['mode', 'document', 'doctools']},
             {name: 'clipboard', groups: ['clipboard', 'undo']},
@@ -67,6 +66,29 @@ function config0() { //used in de notes-module
 
 function config2() { //for inline editing
     console.log("function config2");
+    let imageController = new LCMSImageController();
+
+//    $("body").bind("paste", function (e) {
+//        e.preventDefault();
+//
+//        if (e.target.offsetParent.id.includes("editable")) {
+//            return capturePaste(e, e.target.offsetParent.id);
+//        }
+//    });
+
+//    document.onpaste = function(event){
+//  var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+//  for (index in items) {
+//    var item = items[index];
+//    if (item.kind === 'file') {
+//      // adds the file to your dropzone instance
+//     
+//    }
+//  }
+//}
+
+
+
     if (typeof CKEDITOR.stylesSet.registered["mdmConfig2"] === "undefined") {
         CKEDITOR.stylesSet.add('mdmConfig2', [
             // Block-level styles            {name: 'Hoofdding 1', element: 'h1', styles: {'color': 'rgb(54,95,145)'}},
@@ -83,6 +105,7 @@ function config2() { //for inline editing
 
 
     CKEDITOR.editorConfig = function (config) {
+
         config.toolbarGroups = [
             {name: 'document', groups: ['mode', 'document', 'doctools']},
             {name: 'clipboard', groups: ['clipboard', 'undo']},
@@ -98,8 +121,9 @@ function config2() { //for inline editing
             {name: 'others', groups: ['others']},
             {name: 'about', groups: ['about']}
         ];
-        config.extraPlugins = 'mdmUploadFiles,codesnippet,pre,codemirror,sourcedialog,widget,dialog,mdmjexcel';
-        config.removeButtons = 'Source,Save,Templates,Cut,Undo,Redo,Copy,MenuButton,Preview,Print,PasteText,Paste,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,NewPage,Outdent,Indent,CreateDiv,Blockquote,JustifyLeft,JustifyCenter,JustifyRight,JustifyBlock,Language,BidiRtl,Anchor,Unlink,BidiLtr,Flash,Table,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Format,Font,Maximize,ShowBlocks,About,RemoveFormat,CopyFormatting,Subscript,Superscript';
+        config.templates_files = ['./JS/ckeditor/plugins/templates/templates/defaultLCMS.js'];
+        config.extraPlugins = 'mdmUploadFiles,codesnippet,pre,codemirror,sourcedialog,widget,dialog,mdmjexcel,templates';
+        config.removeButtons = 'Source,Save,Cut,Undo,Redo,Copy,MenuButton,Preview,Print,PasteText,Paste,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,NewPage,Outdent,Indent,CreateDiv,Blockquote,JustifyLeft,JustifyCenter,JustifyRight,JustifyBlock,Language,BidiRtl,Anchor,Unlink,BidiLtr,Flash,Table,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Format,Font,Maximize,ShowBlocks,About,RemoveFormat,CopyFormatting,Subscript,Superscript';
         config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';
 
         config.height = 500;
@@ -120,19 +144,63 @@ function config2() { //for inline editing
 //    {
 //        console.log("bootstrap js loaded");
 //    });
-    CKEDITOR.on('instanceReady', function () {
+    CKEDITOR.on('instanceReady', function (e) {
         console.log("loading images");
-        $("div[id^=editable]").each(function (index) {
-            loadImages($(this).attr('id'));
-            // loadTOC($(this).attr('id'));
-            $("#cke_" + $(this).attr('id')).css("border", "1px dotted grey");
-            $("#cke_" + $(this).attr('id')).css("padding", "10px");
+        var editor = $("#" + e.editor.name);
+        var editorId = e.editor.name;
+        var formData = new FormData();
+
+
+
+        editor.dropzone({
+            url: "./upload",
+            clickable: false,
+            createImageThumbnails: false,
+            previewsContainer: false,
+            init: function () {
+                this.on("sending", function (file, xhr, formData) {
+                    formData.append('action', 'FILE_UPLOAD');
+                    formData.append('LCMS_session', $.cookie('LCMS_session'));
+                    //formData.append('file', file);
+                    console.log(formData);
+                });
+                this.on("success", function (file, response) {
+                    response = JSON.parse(response);
+                    imageController.insertFileInEditor(response.name, response.fileid, editor);
+                    bootstrap_alert.warning('Adding image succesfull', 'success', 1000);
+                });
+            }});
+
+        editor.on('paste', function (e) {
+            capturePaste(e, editorId);
+            var html = e.originalEvent.clipboardData.getData('text/html');
+            e.originalEvent.clipboardData.setData('text/html', html.replace(/<img.*?>/gi, function (img)
+            {
+                return "";
+            }));
+           // e.originalEvent.preventDefault();
         });
+
+
+
+        //$("div[id^=editable]").each(function (index) {
+        loadImages(editorId);
+        //loadTOC($(this).attr('id'));
+        $("#cke_" + editorId).css("border", "1px dotted grey");
+        $("#cke_" + editorId).css("padding", "10px");
+
+
+
+
+        // });
+
         $("textarea[title=ckedit]").each(function (index) {
             loadImages($(this).attr('id'));
             // loadTOC($(this).attr('id'));
             $("#cke_" + $(this).attr('id')).css("border", "1px dotted grey");
             $("#cke_" + $(this).attr('id')).css("padding", "10px");
+            $("#cke_" + $(this).attr('id')).css("min-height", "300px");
+            $("#cke_" + $(this).attr('id')).css("max-height", "700px");
         });
 
         $('iframe').contents().click(function (e) {
@@ -154,15 +222,20 @@ function config2() { //for inline editing
 
 
 
-function capturePaste(e) {
-    var items = e.originalEvent.clipboardData.items;
-    var images = Object.filter(items, item => item.type.includes("image"))
+function capturePaste(e, _editable) {
 
+
+    var items = e.originalEvent.clipboardData.items;
+    var images = Object.filter(items, item => item.type.includes("image"));
     Object.keys(images).forEach(function (i) {
+
         console.log("Item: " + images[i]);
         var blob = images[i].getAsFile();
-        console.log(blob);
+        blob.name = blob.name + "" + uuidv4();
+        Dropzone.forElement("#" + _editable).addFile(blob);
+
     });
+
 }
 
 function loadTOC(editor) {

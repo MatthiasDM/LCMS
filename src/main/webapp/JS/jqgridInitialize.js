@@ -14,14 +14,24 @@ var numberTemplate = {
     stringResult: true,
     multipleSearch: true,
     searchOperators: true,
-    ignoreCase:true,
-    defaultSearch:'cn'
-    
+    ignoreCase: true,
+    defaultSearch: 'cn'
+
 };
 
 $(function () {
 
     initDateEdit = function (elem) {
+        $(elem).datepicker({
+            dateFormat: "d-m-y",
+            autoSize: true,
+            changeYear: true,
+            changeMonth: true,
+            showButtonPanel: true,
+            showWeek: true
+        });
+    };
+    initDateTimeEdit = function (elem) {
         $(elem).datepicker({
             dateFormat: "d-m-y",
             autoSize: true,
@@ -250,8 +260,8 @@ function generateView2(data) {
             column.summaryType = value.summaryType;
         }
 
-        if(typeof value.width !== 'undefined'){
-            column.width = value.width;            
+        if (typeof value.width !== 'undefined') {
+            column.width = value.width;
         }
 
         view.push(column);
@@ -273,7 +283,7 @@ function gridClickFunctions(e, target) {
         target.jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
     }
 
-    
+
 
 
 // $subGridExpanded = $(e.target).closest("td.sgexpanded");

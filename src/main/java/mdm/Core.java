@@ -11,11 +11,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import java.io.IOException;
+import java.io.StringReader;
 import java.lang.reflect.Field;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -24,6 +22,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -305,6 +304,13 @@ public class Core {
         parameters.put("receivers", emails);
         parameters.put("text", content);
         return parameters;
+    }
+
+    public static String getProp(String name) throws IOException {
+        Properties prop = new Properties();
+        String propFileName = "conf/conf.properties";
+        prop.load(new StringReader(Core.loadWebFile(propFileName)));     
+        return prop.getProperty(name);
     }
 
 }

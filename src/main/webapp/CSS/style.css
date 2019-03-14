@@ -155,7 +155,7 @@ jqgrid-bootstrap tr.jqgrow>td {
 }
 
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 3000px) {
      /*Force table to not be like tables anymore */
     .EditTable table,
      .EditTable thead,
@@ -167,6 +167,10 @@ jqgrid-bootstrap tr.jqgrow>td {
     }
 }
 
+textarea[title=ckedit] {
+    
+    
+}
 
 
 /*PIVOTTABLE*/

@@ -12,6 +12,9 @@ package mdm.Config;
 public enum MongoConf {
     SESSION("users", "sessions", "mdm.GsonObjects.Session", "sessionID"),
     USERS("users", "users", "mdm.GsonObjects.User", "userid"),
+    TABLES("lcms", "tables", "mdm.GsonObjects.Tables", "tablesid"),
+    RIGHTS("lcms", "rights", "mdm.GsonObjects.Rights", "rightsid"),    
+    //--------------------------------------------------------------------------------
     ICTTICKETS("lcms", "ICTTickets", "mdm.GsonObjects.Other.ICTTicket", "ticketid"),
     INSTRUMENTS("lcms", "instruments", "mdm.GsonObjects.Lab.Instrument", "instid"),
     NOTES("lcms", "notes", "mdm.GsonObjects.Note", "docid"),

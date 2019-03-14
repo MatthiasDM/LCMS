@@ -170,20 +170,13 @@ class LCMSgridController {
     constructor() {
         this.grids = {};
         this.references = [];
+        this.views = [];
     }
     checkGrids() {
         var me = this;
         me.references = [];
         $("table[id^=grid]").each(function (a, b) {
             try {
-                var test = {
-                    "gridID": $(b).attr('id'),
-                    "gridParams": $(b).jqGrid('getGridParam')
-                };
-                me.grids[$(b).attr('id')] = test;
-
-
-
                 me.grids[$(b).attr('id')] = $(b).jqGrid('getGridParam');
                 me.grids[$(b).attr('id')].colModel.forEach(function (column) {
                     if (typeof column.editoptions !== "undefined") {
@@ -198,10 +191,19 @@ class LCMSgridController {
                         }
                     }
                 });
+
+
             } catch (err) {
                 console.log(err);
             }
         });
+
+        $.each(Object.filter(me.grids, grid => typeof grid.subgridref !== "undefined"), function (a, b) {
+            me.checkSubGridValidity(b.id);
+
+        });
+
+
 
         //console.log(this.references);
 
@@ -224,51 +226,45 @@ class LCMSgridController {
                 console.log("Updating references... ");
                 Object.values(column)[0].editoptions.value = newValues;
                 $("#" + b.list).jqGrid("getGridParam").colModel[Object.keys(column)[0]].editoptions.value = newValues;//Object.values(column)[0];
-                
                 $("#" + b.list).trigger("reloadGrid");
-//                $.each(rowsWithReferences, function (index, row) {
-//                    var refs = row['Tabel1-ref'].split(',');
-//                    $.each(refs, function (index, ref) {
-//                        if (typeof refListSubGridData[ref] !== 'undefined') {
-//                            refListSubGridData[ref].push(row);
-//                        } else {
-//                            refListSubGridData[ref] = [];
-//                            refListSubGridData[ref].push(row);
-//                        }
-//
-//
-//                    });
-//                });
-//                var rowsWithReferences = Object.filter($("#" + b.list).jqGrid("getGridParam").data, data => data['Tabel1-ref'] !== "");
-//                var refListSubGridData = {};
-//                $.each(rowsWithReferences, function (index, row) {
-//                    var refs = row['Tabel1-ref'].split(',');
-//                    $.each(refs, function (index, ref) {
-//                        if (typeof refListSubGridData[ref] !== 'undefined') {
-//                            refListSubGridData[ref].push(row);
-//                        } else {
-//                            refListSubGridData[ref] = [];
-//                            refListSubGridData[ref].push(row);
-//                        }
-//                    });
-//                });
-//                //aan de reflist moeten we nu een subgrid toevoegen
-//                var refListOptions = getJQGridParamByCaption(b.refList);
-//                refListOptions = option_subgrid(
-//                        $("#" + refListOptions.id).jqGrid("getGridParam"),
-//                        $("#" + b.list).jqGrid("getGridParam").colNames,
-//                        $("#" + b.list).jqGrid("getGridParam").colModel,
-//                        refListSubGridData);
-//                if ($("#" + refListOptions.id)[0].grid == undefined) {
-//                    $("#" + refListOptions.id).jqGrid(options);
-//                } else {
-//                    var refListOptionsCopy = jQuery.extend(true, {}, refListOptions);
-//                }
-
             }
 
+
+
+
+
+
+
+        });
+
+    }
+
+    checkSubGridValidity(gridId) {
+        console.log("checkSubGridValidity()");
+        var me = this;
+        var grid = $("#" + gridId);
+        var subGridCells = $("td.sgcollapsed", grid[0]);
+        var change = false;
+        if (typeof me.grids[grid.attr('id')].subGridHasSubGridValidation !== "undefined") {
+            $.each(subGridCells, function (i, value) {
+
+                var htmlValue = $("#" + value.parentNode.id + " td.sgcollapsed", grid[0]).html();
+                if (!me.grids[grid.attr('id')].subGridHasSubGridValidation(value.parentNode.id, me.grids[grid.attr('id')].subgridref)) {
+                    $("#" + value.parentNode.id + " td.sgcollapsed", grid[0]).unbind('click').html('');
+                } else {
+                    $("#" + value.parentNode.id + " td.sgcollapsed", grid[0]).bind('click').html("<div class='sgbutton-div'><a role='button' class='btn btn-xs sgbutton'><span class='fa fa-fw fa-plus'></span></a></div>");
+                }
+                if (htmlValue !== $("#" + value.parentNode.id + " td.sgcollapsed", grid[0]).html()) {
+                    change = true;
+                }
+            });
         }
-        );
+        if (change) {
+            // grid.trigger("reloadGrid");
+        }
+
+
+
 
     }
 }
@@ -359,6 +355,7 @@ class LCMSGrid {
      jqGridParameters: {
      navGridParameters: {add: false}
      }
+     gridCONTROLLER
      */
 
 
@@ -403,7 +400,7 @@ class LCMSGrid {
                 column.formatoptions = {srcformat: "u1000", newformat: "d-m-y h:i"};
                 column.formatter = "date";
                 column.sorttype = "date";
-                column.editoptions = {dataInit: initDateEdit};
+                column.editoptions = {dataInit: initDateTimeEdit};
             }
 
             if (value.type === "text") {
@@ -454,7 +451,10 @@ class LCMSGrid {
             if (value.key === true) {
                 column.key = true;
             }
-            if (value.visibleOnTable === false || value.hidden === true) {
+            if (value.visibleOnTable === false) {
+                column.hidden = true;
+            }
+            if (value.hidden === true) {
                 column.hidden = true;
             }
             if (value.editable === false) {
@@ -464,6 +464,8 @@ class LCMSGrid {
             }
             if (value.visibleOnForm === true) {
                 column.editrules = {edithidden: true};
+            } else {
+                column.editrules = {edithidden: false};
             }
 
             if (typeof value.summaryTpl !== "undefined") {
@@ -498,7 +500,7 @@ class LCMSGrid {
         } else {
             tabelData = this.gridData.data.table;
         }
-      
+
         var _colModel = this.createColModel(colModelData);
         var cols = new Array();
         $.each(colModelData, function (index, value) {
@@ -513,6 +515,7 @@ class LCMSGrid {
                 cols.push(value.name);
             }
         });
+
         var jqgridOptions = {
             data: tabelData,
             datatype: "local",
@@ -553,7 +556,8 @@ class LCMSGrid {
                 },
                 editParams: {
                     editRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
-                        extraparam: {action: gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
+                        extraparam: {action: gridData.editAction, LCMS_session: $.cookie('LCMS_session')},
+
                     }
                 }
             }
@@ -584,50 +588,64 @@ class LCMSGrid {
                 groupCollapse: true,
                 groupSummaryPos: ["header", "header"],
                 groupSummary: [true, true]
-            }
+            };
         } else {
             jqgridOptions.grouping = false;
         }
-
         if (typeof gridData.jqGridOptions.subgrid !== "undefined") {
             jqgridOptions.subGrid = true;
-            jqgridOptions.subGridOptions = {
-                hasSubgrid: function (options) {
-                    return true;
-                }
-            };
-//        isHasSubGrid = function (rowid) {
-//            var cell = $(this).jqGrid('getCell', rowid, 1);
-//            if (cell && cell.substring(0, 1) === "B") {
-//                return false;
-//            }
-//            return true;
-//        };
-            jqgridOptions.subGridRowExpanded = function (subgridDivId, rowId) {
-                var subgridTableId = subgridDivId + "_t";
-                $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
-                $("[id='" + subgridTableId + "']").jqGrid({
-                    datatype: 'local',
-                    data: [],
-                    colNames: gridData.jqGridOptions.subgridref.colNames,
-                    colModel: gridData.jqGridOptions.subgridref.colModel,
-                    gridview: true,
-                    rownumbers: true,
-                    autoencode: true,
-                    responsive: true,
-                    headertitles: true,
-                    iconSet: "fontAwesome",
-                    guiStyle: "bootstrap4"
-                });
-            };
+            if (typeof gridData.jqGridOptions.subGridOptions !== "undefined") {
+                jqgridOptions.subGridOptions = {
+                    hasSubgrid: function (options) {
+                        return true;
+                    }
+                };
+            }
+
+            if (typeof gridData.jqGridOptions.subGridRowExpanded !== "undefined") {
+                jqgridOptions.subGridRowExpanded = function (subgridDivId, rowId) {
+                    var subgridTableId = subgridDivId + "_t";
+                    $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
+                    $("[id='" + subgridTableId + "']").jqGrid({
+                        datatype: 'local',
+                        data: [],
+                        colNames: gridData.jqGridOptions.subgridref.colNames,
+                        colModel: gridData.jqGridOptions.subgridref.colModel,
+                        gridview: true,
+                        rownumbers: true,
+                        autoencode: true,
+                        responsive: true,
+                        headertitles: true,
+                        iconSet: "fontAwesome",
+                        guiStyle: "bootstrap4"
+                    });
+                };
+            }
+
+
         }
 
         $.each(gridData.jqGridOptions, function (i, n) {
             jqgridOptions[i] = n;
         });
+
+        jqgridOptions.loadComplete = function () {
+            var grid = $(this);
+            var subGridCells = $("td.sgcollapsed", grid[0]);
+            if (typeof jqgridOptions.subGridHasSubGridValidation !== "undefined") {
+                $.each(subGridCells, function (i, value) {
+                    if (!jqgridOptions.subGridHasSubGridValidation(value.parentNode.id, jqgridOptions.subgridref)) {
+                        $("#" + value.parentNode.id + " td.sgcollapsed", grid[0]).unbind('click').html('');
+                    }
+                });
+            }
+
+        };
+
         $("#" + gridData.tableObject).jqGrid(jqgridOptions);
 
         replaceProperties(parameters, gridData.jqGridParameters);
+
 
 
         var lastSelection;
@@ -668,6 +686,44 @@ class LCMSGrid {
         return $("#" + gridData.tableObject);
     }
 }
+
+class LCMSImageController {
+    constructor() {
+    }
+    
+    uploadFile(){}
+    
+    insertFileInEditor(_fileName, _fileId, _ckeditor) {
+        var re = /(?:\.([^.]+))?$/;
+        var type = re.exec(_fileName)[0];
+        var formData = new FormData();
+        var ckeditor = CKEDITOR.instances[_ckeditor.attr('id')];
+        formData.append('action', 'FILE_DOWNLOADTEMP');
+        formData.append('LCMS_session', $.cookie('LCMS_session'));
+        formData.append('filename', _fileName);
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState === 4) {
+                var jsonData = JSON.parse(request.responseText);
+                var filePath = jsonData.filePath;
+                if (type === ".png" || type === ".jpg" || type === ".JPG" || type === ".gif") {
+                    ckeditor.insertHtml("<div style='overflow-x:scroll'><img name='" + _fileName + "' fileid='" + _fileId + "' src='" + filePath + "'/></div>");
+                } else {
+                    ckeditor.insertHtml("<a name='" + _fileName + "'  href='" + filePath + "' fileid='" + _fileId + "'>" + _fileName + "</a>");
+                }
+            }
+        };
+        request.open('POST', "./upload", /* async = */ false);
+        request.send(formData);         
+    }
+}
+
+
+function getPostDataFromUrl() {
+
+}
+
+
 
 function LCMSRequest(_url, _data, _onDone) {
     _data['LCMS_session'] = $.cookie('LCMS_session');

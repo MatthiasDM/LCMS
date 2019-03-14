@@ -115,6 +115,7 @@ function popupEdit(_action, _tableObject, _parentObject, _editAction, _afterSubm
         afterComplete: function (response, postdata, formid) {
             $("#cData").trigger("click");
             bootstrap_alert.warning('Rij toegevoegd', 'info', 1000);
+            $(this).trigger("reloadGrid");
             _afterSubmitFunction();
 
         },
@@ -187,13 +188,13 @@ function getValuesOfAllAttributesInList(_list, _attribute) {
     return distinctAttributes;
 }
 
-function getJQGridParamByCaption(_name){
-    var gridParam = {}; 
-    console.log("getJQGridParamByCaption()");
+function getJQGridParamByCaption(_name) {
+    var gridParam = {};
+    //console.log("getJQGridParamByCaption()");
     $("table[id^=grid]").each(function (a, b) {
         var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
         if (name === _name) {
-            gridParam =  $(b).jqGrid("getGridParam");            
+            gridParam = $(b).jqGrid("getGridParam");
             return false;
         }
     });
@@ -201,9 +202,151 @@ function getJQGridParamByCaption(_name){
 }
 
 function isEmptyObj(obj) {
-    for(var key in obj) {
-        if(obj.hasOwnProperty(key))
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key))
             return false;
     }
     return true;
+}
+
+
+function test() {
+    var btn1 = addBtn('padding:2px;border-style:solid;border-width:1px;width:auto;min-width:60px;margin-right:5px', 'Hulpmiddelen', "btnHulpmiddelen");
+    var parent = $($(".shinytitle")[0]).find("div[class=nowrap]");
+    var popup = $("<div class='dijitDialog dijitDialogFocused dijitFocused' role='dialog' aria-labelledby='showIssuerSearchDialog_title' id='showIssuerSearchDialog' widgetid='showIssuerSearchDialog' style='display: none;position: absolute;opacity: 1;width: 80%;left: 10%;top: 10%;height: 80%;z-index: 1001;'><div data-dojo-attach-point='titleBar' class='dijitDialogTitleBar'>        <span data-dojo-attach-point='titleNode' class='dijitDialogTitle' id='showIssuerSearchDialog_title' role='heading' level='1'>Centraal labo AZ Zeno: hulpmiddelen</span><span data-dojo-attach-point='closeButtonNode' class='dijitDialogCloseIcon' data-dojo-attach-event='ondijitclick: onCancel' onclick='togglePopup()' title='Annuleren' role='button' tabindex='-1'>            <span data-dojo-attach-point='closeText' class='closeText' title='Annuleren'>x</span>        </span>    </div>    <div data-dojo-attach-point='containerNode' id='hulpmiddelenPopupContainer' style='height:100%' class='dijitDialogPaneContent'><table></table></div></div>");
+    var iframe = $("<iframe name='iframe1' id='iframe1' style='width:100%;height:100%;background: #efefef;border-width: 0px;'></iframe>");
+    var hulpmiddelenWrapper = $("<div id='wrapperContent' style='width:100%;margin:5px'></div>");
+
+    $('body').click(function (e) {
+        if (!$(e.target).closest('#hulpmiddelenWrapper').length && !$(e.target).closest('#btnHulpmiddelen').length) {
+            $("#hulpmiddelenWrapper").hide();
+        }
+    });
+
+    btn1.on('click', function (e) {
+            showLiveChartPopUp();
+            $("#hulpmiddelenWrapper").toggle();
+            showMainMenu();
+            $("#mainMenu").toggle();
+    });
+
+    function showLiveChartPopUp() {
+        if ($("#hulpmiddelenWrapper").length < 1) {
+                var wrapper = $("<div id='hulpmiddelenWrapper' style='display:none;position:absolute;width:250px;height:250px;z-index:1000;background: lightgrey;'></div>");
+                var menu = $("<div id='menu'style='width:100%;margin-top: 5px;margin-left: 5px;margin-bottom:5px'></div>");
+            var btnMain = addBtn('padding:2px;border-style:solid;border-width:1px;width:auto;min-width:60px;margin-right:5px', 'Snelkoppelingen');
+                var btnManual = addBtn('padding:2px;border-style:solid;border-width:1px;width:auto;min-width:60px;margin-right:5px', 'Handleiding');
+                var btnContact = addBtn('padding:2px;border-style:solid;border-width:1px;width:auto;min-width:60px;margin-right:5px', 'Contact');
+            btnMain.on('click', function (e) {
+                 showMainMenu();
+                $("#manualMenu").hide();
+                $("#mailMenu").hide();
+                $("#mainMenu").toggle();
+            });
+            btnManual.on('click', function (e) {
+                 showManualMenu();
+                $("#mailMenu").hide();
+                $("#mainMenu").hide();
+                $("#manualMenu").toggle();
+            });
+            btnContact.on('click', function (e) {
+                 showMailMenu();
+                $("#mainMenu").hide();
+                $("#manualMenu").hide();
+                $("#mailMenu").toggle();
+                
+            });
+                menu.append(btnMain);
+                menu.append(btnManual);
+                menu.append(btnContact);
+                wrapper.append(menu);
+            wrapper.append(hulpmiddelenWrapper);
+                parent.append(wrapper);
+        }
+    }
+
+    parent.append(btn1);
+    $("body").append(popup);
+
+    function addBtn(_style, _value, _id) {
+             var btn = $("<input type='button' class='inputbutton' id=" + _id + " value=" + _value + " style=" + _style + ">");
+             return btn;
+    }
+
+    function togglePopup() {
+        if (popup.css("display") === "table") {
+            popup.css("display", "none");
+        } else {
+            $("#hulpmiddelenPopupContainer").append(iframe);
+            popup.css("display", "table");
+            document.getElementById('iframe1').src = "https://cyberlab.vzwgo.be/cyberlab/Customer/Handleiding_order_entry_huisartsen_V1.pdf";
+
+        }             
+    }
+
+
+    function showMainMenu() {
+        if (hulpmiddelenWrapper.find("div[id='mainMenu']").length < 1) {
+            var wrapper = $("<div id='mainMenu' style='display:none'></div>");
+            var span = $("<span>Snelkoppelingen:</span>");
+            var ul = $("<ul style='list-style: none;margin-left: 0px;padding: 0;font-size: 1.2em;font-style: normal;'></ul>");
+            var li1 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup()' ><a href='#'>Labogids</a></li>");
+            var li2 = $("<li style='margin: 5px;cursor: pointer;'>Antibioticagids</li>");
+            var li3 = $("<li style='margin: 5px;cursor: pointer;'>Contactgegevens</li>");
+            var li4 = $("<li style='margin: 5px;cursor: pointer;'>Materiaal bestellen</li>");
+            ul.append(li1);
+            ul.append(li2);
+            ul.append(li3);
+            ul.append(li4);
+            wrapper.append(span);
+            wrapper.append("<br/>");
+            wrapper.append(ul);
+            hulpmiddelenWrapper.append(wrapper);
+        }
+    }
+    function showManualMenu() {
+        if (hulpmiddelenWrapper.find("div[id='manualMenu']").length < 1) {
+            var wrapper = $("<div id='manualMenu' style='display:none'></div>");
+            var span = $("<span>Handleiding:</span>");
+            var ul = $("<ul style='list-style: none;margin-left: 0px;padding: 0;font-size: 1.2em;font-style: normal;'></ul>");
+            var li1 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup()' ><a href='#'>Vanaf het begin</a></li>");
+            var li2 = $("<li style='margin: 5px;cursor: pointer;'>Order aanmaken</li>");
+            var li3 = $("<li style='margin: 5px;cursor: pointer;'>Test(en) bijaanvragen</li>");
+            var li4 = $("<li style='margin: 5px;cursor: pointer;'>Profiel aanmaken</li>");
+            ul.append(li1);
+            ul.append(li2);
+            ul.append(li3);
+            ul.append(li4);
+            wrapper.append(span);
+            wrapper.append("<br/>");
+            wrapper.append(ul);
+            hulpmiddelenWrapper.append(wrapper);
+        }
+
+    }
+    function showMailMenu() {
+        if (hulpmiddelenWrapper.find("div[id='mailMenu']").length < 1) {
+            var wrapper = $("<div id='mailMenu' style='display:none'></div>");
+            var mailTitle = $("<span>Stel hier uw vraag</span>");
+            var mailContent = $("<textarea style='width:90%' rows='8'></textarea>");
+            var btnMail = addBtn('padding:2px;border-style:solid;border-width:1px;width:auto;min-width:60px;margin-right:5px', 'Versturen');
+            wrapper.append(mailTitle);
+            wrapper.append("<br/>");
+            wrapper.append(mailContent);
+            wrapper.append("<br/>");
+            wrapper.append(btnMail);
+            hulpmiddelenWrapper.append(wrapper);
+            btnMail.on('click', function (e) {
+                var acc = new account();
+                var message = mailContent.val();
+                var name = acc.loginName;
+                window.location.href = 'mailto:centraal.labo@azzeno.be?subject=Cyberlab - Vraag van ' + name + ' op ' + new Date().toISOString().substring(0, 10) + '&body=' + message;
+            });
+        }
+    }
+
+
+
+
+
 }

@@ -87,6 +87,7 @@ public class DatabaseWrapper {
         ObjectNode jsonData = mapper.createObjectNode();
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, filter, null, 1000, excludes);
         List<String> columns = getDocumentPriveleges("view", cookie, _mongoConf.getClassName());
+        List<String> editableColumns = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
         ArrayList<HashMap> header = new ArrayList<>();
         ArrayList<HashMap> table = new ArrayList<>();
         HashMap tableEntry = new HashMap();
@@ -99,7 +100,7 @@ public class DatabaseWrapper {
             if (mdmAnnotations != null) {
                 headerEntry.put("type", mdmAnnotations.type());
                 headerEntry.put("visibleOnTable", mdmAnnotations.visibleOnTable());
-                headerEntry.put("editable", mdmAnnotations.editable());
+                headerEntry.put("editable", mdmAnnotations.editable()); //editableColumns.contains(column));
                 headerEntry.put("multiple", mdmAnnotations.multiple());
                 headerEntry.put("visibleOnForm", mdmAnnotations.visibleOnForm());
                 headerEntry.put("tablename", tableName);

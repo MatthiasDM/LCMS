@@ -102,17 +102,20 @@ public class ActionManagerUpload {
     }
 
     public StringBuilder actionFILE_UPLOAD() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        StringBuilder sb = new StringBuilder();
         for (Part part : parts) {
             if (part.getName().equals("file")) {
                 String fileName = part.getSubmittedFileName();
                 part.write(mdm.Core.getTempDir(cookie, contextPath) + fileName);
                 UUID id = UUID.randomUUID();
                 FileObject fileobject = createFileObject(id.toString(), fileName, "image", "image/jpg", "private");
+                sb.append(mapper.writeValueAsString(fileobject));
                 DatabaseActions.insertFile(part.getInputStream(), fileName, fileobject);
                 DatabaseActions.insertFileObject(fileobject);
             }
         }
-        return null;
+        return sb;
     }
 
     public StringBuilder actionFILE_BROWSE() throws IOException, ClassNotFoundException, NoSuchFieldException {

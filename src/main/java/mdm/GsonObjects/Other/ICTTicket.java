@@ -19,7 +19,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 public class ICTTicket {
 
     @MdmAnnotations(
-            viewRole = "ICTMANAGER",
+            //viewRole = "ICTMANAGER",
             createRole = "SYSTEM",
             editRole = "SYSTEM",
             type = "string",
@@ -38,12 +38,13 @@ public class ICTTicket {
     public String subject;
     @MdmAnnotations(
             editRole = "ICTMANAGER",
+            //viewRole = "ICTMANAGER",
             type = "select",
             choices = {"Glims", "Cyberlab", "Sharepoint", "Hardware", ""}
     )
     public String category;
     @MdmAnnotations(
-            type = "cktext",
+            type = "cktext",            
             editRole = "ICTMANAGER",
             visibleOnTable = false)
     public String overview;
@@ -54,12 +55,14 @@ public class ICTTicket {
     public String followup;
     @MdmAnnotations(
             editRole = "ICTMANAGER",
+            //viewRole = "ICTMANAGER",
             type = "select",
             choices = {"Gemeld", "Analyse", "Validatie", "Voltooid"}
     )
     public String status;
     @MdmAnnotations(
             editRole = "ICTMANAGER",
+            viewRole = "ICTMANAGER",
             type = "select",
             multiple = true,
             reference = {"Mongo", "USERS", "userid", "username"},
@@ -68,13 +71,14 @@ public class ICTTicket {
     public List<String> involved_persons;
     @MdmAnnotations(
             type = "select",
+            viewRole = "ICTMANAGER",
             reference = {"Mongo", "USERS", "userid", "username"},
             editRole = "ICTMANAGER",
             visibleOnTable = false
     )
     public String approver;
         @MdmAnnotations(
-            type = "boolean",
+            type = "boolean",                
             visibleOnTable = false,
             editRole = "@approver",
             viewRole = "@approver"                
@@ -89,7 +93,7 @@ public class ICTTicket {
             editRole = "SYSTEM")
     public long approved_on;
     @MdmAnnotations(
-            type = "date",
+            type = "datetime",
             visibleOnTable = true,
             visibleOnForm = false,
             editRole = "ICTMANAGER",
@@ -104,9 +108,9 @@ public class ICTTicket {
             editRole = "ICTMANAGER")
     public String created_by;
     @MdmAnnotations(
-            type = "date",
+            type = "datetime",
             visibleOnTable = false,
-            visibleOnForm = false,
+            visibleOnForm = true,
             createRole = "SYSTEM",
             editRole = "SYSTEM")
     public long edited_on;

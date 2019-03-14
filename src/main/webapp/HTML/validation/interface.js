@@ -55,6 +55,17 @@ function loadValidationPage(jsonData, grids) {
     $.each(grids, function (key, value) {
         makeGrid2(editor, key, value);
     });
+    gridController = new LCMSgridController();
+    gridController.checkGrids();
+    $.each(gridController.grids, function (key, value) {
+        if (typeof value.subgridref !== "undefined") {
+            value = option_subgrid(value, value.subgridref);
+            $("#" + key).jqGrid("setGridParam", value);
+            $("#" + key).trigger("reloadGrid");
+        }
+    });
+
+
 }
 
 function makeGrid2(editor, gridId, gridParam) {
@@ -77,8 +88,9 @@ function makeGrid2(editor, gridId, gridParam) {
             rownumbers: true,
             colModel: gridParam.colModel,
             caption: gridParam.caption,
-            subGrid: gridParam.subGrid
-            
+            subGrid: typeof gridParam.subgridref !== "undefined",
+            subgridref: gridParam.subgridref,
+            subGridHasSubGridValidation: checkHasSubGrid
         },
         jqGridParameters: {
             navGridParameters: {
@@ -109,9 +121,96 @@ function makeGrid2(editor, gridId, gridParam) {
     };
     let documentGrid = new LCMSGrid(gridData);
     var gridObject = documentGrid.createGrid();
-    addGridButtons(documentGrid, gridObject, gridData, editor);
+    addGridButtons(documentGrid, gridObject, gridData, editor);    
     toggle_multiselect(grid.attr('id'));
+    
+    
+
+
 }
+
+function checkHasSubGrid(_rowid, _subgridref) {
+    console.log("checking hasSubgrid");
+    var hasSubgrid = false;
+    if (typeof gridController !== "undefined" && typeof _subgridref !== "undefined") {
+        if (gridController.references.length > 0) {
+            var filteredObj = Object.filter(gridController.references, ref => ref.list === _subgridref.gridId);
+            var keys = Object.keys(filteredObj);
+            keys.forEach(function(key){
+                var attr = filteredObj[key].attr;
+                var filteredData = Object.filter(gridController.grids[_subgridref.gridId].data, function (row) {
+                if (typeof row[attr] !== "undefined") {
+                    return row[attr].includes(_rowid);
+                } else {
+                    return false;
+                }
+            });
+            if(!isEmptyObj(filteredData)){
+                hasSubgrid = true;
+            }
+            });
+//            var key = Object.keys(filteredObj)[0];
+//            var attr = filteredObj[key].attr;
+//            var filteredData = Object.filter(gridController.grids[_subgridref.gridId].data, function (row) {
+//                if (typeof row[attr] !== "undefined") {
+//                    return row[attr].includes(_rowid);
+//                } else {
+//                    return false;
+//                }
+//            });
+//
+//            return !isEmptyObj(filteredData);
+        } else {
+            hasSubgrid = false;
+        }
+
+    } else {
+        hasSubgrid = false;
+    }
+    return hasSubgrid;
+}
+
+function option_subgrid(options, subgridref) {
+    console.log("option_subgrid()");
+    var gridId = options.id;
+    var gridCaption = options.caption;
+    options.subGrid = true;
+//    options.subGridOptions = {hasSubgrid: function (options) {
+//            checkHasSubGrid(options, subgridref);
+//        }};
+    options.subGridRowExpanded = function (subgridDivId, rowId) {
+        var subgridTableId = subgridDivId + "_t";
+        $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
+        var filteredObj = Object.filter(gridController.references, ref => ref.list === subgridref.gridId && ref.refList === gridCaption);
+        var key = Object.keys(filteredObj)[0];
+        var attr = filteredObj[key].attr;
+        var filteredData = Object.filter(gridController.grids[subgridref.gridId].data, function (row) {
+            if (typeof row[attr] !== "undefined") {
+                return row[attr].includes(rowId);
+            } else {
+                return false;
+            }
+        });
+        var key = Object.keys(filteredData)[0];
+        console.log(Object.values(filteredData));
+        $("[id='" + subgridTableId + "']").jqGrid({
+            datatype: 'local',
+            data: Object.values(filteredData),
+            colNames: subgridref.colNames,
+            colModel: subgridref.colModel,
+            gridview: true,
+            rownumbers: false,
+            autoencode: true,
+            responsive: true,
+            headertitles: true,
+            iconSet: "fontAwesome",
+            guiStyle: "bootstrap4"
+
+        });
+    };
+    return options;
+}
+
 
 function addGridButtons(documentGrid, gridObject, gridData, editor) {
     documentGrid.addGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
@@ -166,7 +265,7 @@ function loadPage() {
         containerID: "validations-container",
         mainPageContentDivId: "div-validations",
         ckConfig: function () {
-            return config0();
+            return config2();
         }
     };
 

@@ -4,8 +4,8 @@ var references = [];
 
 $(function () {
     //ICTtickets_doLoad($("#ICT-ticket-container"));
-    console.log("loading CK config2");
-    config2();
+//    console.log("loading CK config2");
+//    config2();
     loadGrids();
     $("div[id^=editable]").click(function (e) {
         console.log("clicked");
@@ -341,76 +341,15 @@ function createColModel(form, _gridData, parent) {
     }
 
     if (typeof subgridref.colNames !== "undefined") {
-        options.subgridref = true;
-        options.subGrid = true;
-        options.subGridOptions = {
-            hasSubgrid: function (options) {
-                var attr = Object.filter(gridController.references, ref => ref.list === subgridref.gridId)[0].attr;
-                var filteredData = Object.filter(gridController.grids[subgridref.gridId].data, row => row[attr].includes(options.rowid));
-                return !isEmptyObj(filteredData);
-                
-            }
-        };
-        options.subGridRowExpanded = function (subgridDivId, rowId) {
-            var subgridTableId = subgridDivId + "_t";
-            $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
-            var attr = Object.filter(gridController.references, ref => ref.list === subgridref.gridId)[0].attr;
-            var filteredData = Object.filter(gridController.grids[subgridref.gridId].data, row => row[attr].includes(rowId));
-            console.log([filteredData[0]]);
-            $("[id='" + subgridTableId + "']").jqGrid({
-                datatype: 'local',
-                data: [filteredData[0]],
-                colNames: subgridref.colNames,
-                colModel: subgridref.colModel,
-                gridview: true,
-                rownumbers: false,
-                autoencode: true,
-                responsive: true,
-                headertitles: true,
-                iconSet: "fontAwesome",
-                guiStyle: "bootstrap4"
-            });
-        };
+        options.subgridref = subgridref;
+        options = option_subgrid(options, subgridref);
+
 
     }
 
     return {"colModel": colModel, "options": options};
 }
 
-function option_subgrid(options, _colNames, _colModel, _data) {
-
-    options.subGrid = true;
-    options.subGridOptions = {
-        hasSubgrid: function (options) {
-            return true;
-        }
-    };
-    options.subGridRowExpanded = function (subgridDivId, rowId) {
-        var subgridTableId = subgridDivId + "_t";
-        $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
-        $("[id='" + subgridTableId + "']").jqGrid({
-            datatype: 'local',
-            //data: processedData.subgridData[rowId],
-            data: _data,
-            //colNames: ['Order', 'Testen'],
-            colNames: _colNames,
-            colModel: _colModel,
-//            colModel: [
-//                {name: 'Order', width: 100},
-//                {name: 'Testen', width: 200}
-//            ],
-            gridview: true,
-            rownumbers: true,
-            autoencode: true,
-            responsive: true,
-            headertitles: true,
-            iconSet: "fontAwesome",
-            guiStyle: "bootstrap4"
-        });
-    };
-
-    return options;
-}
 
 function createForm(_parent, _griddata, _modal) {
     console.log("createForm()");
@@ -459,7 +398,7 @@ function createForm(_parent, _griddata, _modal) {
     //OPTIE SAMENVATTING EINDE
     form.append(forms_select("Groeperen op: ", "option_group", "option_group", obj, _griddata.groups));
 
-    if (isEmptyObj(Object.filter(gridController.references, reference => reference.list === _griddata.id))) {
+   // if (isEmptyObj(Object.filter(gridController.references, reference => reference.list === _griddata.id))) {
         var gridReferences = [];
         gridController.references.forEach(function (item) {
             var id = item.list;
@@ -468,7 +407,7 @@ function createForm(_parent, _griddata, _modal) {
 
         });
         form.append(forms_select("Subgrid van: ", "option_subgridref", "option_subgridref", gridReferences, _griddata.subgrid));
-    }
+   // }
 
 
 

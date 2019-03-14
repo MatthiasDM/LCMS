@@ -96,6 +96,17 @@ lang = {
     pivottables: {
         title: "Dubbelklik om een statistiek te laden.",
         name: "Soort statistiek"
+    },
+    tables: {
+        table: "Tabel",
+        field: "Veld"
+    },
+    rights: {
+        table: "Tabel",
+        field: "Veld",
+        viewRole: "Bekijken",
+        editRole: "Wijzigen",
+        createRole: "Aanmaken"
     }
 };
 

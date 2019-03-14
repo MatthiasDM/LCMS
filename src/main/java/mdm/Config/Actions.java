@@ -24,6 +24,10 @@ public enum Actions {
     ADMIN_EDITOBJECTS,
     ADMIN_LOADUSERS,
     ADMIN_EDITUSERS,
+    ADMIN_LOADTABLES(MongoConf.TABLES),
+    ADMIN_EDITTABLES(MongoConf.TABLES),
+    ADMIN_LOADRIGHTS(MongoConf.RIGHTS),
+    ADMIN_EDITRIGHTS(MongoConf.RIGHTS),
     //OBJECT RELATED
     NEWOBJECT,
     LOADOBJECTS,
@@ -102,8 +106,7 @@ public enum Actions {
 
     private Actions() {
         mongoConf = null;
-    }    
-    
+    }
 
     public MongoConf getMongoConf() {
         return mongoConf;

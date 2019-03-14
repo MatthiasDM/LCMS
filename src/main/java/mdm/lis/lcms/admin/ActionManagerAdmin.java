@@ -81,12 +81,7 @@ public class ActionManagerAdmin {
                 DatabaseActions.createCollection(metadata.get("input-database"), metadata.get("input-object"));
             }
         }
-        if (action == mdm.Config.Actions.ADMIN_LOADOBJECTS) {
 
-        }
-        if (action == mdm.Config.Actions.ADMIN_EDITOBJECTS) {
-
-        }
         if (action == mdm.Config.Actions.ADMIN_LOADUSERS) {
             sb.append(actionADMIN_LOADUSERS());
 
