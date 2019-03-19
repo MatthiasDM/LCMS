@@ -327,7 +327,13 @@ function dom_moveUpDownList(id, data) {
     var ul = $("<ul class='list-group' id='element-list'></ul> ");
     
     data.each(function (index, obj) {
-        ul.append("<li class='list-group-item' style='padding:0.5rem' element='" + obj.id + "'>" + "<span>" + (index + 1) + "</span>" + ": " + obj.innerText.substring(0, 20).trim() + "</li>");
+        var type = "";
+        if(obj.id.includes("editable")){
+            type = "(tekst) ";
+        }else if(obj.id.includes("gbox")){
+            type = "(tabel) ";
+        }
+        ul.append("<li class='list-group-item' style='padding:0.5rem;font-size: 1rem;' element='" + obj.id + "'>" + "<span>" + type + (index + 1) + "</span>" + ": " + obj.innerText.substring(0, 20).trim() + "</li>");
     });
 
     //-------------------

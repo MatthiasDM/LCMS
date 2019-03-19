@@ -65,7 +65,7 @@ function loadValidationPage(jsonData, grids) {
         }
     });
 
-
+    
 }
 
 function makeGrid2(editor, gridId, gridParam) {

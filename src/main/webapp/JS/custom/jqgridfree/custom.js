@@ -223,11 +223,36 @@ function test() {
         }
     });
 
+    var maxTime = 500000, // 5 seconds
+            startTime = Date.now();
+    var barIsVisible = false;
+    var interval = setInterval(function () {
+        if ($("img[src='/cyberlab/img/bar_anim.gif?v=9.7.6']").is(':visible')) {
+            console.log("Bar is visible");
+            if (barIsVisible === false) {
+                window.onbeforeunload = function () {
+                    return "Uw gegevens worden nog verwerkt. Weet u zeker dat u de pagina wilt verlaten?";
+                };
+            }
+            barIsVisible === true;
+          //  clearInterval(interval);
+        } else {
+            // still hidden
+             barIsVisible === false;
+            if (Date.now() - startTime > maxTime) {
+                // hidden even after 'maxTime'. stop checking.
+                clearInterval(interval);
+            }
+        }
+    },
+            500 // 0.1 second (wait time between checks)
+            );
+
     btn1.on('click', function (e) {
             showLiveChartPopUp();
             $("#hulpmiddelenWrapper").toggle();
-            showMainMenu();
-            $("#mainMenu").toggle();
+        showMainMenu();
+        $("#mainMenu").toggle();
     });
 
     function showLiveChartPopUp() {
@@ -254,9 +279,9 @@ function test() {
                 $("#mainMenu").hide();
                 $("#manualMenu").hide();
                 $("#mailMenu").toggle();
-                
+
             });
-                menu.append(btnMain);
+            menu.append(btnMain);
                 menu.append(btnManual);
                 menu.append(btnContact);
                 wrapper.append(menu);
@@ -273,15 +298,17 @@ function test() {
              return btn;
     }
 
-    function togglePopup() {
-        if (popup.css("display") === "table") {
+    function togglePopup(link) {
+        if (popup.css("display") === "table" && typeof link === "undefined") {
             popup.css("display", "none");
         } else {
-            $("#hulpmiddelenPopupContainer").append(iframe);
+            if (!$("#hulpmiddelenPopupContainer").find(iframe).length) {
+                $("#hulpmiddelenPopupContainer").append(iframe);
+            }
             popup.css("display", "table");
-            document.getElementById('iframe1').src = "https://cyberlab.vzwgo.be/cyberlab/Customer/Handleiding_order_entry_huisartsen_V1.pdf";
-
-        }             
+            document.getElementById('iframe1').src = link;//"Customer/Order Entry huisartsen.html";
+        }   
+            
     }
 
 
@@ -290,12 +317,12 @@ function test() {
             var wrapper = $("<div id='mainMenu' style='display:none'></div>");
             var span = $("<span>Snelkoppelingen:</span>");
             var ul = $("<ul style='list-style: none;margin-left: 0px;padding: 0;font-size: 1.2em;font-style: normal;'></ul>");
-            var li1 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup()' ><a href='#'>Labogids</a></li>");
-            var li2 = $("<li style='margin: 5px;cursor: pointer;'>Antibioticagids</li>");
-            var li3 = $("<li style='margin: 5px;cursor: pointer;'>Contactgegevens</li>");
+            var li1 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup(\"https://cyberlab.vzwgo.be/labogids/\")' ><a href='#'>Labogids</a></li>");
+            var li2 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup(\"https://cyberlab.vzwgo.be/Antibiotica/\")'><a href='#'>Antibioticagids</a></li>");
+            var li3 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup(\"https://cyberlab.vzwgo.be/labogids/Contact.aspx\")'><a href='#'>Contactgegevens</a></li>");
             var li4 = $("<li style='margin: 5px;cursor: pointer;'>Materiaal bestellen</li>");
             ul.append(li1);
-            ul.append(li2);
+            ul.append(li2);//https://cyberlab.vzwgo.be/labogids/Contact.aspx
             ul.append(li3);
             ul.append(li4);
             wrapper.append(span);
@@ -309,10 +336,10 @@ function test() {
             var wrapper = $("<div id='manualMenu' style='display:none'></div>");
             var span = $("<span>Handleiding:</span>");
             var ul = $("<ul style='list-style: none;margin-left: 0px;padding: 0;font-size: 1.2em;font-style: normal;'></ul>");
-            var li1 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup()' ><a href='#'>Vanaf het begin</a></li>");
-            var li2 = $("<li style='margin: 5px;cursor: pointer;'>Order aanmaken</li>");
-            var li3 = $("<li style='margin: 5px;cursor: pointer;'>Test(en) bijaanvragen</li>");
-            var li4 = $("<li style='margin: 5px;cursor: pointer;'>Profiel aanmaken</li>");
+            var li1 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup(\"http://localhost/cyberlab/Customer/Order Entry huisartsen.html\")' ><a href='#'>Vanaf het begin</a></li>");
+            var li2 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup(\"http://localhost/cyberlab/Customer/Order Entry huisartsen.html\")'><a href='#'>Order aanmaken</a></li>");
+            var li3 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup(\"http://localhost/cyberlab/Customer/Order Entry huisartsen.html#Bijaanvraag\")'><a href='#'>Test(en) bijaanvragen</a></li>");
+            var li4 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup(\"http://localhost/cyberlab/Customer/Order Entry huisartsen.html#Panels\")'><a href='#'>Profiel aanmaken</a></li>");
             ul.append(li1);
             ul.append(li2);
             ul.append(li3);
@@ -350,3 +377,4 @@ function test() {
 
 
 }
+

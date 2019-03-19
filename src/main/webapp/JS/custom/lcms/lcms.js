@@ -149,6 +149,29 @@ function CSVToArray(strData, strDelimiter) {
     return(arrData);
 }
 
+function getCSS() {
+    var css = [];
+    for (var i = 0; i < document.styleSheets.length; i++)
+    {
+        var sheet = document.styleSheets[i];
+        var rules = ('cssRules' in sheet) ? sheet.cssRules : sheet.rules;
+        if (rules)
+        {
+            css.push('\n/* Stylesheet : ' + (sheet.href || '[inline styles]') + ' */');
+            for (var j = 0; j < rules.length; j++)
+            {
+                var rule = rules[j];
+                if ('cssText' in rule)
+                    css.push(rule.cssText);
+                else
+                    css.push(rule.selectorText + ' {\n' + rule.style.cssText + '\n}\n');
+            }
+        }
+    }
+    var cssInline = css.join('\n') + '\n';
+    return cssInline;
+}
+
 var getUrlParameter = function getUrlParameter(sParam) {
     var sPageURL = window.location.search.substring(1),
             sURLVariables = sPageURL.split('&'),
@@ -271,6 +294,7 @@ class LCMSgridController {
 
 class LCMSSidebarPage {
     constructor(pageData, gridData) {
+        console.log("LCMSSidebarPage()");
         this.pageData = pageData;
         this.gridData = gridData;
     }
@@ -690,9 +714,9 @@ class LCMSGrid {
 class LCMSImageController {
     constructor() {
     }
-    
-    uploadFile(){}
-    
+
+    uploadFile() {}
+
     insertFileInEditor(_fileName, _fileId, _ckeditor) {
         var re = /(?:\.([^.]+))?$/;
         var type = re.exec(_fileName)[0];
@@ -707,23 +731,72 @@ class LCMSImageController {
                 var jsonData = JSON.parse(request.responseText);
                 var filePath = jsonData.filePath;
                 if (type === ".png" || type === ".jpg" || type === ".JPG" || type === ".gif") {
-                    ckeditor.insertHtml("<div style='overflow-x:scroll'><img name='" + _fileName + "' fileid='" + _fileId + "' src='" + filePath + "'/></div>");
+                    ckeditor.insertHtml("<div style='overflow-x:auto'><img name='" + _fileName + "' fileid='" + _fileId + "' src='" + filePath + "'/></div>");
                 } else {
                     ckeditor.insertHtml("<a name='" + _fileName + "'  href='" + filePath + "' fileid='" + _fileId + "'>" + _fileName + "</a>");
                 }
             }
         };
         request.open('POST', "./upload", /* async = */ false);
-        request.send(formData);         
+        request.send(formData);
     }
-}
 
+//    encodeImage(imageUri, callback) {
+//        var c = document.createElement('canvas');
+//        var ctx = c.getContext("2d");
+//        var img = new Image();
+//        img.crossOrigin = "";
+//        img.onload = function () {
+//            c.width = this.width;
+//            c.height = this.height;
+//            ctx.drawImage(img, 0, 0);
+//            var dataURL = c.toDataURL("image/jpeg");
+//            callback(dataURL);
+//        };
+//        img.src = imageUri;
+//    }
+
+//    encodeImage(imageUri) {
+//        fetch(imageUri)
+//                .then(res => res.blob())
+//                .then(blob => {
+//                    const file = new File([blob], 'dot.png', blob);
+//                    console.log(file);
+//                    
+//                });
+//    }
+
+    toDataURL(url, callback) {
+        var httpRequest = new XMLHttpRequest();
+        httpRequest.onload = function () {
+            var fileReader = new FileReader();
+            fileReader.onloadend = function () {
+                callback(fileReader.result);
+            };
+            fileReader.readAsDataURL(httpRequest.response);
+        };
+        httpRequest.open('GET', url);
+        httpRequest.responseType = 'blob';
+        httpRequest.send();
+    }
+
+    urltoFile(url, filename, mimeType) {
+        mimeType = mimeType || (url.match(/^data:([^;]+);/) || '')[1];
+        return (fetch(url)
+                .then(function (res) {
+                    return res.arrayBuffer();
+                })
+                .then(function (buf) {
+                    return new File([buf], filename, {type: mimeType});
+                })
+                );
+    }
+
+}
 
 function getPostDataFromUrl() {
 
 }
-
-
 
 function LCMSRequest(_url, _data, _onDone) {
     _data['LCMS_session'] = $.cookie('LCMS_session');

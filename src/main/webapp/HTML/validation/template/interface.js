@@ -7,16 +7,100 @@ $(function () {
 //    console.log("loading CK config2");
 //    config2();
     loadGrids();
+
     $("div[id^=editable]").click(function (e) {
         console.log("clicked");
         if (typeof e.target.href !== 'undefined' && e.ctrlKey === true) {
             window.open(e.target.href, 'new' + e.screenX);
         }
     });
+
+
+    var numEditors = $("div[contenteditable]").length;
+    var counter = 0;
+    $("div[contenteditable]").each(function (a, b) {
+        var ck = CKEDITOR.inline($(b).attr('id'));
+        ck.on('instanceReady', function (ev) {
+            var editor = ev.editor;
+            editor.setReadOnly(false);
+            counter++;
+            if (counter === numEditors) {
+                loadSideBarMenu();
+            }
+        });
+        ;
+    });
+
     $("#validation-elements").remove();
+
+});
+
+
+function loadSideBarMenu() {
+    console.log("loadSideBarMenu()");
     $("#sidebar .menu-wrapper").empty();
-    $("#sidebar .menu-wrapper").append($("#div-validation-menu"));
-    $("#sidebar .menu-wrapper").append(dom_moveUpDownList("validation-elements", $("div[id^=gbox_grid], div[id^=editable]")));
+    var sidebarContainer = dom_div("", "sidebar-container");
+    //---------------------------------------------------
+    var row1 = dom_row("sidebar-row-1");
+    var col1 = dom_col("sidebar-col-1", 12);
+    var div1 = dom_div("navbar-brand", "sidebar-title");
+    col1.css("text-align", "center");
+    div1.css("margin-right", "0px");
+    div1.css("margin-top", "0.5em");
+    div1.append("Menu");
+    col1.append(div1);
+    col1.append("<hr>");
+    row1.append(col1);
+    sidebarContainer.append(row1);
+    //---------------------------------------------------
+    var row2 = dom_row("sidebar-row-2");
+    var col2 = dom_col("sidebar-col-2", 12);
+    col2.append($("#div-validation-menu"));
+    row2.append(col2);
+    sidebarContainer.append(row2);
+    //---------------------------------------------------
+    var row1 = dom_row("sidebar-row-1");
+    var col1 = dom_col("sidebar-col-1", 12);
+    var div1 = dom_div("navbar-brand", "sidebar-title");
+    col1.css("text-align", "center");
+    div1.css("margin-right", "0px");
+    div1.css("margin-top", "0.5em");
+    div1.append("Inhoudsopgave");
+    col1.append(div1);
+    col1.append("<hr>");
+    row1.append(col1);
+    sidebarContainer.append(row1);
+    //---------------------------------------------------
+    var row2 = dom_row("sidebar-row-2");
+    var col2 = dom_col("sidebar-col-contentmenu", 12);
+    loadTOC($("div[id^=editable]"), col2);
+    row2.append(col2);
+    sidebarContainer.append(row2);
+    //---------------------------------------------------
+    var row1 = dom_row("sidebar-row-1");
+    var col1 = dom_col("sidebar-col-1", 12);
+    var div1 = dom_div("navbar-brand", "sidebar-title");
+    col1.css("text-align", "center");
+    div1.css("margin-right", "0px");
+    div1.css("margin-top", "0.5em");
+    div1.append("Structuur");
+    col1.append(div1);
+    col1.append("<hr>");
+    row1.append(col1);
+    sidebarContainer.append(row1);
+    //---------------------------------------------------
+    var row3 = dom_row("sidebar-row-3");
+    var col3 = dom_col("sidebar-col-3", 12);
+    var div3 = dom_div("", "structure-container");
+    div3.append(dom_moveUpDownList("validation-elements", $("div[id^=gbox_grid], div[id^=editable]")));
+    col3.append(div3);
+    row3.append(col3);
+    sidebarContainer.append(row3);
+    $("#sidebar .menu-wrapper").append(sidebarContainer);
+    //---------------------------------------------------
+
+    //$("#sidebar .menu-wrapper").append($("#div-validation-menu"));
+    //$("#sidebar .menu-wrapper").append(dom_moveUpDownList("validation-elements", $("div[id^=gbox_grid], div[id^=editable]")));
     $("#importTableButton").change(function () {
 
         $.each(this.files, function (index, file) {
@@ -33,8 +117,7 @@ $(function () {
         });
 
     });
-
-});
+}
 
 
 
@@ -398,16 +481,16 @@ function createForm(_parent, _griddata, _modal) {
     //OPTIE SAMENVATTING EINDE
     form.append(forms_select("Groeperen op: ", "option_group", "option_group", obj, _griddata.groups));
 
-   // if (isEmptyObj(Object.filter(gridController.references, reference => reference.list === _griddata.id))) {
-        var gridReferences = [];
-        gridController.references.forEach(function (item) {
-            var id = item.list;
-            var name = gridController.grids[id].caption;
-            gridReferences.push({id, name});
+    // if (isEmptyObj(Object.filter(gridController.references, reference => reference.list === _griddata.id))) {
+    var gridReferences = [];
+    gridController.references.forEach(function (item) {
+        var id = item.list;
+        var name = gridController.grids[id].caption;
+        gridReferences.push({id, name});
 
-        });
-        form.append(forms_select("Subgrid van: ", "option_subgridref", "option_subgridref", gridReferences, _griddata.subgrid));
-   // }
+    });
+    form.append(forms_select("Subgrid van: ", "option_subgridref", "option_subgridref", gridReferences, _griddata.subgrid));
+    // }
 
 
 
@@ -647,6 +730,8 @@ function exportToHTML() {
     htmlData.append("<link rel='stylesheet' href='./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css'>");
     htmlData.append("<link rel='stylesheet' href='./CSS/style.css'>");
     htmlData.append("<link rel='stylesheet' href='./HTML/validation/template/export.css'>");
+    var style = $("<style>" + getCSS() + "</style>");
+    htmlData.append(style);
     htmlData.append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"))));
     var htmlTables = {};
     $("table[id^=grid]").each(function (a, b) {
@@ -661,15 +746,35 @@ function exportToHTML() {
     });
     var images = loadImages("", htmlData);
     var imagesWrapper = $("<div></div>");
+    let imageController = new LCMSImageController();
+    var allImagesLoaded = false;
+    var imagesLoadedCounter = 0;
     images.each(function (index) {
-        htmlData.find("img[fileid=" + $(images[index]).attr('fileid') + "]").replaceWith($(images[index]));
+        //htmlData.find("img[fileid=" + $(images[index]).attr('fileid') + "]").replaceWith($(images[index]));
+        imageController.toDataURL($(images[index]).attr('src'), function (dataUrl) {
+
+            htmlData.find("img[fileid=" + $(images[imagesLoadedCounter]).attr('fileid') + "]").replaceWith("<img src='" + dataUrl + "' >");
+
+            bootstrap_alert.warning('Images loaded: ' + imagesLoadedCounter, 'success', 1000);
+            if (imagesLoadedCounter === images.length - 1) {
+                htmlData.find("div").attr("contenteditable", false);
+                openFile("test.html", "<div class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + htmlData[0].innerHTML + "</div><div class='col-sm-1 mx-auto'></div></div>");
+
+            }
+            imagesLoadedCounter++;
+
+        });
     });
-    htmlData.find("[contenteditable]").attr("contenteditable", false);
-    openFile("test.html", "<div class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + htmlData[0].innerHTML + "</div><div class='col-sm-1 mx-auto'></div></div>");
+
+
+
+
 
 }
 
 function openFile(filename, text) {
+    var blob = new Blob([text], {type: "text/html;charset=utf-8"});
+    saveAs(blob, filename);
 
     var x = window.open('http://localhost:8080/LCMS/index.html?p=temp', '_blank');
     x.document.write(text);

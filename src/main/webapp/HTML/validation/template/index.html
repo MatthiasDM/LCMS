@@ -20,18 +20,18 @@
                 <div class="col-sm-1 mx-auto"></div>
                 <div class="col-sm-10 mx-auto">
                     <div id="div-validation-menu">
-                        <button type="button" id='btn-new-editable-field' class="btn btn-primary" onclick="validation_save()"><i class="fa fa-lg fa-fw fa-save"></i><span>Opslaan</span></button>
-                        <a class="btn btn-primary" data-toggle="collapse" href="#collapseInvoegen" role="button" aria-expanded="false" aria-controls="collapseInvoegen">
+                        <button type="button" id='btn-validation-save' class="btn btn-primary" onclick="validation_save()"><i class="fa fa-lg fa-fw fa-save"></i><span>Opslaan</span></button>
+                        <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#collapseInvoegen" role="button" aria-expanded="false" aria-controls="collapseInvoegen">
                             Invoegen
-                        </a> <div class="collapse" id="collapseInvoegen">
+                        </button> <div class="collapse" id="collapseInvoegen">
                             <div class="card card-body">
                                 <button type="button" id='btn-new-editable-field' class="btn btn-primary" onclick="new_editable_field()"><i class="fa fa-lg fa-fw fa-align-justify"></i><span>Tekstveld</span></button>
                                 <button type="button" id='btn-new-jqgrid' class="btn btn-primary" onclick="new_grid('validation-container')"><i class="fa fa-lg fa-fw fa-table"></i><span>Tabel</span></button>
                             </div>
                         </div>
-                        <a class="btn btn-primary" data-toggle="collapse" href="#collapseActies" role="button" aria-expanded="false" aria-controls="collapseActies">
+                        <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#collapseActies" role="button" aria-expanded="false" aria-controls="collapseActies">
                             Acties
-                        </a> <div class="collapse" id="collapseActies">
+                        </button> <div class="collapse" id="collapseActies">
                             <div class="card card-body">
                                 <label class="btn btn-primary btn-file">
                                     <i class="fa fa-lg fa-fw fa-th"></i><span>Importeer</span> <input id="importTableButton" type="file" style="display: none;">
@@ -66,12 +66,12 @@
 </html>
 
 <script>
-    $("div[contenteditable]").each(function (a, b) {
-        var ck = CKEDITOR.inline($(b).attr('id'));
-        ck.on('instanceReady', function (ev) {
-            var editor = ev.editor;
-            editor.setReadOnly(false);
-        });
-        ;
-    });
+//    $("div[contenteditable]").each(function (a, b) {
+//        var ck = CKEDITOR.inline($(b).attr('id'));
+//        ck.on('instanceReady', function (ev) {
+//            var editor = ev.editor;
+//            editor.setReadOnly(false);
+//        });
+//        ;
+//    });
 </script>
