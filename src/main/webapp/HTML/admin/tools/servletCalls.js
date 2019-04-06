@@ -83,11 +83,11 @@ function users_doLoad(_parent) {
             };
             let ticketGrid = new LCMSGrid(gridData);
             ticketGrid.createGrid();
-            ticketGrid.addGridButton("fa-plus", "Nieuw ticket", "", function () {
+            ticketGrid.addGridButton((new LCMSTemplateGridButton("fa-plus", "Nieuw ticket", "", function () {
                 return popupEdit('new', $("#user-table"), $(this), "ADMIN_EDITUSERS", function () {
                     return null;
                 });
-            });
+            }));
         }
     }
 
@@ -132,11 +132,11 @@ function tables_doLoad(_parent) {
             };
             let ticketGrid = new LCMSGrid(gridData);
             ticketGrid.createGrid();
-            ticketGrid.addGridButton("fa-plus", "Nieuwe tabel", "", function () {
+            ticketGrid.addGridButton((new LCMSTemplateGridButton("fa-plus", "Nieuwe tabel", "", function () {
                 return popupEdit('new', $("#tables-table"), $(this), "ADMIN_EDITTABLES", function () {
                     return null;
                 });
-            });
+            }));
         }
     }
 
@@ -180,11 +180,11 @@ function rights_doLoad(_parent) {
             };
             let ticketGrid = new LCMSGrid(gridData);
             ticketGrid.createGrid();
-            ticketGrid.addGridButton("fa-plus", "Nieuw recht", "", function () {
+            ticketGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw recht", "", function () {
                 return popupEdit('new', $("#rights-table"), $(this), "ADMIN_EDITRIGHTS", function () {
                     return null;
                 });
-            });
+            }));
         }
     }
 

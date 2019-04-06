@@ -8,81 +8,75 @@
 function kpi_loadSettings(_parent, page, getAction, editAction, kpiAction) {
     console.log("kpi_loadSettings()");
     var _cookie = $.cookie('LCMS_session');
-    $.ajax({
-        method: "POST",
-        url: "./lab",
-        data: {action: getAction, page: page, LCMS_session: _cookie},
-        beforeSend: function (xhr) {
-            xhr.overrideMimeType("application/html");
-        }
-    }).done(function (data) {
+
+    LCMSRequest("./lab", {action: getAction, page: page}, onDone);
+
+    function onDone(data) {
         var jsonData = JSON.parse(data);
         console.log(jsonData.webPage);
         if (typeof jsonData.webPage !== 'undefined') {
             jsonData.parent = _parent;
             loadParameters(jsonData);
         } else {
+
             var lastSelection;
             function editRow(id) {
                 if (id && id !== lastSelection) {
                     var grid = $("#" + page + "-table");
                     var rowData = grid.getRowData(id);
 
-                    kpi_doLoad(kpiAction, rowData['settings'])
+                    kpi_doLoad(kpiAction, rowData['settings']);
                     lastSelection = id;
                 }
             }
-            var extraOptions = {
-                viewrecords: true
-                        //ondblClickRow: editRow
-            };
 
-            var parameters = {
-                navGridParameters: {
-                    edit: true,
-                    add: true,
-                    save: true,
-                    del: true,
-                    cancel: true,
-                    addParams: {
-                        addRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
+            var gridData = {
+                data: jsonData,
+                editAction: editAction,
+                editUrl: "./lab",
+                tableObject: page + "-table",
+                pagerID: page + "-pager",
+                wrapperObject: $("#div-grid-wrapper"),
+                jqGridOptions: {
+                    grouping: false,
+                    caption: "Statistieken"
+                },
+                jqGridParameters: {
+                    navGridParameters: {
+                        edit: true,
+                        add: true,
+                        save: true,
+                        del: true,
+                        cancel: true,
+                        addParams: {
+                            addRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
+                                extraparam: {action: editAction, settings: getConfig, page: page, LCMS_session: $.cookie('LCMS_session')}
+                            }
+                        },
+                        editParams: {
+                            keys: true,
                             extraparam: {action: editAction, settings: getConfig, page: page, LCMS_session: $.cookie('LCMS_session')}
                         }
+
                     },
-                    editParams: {
-                        keys: true,
+                    editParameters: {
                         extraparam: {action: editAction, settings: getConfig, page: page, LCMS_session: $.cookie('LCMS_session')}
                     }
-
-                },
-                editParameters: {
-                    extraparam: {action: editAction, settings: getConfig, page: page, LCMS_session: $.cookie('LCMS_session')}
                 }
             };
-            populateTable(jsonData, editAction, './lab', $("#" + page + "-table"), "#" + page + "-pager", $("#div-grid-wrapper"), "Configuraties", extraOptions, parameters);
-
-            $("#" + page + "-table").navButtonAdd("#" + page + "-pager", {
-                caption: "",
-                title: "View record",
-                buttonicon: "fa-eye",
-                onClickButton: function () {
-                    var rowid = $("#" + page + "-table").jqGrid('getGridParam', 'selrow');
-                    editRow(rowid);
-                },
-                position: "last"
-            });
-
-
-            
-
-            if (JSON.parse(jsonData.table).length < 1) {
-                kpi_doLoad(kpiAction);
-            }
+            let KPIGrid = new LCMSGrid(gridData);
+            KPIGrid.createGrid();
+            KPIGrid.addGridButton(new LCMSTemplateGridButton("fa-eye", "Statistiek bekijken", "", function () {
+                var rowid = $("#" + page + "-table").jqGrid('getGridParam', 'selrow');
+                editRow(rowid);
+            }));
         }
-    }).fail(function (data) {
-        alert("Sorry. Server unavailable. ");
-    });
+        if (JSON.parse(jsonData.table).length < 1) {
+            kpi_doLoad(kpiAction);
+        }
+    }
 }
+
 
 function getConfig() {
     var config = $("#output").data("pivotUIOptions");
@@ -93,33 +87,45 @@ function getConfig() {
     return JSON.stringify(config_copy);
 }
 
+
+
 function kpi_doLoad(kpiAction, _settings) {
-    console.log("kpi_doLoad()")
-    var _cookie = $.cookie('LCMS_session');
-    $.ajax({
-        method: "POST",
-        url: "./lab",
-        data: {action: kpiAction, LCMS_session: _cookie},
-        beforeSend: function (xhr) {
-            xhr.overrideMimeType("application/html");
-        }
-    }).done(function (data) {
+
+    console.log("kpi_doLoad()");
+
+    let loading = new LCMSloading(false);
+    loading.loading();
+    LCMSRequest("./lab", {action: kpiAction}, onDone);
+    function onDone(data) {
         bootstrap_alert.warning('Getting data', 'info', 3000);
         var jsonData = JSON.parse(data);
         var data = JSON.parse(jsonData.data);
-        data.forEach(function lines(line, index) {
+        var j = data.length;
+        for (var i = 0; i < j; i++) {
+            var line = data[i];
             line = line.replace(/[']/g, "\"");
             line = line.replace(/[<]/g, "");
             line = line.replace(/[>]/g, "");
             line = JSON.parse(line);
-            data[index] = line;
+            if (kpiAction === "LAB_KPI_NC") {
+                var res = line["NC"].split("}");
+                $.each(res, function (index, val) {
+                    if(val !== ""){
+                        line["NC"] = val.replace("{", "");
+                        var newLine = line;
+                        if (index > 0) {
+                            data.push(newLine);
+                        } 
+                    }
+                  
+                });
+            }
+            data[i] = line;
+        }
 
-        })
+
+
         loadPivotTable(data, _settings);
-
-
-
-    }).fail(function (data) {
-        alert("Sorry. Server unavailable. ");
-    });
+        loading.setLoaded(true);
+    }
 }

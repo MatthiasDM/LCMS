@@ -4,9 +4,9 @@
  * and open the template in the editor.
  */
 $(function () {
-    console.log("loading citrate");
-    //kpi_citrate_loadSettings($("#div-grid-wrapper"));
-    kpi_loadSettings($("#div-grid-wrapper"), "citrate", "PIVOTTABLE_GETTABLE", "PIVOTTABLE_EDIT", "LAB_KPI_CITRATE");
+    console.log("loading NC");
+    //kpi_NC_loadSettings($("#div-grid-wrapper"));
+    kpi_loadSettings($("#div-grid-wrapper"), "NC", "PIVOTTABLE_GETTABLE", "PIVOTTABLE_EDIT", "LAB_KPI_NC");
 
 })
 

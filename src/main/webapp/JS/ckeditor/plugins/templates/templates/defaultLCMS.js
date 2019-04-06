@@ -41,60 +41,43 @@ CKEDITOR.addTemplates('default',
             templates:
                     [
                         {
-                            title: 'My template',
+                            title: 'ICT-probleem',
                             image: 'my-template.PNG',
-                            description: 'Your custom template.',
+                            description: 'Sjabloon voor het oplossen van een ICT-probleem',
                             html:
-                                    '<style>' +
-                                    '    #container .row .col-sm-3{' +
-                                    '        min-width: 300px; ' +
+                                    '<style type="text/css">.card{' +
+                                    '    margin:10px;' +
+                                    '  }' +
+                                    '  .card-body{' +
                                     '        margin: 10px;' +
-                                    '    }' +
-                                    '    /*  #container .card-title a{' +
-                                    '          color: white;        ' +
-                                    '      }*/' +
+                                    '  }' +
+                                    '  /*  #container .card-title a{          color: white;             ' +
+                                    '                                                                                                          *  }*/' +
                                     '</style>' +
-                                    '<div class="container" style="width:100%" id="container">' +
-                                    '    <div class="row">' +
-                                    '        <div class="col-sm-12 mx-auto">' +
-                                    '            <div class="card text-center" style="border: 0px">' +
-                                    '                <div class="card-header">' +
-                                    '                    <h4 class="card-title"><a href="index.html?p=lab">Analyse</a></h4>' +
-                                    '                </div>' +
-                                    '                <div class="card-body" style="padding: 10px">                            ' +
-                                    '                    <p class="card-text">Analyseer het probleem hier.</p>                                              ' +
-                                    '                </div>' +
-                                    '            </div> ' +
-                                    '        </div>' +
-                                    '    </div>' +
+                                    '<div class="card" contenteditable="false">' +
+                                    '<div class="card-header" contenteditable="false">Analyse</div>' +
                                     '' +
-                                    '    <div class="row">' +
-                                    '        <div class="col-sm-12 mx-auto">' +
-                                    '            <div class="card text-center" style="border: 0px">' +
-                                    '                <div class="card-header">' +
-                                    '                    <h4 class="card-title"><a href="index.html?p=lab">Oplossing</a></h4>' +
-                                    '                </div>' +
-                                    '                <div class="card-body" style="padding: 10px">                            ' +
-                                    '                    <p class="card-text">Hoe wordt het probleem opgelost?</p>                                              ' +
-                                    '                </div>' +
-                                    '            </div> ' +
-                                    '        </div>' +
-                                    '    </div>' +
+                                    '<div class="card-body" contenteditable="true">' +
+                                    '<p> </p>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '<p> </p>' +
+                                    '<div class="card" contenteditable="false">' +
+                                    '<div class="bg-info card-header text-white" contenteditable="false">Implementatie</div>' +
+                                    '<div class="card-body" contenteditable="true">' +
+                                    '<p> </p>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '<p> </p>' +
                                     '' +
-                                    '    <div class="row">' +
-                                    '        <div class="col-sm-12 mx-auto">' +
-                                    '            <div class="card text-center" style="border: 0px">' +
-                                    '                <div class="card-header">' +
-                                    '                    <h4 class="card-title"><a href="index.html?p=lab">Validatie</a></h4>' +
-                                    '                </div>' +
-                                    '                <div class="card-body" style="padding: 10px">                            ' +
-                                    '                    <p class="card-text">Documenteer hier hoe de oplossing is gevalideerd.</p>                                              ' +
-                                    '                </div>' +
-                                    '            </div> ' +
-                                    '        </div>' +
-                                    '    </div>' +
-                                    '' +
-                                    '</div>'
-                        },
+                                    '<div class="card" contenteditable="false">' +
+                                    '<div class="bg-success card-header text-white" contenteditable="false">Validatie</div>' +
+                                    '<div class="card-body" contenteditable="true">' +
+                                    '<p> </p>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '<p> </p>' +
+                                    '<p> </p>'
+                        }
                     ]
         });

@@ -2,7 +2,7 @@ $(function () {
     // sessionCountdown();
 
     Object.filter = (obj, predicate) =>
-        Object.keys(obj)                
+        Object.keys(obj)
                 .filter(key => predicate(obj[key]))
                 .reduce((res, key) => (res[key] = obj[key], res), {});
 
@@ -178,6 +178,29 @@ function uuidv4() {
     });
 }
 
+class LCMSloading {
+    constructor(loaded) {
+        this.loaded = loaded;
+        this.dialogShown = false;
+    }
+    loading() {
+        if (this.loaded === true) {
+            hideLoading();
+            return true;                
+        } else {
+            if(!this.dialogShown){
+               showLoading();
+               this.dialogShown = true;
+            }            
+           
+        }
+    }
+    setLoaded(loaded){
+        this.loaded = loaded;
+        this.loading();
+    }
+}
+
 function removeElements(classname, source) {
     console.log("removeElements()");
     var $s = $(source).find("." + classname).remove().end();
@@ -216,6 +239,32 @@ function create_modal(parent, title, text) {
 
 }
 
+function showLoading() {
+    var m = create_blank_modal($("body"), "loadingModal", "<center><h4>Laden...</h4><img src='./images/loading.gif'/></center>", "top:30%;");
+    m.modal({keyboard: false, backdrop: 'static'}, 'show');
+}
+
+function hideLoading() {
+    $("#loadingModal").modal('hide');
+    $("#loadingModal").remove();
+}
+
+function create_blank_modal(parent, id, html, style) {
+
+    var modal = $("<div class='modal' id=" + id + " tabindex='-1' role='dialog'></div>");
+    var modal_dialog = $("<div class='modal-dialog modal-sm' style=" + style + " role='document'></div>");
+    var modal_content = $("<div class='modal-content'></div>");
+    var modal_body = $("<div class='modal-body'></div>");
+    modal_body.append(html);
+    modal_content.append(modal_body);
+    modal_dialog.append(modal_content);
+    modal.append(modal_dialog);
+    parent.append(modal);
+
+    return modal;
+
+}
+
 function forms_textarea(title, id, name, choices) {
     var form_group = $("<div id='" + id + "' class='form-group'></div>");
     var label = $("<label for='" + title + "'>" + title + "</label>");
@@ -228,7 +277,6 @@ function forms_textarea(title, id, name, choices) {
     }
     return form_group;
 }
-
 function forms_checkbox(title, id, name, val) {
     var form_check = $("<div style='text-align:left' id='" + id + "' class=\"form-check\"></div>");
     var checkbox = $("<input class=\"form-check-input\" type=\"checkbox\" name='" + name + "' id='" + id + "'>");
@@ -238,7 +286,6 @@ function forms_checkbox(title, id, name, val) {
     checkbox.attr("checked", val);
     return form_check;
 }
-
 function forms_textbox(title, id, name, val) {
     var form_group = $("<div id='" + id + "' class='form-group'></div>");
     var label = $("<label for='" + title + "'>" + title + "</label>");
@@ -248,7 +295,6 @@ function forms_textbox(title, id, name, val) {
     textbox.val(val);
     return form_group;
 }
-
 function forms_hidden(id, name, val) {
     var form_group = $("<div id='" + id + "' class='form-group'></div>");
     var hidden = $("<input class=\"form-control\" type=\"hidden\" value=\"\" name='" + name + "' id='" + id + "' >");
@@ -256,7 +302,6 @@ function forms_hidden(id, name, val) {
     hidden.val(val);
     return form_group;
 }
-
 function forms_select(title, id, name, valObjects, val) {
     console.log("forms_select()");
     var form_group = $("<div id='" + id + "' class='form-group'></div>");
@@ -267,13 +312,12 @@ function forms_select(title, id, name, valObjects, val) {
     });
     form_group.append(label);
     form_group.append(select);
-    if(typeof val !== "undefined"){
-      select.val(val);
-    }    
+    if (typeof val !== "undefined") {
+        select.val(val);
+    }
     return form_group;
 
 }
-
 function forms_select_single(title, id, name, valObjects, val) {
     console.log("forms_select()");
     var form_group = $("<div id='" + id + "' class='form-group'></div>");
@@ -288,7 +332,6 @@ function forms_select_single(title, id, name, valObjects, val) {
     return form_group;
 
 }
-
 function forms_jqgrid(id, data) {
     var form_group = $("<div id='" + id + "' class='form-group'></div>");
     var label = $("<label for='" + title + "'>" + title + "</label>");
@@ -298,7 +341,6 @@ function forms_jqgrid(id, data) {
     form_group.append(jqgrid);
     return form_group;
 }
-
 
 function dom_progressbar(bars, id) {
     var progress = $("<div class='progress' id='" + id + "'></div>");
@@ -325,12 +367,12 @@ function dom_moveUpDownList(id, data) {
     var row2 = dom_row();
     var col3 = dom_col("", 12);
     var ul = $("<ul class='list-group' id='element-list'></ul> ");
-    
+
     data.each(function (index, obj) {
         var type = "";
-        if(obj.id.includes("editable")){
+        if (obj.id.includes("editable")) {
             type = "(tekst) ";
-        }else if(obj.id.includes("gbox")){
+        } else if (obj.id.includes("gbox")) {
             type = "(tabel) ";
         }
         ul.append("<li class='list-group-item' style='padding:0.5rem;font-size: 1rem;' element='" + obj.id + "'>" + "<span>" + type + (index + 1) + "</span>" + ": " + obj.innerText.substring(0, 20).trim() + "</li>");
@@ -409,7 +451,6 @@ function dom_list(id, items) {
 
     return ul;
 }
-;
 function dom_card(header, body) {
     var card = $("<div class='card'></div>");
     var cardHeader = $("<div class='card-header'></header");
@@ -443,9 +484,8 @@ function dom_nav(pills) {
 
 
 }
-
 function dom_mainPageContainer(containerID, mainPageContentDivId) {
-    var container = dom_div("",containerID);
+    var container = dom_div("", containerID);
     var row1 = dom_row();
     row1.css('padding', '5px');
     var col1 = dom_col("", 1);

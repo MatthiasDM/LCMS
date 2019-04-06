@@ -2,6 +2,7 @@ var colModels = [];
 var references = [];
 
 
+
 $(function () {
     console.log("Startup template");
     $("div[id^=editable]").click(function (e) {
@@ -364,8 +365,7 @@ function createColModel(form, _gridData, parent) {
                         colModel[i].summaryTpl = [
                             "<span style=''>Subtotaal: {0}</span>"
                         ];
-                        colModel[i].summaryType = ["sum"];
-                        colModel[i].template = "number";
+                        colModel[i].summaryType = "sum";
                     }
                 });
             }
@@ -410,18 +410,11 @@ function createColModel(form, _gridData, parent) {
         options.grouping = true;
         options.groupingView = {
             groupField: groups,
-//            groupColumnShow: [true],
-            groupText: ['<b>{0} - {1} Item(s) </b>'],
-//            groupCollapse: false,
-//            groupSummaryPos: ["header"],
-//            groupSummary: [false]
-
-
-            showSummaryOnHide: false,
-            groupColumnShow: [true],
-            groupSummaryPos: ["header"],
-            groupSummary: [true]
-
+            //groupColumnShow: [false, false],
+            groupText: ['<b>{0} - {1} Item(s) </b>', '<b>{0} - {1} Item(s)</b>'],
+            groupCollapse: false,
+            groupSummaryPos: ["header", "header"],
+            groupSummary: [true, true]
         };
 
     } else {

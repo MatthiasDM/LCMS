@@ -11,17 +11,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import mdm.Config.MongoConf;
 import mdm.Core;
 import static mdm.Core.loadScriptFile;
@@ -31,12 +36,16 @@ import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
 
 import mdm.lis.lcms.lab.ServletLab;
+import org.apache.commons.io.IOUtils;
 
 /**
  *
  * @author matmey
  */
 @WebServlet(name = "validationsValidations", urlPatterns = {"/validations"})
+@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, // 2MB
+        maxFileSize = 1024 * 1024 * 10, // 10MB
+        maxRequestSize = 1024 * 1024 * 50)   // 50MB
 public class ServletValidations extends HttpServlet {
 
     private ServletContext context;
@@ -54,8 +63,13 @@ public class ServletValidations extends HttpServlet {
         StringBuilder sb = new StringBuilder();
 
         Map<String, String[]> requestParameters = request.getParameterMap();
+        ActionManagerValidations aM;
 
-        ActionManagerValidations aM = new ActionManagerValidations(requestParameters);
+        if (request.getContentType().contains("multipart")) {
+            aM = new ActionManagerValidations(requestParameters, request.getParts());
+        } else {
+            aM = new ActionManagerValidations(requestParameters);
+        }
 
         if (aM.getAction() != null) {
             try {
@@ -84,6 +98,7 @@ public class ServletValidations extends HttpServlet {
         String cookie;
         mdm.Config.Actions action;
         HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
+        Collection<Part> parts;
 
         public ActionManagerValidations(Map<String, String[]> requestParameters) {
             this.requestParameters = new HashMap<String, String[]>(requestParameters);
@@ -93,6 +108,17 @@ public class ServletValidations extends HttpServlet {
             if (requestParameters.get("LCMS_session") != null) {
                 cookie = requestParameters.get("LCMS_session")[0];
             }
+        }
+
+        public ActionManagerValidations(Map<String, String[]> requestParameters, Collection<Part> parts) {
+            this.requestParameters = new HashMap<String, String[]>(requestParameters);
+            if (requestParameters.get("action") != null) {
+                action = mdm.Config.Actions.valueOf(requestParameters.get("action")[0]);
+            }
+            if (requestParameters.get("LCMS_session") != null) {
+                cookie = requestParameters.get("LCMS_session")[0];
+            }
+            this.parts = parts;
         }
 
         public String getCookie() {
@@ -112,6 +138,13 @@ public class ServletValidations extends HttpServlet {
 //                for (Boolean condition : conditions) {
 //
 //                }
+                if (parts != null) {
+                    for (Part part : parts) {
+                        if (part.getName().equals("contents")) {
+                            requestParameters.put("contents", new String[]{IOUtils.toString(part.getInputStream(), Charset.defaultCharset())});
+                        }
+                    }
+                }
 
                 if (action.toString().contains("EDIT")) {
                     sb.append(DatabaseWrapper.actionEDITOBJECT(requestParameters, cookie, action.getMongoConf()));
@@ -148,55 +181,30 @@ public class ServletValidations extends HttpServlet {
 //            }
 //            return sb;
 //        }
-
         private StringBuilder actionGETVALIDATION() throws IOException, ClassNotFoundException, NoSuchFieldException {
             StringBuilder sb = new StringBuilder();
             if (Core.checkSession(cookie)) {
                 String id = requestParameters.get("id")[0];
                 if (!id.equals("")) {
-
                     BasicDBObject searchObject = new BasicDBObject();
                     ObjectMapper mapper = new ObjectMapper();
                     ObjectNode jsonData = mapper.createObjectNode();
                     searchObject.put("validationid", new BasicDBObject("$eq", id));
-
                     Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMap(cookie, MongoConf.VALIDATIONS, searchObject);
-
-                    //Note note = DatabaseActions.getNote(DatabaseActions.getSession(cookie).getUsername(), id);
                     sb.append(getValidation(searchResult));
                 }
-
             }
             return sb;
         }
 
-//        private StringBuilder actionNOTE_SAVENOTE() throws IOException, ClassNotFoundException {
-//            StringBuilder sb = new StringBuilder();
-//            if (Core.checkSession(cookie)) {
-//                String user = DatabaseActions.getSession(cookie).getUserid();
-//                String data = requestParameters.get("content")[0];
-//                String docid = requestParameters.get("docid")[0];
-//                DatabaseActions.updateValidations(user, docid, data);
-//            }
-//            return sb;
-//        }
         private ObjectNode getValidation(Map<String, Object> validation) throws JsonProcessingException {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode jsonData = mapper.createObjectNode();
-            //ObjectNode jsonParameters = mapper.createObjectNode();
             ObjectNode jsonReplaces = mapper.createObjectNode();
-
-            jsonReplaces.put("validations-id", validation.get("validationid").toString());
-            jsonReplaces.put("validations-content", validation.get("contents").toString());
+            jsonReplaces.put("LCMSEditablePage-id", validation.get("validationid").toString());
+            jsonReplaces.put("LCMSEditablePage-content", validation.get("contents").toString());
             validation.put("contents", "");
-           // jsonData.put("webPage", validation.get("contents").toString());
-            
             jsonData.put("webPage", loadWebFile("validation/template/index.html"));
-//            jsonData.put("scripts", loadScriptFile("validation/template/servletCalls.js")
-//                    + loadScriptFile("validation/template/interface.js") 
-//                    + loadScriptFile("../JS/jqGridFree/js/jquery.jqgrid.min.js\"")
-//            );
-            //jsonData.set("parameters", jsonParameters);
             jsonData.set("replaces", jsonReplaces);
             return jsonData;
         }

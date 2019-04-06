@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import mdm.Config.Actions;
 import mdm.Config.MongoConf;
+import static mdm.Core.loadWebFile;
 import mdm.GsonObjects.Lab.InventoryItem;
 import mdm.GsonObjects.Lab.LabItem;
 import mdm.Mongo.DatabaseWrapper;
@@ -146,6 +147,9 @@ public class ServletLab extends HttpServlet {
                         if (action == Actions.LAB_KPI_HEMOFP) {
                             sb.append(actionLAB_KPI("hemoFP", "json"));
                         }
+                        if (action == Actions.LAB_KPI_NC) {
+                            sb.append(actionLAB_KPI("NC", "json"));
+                        }
                         if (action == Actions.LAB_GETCHAT) {
                             sb.append(actionLAB_GETCHAT());
                         }
@@ -232,7 +236,7 @@ public class ServletLab extends HttpServlet {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            
+
             List<String> tats = new ArrayList<>();
             try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\worksummary\\tats.json"), Charset.forName("ISO-8859-1"))) {
                 tats = stream
@@ -327,6 +331,18 @@ public class ServletLab extends HttpServlet {
             DatabaseWrapper.addObject(document, action.getMongoConf(), cookie);
             sb.append(mapper.writeValueAsString(document));
             return sb;
+        }
+
+        private ObjectNode getLCMSEditablePage(Map<String, Object> LCMSEditablePage) throws JsonProcessingException {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode jsonData = mapper.createObjectNode();
+            ObjectNode jsonReplaces = mapper.createObjectNode();
+            jsonReplaces.put("LCMSEditablePage-id", LCMSEditablePage.get("validationid").toString());
+            jsonReplaces.put("LCMSEditablePage-content", LCMSEditablePage.get("contents").toString());
+            LCMSEditablePage.put("contents", "");
+            jsonData.put("webPage", loadWebFile("validation/template/index.html"));
+            jsonData.set("replaces", jsonReplaces);
+            return jsonData;
         }
 
     }

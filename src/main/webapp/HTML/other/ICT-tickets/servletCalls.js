@@ -48,9 +48,9 @@ function ICTtickets_doLoad(_parent) {
             };
             let ticketGrid = new LCMSGrid(gridData);
             ticketGrid.createGrid();
-            ticketGrid.addGridButton("fa-plus", "Nieuw ticket", "", function () {
+            ticketGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw ticket", "", function () {
                 return popupEdit('new', $("#ICT-ticket-table"), $(this), "ICT_EDITTICKETS", function(){return null;});
-            });
+            }));
 
         }
     }
