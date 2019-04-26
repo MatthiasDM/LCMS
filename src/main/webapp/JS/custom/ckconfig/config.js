@@ -121,7 +121,7 @@ function config2() { //for inline editing
             classes: true
         }
     };
-    CKEDITOR.config.contentsCss = 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css';
+    CKEDITOR.config.contentsCss = ['./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css', "./CSS/style.css"];
 //    CKEDITOR.scriptLoader.load("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js", function (success)
 //    {
 //        console.log("bootstrap js loaded");
@@ -238,31 +238,6 @@ function capturePaste(e, _editable) {
         Dropzone.forElement("#" + _editable).addFile(blob);
 
     });
-
-//    var htmls = Object.filter(items, item => item.type.includes("text"));
-//    Object.keys(htmls).forEach(function (i) {
-//
-//        console.log("Item: " + htmls[i]);
-//        htmls[i].getAsString(function (s) {
-//            var images = s.match(/<img (?!fileid).*?>/);
-//            $.each(images, function (index, image) {
-//                image = $.parseHTML(image);
-//                imageController.toDataURL($(image).attr('src'), function (dataUrl) {
-//                    imageController.urltoFile(dataUrl, 'a.png')
-//                            .then(function (file) {                         
-//                                Dropzone.forElement("#" + _editable).addFile(file);
-//                            });                    
-//                });
-//            });
-//        });
-//
-//
-//    });
-//    
-    //filter voor elke IMG.
-
-
-
 }
 
 function loadTOC(editors, appendTo) {

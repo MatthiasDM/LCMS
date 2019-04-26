@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import mdm.Config.MongoConf;
 import mdm.Core;
+import static mdm.Core.readFile;
 import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
 import mdm.workflows.Tasks.SendMail;
@@ -72,6 +73,8 @@ public class Workflows {
                     String content = "";
                     String template = Core.loadWebFile(Core.getProp("NC"));
                     String tableRow = Core.loadWebFile(Core.getProp("table-row"));
+                
+                    //template = template.replace("LCMS-style", readFile("LCMS/JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css"));
                     template = template.replace("LCMS-module", "Non-conformiteit (ICT)");
                     template = template.replace("LCMS-titel", "Titel: " + requestParameters.get("subject")[0]);
                     content = tableRow.replace("LCMS-content", "Beste,<br><br>Bovenstaand ICT-ticket is van status gewijzigd. <br><br>");

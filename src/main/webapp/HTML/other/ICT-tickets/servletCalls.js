@@ -21,7 +21,7 @@ function ICTtickets_doLoad(_parent) {
         if (typeof jsonData.webPage !== 'undefined') {
             jsonData.parent = _parent;
             loadParameters(jsonData);
-        } else {            
+        } else {
             var gridData = {
                 data: jsonData,
                 editAction: "ICT_EDITTICKETS",
@@ -49,7 +49,17 @@ function ICTtickets_doLoad(_parent) {
             let ticketGrid = new LCMSGrid(gridData);
             ticketGrid.createGrid();
             ticketGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw ticket", "", function () {
-                return popupEdit('new', $("#ICT-ticket-table"), $(this), "ICT_EDITTICKETS", function(){return null;});
+                return popupEdit('new', $("#ICT-ticket-table"), $(this), "ICT_EDITTICKETS", function () {
+                    return null;
+                });
+            }));
+
+            ticketGrid.addGridButton(new LCMSTemplateGridButton("fa-download", "Download selection as csv", "", function () {
+                ticketGrid.export_as_html();
+            }));
+
+            ticketGrid.addGridButton(new LCMSTemplateGridButton("fa-list-ul", "Click here to change columns", "", function () {
+                ticketGrid.toggle_multiselect();
             }));
 
         }

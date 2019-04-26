@@ -62,9 +62,16 @@ h5, .h5 {
     font-size: 1.2rem;    
 }
 
+
+
 /*BOOTSTRAP*/
 html {
     font-size: 1rem;
+}
+img {
+    max-width: 100%;
+    height: auto;
+    width: auto\9; /* ie8 */
 }
 
 @include media-breakpoint-up(sm) {

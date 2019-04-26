@@ -570,7 +570,7 @@ function addRow(parent, elementID, colModelValue) {
     element1.val(nameVal);
     row = addElement(row, element1, 4, "form-group");
 
-    var element2 = $("<select class='form-control' name='type' id='type-" + elementID + "'><option value='text'>Tekst</option><option value='number'>Getal</option><option value='euro'>Euro</option><option value='cktext_code'>Code</option><option value='date'>Datum</option><option value='cktext'>Tekst met opmaak</option><option value='select'>Keuzelijst</option><option value='internal_list' multiple='true'>Interne lijst</option><option value='external_list'>Externe lijst</option></select>");
+    var element2 = $("<select class='form-control' name='type' id='type-" + elementID + "'><option value='text'>Tekst</option><option value='number'>Getal</option><option value='boolean'>Ja/Nee</option><option value='euro'>Euro</option><option value='cktext_code'>Code</option><option value='date'>Datum</option><option value='cktext'>Tekst met opmaak</option><option value='select'>Keuzelijst</option><option value='internal_list' multiple='true'>Interne lijst</option><option value='external_list'>Externe lijst</option></select>");
     if (typeVal === "textarea" && colModelValue.editoptions.title === "ckedit") {
         typeVal = "cktext";
     }
@@ -750,14 +750,7 @@ function exportToHTML() {
 
 }
 
-function openFile(filename, text) {
-    var blob = new Blob([text], {type: "text/html;charset=utf-8"});
-    saveAs(blob, filename);
 
-    var x = window.open('http://localhost:8080/LCMS/index.html?p=temp', '_blank');
-    x.document.write(text);
-    x.document.close();
-}
 
 function removeUnusedDataFromJqGrid(_columns, _data, _renames) {
     console.log("removeUnusedDataFromJqGrid()");

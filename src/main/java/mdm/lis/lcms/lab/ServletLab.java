@@ -114,10 +114,10 @@ public class ServletLab extends HttpServlet {
             StringBuilder sb = new StringBuilder();
             if (cookie != null) {
 
-                if (action.toString().contains("EDIT")) {
+                if (action.toString().toUpperCase().contains("EDIT")) {
                     sb.append(DatabaseWrapper.actionEDITOBJECT(requestParameters, cookie, action.getMongoConf()));
                 } else {
-                    if (action.toString().contains("LOAD")) {
+                    if (action.toString().toUpperCase().contains("LOAD")) {
                         sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf(), new BasicDBObject(), new String[]{}));
                     } else {
 

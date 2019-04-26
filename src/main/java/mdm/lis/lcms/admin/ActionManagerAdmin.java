@@ -74,22 +74,25 @@ public class ActionManagerAdmin {
             } else {
                 sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
             }
-        }
-        if (action == mdm.Config.Actions.NEWOBJECT) {
-            HashMap<String, String> metadata = Core.JsonToHashMap(requestParameters.get("metadata")[0]);
-            if (metadata != null) {
-                DatabaseActions.createCollection(metadata.get("input-database"), metadata.get("input-object"));
+        } else {
+
+            if (action.toString().contains("EDIT")) {
+                sb.append(DatabaseWrapper.actionEDITOBJECT(requestParameters, cookie, action.getMongoConf()));
+            } else {
+                if (action.toString().contains("LOAD")) {
+                    sb.append(DatabaseWrapper.actionLOADOBJECT(cookie, action.getMongoConf(), new BasicDBObject(), new String[]{}));
+                }
             }
         }
 
-        if (action == mdm.Config.Actions.ADMIN_LOADUSERS) {
-            sb.append(actionADMIN_LOADUSERS());
-
-        }
-        if (action == mdm.Config.Actions.ADMIN_EDITUSERS) {
-            sb.append(actionADMIN_EDITUSERS());
-
-        }
+//        if (action == mdm.Config.Actions.ADMIN_LOADUSERS) {
+//            sb.append(actionADMIN_LOADUSERS());
+//
+//        }
+//        if (action == mdm.Config.Actions.ADMIN_EDITUSERS) {
+//            sb.append(actionADMIN_EDITUSERS());
+//
+//        }
         return sb;
     }
 
@@ -100,12 +103,12 @@ public class ActionManagerAdmin {
                 requestParameters.remove("action");
                 requestParameters.remove("LCMS_session");
                 String operation = requestParameters.get("oper")[0];
-                if (requestParameters.get("oper") != null) { 
+                if (requestParameters.get("oper") != null) {
                     if (operation.equals("edit")) {
                         requestParameters.remove("oper");
                         requestParameters.remove("password");
                         requestParameters.remove("id");
-                       // User user = createUserObject(requestParameters.get("userid")[0], "edit");
+                        // User user = createUserObject(requestParameters.get("userid")[0], "edit");
                         Class cls = Class.forName(MongoConf.USERS.getClassName());
                         HashMap<String, Object> obj = createDatabaseObject(requestParameters, cls);
                         DatabaseWrapper.editObjectData(obj, mdm.Config.MongoConf.USERS, cookie);
@@ -114,7 +117,7 @@ public class ActionManagerAdmin {
                         StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
                         requestParameters.remove("oper");
                         requestParameters.get("password")[0] = passwordEncryptor.encryptPassword(requestParameters.get("password")[0]);
-                         UUID id = UUID.randomUUID();
+                        UUID id = UUID.randomUUID();
                         User user = createUserObject(id.toString(), "add");
                         ObjectMapper mapper = new ObjectMapper();
                         Document document = Document.parse(mapper.writeValueAsString(user));

@@ -43,13 +43,14 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.UUID;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import mdm.Config.MongoConf;
 import static mdm.Core.getUserRoles;
 import mdm.DiffMatchPatch;
 
-
 import mdm.GsonObjects.Lab.Instrument;
 import mdm.GsonObjects.Lab.InventoryItem;
+import mdm.GsonObjects.MongoConfigurations;
 import mdm.GsonObjects.Note;
 import mdm.GsonObjects.Other.Backlog;
 import mdm.GsonObjects.Other.FileObject;
@@ -322,61 +323,68 @@ public class DatabaseActions {
         List<String> userRoles = new ArrayList<>();
         List<String> columns = new ArrayList<>();
 
-        if (_cookie != null) {
-            userRoles = getUserRoles(_cookie);
-
+        if (cls.getName().equals("MongoConfigurations") || cls.getName().equals("Actions")) {
+            columns = fields.stream()
+                    .map(result -> result.getName())
+                    .collect(Collectors.toList());
         } else {
-            userRoles.add("ADMIN");
-        }
+            if (_cookie != null) {
+                userRoles = getUserRoles(_cookie);
 
-        for (Field field : fields) {
+            } else {
+                userRoles.add("ADMIN");
+            }
 
-            MdmAnnotations mdmAnnotations = field.getAnnotation(MdmAnnotations.class
-            );
+            for (Field field : fields) {
 
-            if (mdmAnnotations != null) {
-                String role = "";
-                int roleVal = 2;
-                if (_privelegeType.equals("view")) {
-                    role = mdmAnnotations.viewRole();
-                    roleVal = mdmAnnotations.minimumViewRoleVal();
-                } else if (_privelegeType.equals("edit")) {
-                    role = mdmAnnotations.editRole();
-                    roleVal = mdmAnnotations.minimumEditRoleVal();
-                } else if (_privelegeType.equals("create")) {
-                    role = mdmAnnotations.createRole();
-                    roleVal = mdmAnnotations.minimumCreateRoleVal();
-                }
-                ;
-                for (String userRole : userRoles) {
+                MdmAnnotations mdmAnnotations = field.getAnnotation(MdmAnnotations.class
+                );
 
-                    if (role.equals("")) {
-                        if (mdm.Config.Roles.valueOf(userRole).getLevelCode() >= roleVal) {
-                            columns.add(field.getName());
-                            break;
-                        }
-                    } else {
-                        if (role.startsWith("@")) {
-                            String roleName = role.substring(1);
-                            String referencedField = fields.stream()
-                                    .filter(r -> r.getName().equals(roleName.substring(1)))
-                                    .findFirst()
-                                    .toString();
-                            if (getSession(_cookie).getUsername().equals(referencedField)) {
+                if (mdmAnnotations != null) {
+                    String role = "";
+                    int roleVal = 2;
+                    if (_privelegeType.equals("view")) {
+                        role = mdmAnnotations.viewRole();
+                        roleVal = mdmAnnotations.minimumViewRoleVal();
+                    } else if (_privelegeType.equals("edit")) {
+                        role = mdmAnnotations.editRole();
+                        roleVal = mdmAnnotations.minimumEditRoleVal();
+                    } else if (_privelegeType.equals("create")) {
+                        role = mdmAnnotations.createRole();
+                        roleVal = mdmAnnotations.minimumCreateRoleVal();
+                    }
+                    ;
+                    for (String userRole : userRoles) {
+
+                        if (role.equals("")) {
+                            if (mdm.Config.Roles.valueOf(userRole).getLevelCode() >= roleVal) {
                                 columns.add(field.getName());
+                                break;
+                            }
+                        } else {
+                            if (role.startsWith("@")) {
+                                String roleName = role.substring(1);
+                                String referencedField = fields.stream()
+                                        .filter(r -> r.getName().equals(roleName.substring(1)))
+                                        .findFirst()
+                                        .toString();
+                                if (getSession(_cookie).getUsername().equals(referencedField)) {
+                                    columns.add(field.getName());
+                                }
+                            }
+
+                            if (userRole.equals(role)) {
+                                columns.add(field.getName());
+                                break;
                             }
                         }
 
-                        if (userRole.equals(role)) {
-                            columns.add(field.getName());
-                            break;
-                        }
                     }
-
                 }
-            }
 
+            }
         }
+
         return columns;
     }
 
@@ -389,18 +397,33 @@ public class DatabaseActions {
         return results;
     }
 
+    public static MongoCollection<Document> getObjectsv2(MongoConfigurations mongoConf) throws ClassNotFoundException {
+        MongoCollection<Document> results = null;
+        Class cls = Class.forName(mongoConf.className);
+        results = databases.get(mongoConf.database).getCollection(mongoConf.collection, cls);
+        return results;
+    }
+
     public static void insertObjectItem(MongoConf mongoConf, Document _doc) throws ClassNotFoundException {
         getObjects(mongoConf).insertOne(_doc);
         LOG.info("One Object inserted of total: " + getObjectCount(mongoConf, new BasicDBObject()));
     }
 
+    public static void insertObjectItemv2(MongoConfigurations mongoConf, Document _doc) throws ClassNotFoundException {
+        getObjectsv2(mongoConf).insertOne(_doc);
+        LOG.info("One Object inserted");
+    }
+
     public static void updateObjectItem(MongoConf mongoConf, BasicDBObject _bson) throws ClassNotFoundException {
         Bson newDocument = new Document("$set", _bson);
-
         getObjects(mongoConf).findOneAndUpdate(and(eq(mongoConf.getIdName(), _bson.get(mongoConf.getIdName()))), newDocument, (new FindOneAndUpdateOptions()).upsert(true));
-
-        //   getObjects(mongoConf).findOneAndUpdate(and(eq(mongoConf.getIdName(), _bson.get(mongoConf.getIdName()))), _bson);
         LOG.info("One Object updated of total: " + getObjectCount(mongoConf, new BasicDBObject()));
+    }
+
+    public static void updateObjectItemv2(MongoConfigurations mongoConf, BasicDBObject _bson) throws ClassNotFoundException {
+        Bson newDocument = new Document("$set", _bson);
+        getObjectsv2(mongoConf).findOneAndUpdate(and(eq(mongoConf.getIdName(), _bson.get(mongoConf.getIdName()))), newDocument, (new FindOneAndUpdateOptions()).upsert(true));
+        LOG.info("One Object updated");
     }
 
     public static Document getObject(MongoConf mongoConf, String id) throws ClassNotFoundException, JsonProcessingException {
@@ -417,6 +440,15 @@ public class DatabaseActions {
 
         Document d = Document.parse(mapper.writeValueAsString(results.get(0)));
 
+        return d;
+    }
+
+    public static Document getObjectv2(MongoConfigurations mongoConf, String id) throws ClassNotFoundException, JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        MongoCollection<Document> ObjectItems = getObjectsv2(mongoConf);
+        ArrayList<Document> results = null;
+        results = ObjectItems.find(and(eq(mongoConf.getIdName(), id))).into(new ArrayList<Document>());
+        Document d = Document.parse(mapper.writeValueAsString(results.get(0)));
         return d;
     }
 
@@ -478,6 +510,30 @@ public class DatabaseActions {
         return results;
     }
 
+    public static ArrayList<Document> getObjectsSpecificListv2(String _cookie, MongoConfigurations mongoConf, Bson bson, Bson sort, int limit, String[] excludes) throws ClassNotFoundException {
+
+        List<String> columns = getDocumentPriveleges("view", _cookie, mongoConf.getClassName());
+        if (excludes != null) {
+            for (String exclude : excludes) {
+                columns.remove(exclude);
+            }
+        }
+        ArrayList<Document> results = null;
+        try {
+            MongoCollection<Document> ObjectItems = getObjectsv2(mongoConf);
+            results = ObjectItems.find(bson).sort(sort).limit(limit).projection(
+                    fields(include(columns))
+            ).into(new ArrayList<Document>());
+
+        } catch (Exception e) {
+            LOG.severe(e.getMessage());
+            return results;
+        }
+
+        return results;
+    }
+
+    
     public static ArrayList<Document> getObjectsSpecificFields(String _cookie, MongoConf mongoConf, Bson bson, Bson sort, int limit, List<String> columns) throws ClassNotFoundException {
 
         ArrayList<Document> results = null;
@@ -495,6 +551,7 @@ public class DatabaseActions {
         return results;
     }
 
+    //NIEUWE METHODE
     //OBJECT OTHER METHODS
     public static Long getObjectCount(MongoConf mongoConf, Bson bson) throws ClassNotFoundException {
         MongoCollection<Document> results = null;
@@ -530,12 +587,24 @@ public class DatabaseActions {
         backlog.setChanges(mapper.writeValueAsString(_document));
         return Document.parse(mapper.writeValueAsString(backlog));
     }
-    
-    public static String patchText(Object _old, Object _patches){
-            DiffMatchPatch dmp = new DiffMatchPatch();
-            LinkedList<DiffMatchPatch.Patch> patches = (LinkedList) dmp.patch_fromText(_patches.toString());
-            Object[] newDoc = dmp.patch_apply(patches, _old.toString());
-            return newDoc[0].toString();
+
+    public static Document addBackLogv2(MongoConfigurations _mongoConf, Object _document) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        Document document = Document.parse((mapper.writeValueAsString(_document)));
+        Backlog backlog = new Backlog();
+        backlog.setBacklogid(UUID.randomUUID().toString());
+        backlog.setObject_type(_mongoConf.getClassName());
+        backlog.setObject_id(document.getString(_mongoConf.getIdName()));
+        backlog.setCreated_on(System.currentTimeMillis());
+        backlog.setChanges(mapper.writeValueAsString(_document));
+        return Document.parse(mapper.writeValueAsString(backlog));
+    }
+
+    public static String patchText(Object _old, Object _patches) {
+        DiffMatchPatch dmp = new DiffMatchPatch();
+        LinkedList<DiffMatchPatch.Patch> patches = (LinkedList) dmp.patch_fromText(_patches.toString());
+        Object[] newDoc = dmp.patch_apply(patches, _old.toString());
+        return newDoc[0].toString();
     }
 
     public static Document getObjectDifference(MongoConf mongoConf, Object original, Object revised) {

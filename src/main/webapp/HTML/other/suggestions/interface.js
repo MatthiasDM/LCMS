@@ -7,6 +7,12 @@
 $(function () {
     suggestions_doLoad($("#suggestions-container"));
     config2();
+    
+    $("textarea[title=ckedit]").each(function (index) {
+                CKEDITOR.replace($(this).attr('id'), {
+                    customConfig: ' '
+                });
+            });
 });
 
 

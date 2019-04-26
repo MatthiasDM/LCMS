@@ -39,7 +39,8 @@ lang = {
     notes: {
         title: "Titel"
     },
-    user_table: {
+    users: {
+        title: "Gebruikers",
         username: "Gebruikersnaam",
         password: "Wachtwoord",
         roles: "Rollen",
@@ -85,9 +86,13 @@ lang = {
         location: "Locatie in lab"
     },
     suggestions: {
-        title: "Algemene idëeen of opmerkingen over het laboratorium en de werking ervan.",
+        title: "Algemene idëeen of opmerkingen over het laboratorium",
         subject: "Onderwerp",
-        description: "Beschrijving"
+        description: "Beschrijving",
+        archived: "Gearchiveerd",
+        followup: "Opvolging",
+        status: "Status",
+        category: "Categorie"
 
     },
     validations: {
@@ -107,6 +112,15 @@ lang = {
         viewRole: "Bekijken",
         editRole: "Wijzigen",
         createRole: "Aanmaken"
+    },
+    mongoconfigurations: {
+        title: "Databaseobjecten"
+    },
+    actions: {
+        title: "Acties"
+    },
+    laboratory: {
+        title: "Laboratorium"
     }
 };
 

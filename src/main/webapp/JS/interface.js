@@ -438,7 +438,7 @@ function dom_col(id, size) {
     return $("<div id='" + id + "' class='col-sm-" + size + " mx-auto'></div>");
 }
 function dom_button(id, icon, text, color) {
-    return ("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "'>" + text + "</i><span></span></button>");
+    return ("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "' style='margin-right:5px;width:auto;max-width:200px'>" + text + "</i><span></span></button>");
 }
 function dom_list(id, items) {
     var ul = $("<ul class='list-group' id='" + id + "'></ul> ");
@@ -516,4 +516,13 @@ function loadImages(editor, editorObject) {
 
     return images;
 
+}
+
+function openFile(filename, text) {
+    var blob = new Blob([text], {type: "text/html;charset=utf-8"});
+    saveAs(blob, filename);
+
+    var x = window.open('http://localhost:8080/LCMS/index.html?p=temp', '_blank');
+    x.document.write(text);
+    x.document.close();
 }

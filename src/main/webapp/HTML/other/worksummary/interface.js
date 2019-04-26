@@ -16,8 +16,11 @@ Object.filter = (obj, predicate) =>
 
 $(function () {
     replaceJumbo();
-    createJumboCard();
+    createJumboCard(jumboColumn);
     worksummary_doLoad('new');
+
+
+
 });
 
 function replaceJumbo() {
@@ -35,7 +38,7 @@ function replaceJumbo() {
 
 }
 
-function createJumboCard() {
+function createJumboCard(parent) {
 
     var container = dom_div("container", "infoButtons");
     var row1 = dom_row("infoButtonsRow1");
@@ -51,7 +54,7 @@ function createJumboCard() {
     card.find(".card-body").attr('id', "infoButtons-body");
     card.find(".card-body").css('padding', "0");
     card.find(".card-body").css('width', "100%");
-    jumboColumn.append(card);
+    parent.append(card);
 
 }
 
@@ -66,6 +69,38 @@ function createJumboElements(type) {
     createQuickview(type, "brugge", "btn-brugge", "fa-stack-1x", "info", "brugge", "div-quickview", "<b>B</b>", $("#tapPage1"));
     createQuickview(type, "knokke", "btn-knokke", "fa-stack-1x", "info", "knokke", "div-quickview", "<b>K</b>", $("#tapPage1"));
     createQuickview(type, "pertoestel", "btn-toestel", "fa-stack-1x", "info", "pertoestel", "div-quickview", "<b>T</b>", $("#tapPage1"));
+
+    var distinctWorkposts = filterUnique($.map(stations, function (el) {
+        console.log(el.WERKPOST);
+        return el;
+    }), "WERKPOST");
+
+    Object.keys(distinctWorkposts).forEach(function (key) {
+        var btn = dom_button("btn-workpost-" + key, "fa-stack-1x", distinctWorkposts[key], "info");
+        $("#div-workpost").append(btn);
+        //createQuickview(type, [key], "btn-workpost-" + key, "fa-stack-1x", "info", "workpost-" + key, "div-station", key, $("#div-workpost"));
+
+//        $.each(stations, function (index, station) {
+//            if (station.WERKPOST === distinctWorkposts[key]) {
+//                createQuickview(type, station.NAAM, "btn-station-" + index, "fa-stack-1x", "info", "station-" + index, "div-station", station.NAAM, $("#div-station"));
+//            }
+//        });
+    });
+
+
+    Object.keys(distinctWorkposts).forEach(function (key) {
+        $("#div-station").append("<br/><span>" + distinctWorkposts[key] + "<span><br/>");
+        $.each(stations, function (index, station) {
+            if (station.WERKPOST === distinctWorkposts[key]) {
+                createQuickview(type, station.NAAM, "btn-station-" + index, "fa-stack-1x", "info", "station-" + index, "div-station", station.NAAM, $("#div-station"));
+            }
+        });
+    });
+
+
+
+
+
 
 
     if (type === 'new') {
@@ -276,6 +311,13 @@ function parseData(data) {
     dataVerwerkt.tats = Object.filter(data, item => (
                 moment.duration(moment() - moment(item["DATE"].trim(), "DDMMYYHHmmss"))._milliseconds / 60000 > (findTatTime(String(item["TEST"])).TAT * 3) && moment(item["DATE"].trim(), "DDMMYYHHmmss")._isValid === true
                 ));
+
+    $.each(stations, function (index, station) {
+        console.log(station);
+        dataVerwerkt[station.NAAM] = Object.filter(data, item => (
+                    String(item["STATION"]).includes(station.ID) === true
+                    ));
+    });
 //
 //    dataVerwerkt.ambulant = Object.filter(data, item => (
 //                String(item["STATION"]).includes("POCT") === false & String(item["ERNST"]) === "50"

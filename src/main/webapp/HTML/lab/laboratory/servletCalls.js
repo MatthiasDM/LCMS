@@ -5,7 +5,7 @@
  */
 
 
-function department_doLoad() {
+function laboratory_doLoad() {
     console.log("department load");
-    LCMSTableRequest("LAB_LOADDEPARTMENT", "LAB_EDITDEPARTMENT", "./lab", "department-table", "department-pager", "div-grid-wrapper", lang["department"]['title']);
+    LCMSTableRequest("loadlaboratory", "editlaboratory", "./servlet", "laboratory-table", "laboratory-pager", "div-grid-wrapper", lang["laboratory"]['title']);
 }

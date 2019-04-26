@@ -22,7 +22,7 @@ $(function () {
     // objects_doLoad($("#admin-container"));
 
     users_doLoad($("#admin-container"));
-    tables_doLoad($("#admin-container"));
-    rights_doLoad($("#admin-container"));
+    mongoconfigurations_doLoad($("#admin-container"));
+    actions_doLoad($("#admin-container"));
 
 });

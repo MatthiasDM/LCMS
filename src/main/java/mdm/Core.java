@@ -32,6 +32,7 @@ import mdm.GsonObjects.Session;
 import mdm.GsonObjects.User;
 import mdm.Mongo.DatabaseActions;
 import mdm.pojo.annotations.MdmAnnotations;
+import org.jasypt.util.password.StrongPasswordEncryptor;
 
 /**
  *
@@ -55,31 +56,24 @@ public class Core {
     }
 
     public static String readFile(String urlName) {
+        String baseURL;
         try {
-//            String urlString2Decode = urlName;
-//            String decodedURL = URLDecoder.decode(urlString2Decode, "UTF-8");
-//            URL url = new URL(decodedURL);
-//            URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
-//            String decodedURLAsString = uri.toASCIIString();
-//            String unsafeURLString = new URL(urlName).toURI().toASCIIString();
-            String out = new Scanner(new URL(urlName).openStream(), "UTF-8").useDelimiter("\\A").next();
+            baseURL = Core.loadWebFile(Core.getProp("baseURL"));
+             String out = new Scanner(new URL(baseURL + urlName).openStream(), "UTF-8").useDelimiter("\\A").next();
             return out;
         } catch (IOException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-//        catch (URISyntaxException ex) {
-//            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
-//            return null;
-//        }
+            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+             return null;
+        }     
+
     }
 
     public static String loadWebFile(String url) {
         String file = "";
         if (url.equals("")) {
-            file = readFile("http://localhost:8080/LCMS/HTML/home/index.html");
+            file = readFile("LCMS/HTML/home/index.html");
         } else {
-            file = readFile("http://localhost:8080/LCMS/HTML/" + url);
+            file = readFile("LCMS/HTML/" + url);
         }
         return file;
     }
@@ -87,7 +81,7 @@ public class Core {
     public static String loadScriptFile(String url) {
         String file = "";
 
-        file = readFile("http://localhost:8080/LCMS/HTML/" + url);
+        file = readFile("LCMS/HTML/" + url);
 
         return file;
     }
@@ -309,8 +303,14 @@ public class Core {
     public static String getProp(String name) throws IOException {
         Properties prop = new Properties();
         String propFileName = "conf/conf.properties";
-        prop.load(new StringReader(Core.loadWebFile(propFileName)));     
+        prop.load(new StringReader(Core.loadWebFile(propFileName)));
         return prop.getProperty(name);
+    }
+
+    public static String encryptString(String pass) {
+        StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
+        pass = passwordEncryptor.encryptPassword(pass);        
+        return pass;
     }
 
 }

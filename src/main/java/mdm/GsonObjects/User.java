@@ -34,6 +34,12 @@ public class User {
             editRole = "ICTMANAGER")
     public String password;
     @MdmAnnotations(
+            type = "String",
+            visibleOnTable = false,
+            visibleOnForm = true,
+            editRole = "ICTMANAGER")
+    public String INSS;
+    @MdmAnnotations(
             type = "email",
             visibleOnTable = true)
     public String email;

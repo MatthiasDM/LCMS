@@ -13,7 +13,7 @@ public enum MongoConf {
     SESSION("users", "sessions", "mdm.GsonObjects.Session", "sessionID"),
     USERS("users", "users", "mdm.GsonObjects.User", "userid"),
     TABLES("lcms", "tables", "mdm.GsonObjects.Tables", "tablesid"),
-    RIGHTS("lcms", "rights", "mdm.GsonObjects.Rights", "rightsid"),    
+    RIGHTS("lcms", "rights", "mdm.GsonObjects.Rights", "rightsid"),
     //--------------------------------------------------------------------------------
     ICTTICKETS("lcms", "ICTTickets", "mdm.GsonObjects.Other.ICTTicket", "ticketid"),
     INSTRUMENTS("lcms", "instruments", "mdm.GsonObjects.Lab.Instrument", "instid"),
@@ -31,7 +31,12 @@ public enum MongoConf {
     VALIDATIONS("lcms", "validations", "mdm.GsonObjects.Other.Validation", "validationid"),
     EDITABLEPAGE("lcms", "editablepages", "mdm.GsonObjects.EditablePage", "editablepageid"),
     PIVOTTABLES("lcms", "pivottables", "mdm.GsonObjects.Other.PivotTable", "pivottableid"),
-    CHATS("lcms", "chats", "mdm.GsonObjects.Other.Chat", "chatid");
+    CHATS("lcms", "chats", "mdm.GsonObjects.Other.Chat", "chatid"),
+    //
+    //
+    //
+    MONGOCONFIGURATIONS("lcms", "mongoconfigurations", "mdm.GsonObjects.MongoConfigurations", "mongoconfigurationsid"),
+    ACTIONS("lcms", "actions", "mdm.GsonObjects.Actions", "actionsid");
     
     private final String database;
     private final String collection;

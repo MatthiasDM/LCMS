@@ -8,7 +8,7 @@ and open the template in the editor.
     Author     : Matthias
 */
 
-@media {
+
     /* Force table to not be like tables anymore */
     table,
     thead,
@@ -60,4 +60,3 @@ and open the template in the editor.
     Label the data
     */
     td:before { content: attr(data-title); }
-}
