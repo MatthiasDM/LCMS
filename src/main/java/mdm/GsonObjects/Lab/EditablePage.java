@@ -19,7 +19,13 @@ public class EditablePage {
     public String editablepageid;
     @MdmAnnotations(type = "string", visibleOnTable = true, visibleOnForm = true)
     public String title;
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false, DMP = true)
+    @MdmAnnotations(
+            editRole = "ICTMANAGER",
+            type = "string",
+            visibleOnTable = false,
+            visibleOnForm = false,
+            DMP = true
+    )
     public String contents;
     @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String template;

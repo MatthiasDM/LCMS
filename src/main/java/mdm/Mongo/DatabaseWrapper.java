@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javafx.util.Pair;
 import mdm.Config.MongoConf;
 import mdm.Config.Roles;
 import mdm.Core;
@@ -33,7 +34,6 @@ import static mdm.Core.loadWebFile;
 import mdm.GsonObjects.MongoConfigurations;
 import mdm.GsonObjects.Session;
 import static mdm.Mongo.DatabaseActions.getDocumentPriveleges;
-import static mdm.Mongo.DatabaseActions.getObjectDifference;
 import static mdm.Mongo.DatabaseActions.getObjects;
 import static mdm.Mongo.DatabaseActions.getObject;
 import static mdm.Mongo.DatabaseActions.getObjectCount;
@@ -41,7 +41,6 @@ import static mdm.Mongo.DatabaseActions.getObjectv2;
 import mdm.pojo.annotations.MdmAnnotations;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.jasypt.util.password.StrongPasswordEncryptor;
 
 /**
  *
@@ -242,6 +241,15 @@ public class DatabaseWrapper {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, bson, null, 0, null);
+        BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(results.get(0)));
+        Map<String, Object> objHashMap = obj.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+        return objHashMap;
+    }
+
+    public static Map<String, Object> getObjectHashMapv2(String cookie, MongoConfigurations _mongoConf, Bson bson) throws ClassNotFoundException, JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, bson, null, 0, null);
         BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(results.get(0)));
         Map<String, Object> objHashMap = obj.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
         return objHashMap;
@@ -490,6 +498,37 @@ public class DatabaseWrapper {
             }
         } else {
             sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+        }
+        return sb;
+    }
+
+    public static StringBuilder actionGETOBJECTv2(String cookie, MongoConfigurations _mongoConf, Pair<String, String> PKPair) throws JsonProcessingException, JsonProcessingException, ClassNotFoundException, JsonProcessingException, JsonProcessingException {
+        StringBuilder sb = new StringBuilder();
+        if (cookie == null) {
+            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+        } else {
+            if (!PKPair.getKey().equals("")) {
+                BasicDBObject searchObject = new BasicDBObject();
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode jsonData = mapper.createObjectNode();
+                searchObject.put(PKPair.getKey(), new BasicDBObject("$eq", PKPair.getValue()));
+                Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, _mongoConf, searchObject);
+                List<String> editRights = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
+                String menu = "";
+                if (editRights.contains("contents")) {
+                    menu = loadWebFile(_mongoConf.getCollection() + "/template/menu.html");
+                }
+
+                ObjectNode jsonReplaces = mapper.createObjectNode();
+                jsonReplaces.put("LCMSEditablePage-id", searchResult.get(_mongoConf.getIdName()).toString());
+                jsonReplaces.put("LCMSEditablePage-content", searchResult.get("contents").toString());
+                jsonReplaces.put("LCMSEditablePage-menu", menu);
+                searchResult.put("contents", "");
+                jsonData.put("webPage", loadWebFile(_mongoConf.getCollection() + "/template/index.html"));
+                jsonData.set("replaces", jsonReplaces);
+
+                sb.append(jsonData);
+            }
         }
         return sb;
     }

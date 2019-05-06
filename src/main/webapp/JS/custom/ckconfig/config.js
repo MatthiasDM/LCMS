@@ -48,16 +48,7 @@ function config0() { //used in de notes-module
         config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';
         //CKEDITOR.config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu';
         config.stylesSet = 'mdmConfig0:/styles.js';
-        config.allowedContent = {
-            script: true,
-            $1: {
-                // This will set the default set of elements
-                elements: CKEDITOR.dtd,
-                attributes: true,
-                styles: true,
-                classes: true
-            }
-        };
+   
     };
 
 
@@ -67,7 +58,31 @@ function config0() { //used in de notes-module
 function config2() { //for inline editing
     console.log("function config2");
     let imageController = new LCMSImageController();
+  
 
+    CKEDITOR.editor.prototype.setToolbar = function (tbName) {
+        if (!this._.events.themeSpace) {
+            CKEDITOR.plugins.registered.toolbar.init(this);
+            // causes themeSpace event to be listened to.
+        }
+        // If a different toolbar was specified use it, otherwise just reload
+        if (tbName) {
+            this.config.toolbar = tbName;
+        }
+        //According to CKEditor documentation
+        var obj = this.fire('uiSpace', {space: 'top', html: ''}).html;
+        console.log("Received from themespace:");
+        console.log(obj);
+        // Replace the toolbar HTML 
+        var tbEleId = this.id + "_" + this.config.toolbarLocation;
+        console.log("Editor element id: " + tbEleId);
+        var tbEle = document.getElementById(tbEleId);
+        //tbEle.innerHTML = obj.html;
+        $(tbEle).html(obj);
+    }
+    CKEDITOR.config.toolbar_null = [
+
+    ];
 
     if (typeof CKEDITOR.stylesSet.registered["mdmConfig2"] === "undefined") {
         CKEDITOR.stylesSet.add('mdmConfig2', [
@@ -83,6 +98,10 @@ function config2() { //for inline editing
             {name: 'Marker: Yellow', element: 'span', styles: {'background-color': 'Yellow'}}
         ]);
     }
+
+
+
+
 
 
     CKEDITOR.editorConfig = function (config) {
@@ -107,20 +126,16 @@ function config2() { //for inline editing
         config.format_tags = 'div';
         config.removeButtons = 'Source,Save,Cut,Undo,Redo,Copy,MenuButton,Preview,Print,PasteText,Paste,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,NewPage,Outdent,Indent,CreateDiv,Blockquote,JustifyLeft,JustifyCenter,JustifyRight,JustifyBlock,Language,BidiRtl,Unlink,BidiLtr,Flash,Table,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Format,Font,Maximize,ShowBlocks,About,RemoveFormat,CopyFormatting,Subscript,Superscript';//Anchor
         config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';
-
+        config.startupShowBorders = false;
         config.height = 500;
+        config.title = false;
         config.stylesSet = 'mdmConfig2:/styles.js';
+        config.allowedContent = true;
+        config.extraAllowedContent = '*(*)';
+
+
     };
-    CKEDITOR.config.allowedContent = {
-        script: true,
-        $1: {
-            // This will set the default set of elements
-            elements: CKEDITOR.dtd,
-            attributes: true,
-            styles: true,
-            classes: true
-        }
-    };
+
     CKEDITOR.config.contentsCss = ['./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css', "./CSS/style.css"];
 //    CKEDITOR.scriptLoader.load("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js", function (success)
 //    {
@@ -177,8 +192,8 @@ function config2() { //for inline editing
         });
 
         if ($('iframe').length > 0) {
-          
-           editor = $(CKEDITOR.instances["followup"].editable().$);
+
+            editor = $(CKEDITOR.instances["followup"].editable().$);
 
             $('iframe').click(function (e) {
                 if (typeof e.target.href !== 'undefined' && e.ctrlKey === true) {
@@ -217,6 +232,8 @@ function config2() { //for inline editing
 
 
     });
+
+
 }
 
 

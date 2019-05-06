@@ -58,7 +58,7 @@ public class Core {
     public static String readFile(String urlName) {
         String baseURL;
         try {
-            baseURL = Core.loadWebFile(Core.getProp("baseURL"));
+            baseURL = "http://localhost:8080/";
              String out = new Scanner(new URL(baseURL + urlName).openStream(), "UTF-8").useDelimiter("\\A").next();
             return out;
         } catch (IOException ex) {
@@ -71,7 +71,7 @@ public class Core {
     public static String loadWebFile(String url) {
         String file = "";
         if (url.equals("")) {
-            file = readFile("LCMS/HTML/home/index.html");
+            file = readFile("LCMS/HTML/pages/index.html");
         } else {
             file = readFile("LCMS/HTML/" + url);
         }

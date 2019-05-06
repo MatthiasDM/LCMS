@@ -1,0 +1,34 @@
+#export table, #export thead, #export tbody, #export th, #export td, #export tr {
+    display : block;
+}
+#export thead tr {
+    position : absolute;
+    top : -9999px;
+    left : -9999px;
+}
+#export tr {
+    border : #ccc solid 1px;
+}
+#export tr:nth-of-type(odd) {
+    background : #e0e0e0;
+}
+#export td {
+    border : none;
+    border-bottom : 1px solid #eee;
+    position : relative;
+   
+    white-space : normal;
+    text-align : left;
+}
+#export td:before {
+    top : 6px;
+    left : 6px;
+    width : 45%;
+    padding-right : 10px;
+    white-space : nowrap;
+    text-align : left;
+    font-weight : bold;
+}
+#export td:before {
+    content : attr(data-title);
+}

@@ -16,3 +16,7 @@ function actions_doLoad(_parent) {
     LCMSTableRequest("ACTIONS_LOADACTIONS", "ACTIONS_EDITACTIONS", "./admin", "actions-table", "actions-pager", "div-grid-actions-wrapper", lang["actions"]['title']);
 }
 
+function pages_doLoad(_parent) {
+    console.log("Pages load");
+    LCMSTableRequest("loadpages", "editpages", "./servlet", "pages-table", "pages-pager", "div-grid-pages-wrapper", lang["pages"]['title']);
+}

@@ -56,7 +56,7 @@ function credentials_doUserInfo(_parent) {
 
 }
 
-function getUrlParam(url_string) {
+function getUrlParam(url_string, param) {
     var isIE = /*@cc_on!@*/false || !!document.documentMode;
     var isEdge = !isIE && !!window.StyleMedia;
     var p;
@@ -65,15 +65,17 @@ function getUrlParam(url_string) {
         p = p[Object.keys(p)[0]]; // "a"
     } else {
         var url = new URL(url_string);
-        p = url.searchParams.get("p");
+        p = url.searchParams.get(param);
     }
-    if (typeof p == "undefined") {
+    if (typeof p === "undefined") {
         p = "";
     }
-    if (p == "undefined") {
+    if (p === "undefined") {
         p = "";
     }
-
+    if(p === null){
+        p = "";
+    }
     return p;
 
 }

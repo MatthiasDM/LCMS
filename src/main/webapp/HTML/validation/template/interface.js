@@ -705,9 +705,9 @@ function getAttributesOfGrid(_gridName) {
 function exportToHTML() {
     console.log("exportToHTML()");
     var htmlData = $("<output id='tempOutput'>");
-    htmlData.append("<link rel='stylesheet' href='./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css'>");
-    htmlData.append("<link rel='stylesheet' href='./CSS/style.css'>");
-    htmlData.append("<link rel='stylesheet' href='./HTML/validation/template/export.css'>");
+//    htmlData.append("<link rel='stylesheet' href='./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css'>");
+//    htmlData.append("<link rel='stylesheet' href='./CSS/style.css'>");
+//    htmlData.append("<link rel='stylesheet' href='./CSS/export.css>");
     var style = $("<style>" + getCSS() + "</style>");
     htmlData.append(style);
     htmlData.append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"))));

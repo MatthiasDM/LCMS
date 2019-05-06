@@ -18,6 +18,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,13 +28,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javafx.util.Pair;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import mdm.Config.Actions;
 import mdm.Config.MongoConf;
 import static mdm.Core.loadWebFile;
@@ -41,6 +46,7 @@ import mdm.GsonObjects.Lab.LabItem;
 import mdm.GsonObjects.MongoConfigurations;
 import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 
@@ -49,6 +55,9 @@ import org.bson.Document;
  * @author matmey
  */
 @WebServlet(name = "Servlet", urlPatterns = {"/servlet"})
+@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, // 2MB
+        maxFileSize = 1024 * 1024 * 10, // 10MB
+        maxRequestSize = 1024 * 1024 * 50)   // 50MB
 public class Servlet extends HttpServlet {
 
     private ServletContext context;
@@ -68,8 +77,13 @@ public class Servlet extends HttpServlet {
         Map<String, String[]> requestParameters = request.getParameterMap();
 
         ActionManager aM;
+
         try {
-            aM = new ActionManager(requestParameters);
+            if (request.getContentType().contains("multipart")) {
+                aM = new ActionManager(requestParameters, request.getParts());
+            } else {
+                aM = new ActionManager(requestParameters);
+            }
 
             if (aM.getAction() != null) {
                 try {
@@ -81,7 +95,7 @@ public class Servlet extends HttpServlet {
                 }
 
             }
-            
+
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -101,6 +115,7 @@ public class Servlet extends HttpServlet {
         String cookie;
         mdm.GsonObjects.Actions action;
         HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
+        Collection<Part> parts;
 
         public ActionManager(Map<String, String[]> requestParameters) throws ClassNotFoundException {
             this.requestParameters = new HashMap<String, String[]>(requestParameters);
@@ -110,6 +125,17 @@ public class Servlet extends HttpServlet {
             if (requestParameters.get("LCMS_session") != null) {
                 cookie = requestParameters.get("LCMS_session")[0];
             }
+        }
+
+        public ActionManager(Map<String, String[]> requestParameters, Collection<Part> parts) throws ClassNotFoundException {
+            this.requestParameters = new HashMap<String, String[]>(requestParameters);
+            if (requestParameters.get("action") != null) {
+                action = getAction(requestParameters.get("action")[0]);
+            }
+            if (requestParameters.get("LCMS_session") != null) {
+                cookie = requestParameters.get("LCMS_session")[0];
+            }
+            this.parts = parts;
         }
 
         public mdm.GsonObjects.Actions getAction(String _action) throws ClassNotFoundException {
@@ -134,12 +160,32 @@ public class Servlet extends HttpServlet {
         public StringBuilder startAction() throws ClassNotFoundException, IOException, JsonProcessingException, NoSuchFieldException {
             StringBuilder sb = new StringBuilder();
             if (cookie != null) {
+
+                if (parts != null) {
+                    for (Part part : parts) {
+                        if (part.getName().equals("contents")) {
+                            requestParameters.put("contents", new String[]{IOUtils.toString(part.getInputStream(), Charset.defaultCharset())});
+                        }
+                    }
+                }
+
                 if (action.name.toUpperCase().contains("EDIT")) {
                     sb.append(DatabaseWrapper.actionEDITOBJECTv2(requestParameters, cookie, action.getMongoConfiguration(action.mongoconfiguration)));
                 } else {
                     if (action.name.toUpperCase().contains("LOAD")) {
-                        sb.append(DatabaseWrapper.actionLOADOBJECTv2(cookie, action.getMongoConfiguration(action.mongoconfiguration), new BasicDBObject(), new String[]{}));
+                        ArrayList<String> excludes = new ArrayList<>();
+                        if(requestParameters.get("excludes") != null){
+                            excludes.addAll(Arrays.asList(requestParameters.get("excludes")));
+                        }
+                        excludes.add("contents");
+                        
+                        sb.append(DatabaseWrapper.actionLOADOBJECTv2(cookie, action.getMongoConfiguration(action.mongoconfiguration), new BasicDBObject(), excludes.toArray(new String[0])));
                     } else {
+                        if (action.name.toUpperCase().contains("GET")) {
+
+                            Pair<String, String> PKPair = new Pair(requestParameters.get("k")[0], requestParameters.get("v")[0]);
+                            sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, action.getMongoConfiguration(action.mongoconfiguration), PKPair));
+                        }
                     }
                 }
             } else {
@@ -147,6 +193,18 @@ public class Servlet extends HttpServlet {
             }
 
             return sb;
+        }
+
+        private ObjectNode getEditablePage(Map<String, Object> editablePage) throws JsonProcessingException {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode jsonData = mapper.createObjectNode();
+            ObjectNode jsonReplaces = mapper.createObjectNode();
+            jsonReplaces.put("LCMSEditablePage-id", editablePage.get("validationid").toString());
+            jsonReplaces.put("LCMSEditablePage-content", editablePage.get("contents").toString());
+            editablePage.put("contents", "");
+            jsonData.put("webPage", loadWebFile("validation/template/index.html"));
+            jsonData.set("replaces", jsonReplaces);
+            return jsonData;
         }
 
     }

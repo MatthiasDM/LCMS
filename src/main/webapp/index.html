@@ -38,6 +38,7 @@
         <script src="./JS/custom/lcms/lcms.js"></script>
 
         <link rel="stylesheet" href="./CSS/style.css">
+        <link rel="stylesheet" href="./CSS/export.css">
     </head>
     <body>
         <div id="alertWrapper"></div>
@@ -74,7 +75,7 @@
         </div>
 
         <script>
-            page_doLoadPage(getUrlParam(window.location.href), $("body"));
+            page_doLoadPage(getUrlParam(window.location.href, "p"), $("body"));
         </script>
 
 

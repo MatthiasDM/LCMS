@@ -148,6 +148,28 @@ function CSVToArray(strData, strDelimiter) {
     // Return the parsed data.
     return(arrData);
 }
+//mysheet = $('link[href="/css/style.css"]')[0].sheet;
+
+function getCSSOfHref(href) {
+    var css = [];
+    //var sheet = $("<link type='text/css' rel='stylesheet' href='"+href+"'/>")[0].sheet;
+    var sheet = $("link[href='"+href+"']")[0].sheet;
+    var rules = ('cssRules' in sheet) ? sheet.cssRules : sheet.rules;
+    if (rules)
+    {
+        css.push('\n/* Stylesheet : ' + (sheet.href || '[inline styles]') + ' */');
+        for (var j = 0; j < rules.length; j++)
+        {
+            var rule = rules[j];
+            if ('cssText' in rule)
+                css.push(rule.cssText);
+            else
+                css.push(rule.selectorText + ' {\n' + rule.style.cssText + '\n}\n');
+        }
+    }
+    var cssInline = css.join('\n') + '\n';
+    return cssInline;
+}
 
 function getCSS() {
     var css = [];
@@ -406,6 +428,8 @@ class LCMSEditablePage {
         jsonData.parent = _parent;
         if (typeof (jsonData.replaces) !== "undefined") {
             jsonData.webPage = replaceAll(jsonData.webPage, "LCMSEditablePage-id", jsonData.replaces["LCMSEditablePage-id"]);
+            jsonData.webPage = replaceAll(jsonData.webPage, "LCMSEditablePage-menu", jsonData.replaces["LCMSEditablePage-menu"]);
+            me.setPageId(jsonData.replaces["LCMSEditablePage-id"]);
             console.log("Regenerating grids...");
             try {
                 var LCMSEditablePage_content = {};
@@ -826,9 +850,10 @@ class LCMSGrid {
         console.log("exportToHTML()");
         var htmlData = $("<output id='tempOutput'>");
         htmlData.append("<link rel='stylesheet' href='./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css'>");
-        htmlData.append("<link rel='stylesheet' href='./CSS/style.css'>");
-        htmlData.append("<link rel='stylesheet' href='./HTML/validation/template/export.css'>");
-        var style = $("<style>" + getCSS() + "</style>");
+        //htmlData.append("<link rel='stylesheet' href='./CSS/style.css'>");
+        //htmlData.append("<link rel='stylesheet' href='./HTML/validation/template/export.css'>");
+        
+        var style = $("<style>" + getCSSOfHref("./CSS/export.css") + getCSSOfHref("./CSS/style.css") + getCSS() + "</style>");
         htmlData.append(style);
         htmlData.append($($.parseHTML($(gridData.wrapperObject[0]).prop("innerHTML"))));
         var htmlTableObject = {};
@@ -840,7 +865,7 @@ class LCMSGrid {
             $(b).after("<div name='" + $(b).attr('id') + "' style='overflow-x:auto'>" + htmlTable + "</div>");
             $(b).remove();
         });
-        openFile("test.html", "<div class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + htmlData[0].innerHTML + "</div><div class='col-sm-1 mx-auto'></div></div>");
+        openFile("test.html", "<div id='export' class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + htmlData[0].innerHTML + "</div><div class='col-sm-1 mx-auto'></div></div>");
 
 //        var images = loadImages("", htmlData);
 //        var imagesWrapper = $("<div></div>");

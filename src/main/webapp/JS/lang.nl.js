@@ -121,6 +121,9 @@ lang = {
     },
     laboratory: {
         title: "Laboratorium"
+    },
+    pages: {
+        title: "Aanpasbare pagina's"
     }
 };
 

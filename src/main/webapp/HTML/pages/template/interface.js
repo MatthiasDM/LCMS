@@ -1,16 +1,11 @@
 var colModels = [];
 var references = [];
-
-
+var readonly = true;
 
 $(function () {
     console.log("Startup template");
-    $("div[id^=editable]").click(function (e) {
-        console.log("clicked");
-        if (typeof e.target.href !== 'undefined' && e.ctrlKey === true) {
-            window.open(e.target.href, 'new' + e.screenX);
-        }
-    });
+    toggleCtrlClick();
+
     documentPage.gridController.checkGrids();
     $.each(documentPage.gridController.grids, function (key, value) {
         if (typeof value.subgridref !== "undefined") {
@@ -24,100 +19,37 @@ $(function () {
         showLoading();
         var counter = 0;
         $("div[contenteditable]").each(function (a, b) {
+
             var ck = CKEDITOR.inline($(b).attr('id'));
+
             ck.on('instanceReady', function (ev) {
                 var editor = ev.editor;
-                editor.setReadOnly(false);
+                editor.setReadOnly(readonly);
+
+                toggleCKmenu();
+
+                //editor.setReadOnly(false);
                 counter++;
                 if (counter === numEditors) {
-                    loadSideBarMenu();
                     hideLoading();
+                    if ($("#div-page-menu").length > 0) {
+                        loadSideBarMenu();
+                        $("#sidebar").BootSideMenu({side: "left"});
+                    }
                 }
             });
             ;
         });
     } else {
-        loadSideBarMenu();
+        if ($("#div-page-menu").length > 0) {
+            loadSideBarMenu();
+            $("#sidebar").BootSideMenu({side: "left"});
+        }
     }
-    $("#validation-elements").remove();
-});
+    $("#page-elements").remove();
 
-function loadSideBarMenu() {
-    console.log("loadSideBarMenu()");
-    $("#sidebar .menu-wrapper").empty();
-    var sidebarContainer = dom_div("", "sidebar-container");
-    //---------------------------------------------------
-    var row1 = dom_row("sidebar-row-1");
-    var col1 = dom_col("sidebar-col-1", 12);
-    var div1 = dom_div("navbar-brand", "sidebar-title");
-    col1.css("text-align", "center");
-    div1.css("margin-right", "0px");
-    div1.css("margin-top", "0.5em");
-    div1.append("Menu");
-    col1.append(div1);
-    col1.append("<hr>");
-    row1.append(col1);
-    sidebarContainer.append(row1);
-    //---------------------------------------------------
-    var row2 = dom_row("sidebar-row-2");
-    var col2 = dom_col("sidebar-col-2", 12);
-    col2.append($("#div-validation-menu"));
-    row2.append(col2);
-    sidebarContainer.append(row2);
-    //---------------------------------------------------
-    var row1 = dom_row("sidebar-row-1");
-    var col1 = dom_col("sidebar-col-1", 12);
-    var div1 = dom_div("navbar-brand", "sidebar-title");
-    col1.css("text-align", "center");
-    div1.css("margin-right", "0px");
-    div1.css("margin-top", "0.5em");
-    div1.append("Inhoudsopgave");
-    col1.append(div1);
-    col1.append("<hr>");
-    row1.append(col1);
-    sidebarContainer.append(row1);
-    //---------------------------------------------------
-    var row2 = dom_row("sidebar-row-2");
-    var col2 = dom_col("sidebar-col-contentmenu", 12);
-    loadTOC($("div[id^=editable]"), col2);
-    row2.append(col2);
-    sidebarContainer.append(row2);
-    //---------------------------------------------------
-    var row1 = dom_row("sidebar-row-1");
-    var col1 = dom_col("sidebar-col-1", 12);
-    var div1 = dom_div("navbar-brand", "sidebar-title");
-    col1.css("text-align", "center");
-    div1.css("margin-right", "0px");
-    div1.css("margin-top", "0.5em");
-    div1.append("Structuur");
-    col1.append(div1);
-    col1.append("<hr>");
-    row1.append(col1);
-    sidebarContainer.append(row1);
-    //---------------------------------------------------
-    var row3 = dom_row("sidebar-row-3");
-    var col3 = dom_col("sidebar-col-3", 12);
-    var div3 = dom_div("", "structure-container");
-    div3.append(dom_moveUpDownList("validation-elements", $("div[id^=gbox_grid], div[id^=editable]")));
-    col3.append(div3);
-    row3.append(col3);
-    sidebarContainer.append(row3);
-    $("#sidebar .menu-wrapper").append(sidebarContainer);
-    //---------------------------------------------------
-    $("#importTableButton").change(function () {
-        $.each(this.files, function (index, file) {
-            var reader = new FileReader();
-            var name = file.name;
-            reader.onload = function (e) {
-                var text = reader.result;
-                console.log(text);
-                bootstrap_alert.warning(name, "info", 1000);
-                createGridBasedOnImportFile($($("div[id^='wrapper']")[0]), createDataAndModelFromCSV(text), name);
-            };
-            reader.readAsText(file);
-        });
-    });
-}
+
+});
 
 function new_grid(parentID, colModel, extraOptions, importCSV, _gridData, gridId, location) {
     console.log("new_grid()");
@@ -203,19 +135,6 @@ function new_grid(parentID, colModel, extraOptions, importCSV, _gridData, gridId
 
 }
 
-function new_editable_field() {
-    console.log("new_editable_field()");
-    var editor = $($("div[id^='wrapper']")[0]);
-    var editable_field = $("<div id='editable_" + uuidv4() + "' contenteditable='true'><p>Nieuw bewerkbaar veld</p></div>");
-    editor.append(editable_field);
-    var ck = CKEDITOR.inline(editable_field.attr('id'));
-
-    ck.on('instanceReady', function (ev) {
-        var editor = ev.editor;
-        editor.setReadOnly(false);
-    });
-}
-
 function inlineEditRow(id) {
     console.log("inlineEditRow()");
     if (id && id !== lastSelection || $(this).jqGrid('getGridParam', 'records') === 1) {
@@ -225,7 +144,7 @@ function inlineEditRow(id) {
             keys: true,
             extraparam: {action: "_editAction", LCMS_session: $.cookie('LCMS_session')},
             beforeSubmit: function (postdata, formid) {
-                validation_save();
+                page_save();
             }
         };
         grid.jqGrid('editRow', id, editParameters);
@@ -365,7 +284,8 @@ function createColModel(form, _gridData, parent) {
                         colModel[i].summaryTpl = [
                             "<span style=''>Subtotaal: {0}</span>"
                         ];
-                        colModel[i].summaryType = "sum";
+                        colModel[i].summaryType = ["sum"];
+                        colModel[i].template = "number";
                     }
                 });
             }
@@ -410,11 +330,18 @@ function createColModel(form, _gridData, parent) {
         options.grouping = true;
         options.groupingView = {
             groupField: groups,
-            //groupColumnShow: [false, false],
-            groupText: ['<b>{0} - {1} Item(s) </b>', '<b>{0} - {1} Item(s)</b>'],
-            groupCollapse: false,
-            groupSummaryPos: ["header", "header"],
-            groupSummary: [true, true]
+//            groupColumnShow: [true],
+            groupText: ['<b>{0} - {1} Item(s) </b>'],
+//            groupCollapse: false,
+//            groupSummaryPos: ["header"],
+//            groupSummary: [false]
+
+
+            showSummaryOnHide: false,
+            groupColumnShow: [true],
+            groupSummaryPos: ["header"],
+            groupSummary: [true]
+
         };
 
     } else {
@@ -563,7 +490,7 @@ function addRow(parent, elementID, colModelValue) {
     element1.val(nameVal);
     row = addElement(row, element1, 4, "form-group");
 
-    var element2 = $("<select class='form-control' name='type' id='type-" + elementID + "'><option value='text'>Tekst</option><option value='number'>Getal</option><option value='euro'>Euro</option><option value='cktext_code'>Code</option><option value='date'>Datum</option><option value='cktext'>Tekst met opmaak</option><option value='select'>Keuzelijst</option><option value='internal_list' multiple='true'>Interne lijst</option><option value='external_list'>Externe lijst</option></select>");
+    var element2 = $("<select class='form-control' name='type' id='type-" + elementID + "'><option value='text'>Tekst</option><option value='number'>Getal</option><option value='boolean'>Ja/Nee</option><option value='euro'>Euro</option><option value='cktext_code'>Code</option><option value='date'>Datum</option><option value='cktext'>Tekst met opmaak</option><option value='select'>Keuzelijst</option><option value='internal_list' multiple='true'>Interne lijst</option><option value='external_list'>Externe lijst</option></select>");
     if (typeVal === "textarea" && colModelValue.editoptions.title === "ckedit") {
         typeVal = "cktext";
     }
@@ -698,9 +625,9 @@ function getAttributesOfGrid(_gridName) {
 function exportToHTML() {
     console.log("exportToHTML()");
     var htmlData = $("<output id='tempOutput'>");
-    htmlData.append("<link rel='stylesheet' href='./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css'>");
-    htmlData.append("<link rel='stylesheet' href='./CSS/style.css'>");
-    htmlData.append("<link rel='stylesheet' href='./CSS/export.css'>");
+//    htmlData.append("<link rel='stylesheet' href='./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css'>");
+//    htmlData.append("<link rel='stylesheet' href='./CSS/style.css'>");
+//    htmlData.append("<link rel='stylesheet' href='./CSS/export.css>");
     var style = $("<style>" + getCSS() + "</style>");
     htmlData.append(style);
     htmlData.append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"))));
@@ -743,15 +670,6 @@ function exportToHTML() {
 
 }
 
-function openFile(filename, text) {
-    var blob = new Blob([text], {type: "text/html;charset=utf-8"});
-    saveAs(blob, filename);
-
-    var x = window.open('http://localhost:8080/LCMS/index.html?p=temp', '_blank');
-    x.document.write(text);
-    x.document.close();
-}
-
 function removeUnusedDataFromJqGrid(_columns, _data, _renames) {
     console.log("removeUnusedDataFromJqGrid()");
     var data = _data;
@@ -779,3 +697,144 @@ function removeUnusedDataFromJqGrid(_columns, _data, _renames) {
     return data;
 }
 
+function loadSideBarMenu() {
+
+    console.log("loadSideBarMenu()");
+    $("#sidebar").empty();
+    var sidebarContainer = dom_div("", "sidebar-container");
+    //---------------------------------------------------
+    var row1 = dom_row("sidebar-row-1");
+    var col1 = dom_col("sidebar-col-1", 12);
+    var div1 = dom_div("navbar-brand", "sidebar-title");
+    col1.css("text-align", "center");
+    div1.css("margin-right", "0px");
+    div1.css("margin-top", "0.5em");
+    div1.append("Menu");
+    col1.append(div1);
+    col1.append("<hr>");
+    row1.append(col1);
+    sidebarContainer.append(row1);
+    //---------------------------------------------------
+    var row2 = dom_row("sidebar-row-2");
+    var col2 = dom_col("sidebar-col-2", 12);
+    col2.append($("#div-page-menu"));
+    row2.append(col2);
+    sidebarContainer.append(row2);
+    //---------------------------------------------------
+    var row1 = dom_row("sidebar-row-1");
+    var col1 = dom_col("sidebar-col-1", 12);
+    var div1 = dom_div("navbar-brand", "sidebar-title");
+    col1.css("text-align", "center");
+    div1.css("margin-right", "0px");
+    div1.css("margin-top", "0.5em");
+    div1.append("Inhoudsopgave");
+    col1.append(div1);
+    col1.append("<hr>");
+    row1.append(col1);
+    sidebarContainer.append(row1);
+    //---------------------------------------------------
+//    var row2 = dom_row("sidebar-row-2");
+//    var col2 = dom_col("sidebar-col-contentmenu", 12);
+//   // loadTOC($("div[id^=editable]"), col2);
+//    row2.append(col2); 
+//    sidebarContainer.append(row2);
+    //---------------------------------------------------
+    var row1 = dom_row("sidebar-row-1");
+    var col1 = dom_col("sidebar-col-1", 12);
+    var div1 = dom_div("navbar-brand", "sidebar-title");
+    col1.css("text-align", "center");
+    div1.css("margin-right", "0px");
+    div1.css("margin-top", "0.5em");
+    div1.append("Structuur");
+    col1.append(div1);
+    col1.append("<hr>");
+    row1.append(col1);
+    sidebarContainer.append(row1);
+    //---------------------------------------------------
+    var row3 = dom_row("sidebar-row-3");
+    var col3 = dom_col("sidebar-col-3", 12);
+    var div3 = dom_div("", "structure-container");
+    div3.append(dom_moveUpDownList("page-elements", $("div[id^=gbox_grid], div[id^=editable]")));
+    col3.append(div3);
+    row3.append(col3);
+    sidebarContainer.append(row3);
+    $("#sidebar").append(sidebarContainer);
+    //---------------------------------------------------
+    $("#importTableButton").change(function () {
+        $.each(this.files, function (index, file) {
+            var reader = new FileReader();
+            var name = file.name;
+            reader.onload = function (e) {
+                var text = reader.result;
+                console.log(text);
+                bootstrap_alert.warning(name, "info", 1000);
+                createGridBasedOnImportFile($($("div[id^='wrapper']")[0]), createDataAndModelFromCSV(text), name);
+            };
+            reader.readAsText(file);
+        });
+    });
+
+}
+
+function new_editable_field() {
+    console.log("new_editable_field()");
+    var editor = $($("div[id^='wrapper']")[0]);
+    var editable_field = $("<div id='editable_" + uuidv4() + "' contenteditable='true'><p>Nieuw bewerkbaar veld</p></div>");
+    editor.append(editable_field);
+    var ck = CKEDITOR.inline(editable_field.attr('id'));
+
+    ck.on('instanceReady', function (ev) {
+        var editor = ev.editor;
+        editor.setReadOnly(false);
+    });
+}
+
+function edit_page() {
+    toggleCtrlClick();
+    toggleCKmenu();
+
+    $("div[contenteditable]").each(function (a, b) {
+        if (readonly) {
+            readonly = false;
+        } else {
+            readonly = true;
+        }
+        CKEDITOR.instances[b.id].setReadOnly(readonly);
+    });
+    $("#edit-menu button").each(function (index, btn) {
+        if ($(btn).prop('disabled') === true) {
+            $(btn).prop('disabled', false);
+        } else {
+            $(btn).prop('disabled', true);
+        }
+
+    });
+}
+
+function toggleCtrlClick() {
+    if (readonly === false) {
+        $("div[id^=editable]").on('click', function (e) {
+            $(".cke").css("border", "none");
+            if (typeof e.target.href !== 'undefined' && e.ctrlKey === true) {
+                window.open(e.target.href, 'new' + e.screenX);
+            }
+        });
+    } else {
+        $("div[id^=editable]").on('click', function (e) {
+            $(".cke").css("border", "none");
+            if (typeof e.target.href !== 'undefined') {
+                window.open(e.target.href, "_self");
+            }
+        });
+    }
+
+}
+
+function toggleCKmenu() {
+    if ($(".cke_inner").css("display") === "none") {
+        $(".cke_inner").css("display", "flex");
+    } else {
+        $(".cke_inner").css("display", "none");
+    }
+
+}
