@@ -679,7 +679,7 @@ class LCMSEditablePage {
 
     getDataFromPage() {
         var me = this;
-        var htmlData = $('<output>').append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"))));
+        var htmlData = $('<output>').append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"), document, true)));
         me.gridController.checkGrids();
         htmlData.find(("div[id^=gbox_grid]")).each(function (a, b) {
             $(b).after("<div name='" + $(b).attr('id') + "'></div>");
@@ -1500,4 +1500,9 @@ function LCMSTemplateGridButton(icon, title, caption, onClickFunction) {
     this.title = title;
     this.caption = caption;
     this.onClickFunction = onClickFunction;
+}
+
+function ckconfig(){
+    
+    
 }

@@ -4,85 +4,66 @@
  * and open the template in the editor.
  */
 
-function config0() { //used in de notes-module
-    CKEDITOR.stylesSet.add('mdmConfig0', [
-        // Block-level styles
-        {name: 'Hoofdding 1', element: 'h1', styles: {'color': 'rgb(54,95,145)'}},
-        {name: 'Hoofdding 2', element: 'h2', styles: {'color': 'rgb(79,129,189)'}},
-        {name: 'Hoofdding 3', element: 'h3', styles: {'color': 'rgb(79,129,189)'}},
-        {name: 'Hoofdding 4', element: 'h4', styles: {'color': 'rgb(79,129,189)', 'font-style': 'italic'}},
-        {name: 'Hoofdding 5', element: 'h5', styles: {'color': 'rgb(36,63,96)'}},
-
-        // Inline styles
-        {name: 'Normaal', element: 'span', attributes: {'class': 'my_style'}},
-        {name: 'Marker: Yellow', element: 'span', styles: {'background-color': 'Yellow'}}
-    ]);
-
-    CKEDITOR.editorConfig = function (config) {
-
-        config.templates_files = ['./ckeditor/plugins/templates/templates/defaultLCMS.js'];
-
-        config.toolbarGroups = [
-            {name: 'document', groups: ['mode', 'document', 'doctools']},
-            {name: 'clipboard', groups: ['clipboard', 'undo']},
-            {name: 'basicstyles', groups: ['basicstyles', 'cleanup']},
-            {name: 'insert', groups: ['insert']},
-            {name: 'editing', groups: ['find', 'selection', 'spellchecker', 'editing']},
-            {name: 'colors', groups: ['colors']},
-            {name: 'forms', groups: ['forms']},
-            {name: 'tools', groups: ['tools']},
-            //'/',
-            {name: 'styles', groups: ['styles']},
-            {name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph']},
-            {name: 'links', groups: ['links', 'mdmUploadFiles', 'mdmInsertFileReference']},
-            //'/',
-            {name: 'others', groups: ['others']},
-            {name: 'about', groups: ['about']}
-        ];
-        //"http://localhost:8080/LCMS/JS/ckeditor/plugins/templates/templates/default.js?t=HBDD"
-
-        config.extraPlugins = 'forms,codesnippet,codemirror,widget,dialog,pre,resize,autogrow,notificationaggregator,notification,mdmUploadFiles,mdmjexcel';
-
-        config.format_tags = 'div';
-        config.removeButtons = 'Table,New,Radio,Save,Source,New,TextField,Textarea,Select,Button,ImageButton,HiddenField,Flash,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Anchor,Unlink,Language,BidiRtl,BidiLtr,Blockquote,CreateDiv,ShowBlocks,About,Scayt,PasteFromWord,PasteText,Paste,Copy,Cut';
-        config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';
-        //CKEDITOR.config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu';
-        config.stylesSet = 'mdmConfig0:/styles.js';
-   
-    };
-
-
-
+function config3(){
+    
+    
 }
+
+//function config0() { //used in de notes-module
+//    CKEDITOR.stylesSet.add('mdmConfig0', [
+//        // Block-level styles
+//        {name: 'Hoofdding 1', element: 'h1', styles: {'color': 'rgb(54,95,145)'}},
+//        {name: 'Hoofdding 2', element: 'h2', styles: {'color': 'rgb(79,129,189)'}},
+//        {name: 'Hoofdding 3', element: 'h3', styles: {'color': 'rgb(79,129,189)'}},
+//        {name: 'Hoofdding 4', element: 'h4', styles: {'color': 'rgb(79,129,189)', 'font-style': 'italic'}},
+//        {name: 'Hoofdding 5', element: 'h5', styles: {'color': 'rgb(36,63,96)'}},
+//
+//        // Inline styles
+//        {name: 'Normaal', element: 'span', attributes: {'class': 'my_style'}},
+//        {name: 'Marker: Yellow', element: 'span', styles: {'background-color': 'Yellow'}}
+//    ]);
+//
+//    CKEDITOR.editorConfig = function (config) {
+//
+//        config.templates_files = ['./ckeditor/plugins/templates/templates/defaultLCMS.js'];
+//
+//        config.toolbarGroups = [
+//            {name: 'document', groups: ['mode', 'document', 'doctools']},
+//            {name: 'clipboard', groups: ['clipboard', 'undo']},
+//            {name: 'basicstyles', groups: ['basicstyles', 'cleanup']},
+//            {name: 'insert', groups: ['insert']},
+//            {name: 'editing', groups: ['find', 'selection', 'spellchecker', 'editing']},
+//            {name: 'colors', groups: ['colors']},
+//            {name: 'forms', groups: ['forms']},
+//            {name: 'tools', groups: ['tools']},
+//            //'/',
+//            {name: 'styles', groups: ['styles']},
+//            {name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph']},
+//            {name: 'links', groups: ['links', 'mdmUploadFiles', 'mdmInsertFileReference']},
+//            //'/',
+//            {name: 'others', groups: ['others']},
+//            {name: 'about', groups: ['about']}
+//        ];
+//        //"http://localhost:8080/LCMS/JS/ckeditor/plugins/templates/templates/default.js?t=HBDD"
+//
+//        config.extraPlugins = 'sourcedialog,forms,codesnippet,codemirror,widget,dialog,pre,resize,autogrow,notificationaggregator,notification,mdmUploadFiles,mdmjexcel';
+//
+//        config.format_tags = 'div';
+//        config.removeButtons = 'Table,New,Radio,Save,Source,New,TextField,Textarea,Select,Button,ImageButton,HiddenField,Flash,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Anchor,Unlink,Language,BidiRtl,BidiLtr,Blockquote,CreateDiv,ShowBlocks,About,Scayt,PasteFromWord,PasteText,Paste,Copy,Cut';
+//        config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';
+//        //CKEDITOR.config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu';
+//        config.stylesSet = 'mdmConfig0:/styles.js';
+//
+//    };
+//
+//
+//
+//}
 
 function config2() { //for inline editing
     console.log("function config2");
     let imageController = new LCMSImageController();
-  
 
-    CKEDITOR.editor.prototype.setToolbar = function (tbName) {
-        if (!this._.events.themeSpace) {
-            CKEDITOR.plugins.registered.toolbar.init(this);
-            // causes themeSpace event to be listened to.
-        }
-        // If a different toolbar was specified use it, otherwise just reload
-        if (tbName) {
-            this.config.toolbar = tbName;
-        }
-        //According to CKEditor documentation
-        var obj = this.fire('uiSpace', {space: 'top', html: ''}).html;
-        console.log("Received from themespace:");
-        console.log(obj);
-        // Replace the toolbar HTML 
-        var tbEleId = this.id + "_" + this.config.toolbarLocation;
-        console.log("Editor element id: " + tbEleId);
-        var tbEle = document.getElementById(tbEleId);
-        //tbEle.innerHTML = obj.html;
-        $(tbEle).html(obj);
-    }
-    CKEDITOR.config.toolbar_null = [
-
-    ];
 
     if (typeof CKEDITOR.stylesSet.registered["mdmConfig2"] === "undefined") {
         CKEDITOR.stylesSet.add('mdmConfig2', [
@@ -131,7 +112,12 @@ function config2() { //for inline editing
         config.title = false;
         config.stylesSet = 'mdmConfig2:/styles.js';
         config.allowedContent = true;
-        config.extraAllowedContent = '*(*)';
+        //CKEDITOR.filter.allowedContent = true;
+        CKEDITOR.config.protectedSource.push( /<([\S]+)[^>]*class="preserve"[^>]*>.*<\/\1>/g );
+
+       // protectedSource : [/<script[\s\S]*?<\/script>/gi];
+
+
 
 
     };

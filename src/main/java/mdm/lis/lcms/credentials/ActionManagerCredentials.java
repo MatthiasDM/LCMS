@@ -178,7 +178,7 @@ public class ActionManagerCredentials {
         user.setUserid(id.toString());
         user.setPassword(passwordEncryptor.encryptPassword("LCMS"));
         user.setEmail("LCMS@klinilab.be");
-        user.setRoles(Arrays.asList(new String[]{"ADMIN"}));
+        user.setRoles(Arrays.asList(new String[]{"ADMIN", "ICTMANAGER"}));
         user.setLdap(false);
         Document document = Document.parse(mapper.writeValueAsString(user));
         DatabaseWrapper.addObject(document, mdm.Config.MongoConf.USERS, cookie);

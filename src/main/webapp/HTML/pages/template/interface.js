@@ -19,16 +19,12 @@ $(function () {
         showLoading();
         var counter = 0;
         $("div[contenteditable]").each(function (a, b) {
-
             var ck = CKEDITOR.inline($(b).attr('id'));
-
             ck.on('instanceReady', function (ev) {
                 var editor = ev.editor;
+                console.log(editor.filter.allowedContent);
                 editor.setReadOnly(readonly);
-
                 toggleCKmenu();
-
-                //editor.setReadOnly(false);
                 counter++;
                 if (counter === numEditors) {
                     hideLoading();
