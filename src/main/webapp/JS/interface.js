@@ -464,8 +464,8 @@ function dom_card(header, body) {
 
     return card;
 }
-function dom_nav(pills) {
-    var div = dom_div("", "pills-" + uuidv4());
+function dom_nav(pills, _id) {
+    var div = dom_div("", _id);
     var nav = $("<ul class='nav nav-pills mb-3' id='' role='tablist'>");
     $.each(pills, function (id, val) {
         //{'home': 'thuis', 'urgent': 'dringend'};

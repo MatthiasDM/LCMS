@@ -5,6 +5,8 @@
  */
 
 
+
+
 function ICTtickets_doLoad(_parent) {
     console.log("ICT-tickets load");
     var _cookie = $.cookie('LCMS_session');

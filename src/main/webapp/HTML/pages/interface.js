@@ -27,10 +27,3 @@ $(function () {
 
 
 
-function buildEditablePage(data, _parent) {
-    console.log("buildDocumentPage()");
-    config2();
-    documentPage = new LCMSEditablePage({loadAction: "getpage", editAction: "editpages", editUrl: "./servlet", pageId: "", idName: "editablepageid"});
-    documentPage.buildPageData(data, _parent);
-    // documentPage.setPageId($($("div[id^='wrapper']")[0]).attr("id").substring(8));
-}

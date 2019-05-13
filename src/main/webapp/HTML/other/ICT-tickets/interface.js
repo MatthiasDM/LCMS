@@ -6,6 +6,7 @@
 
 $(function () {
     ICTtickets_doLoad($("#ICT-ticket-container"));
+    LCMSgetEditablePage($("#content"), "title", "icttickets");
     config2();
 });
 

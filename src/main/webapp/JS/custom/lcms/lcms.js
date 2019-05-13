@@ -439,7 +439,7 @@ class LCMSEditablePage {
                 } else {
                     LCMSEditablePage_content.html = "";
                     LCMSEditablePage_content.grids = {};
-                    originalDocument = '';
+                    me.originalDocument = '';
                 }
                 jsonData.webPage = replaceAll(jsonData.webPage, "LCMSEditablePage-content", LCMSEditablePage_content.html);
 
@@ -1502,7 +1502,40 @@ function LCMSTemplateGridButton(icon, title, caption, onClickFunction) {
     this.onClickFunction = onClickFunction;
 }
 
-function ckconfig(){
-    
-    
+function buildEditablePage(data, _parent) {
+    console.log("buildDocumentPage()");
+    config2();
+    documentPage = new LCMSEditablePage({loadAction: "getpage", editAction: "editpages", editUrl: "./servlet", pageId: "", idName: "editablepageid"});
+    documentPage.buildPageData(data, _parent);
+    // documentPage.setPageId($($("div[id^='wrapper']")[0]).attr("id").substring(8));
+}
+
+function editablePage_getPage(_parent) {
+    console.log("editablePage_getPage()");
+    function onDone(data) {
+        buildEditablePage(data, _parent);
+    }
+    var _v = getUrlParam(window.location.href, "v");
+    var _k = getUrlParam(window.location.href, "k");
+    if (_v === "" || _k === "") {
+        LCMSRequest("./servlet", {action: "getpage", k: "title", v: "home"}, onDone);
+    } else {
+        LCMSRequest("./servlet", {action: "getpage", k: _k, v: _v}, onDone);
+    }
+
+
+}
+
+function LCMSgetEditablePage(_parent,_k ,_v) {
+    console.log("LCMSgetEditablePage()");
+    function onDone(data) {
+        buildEditablePage(data, _parent);
+    }
+    if (_v === "" || _k === "") {
+        LCMSRequest("./servlet", {action: "getpage", k: "title", v: "home"}, onDone);
+    } else {
+        LCMSRequest("./servlet", {action: "getpage", k: _k, v: _v}, onDone);
+    }
+
+
 }
