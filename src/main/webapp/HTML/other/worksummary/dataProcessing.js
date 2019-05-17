@@ -91,7 +91,40 @@ function replaceProgressBar(gridId, gridData) {
     $("#progress_" + gridId).replaceWith(progress);
 }
 
+function createBadgesFromTests(cellvalue, options, rowObject) {
+    console.log("creating badges()");
+    var orderData = cellvalue;
+    var badges = $("<div></div>");
+    $.each(orderData, function (a, b) {
+        console.log(b);
+        var color = calcColorBasedOnTAT(b);
+        var badge = "<span class='badge badge-light' style='color:white;margin:2px;background-color: rgb(" + color.r + "," + color.g + "," + color.b + ");'>" + b.Test + "</span>";
+        badges.append(badge);
+    });
+    return badges.html();
+}
 
+function calcColorBasedOnTAT(orderData) {
+    //rgb 255
+
+
+
+    var tat = Object.filter(tats, tat => tat["TEST"] === orderData.Test);
+    if (typeof Object.values(tat)[0] !== "undefined") {
+        var tatVal = Object.values(tat)[0].TAT;
+        var a = orderData.Minutes / tatVal;
+        if (a > 1) {
+            a = 1;
+        }
+        var b = a * 220;
+        return {r: 35+ 0 + b, g: 255 - b, b: 35};
+    } else {
+        return {r: 150, g: 150, b: 150};
+    }
+
+
+    // 100 / 100 --> 1   200/100 --> 2  1 / 100 --> 0.01
+}
 
 
 
@@ -100,67 +133,66 @@ function perOrder(parent, data, gridId, refresh) {
     var colModel = [
         {name: "Order", type: "text", key: true, width: 100},
         {name: "Aanvrager", type: "text", width: 150},
-        {name: "Info", type: "text", width: 250},
+        {name: "Testen", width: 150, type: "text", formatter: createBadgesFromTests},
+        {name: "Info", type: "text", width: 150},
         {name: "Open", type: "number", width: 50}
-    ]
+    ];
     var processedData = perOrderDataVerwerking(data);
     var gridData = processedData.gridData;
     var extraOptions = new Object();//extraJQGridOptions(data, processedData, null, "Orders");
 
-    if (typeof processedData.subgridData !== "undefined") {
-        extraOptions.subGrid = true;
-        extraOptions.subGridOptions = {
-            hasSubgrid: function (options) {
-                return true;
-            }
-        };
-        extraOptions.subGridRowExpanded = function (subgridDivId, rowId) {
-            var subgridTableId = subgridDivId + "_t";
-            $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
-            $("[id='" + subgridTableId + "']").jqGrid({
-                datatype: 'local',
-                data: processedData.subgridData[rowId],
-                colNames: ['Order', 'Test', 'Open'],
-                colModel: [
-                    {name: 'Order', width: 100, visible: false},
-                    {name: 'Test', width: 200},
-                    {name: 'Open', width: 100}
-                ],
-                gridview: true,
-                rownumbers: true,
-                autoencode: true,
-                responsive: true,
-                headertitles: true,
-                iconSet: "fontAwesome",
-                guiStyle: "bootstrap4"
-
-            });
-        };
-        extraOptions.caption = "test";
-        if (gridId === "pertoestel") {
-            extraOptions.grouping = true;
-            extraOptions.groupingView = {
-                groupField: ['Toestel'],
-                groupColumnShow: [false],
-                groupText: ['<b>{0} - {1} Item(s)</b>'],
-                groupCollapse: true
-            };
-            colModel.push({name: "Toestel", type: "text"});
-        } else {
-            extraOptions.grouping = true;
-            extraOptions.groupingView = {
-                groupField: ['Aanvrager'],
-                groupColumnShow: [true],
-                groupText: ['<b>{0} - {1} Item(s)</b>'],
-                groupCollapse: false
-            };
-        }
-
-
-//        extraOptions.onSelectRow = function (rowid) {
-//            $(this).find("[id='" + rowid + "']").children("td.ui-sgcollapsed").click();
+//    if (typeof processedData.subgridData !== "undefined") {
+//        extraOptions.subGrid = true;
+//        extraOptions.subGridOptions = {
+//            hasSubgrid: function (options) {
+//                return true;
+//            }
 //        };
-    }
+//        extraOptions.subGridRowExpanded = function (subgridDivId, rowId) {
+//            var subgridTableId = subgridDivId + "_t";
+//            $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
+//            $("[id='" + subgridTableId + "']").jqGrid({
+//                datatype: 'local',
+//                data: processedData.subgridData[rowId],
+//                colNames: ['Order', 'Test', 'Open'],
+//                colModel: [
+//                    {name: 'Order', width: 100, visible: false},
+//                    {name: 'Test', width: 200},
+//                    {name: 'Open', width: 100}
+//                ],
+//                gridview: true,
+//                rownumbers: true,
+//                autoencode: true,
+//                responsive: true,
+//                headertitles: true,
+//                iconSet: "fontAwesome",
+//                guiStyle: "bootstrap4"
+//
+//            });
+//        };
+//        extraOptions.caption = "test";
+//        if (gridId === "pertoestel") {
+//            extraOptions.grouping = true;
+//            extraOptions.groupingView = {
+//                groupField: ['Toestel'],
+//                groupColumnShow: [false],
+//                groupText: ['<b>{0} - {1} Item(s)</b>'],
+//                groupCollapse: true
+//            };
+//            colModel.push({name: "Toestel", type: "text"});
+//        } else {
+//            extraOptions.grouping = true;
+//            extraOptions.groupingView = {
+//                groupField: ['Aanvrager'],
+//                groupColumnShow: [true],
+//                groupText: ['<b>{0} - {1} Item(s)</b>'],
+//                groupCollapse: false
+//            };
+//        }
+//
+//
+//
+//    }
 
 
 
@@ -179,6 +211,7 @@ function perOrder(parent, data, gridId, refresh) {
 }
 
 function perOrderDataVerwerking(data) {
+    console.log("perOrderDataVerwerking()");
     var output = new Object();
     var gridData = [];
     var subgridData = [];
@@ -217,31 +250,45 @@ function perOrderDataVerwerking(data) {
             info["Open"] = -1;
         }
 
-
-
         var orderData = [];
         $.each(filteredTestsPerOrder, function (key3, value) {
-            var openTime = moment.duration(moment()-moment(value.DATE.trim(), "DDMMYYHHmmss"))._data;
+            var openTime = moment.duration(moment() - moment(value.DATE.trim(), "DDMMYYHHmmss"))._data;
             if (typeof openTime !== "undefined") {
                 var days = openTime.days > 0 ? openTime.days + "d " : "";
                 var hours = openTime.hours > 0 ? openTime.hours + "h " : "";
                 var minutes = openTime.minutes > 0 ? openTime.minutes + "m" : "";
-                orderData.push({Order: value.ORDER, Test: value["TEST"], Open: days + hours + minutes});
+                orderData.push({Order: value.ORDER, Test: value["TEST"], Open: days + hours + minutes, Minutes: (openTime.days * 24 * 60 + openTime.hours * 60 + openTime.minutes)});
             } else {
-                orderData.push({Order: value.ORDER, Test: value["TEST"], Open: ""});
+                orderData.push({Order: value.ORDER, Test: value["TEST"], Open: "", Minutes: -1});
             }
 
 
         });
+        info["Testen"] = orderData;
+
+//        var orderData = [];
+//        $.each(filteredTestsPerOrder, function (key3, value) {
+//            var openTime = moment.duration(moment()-moment(value.DATE.trim(), "DDMMYYHHmmss"))._data;
+//            if (typeof openTime !== "undefined") {
+//                var days = openTime.days > 0 ? openTime.days + "d " : "";
+//                var hours = openTime.hours > 0 ? openTime.hours + "h " : "";
+//                var minutes = openTime.minutes > 0 ? openTime.minutes + "m" : "";
+//                orderData.push({Order: value.ORDER, Test: value["TEST"], Open: days + hours + minutes});
+//            } else {
+//                orderData.push({Order: value.ORDER, Test: value["TEST"], Open: ""});
+//            }
+//
+//
+//        });
+
+        // subgridData[value] = orderData;
 
 
-
-        subgridData[value] = orderData;
         gridData.push(info);
     });
 
 
-    output.subgridData = subgridData;
+    //  output.subgridData = subgridData;
     output.gridData = gridData;
     return output;
 }

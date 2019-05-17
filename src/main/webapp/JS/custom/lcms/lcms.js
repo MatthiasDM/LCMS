@@ -912,51 +912,52 @@ class LCMSGrid {
             var column = {};
             column.label = value.name;
             column.name = value.name;
+            var type = value.type || value.edittype;
             //column.editable = true;
 
-            if (value.type === "date") {
+            if (type === "date") {
                 column.formatoptions = {srcformat: "u1000", newformat: "d-m-y"};
                 column.formatter = "date";
                 column.sorttype = "date";
                 column.editoptions = {dataInit: initDateEdit};
             }
-            if (value.type === "number") {
+            if (type === "number") {
                 column.template = numberTemplate;
             }
-            if (value.type === "datetime") {
+            if (type === "datetime") {
                 column.formatoptions = {srcformat: "u1000", newformat: "d-m-y h:i"};
                 column.formatter = "date";
                 column.sorttype = "date";
                 column.editoptions = {dataInit: initDateTimeEdit};
             }
 
-            if (value.type === "text") {
+            if (type === "text") {
                 column.edittype = "text";
             }
-            if (value.type === "cktext") {
+            if (type === "cktext") {
                 column.edittype = "textarea";
                 column.editoptions = {title: "ckedit"};
             }
-            if (value.type === "cktext_code") {
+            if (type === "cktext_code") {
                 column.edittype = "textarea";
                 column.editoptions = {title: "ckedit_code"};
             }
-            if (value.type === "boolean") {
+            if (type === "boolean") {
                 column.template = "booleanCheckbox";
             }
 
-            if (value.type === "internal_list") {
+            if (type === "internal_list") {
                 value.type = "select";
                 column.editoptions = {title: "internal_list"};
                 column.internalListName = value.internalListName;
                 column.internalListAttribute = value.internalListAttribute;
 
             }
-            if (value.type === "external_list") {
+            if (type === "external_list") {
                 value.type = "select";
                 column.editoptions = {title: "external_list"};
             }
-            if (value.type === "select") {
+            if (type === "select") {
                 column.edittype = "select";
                 column.formatter = "select";
                 column.width = "200";
@@ -972,7 +973,7 @@ class LCMSGrid {
                     column.editoptions.size = value.choices.length < 8 ? value.choices.length + 2 : 10;
                 }
             }
-            if (value.type === "password") {
+            if (type === "password") {
                 column.edittype = "password";
             }
             if (value.key === true) {

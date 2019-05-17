@@ -18,12 +18,13 @@ $(function () {
             $("#" + key).trigger("reloadGrid");
         }
     });
-    var numEditors = $("div[contenteditable]").length;
+    var numEditors = $("div[id^=editable]").length;
     if (numEditors > 0) {
         showLoading();
         var counter = 0;
         $("div[contenteditable]").each(function (a, b) {
             var ck = CKEDITOR.inline($(b).attr('id'));
+
             ck.on('instanceReady', function (ev) {
                 var editor = ev.editor;
                 editor.setReadOnly(false);
@@ -583,7 +584,12 @@ function addRow(parent, elementID, colModelValue) {
     if (typeVal === "select" && colModelValue.editoptions.title === "external_list") {
         typeVal = "external_list";
     }
-
+    if (typeVal === "select" && colModelValue.editoptions.title === "external_list") {
+        typeVal = "external_list";
+    }
+    if (typeVal === "checkbox") {
+        typeVal = "boolean";
+    }
     if (typeof typeVal !== "undefined") {
         if (typeVal.sorttype === "number") {
             typeVal = "number";

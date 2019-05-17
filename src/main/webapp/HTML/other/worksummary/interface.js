@@ -17,6 +17,7 @@ Object.filter = (obj, predicate) =>
 $(function () {
     replaceJumbo();
     createJumboCard(jumboColumn);
+    
     worksummary_doLoad('new');
 
 
@@ -24,16 +25,15 @@ $(function () {
 });
 
 function replaceJumbo() {
-    var jumbotron = $("#jumbotron");
+    $("#jumbotron").css("display", "none");
+    var jumbotron = $("#dynamic-content");
     var container = dom_div("container");
     jumbotron.append(container);
     var row = dom_row(uuidv4());
     container.append(row);
-    var col1 = dom_col(uuidv4(), 6);
+    var col1 = dom_col(uuidv4(), 12);
     row.append(col1);
-    $("#text-jumbo-heading").appendTo(col1);
-    $("#text-jumbo-info").appendTo(col1);
-    jumboColumn = dom_col(uuidv4(), 6);
+    jumboColumn = dom_col(uuidv4(), 12);
     row.append(jumboColumn);
 
 }
@@ -45,30 +45,30 @@ function createJumboCard(parent) {
     var row2 = dom_row("infoButtonsRow2");
     row2.css("padding-bottom", '5px');
     var row3 = dom_row("tapPage1");
-
     container.append(row1);
     container.append(row2);
     container.append(row3);
+    container.append($("#station-wrapper"));
     var card = dom_card(container, "");
     card.find(".card-body").addClass("collapse");
     card.find(".card-body").attr('id', "infoButtons-body");
     card.find(".card-body").css('padding', "0");
     card.find(".card-body").css('width', "100%");
     parent.append(card);
+    
 
 }
 
 function createJumboElements(type) {
-
+    console.log("createJumboElements()");
     createQuickview(type, "dringend", "btn-urgent", "exclamation", "danger", "dringend", "div-quickview", "", $("#infoButtonsRow1"));
     createQuickview(type, "commentaar", "btn-comment", "comment", "warning", "commentaar", "div-quickview", "", $("#infoButtonsRow1"));
     createQuickview(type, "cyberlab", "btn-cyberlab", "barcode", "info", "cyberlab", "div-quickview", "", $("#infoButtonsRow1"));
     createQuickview(type, "doorbelwaarde", "btn-doorbelwaarde", "phone", "danger", "doorbelwaarde", "div-quickview", "", $("#infoButtonsRow1"));
     createQuickview(type, "tats", "btn-tats", "clock-o", "danger", "tats", "div-quickview", "", $("#infoButtonsRow1"));
 //function createQuickview(_type, _data, btnId, btnIcon, btnColor, gridId, collapseTarget, btnTxt, appendTo) {
-    createQuickview(type, "brugge", "btn-brugge", "fa-stack-1x", "info", "brugge", "div-quickview", "<b>B</b>", $("#tapPage1"));
-    createQuickview(type, "knokke", "btn-knokke", "fa-stack-1x", "info", "knokke", "div-quickview", "<b>K</b>", $("#tapPage1"));
-    createQuickview(type, "pertoestel", "btn-toestel", "fa-stack-1x", "info", "pertoestel", "div-quickview", "<b>T</b>", $("#tapPage1"));
+    createQuickview(type, "brugge", "btn-brugge", "fa-stack-1x", "info", "brugge", "div-quickview", "<b>B</b>", $("#infoButtonsRow1"));
+    createQuickview(type, "knokke", "btn-knokke", "fa-stack-1x", "info", "knokke", "div-quickview", "<b>K</b>", $("#infoButtonsRow1"));
 
     var distinctWorkposts = filterUnique($.map(stations, function (el) {
         console.log(el.WERKPOST);
@@ -81,7 +81,7 @@ function createJumboElements(type) {
     Object.keys(distinctWorkposts).forEach(function (key) {     
         $.each(stations, function (index, station) {
             if (station.WERKPOST === distinctWorkposts[key]) {
-                createQuickview("new", station.NAAM, "btn-"+ key + "-tab" + index, "fa-stack-1x", "info", key + "-tab-" + index, key + "-tab", station.NAAM, $("#"+key + "-tab"));
+                createQuickview("new", station.NAAM, "btn-"+ key + "-tab" + index, "fa-stack-1x", "info", key + "-tab-" + index, "div-quickview", station.NAAM, $("#"+key + "-tab"));
             }
         });
     });
@@ -115,7 +115,7 @@ function createJumboButton(refresh, data, btnId, btnIcon, btnText, btnStyle, app
     $("#" + btnId).css("margin-right", "5px");
     $("#" + btnId).css("margin-bottom", "5px");
 
-    $("#" + btnId + " span").text($("#" + btnId + " span").text() + info["Orders"]);
+    $("#" + btnId + " span").html($("#" + btnId + " span").text() + "<span class='badge badge-"+btnStyle+"' style='font-size: .9em;color:white;'>" + info["Orders"] + "</span>");
 
 }
 
@@ -346,8 +346,9 @@ function new_grid(colModel, extraOptions, gridData, gridId, parent) {
     var editor = parent;
     var data = [];
     var colData = {};
-    colData.header = JSON.stringify(colModel);
-    colModel = generateView2(colData);
+   // colData.header = JSON.stringify(colModel);
+   // colModel = generateView2(colData);
+    
     var colNames = [];
     for (var key in colModel) {
         if (typeof colModel[key].name !== 'undefined') {

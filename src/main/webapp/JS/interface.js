@@ -511,7 +511,8 @@ function loadImages(editor, editorObject) {
     }
 
     images.each(function (index) {
-        downloadToTemp($(this));
+        var newImage = downloadToTemp($(this));       
+         $("#" + editor).find('[fileid]')[index] = newImage;
     });
 
     return images;

@@ -46,6 +46,7 @@ import mdm.GsonObjects.Lab.LabItem;
 import mdm.GsonObjects.MongoConfigurations;
 import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
+import mdm.commandFunctions;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
@@ -174,17 +175,24 @@ public class Servlet extends HttpServlet {
                 } else {
                     if (action.name.toUpperCase().contains("LOAD")) {
                         ArrayList<String> excludes = new ArrayList<>();
-                        if(requestParameters.get("excludes") != null){
+                        if (requestParameters.get("excludes") != null) {
                             excludes.addAll(Arrays.asList(requestParameters.get("excludes")));
                         }
                         excludes.add("contents");
-                        
+
                         sb.append(DatabaseWrapper.actionLOADOBJECTv2(cookie, action.getMongoConfiguration(action.mongoconfiguration), new BasicDBObject(), excludes.toArray(new String[0])));
                     } else {
                         if (action.name.toUpperCase().contains("GET")) {
 
                             Pair<String, String> PKPair = new Pair(requestParameters.get("k")[0], requestParameters.get("v")[0]);
                             sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, action.getMongoConfiguration(action.mongoconfiguration), PKPair));
+                        }
+                        if (action.name.toUpperCase().contains("DO")) {
+                             Pair<String, String> PKPair = new Pair("name", requestParameters.get("name")[0]);
+                            // ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, filter, null, 1000, excludes);
+                             sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, action.getMongoConfiguration(action.mongoconfiguration), PKPair));
+                             commandFunctions.doCommand(cookie);
+
                         }
                     }
                 }

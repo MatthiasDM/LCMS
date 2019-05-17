@@ -167,7 +167,7 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
     return _tableObject;
 }
 
-function generateView2(data) {
+function cgenerateView2(data) {
     console.log("generateView2()");
     var cols = new Array();
     var view = [];
@@ -195,6 +195,9 @@ function generateView2(data) {
 
         if (value.type === "text") {
             column.edittype = "text";
+            if (typeof value.formatter !== "undefined") {
+                column.formatter = value.formatter;
+            }
         }
         if (value.type === "cktext") {
             column.edittype = "textarea";

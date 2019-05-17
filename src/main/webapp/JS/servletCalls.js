@@ -92,12 +92,12 @@ function downloadToTemp(file) {
             var filePath = jsonData.filePath;
             console.log("Changing filepath from " + file.attr("src") + " to " + filePath);
             file.attr("src", filePath);
-
+            return file;
 
         }
     }
     request.open('POST', "./upload", /* async = */ false);
-    request.send(formData);
+    request.send(formData);   
 }
 
 
