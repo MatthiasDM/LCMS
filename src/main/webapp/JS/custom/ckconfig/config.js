@@ -177,44 +177,44 @@ function config2() { //for inline editing
             $("#cke_" + $(this).attr('id')).css("max-height", "700px");
         });
 
-        if ($('iframe').length > 0) {
-
-            editor = $(CKEDITOR.instances["followup"].editable().$);
-
-            $('iframe').click(function (e) {
-                if (typeof e.target.href !== 'undefined' && e.ctrlKey === true) {
-                    window.open(e.target.href, 'new' + e.screenX);
-                }
-            });
-
-            editor.on("paste", function (e) {
-                capturePaste(e, editor.attr("id"));
-                setTimeout(function () {
-                    var text = CKEDITOR.instances[editorId].getData();
-                    text = text.replace(/<img (?!fileid).*?>/, "");
-                    CKEDITOR.instances[editorId].setData(text);
-                    // do something with text
-                }, 100);
-            });
-
-            editor.dropzone({
-                url: "./upload",
-                clickable: false,
-                createImageThumbnails: false,
-                previewsContainer: false,
-                init: function () {
-                    this.on("sending", function (file, xhr, formData) {
-                        formData.append('action', 'FILE_UPLOAD');
-                        formData.append('LCMS_session', $.cookie('LCMS_session'));
-                        console.log(formData);
-                    });
-                    this.on("success", function (file, response) {
-                        response = JSON.parse(response);
-                        imageController.insertFileInEditor(response.name, response.fileid, editor);
-                        bootstrap_alert.warning('Adding image succesfull', 'success', 1000);
-                    });
-                }});
-        }
+//        if ($('iframe').length > 0) {
+//
+//            editor = $(CKEDITOR.instances["followup"].editable().$);
+//
+//            $('iframe').click(function (e) {
+//                if (typeof e.target.href !== 'undefined' && e.ctrlKey === true) {
+//                    window.open(e.target.href, 'new' + e.screenX);
+//                }
+//            });
+//
+//            editor.on("paste", function (e) {
+//                capturePaste(e, editor.attr("id"));
+//                setTimeout(function () {
+//                    var text = CKEDITOR.instances[editorId].getData();
+//                    text = text.replace(/<img (?!fileid).*?>/, "");
+//                    CKEDITOR.instances[editorId].setData(text);
+//                    // do something with text
+//                }, 100);
+//            });
+//
+//            editor.dropzone({
+//                url: "./upload",
+//                clickable: false,
+//                createImageThumbnails: false,
+//                previewsContainer: false,
+//                init: function () {
+//                    this.on("sending", function (file, xhr, formData) {
+//                        formData.append('action', 'FILE_UPLOAD');
+//                        formData.append('LCMS_session', $.cookie('LCMS_session'));
+//                        console.log(formData);
+//                    });
+//                    this.on("success", function (file, response) {
+//                        response = JSON.parse(response);
+//                        imageController.insertFileInEditor(response.name, response.fileid, editor);
+//                        bootstrap_alert.warning('Adding image succesfull', 'success', 1000);
+//                    });
+//                }});
+//        }
 
 
     });
