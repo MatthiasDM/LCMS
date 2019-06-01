@@ -153,7 +153,7 @@ function CSVToArray(strData, strDelimiter) {
 function getCSSOfHref(href) {
     var css = [];
     //var sheet = $("<link type='text/css' rel='stylesheet' href='"+href+"'/>")[0].sheet;
-    var sheet = $("link[href='"+href+"']")[0].sheet;
+    var sheet = $("link[href='" + href + "']")[0].sheet;
     var rules = ('cssRules' in sheet) ? sheet.cssRules : sheet.rules;
     if (rules)
     {
@@ -220,7 +220,8 @@ class LCMSgridController {
     checkGrids() {
         var me = this;
         me.references = [];
-        $("table[id^=grid]").each(function (a, b) {
+        var denominator = $("table[id^=grid]");
+        denominator.each(function (a, b) {
             try {
                 me.grids[$(b).attr('id')] = $(b).jqGrid('getGridParam');
                 me.grids[$(b).attr('id')].colModel.forEach(function (column) {
@@ -304,24 +305,6 @@ class LCMSgridController {
                 }
             });
         }
-//        if (typeof me.grids[grid.attr('id')].subGridHasSubGridValidation !== "undefined") {
-//            $.each(subGridCells, function (i, value) {
-//
-//                var htmlValue = $("#" + value.parentNode.id + " td.sgcollapsed", grid[0]).html();
-//                if (!me.grids[grid.attr('id')].subGridHasSubGridValidation(value.parentNode.id, me.grids[grid.attr('id')].subgridref)) {
-//                    $("#" + value.parentNode.id + " td.sgcollapsed", grid[0]).unbind('click').html('');
-//                } else {
-//                    $("#" + value.parentNode.id + " td.sgcollapsed", grid[0]).bind('click').html("<div class='sgbutton-div'><a role='button' class='btn btn-xs sgbutton'><span class='fa fa-fw fa-plus'></span></a></div>");
-//                }
-//                if (htmlValue !== $("#" + value.parentNode.id + " td.sgcollapsed", grid[0]).html()) {
-//                    change = true;
-//                }
-//            });
-//        }
-        if (change) {
-            // grid.trigger("reloadGrid");
-        }
-
 
 
 
@@ -689,7 +672,18 @@ class LCMSEditablePage {
         data['html'] = htmlData.prop("innerHTML");
         data['grids'] = me.getTrimmedGridControllerGrids();
         data['html'] = removeElements("nosave", data['html']);
+
         return data;
+    }
+
+    replaceViews(_classname, _content) {
+        console.log("replace table views");
+        var $s = _content.find("." + _classname);
+        $s.each(function (index, item) {
+            $(this).replaceWith(replaceBy).end();
+        });
+        return $("<div></div>").append($s).html();
+
     }
 
     getTrimmedGridControllerGrids() {
@@ -852,7 +846,7 @@ class LCMSGrid {
         htmlData.append("<link rel='stylesheet' href='./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css'>");
         //htmlData.append("<link rel='stylesheet' href='./CSS/style.css'>");
         //htmlData.append("<link rel='stylesheet' href='./HTML/validation/template/export.css'>");
-        
+
         var style = $("<style>" + getCSSOfHref("./CSS/export.css") + getCSSOfHref("./CSS/style.css") + getCSS() + "</style>");
         htmlData.append(style);
         htmlData.append($($.parseHTML($(gridData.wrapperObject[0]).prop("innerHTML"))));
@@ -961,8 +955,10 @@ class LCMSGrid {
                 column.edittype = "select";
                 column.formatter = "select";
                 column.width = "200";
-                if (value.choices.constructor.name === "String") {
-                    value.choices = JSON.parse(value.choices);
+                if (typeof value.choices !== "undefined") {
+                    if (value.choices.constructor.name === "String") {
+                        value.choices = JSON.parse(value.choices);
+                    }
                 }
                 if (typeof column.editoptions === "undefined") {
                     column.editoptions = {};
@@ -1088,9 +1084,9 @@ class LCMSGrid {
                 },
                 editParams: {
                     editRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
-                        extraparam: {action: gridData.editAction, LCMS_session: $.cookie('LCMS_session')},
+                        extraparam: {action: gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
 
-                    }
+                    }//23045
                 }
             }
         };
@@ -1527,7 +1523,7 @@ function editablePage_getPage(_parent) {
 
 }
 
-function LCMSgetEditablePage(_parent,_k ,_v) {
+function LCMSgetEditablePage(_parent, _k, _v) {
     console.log("LCMSgetEditablePage()");
     function onDone(data) {
         buildEditablePage(data, _parent);

@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mdm.GsonObjects;
+package mdm.GsonObjects.Core;
 
+import mdm.GsonObjects.Core.MongoConfigurations;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
 import java.util.ArrayList;

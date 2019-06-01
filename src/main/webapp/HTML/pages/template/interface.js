@@ -24,9 +24,9 @@ $(function () {
                 var editor = ev.editor;
                 console.log(editor.filter.allowedContent);
                 editor.setReadOnly(readonly);
-                toggleCKmenu();
                 counter++;
                 if (counter === numEditors) {
+                    toggleCKmenu();
                     hideLoading();
                     if ($("#div-page-menu").length > 0) {
                         loadSideBarMenu();

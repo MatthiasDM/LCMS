@@ -25,6 +25,7 @@ lang = {
 
     },
     ICTTickets: {
+        title: "ICT-tickets in het labo",
         subject: "Onderwerp",
         overview: "Beschrijving",
         followup: "Opvolging",

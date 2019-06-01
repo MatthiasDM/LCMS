@@ -186,16 +186,16 @@ class LCMSloading {
     loading() {
         if (this.loaded === true) {
             hideLoading();
-            return true;                
+            return true;
         } else {
-            if(!this.dialogShown){
-               showLoading();
-               this.dialogShown = true;
-            }            
-           
+            if (!this.dialogShown) {
+                showLoading();
+                this.dialogShown = true;
+            }
+
         }
     }
-    setLoaded(loaded){
+    setLoaded(loaded) {
         this.loaded = loaded;
         this.loading();
     }
@@ -204,8 +204,9 @@ class LCMSloading {
 function removeElements(classname, source) {
     console.log("removeElements()");
     var $s = $(source).find("." + classname).remove().end();
-    return $("<div></div>").append($s).html()
+    return $("<div></div>").append($s).html();
 }
+
 
 $.fn.textWidth = function (text, font) {
     if (!$.fn.textWidth.fakeEl)
@@ -474,7 +475,7 @@ function dom_nav(pills, _id) {
 
     var tab = $("<div class='tab-content' id='pills-tabContent'>");
     $.each(pills, function (id, val) {
-        tab.append("<div class='tab-pane fade' id='" + id + "-tab' role='tabpanel' aria-labelledby='" + id + "-pill'>test " + id + "</div>");
+        tab.append("<div class='tab-pane fade' id='" + id + "-tab' role='tabpanel' aria-labelledby='" + id + "-pill'></div>");
     });
 
     div.append(nav);
@@ -500,19 +501,42 @@ function dom_mainPageContainer(containerID, mainPageContentDivId) {
     return container;
 }
 
+function dom_jqGridContainer(name) {
+    var container = $("<div class='container' id='" + name + "-container'></div>");
+    var row = dom_row();
+    var col1 = dom_col("", "1");
+    var col2 = dom_col(name + "-div-grid-wrapper", "10");
+    var col3 = dom_col("", "1");
+    var table = $("<table id='" + name + "-table'></table>");
+    var div = $("<div id='" + name + "-pager'></div>");
+    col2.append(table);
+    col2.append(div);
+    row.append(col1);
+    row.append(col2);
+    row.append(col3);
+    container.append(row);
+    return container;
+
+}
+
 function loadImages(editor, editorObject) {
+    var _editorObject;
     if (editor !== "") {
         var images = $("#" + editor).find('[fileid]');
         if (images.length < 1) {
             images = $("#cke_" + editor).find("iframe").contents().find('[fileid]');
         }
+        _editorObject = $("#" + editor);
     } else {
         var images = editorObject.find('[fileid]');
+        _editorObject = editorObject;
     }
 
+
+
     images.each(function (index) {
-        var newImage = downloadToTemp($(this));       
-         $("#" + editor).find('[fileid]')[index] = newImage;
+        var newImage = downloadToTemp($(this));
+        _editorObject.find('[fileid]')[index] = newImage;
     });
 
     return images;
@@ -526,4 +550,8 @@ function openFile(filename, text) {
     var x = window.open('http://localhost:8080/LCMS/index.html?p=temp', '_blank');
     x.document.write(text);
     x.document.close();
+}
+
+function exists(obj) {
+
 }

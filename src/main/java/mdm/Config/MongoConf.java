@@ -10,15 +10,21 @@ package mdm.Config;
  * @author Matthias
  */
 public enum MongoConf {
-    SESSION("users", "sessions", "mdm.GsonObjects.Session", "sessionID"),
-    USERS("users", "users", "mdm.GsonObjects.User", "userid"),
-    TABLES("lcms", "tables", "mdm.GsonObjects.Tables", "tablesid"),
-    RIGHTS("lcms", "rights", "mdm.GsonObjects.Rights", "rightsid"),
+    SESSION("users", "sessions", "mdm.GsonObjects.Core.Session", "sessionID"),
+    USERS("users", "users", "mdm.GsonObjects.Core.User", "userid"),
+    //TABLES("lcms", "tables", "mdm.GsonObjects.Tables", "tablesid"),
+    RIGHTS("lcms", "rights", "mdm.GsonObjects.Core.Rights", "rightsid"),
+    TASKS("lcms", "tasks", "mdm.GsonObjects.Core.Task", "taskid"),
+    BACKLOG("backlog", "backlog", "mdm.GsonObjects.Core.Backlog", "backlogid"),
+    MONGOCONFIGURATIONS("lcms", "mongoconfigurations", "mdm.GsonObjects.Core.MongoConfigurations", "mongoconfigurationsid"),
+    ACTIONS("lcms", "actions", "mdm.GsonObjects.Core.Actions", "actionsid"),
+    EDITABLEPAGE("lcms", "editablepages", "mdm.GsonObjects.Core.EditablePage", "editablepageid"),
+
     //--------------------------------------------------------------------------------
     ICTTICKETS("lcms", "ICTTickets", "mdm.GsonObjects.Other.ICTTicket", "ticketid"),
     INSTRUMENTS("lcms", "instruments", "mdm.GsonObjects.Lab.Instrument", "instid"),
     NOTES("lcms", "notes", "mdm.GsonObjects.Note", "docid"),
-    TASKS("lcms", "tasks", "mdm.GsonObjects.Other.Task", "taskid"),
+    
     WORKLIST("lcms", "worklistsummary", "mdm.GsonObjects.Lab.WorklistSummary", "summaryid"),
     INVENTORY("lcms", "inventoryitem", "mdm.GsonObjects.Lab.InventoryItem", "itemid"),
     LABITEM("lcms", "labitem", "mdm.GsonObjects.Lab.LabItem", "labitemid"),
@@ -26,17 +32,15 @@ public enum MongoConf {
     STORAGE("lcms", "storage", "mdm.GsonObjects.Lab.Storage", "storageid"),
     POSSESSION("lcms", "possession", "mdm.GsonObjects.Lab.Possession", "possessionid"),
     DEPARTMENT("lcms", "department", "mdm.GsonObjects.Lab.Department", "departmentid"),
-    BACKLOG("backlog", "backlog", "mdm.GsonObjects.Other.Backlog", "backlogid"),
+    
     SUGGESTIONS("lcms", "suggestions", "mdm.GsonObjects.Other.Suggestion", "suggestionid"),
     VALIDATIONS("lcms", "validations", "mdm.GsonObjects.Other.Validation", "validationid"),
-    EDITABLEPAGE("lcms", "editablepages", "mdm.GsonObjects.EditablePage", "editablepageid"),
     PIVOTTABLES("lcms", "pivottables", "mdm.GsonObjects.Other.PivotTable", "pivottableid"),
-    CHATS("lcms", "chats", "mdm.GsonObjects.Other.Chat", "chatid"),
+    CHATS("lcms", "chats", "mdm.GsonObjects.Other.Chat", "chatid");
     //
     //
     //
-    MONGOCONFIGURATIONS("lcms", "mongoconfigurations", "mdm.GsonObjects.MongoConfigurations", "mongoconfigurationsid"),
-    ACTIONS("lcms", "actions", "mdm.GsonObjects.Actions", "actionsid");
+    
     
     private final String database;
     private final String collection;

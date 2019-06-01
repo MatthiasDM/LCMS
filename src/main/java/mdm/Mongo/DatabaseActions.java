@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import mdm.GsonObjects.Session;
+import mdm.GsonObjects.Core.Session;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -50,13 +50,13 @@ import mdm.DiffMatchPatch;
 
 import mdm.GsonObjects.Lab.Instrument;
 import mdm.GsonObjects.Lab.InventoryItem;
-import mdm.GsonObjects.MongoConfigurations;
+import mdm.GsonObjects.Core.MongoConfigurations;
 import mdm.GsonObjects.Note;
-import mdm.GsonObjects.Other.Backlog;
-import mdm.GsonObjects.Other.FileObject;
+import mdm.GsonObjects.Core.Backlog;
+import mdm.GsonObjects.Core.FileObject;
 import mdm.GsonObjects.Other.ICTTicket;
 
-import mdm.GsonObjects.User;
+import mdm.GsonObjects.Core.User;
 import mdm.GsonObjects.View;
 import mdm.pojo.annotations.MdmAnnotations;
 import org.bson.Document;
@@ -157,7 +157,7 @@ public class DatabaseActions {
 
     static public Session getSession(String _sessionId) {
         Session session = null;
-        if (checkConnection("users")) {
+        if (checkConnection("users") && notNullNorEmpty(_sessionId)) {
             try {
                 MongoCollection<Session> sessions = getSessions();
 
@@ -167,6 +167,16 @@ public class DatabaseActions {
             }
         }
         return session;
+    }
+
+    static public Boolean notNullNorEmpty(String item) {
+        Boolean result = false;
+        if (item != null) {
+            if (!item.equals("")) {
+                result = true;
+            }
+        }
+        return result;
     }
 
     static public void editSessionValidity(String _sessionId, long _validity) throws ClassNotFoundException {
@@ -533,7 +543,6 @@ public class DatabaseActions {
         return results;
     }
 
-    
     public static ArrayList<Document> getObjectsSpecificFields(String _cookie, MongoConf mongoConf, Bson bson, Bson sort, int limit, List<String> columns) throws ClassNotFoundException {
 
         ArrayList<Document> results = null;

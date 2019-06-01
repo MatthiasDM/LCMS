@@ -126,8 +126,6 @@ function calcColorBasedOnTAT(orderData) {
     // 100 / 100 --> 1   200/100 --> 2  1 / 100 --> 0.01
 }
 
-
-
 function perOrder(parent, data, gridId, refresh) {
     console.log("perOrder()");
     var colModel = [
@@ -292,7 +290,6 @@ function perOrderDataVerwerking(data) {
     output.gridData = gridData;
     return output;
 }
-
 
 function compare(a, b) {
     // Use toUpperCase() to ignore character casing

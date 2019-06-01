@@ -28,8 +28,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import mdm.Config.Roles;
-import mdm.GsonObjects.Session;
-import mdm.GsonObjects.User;
+import mdm.GsonObjects.Core.Session;
+import mdm.GsonObjects.Core.User;
 import mdm.Mongo.DatabaseActions;
 import mdm.pojo.annotations.MdmAnnotations;
 import org.jasypt.util.password.StrongPasswordEncryptor;
@@ -95,7 +95,7 @@ public class Core {
             return checkSession(_cookie);
         } else {
             User user = DatabaseActions.getUser(session.getUsername());
-            if (user.getRoles().get(0).contains(_role.toString())) {
+            if (user.getRoles().contains(_role.toString())) {
                 return checkSession(_cookie);
             }
         }
@@ -127,7 +127,7 @@ public class Core {
     public static List<String> getUserRoles(String _cookie) {
         Session session = DatabaseActions.getSession(_cookie);
         List<String> roles = new ArrayList<>();
-        if (session == null) {
+        if (!Core.checkSession(_cookie)) {
             return roles;
         }
         if (session.getUsername().equals("admin")) {
@@ -136,7 +136,7 @@ public class Core {
             return roles;
         } else {
             User user = DatabaseActions.getUser(session.getUsername());
-            return Arrays.asList(user.getRoles().get(0).split(","));
+            return user.getRoles();
         }
     }
 

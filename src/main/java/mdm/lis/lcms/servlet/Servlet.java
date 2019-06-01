@@ -5,29 +5,19 @@
  */
 package mdm.lis.lcms.servlet;
 
-import mdm.lis.lcms.lab.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javafx.util.Pair;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -38,18 +28,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
-import mdm.Config.Actions;
-import mdm.Config.MongoConf;
+import mdm.Core;
 import static mdm.Core.loadWebFile;
-import mdm.GsonObjects.Lab.InventoryItem;
-import mdm.GsonObjects.Lab.LabItem;
-import mdm.GsonObjects.MongoConfigurations;
+import mdm.GsonObjects.Core.MongoConfigurations;
 import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
 import mdm.commandFunctions;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.bson.Document;
 
 /**
  *
@@ -114,14 +99,14 @@ public class Servlet extends HttpServlet {
     class ActionManager {
 
         String cookie;
-        mdm.GsonObjects.Actions action;
+        mdm.GsonObjects.Core.Actions action;
         HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
         Collection<Part> parts;
 
         public ActionManager(Map<String, String[]> requestParameters) throws ClassNotFoundException {
             this.requestParameters = new HashMap<String, String[]>(requestParameters);
             if (requestParameters.get("action") != null) {
-                action = getAction(requestParameters.get("action")[0]);
+                action = DatabaseWrapper.getAction(requestParameters.get("action")[0]);
             }
             if (requestParameters.get("LCMS_session") != null) {
                 cookie = requestParameters.get("LCMS_session")[0];
@@ -131,7 +116,7 @@ public class Servlet extends HttpServlet {
         public ActionManager(Map<String, String[]> requestParameters, Collection<Part> parts) throws ClassNotFoundException {
             this.requestParameters = new HashMap<String, String[]>(requestParameters);
             if (requestParameters.get("action") != null) {
-                action = getAction(requestParameters.get("action")[0]);
+                action = DatabaseWrapper.getAction(requestParameters.get("action")[0]);
             }
             if (requestParameters.get("LCMS_session") != null) {
                 cookie = requestParameters.get("LCMS_session")[0];
@@ -139,28 +124,36 @@ public class Servlet extends HttpServlet {
             this.parts = parts;
         }
 
-        public mdm.GsonObjects.Actions getAction(String _action) throws ClassNotFoundException {
-            ObjectMapper mapper = new ObjectMapper();
-            mdm.GsonObjects.Actions action;
-            BasicDBObject searchObject = new BasicDBObject();
-            searchObject.put("name", new BasicDBObject("$eq", _action));
-            ArrayList<Document> results = DatabaseActions.getObjectsSpecificList("", MongoConf.ACTIONS, searchObject, null, 1000, new String[]{});
-            //String jsonObject = mapper.writeValueAsString(results.get(0));
-            action = mapper.convertValue(results.get(0), mdm.GsonObjects.Actions.class);
-            return action;
-        }
-
         public String getCookie() {
             return cookie;
         }
 
-        public mdm.GsonObjects.Actions getAction() {
+        public mdm.GsonObjects.Core.Actions getAction() {
             return action;
         }
 
         public StringBuilder startAction() throws ClassNotFoundException, IOException, JsonProcessingException, NoSuchFieldException {
             StringBuilder sb = new StringBuilder();
-            if (cookie != null) {
+            MongoConfigurations mongoConfiguration = action.getMongoConfiguration(action.mongoconfiguration);
+
+            Boolean publicPage = false;
+            if (mongoConfiguration.getCollection().equals("pages") && requestParameters.get("k") != null && requestParameters.get("v") != null) {
+                Pair<String, String> PKPair = new Pair(requestParameters.get("k")[0], requestParameters.get("v")[0]);
+                BasicDBObject searchObject = new BasicDBObject();
+                ObjectMapper mapper = new ObjectMapper();
+                ObjectNode jsonData = mapper.createObjectNode();
+                searchObject.put(PKPair.getKey(), new BasicDBObject("$eq", PKPair.getValue()));
+                Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, mongoConfiguration, searchObject);
+                String accesstype = searchResult.get("accessType").toString();
+                if (accesstype.equals("0")) {
+                    publicPage = true;
+                    if (publicPage) {
+                        sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, PKPair));
+                    }
+                }
+            }
+
+            if (Core.checkSession(cookie) && !publicPage) {
 
                 if (parts != null) {
                     for (Part part : parts) {
@@ -171,7 +164,7 @@ public class Servlet extends HttpServlet {
                 }
 
                 if (action.name.toUpperCase().contains("EDIT")) {
-                    sb.append(DatabaseWrapper.actionEDITOBJECTv2(requestParameters, cookie, action.getMongoConfiguration(action.mongoconfiguration)));
+                    sb.append(DatabaseWrapper.actionEDITOBJECTv2(requestParameters, cookie, mongoConfiguration));
                 } else {
                     if (action.name.toUpperCase().contains("LOAD")) {
                         ArrayList<String> excludes = new ArrayList<>();
@@ -180,24 +173,26 @@ public class Servlet extends HttpServlet {
                         }
                         excludes.add("contents");
 
-                        sb.append(DatabaseWrapper.actionLOADOBJECTv2(cookie, action.getMongoConfiguration(action.mongoconfiguration), new BasicDBObject(), excludes.toArray(new String[0])));
+                        sb.append(DatabaseWrapper.actionLOADOBJECTv2(cookie, mongoConfiguration, new BasicDBObject(), excludes.toArray(new String[0])));
                     } else {
                         if (action.name.toUpperCase().contains("GET")) {
 
                             Pair<String, String> PKPair = new Pair(requestParameters.get("k")[0], requestParameters.get("v")[0]);
-                            sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, action.getMongoConfiguration(action.mongoconfiguration), PKPair));
+                            sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, PKPair));
                         }
                         if (action.name.toUpperCase().contains("DO")) {
-                             Pair<String, String> PKPair = new Pair("name", requestParameters.get("name")[0]);
+                            Pair<String, String> PKPair = new Pair("name", requestParameters.get("name")[0]);
                             // ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, filter, null, 1000, excludes);
-                             sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, action.getMongoConfiguration(action.mongoconfiguration), PKPair));
-                             commandFunctions.doCommand(cookie);
+                            sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, PKPair));
+                            commandFunctions.doCommand(cookie);
 
                         }
                     }
                 }
             } else {
-                sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+                if (!publicPage) {
+                    sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+                }
             }
 
             return sb;

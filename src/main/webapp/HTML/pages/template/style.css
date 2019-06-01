@@ -8,6 +8,10 @@ and open the template in the editor.
     Author     : matmey
 */
 
+.cke_reset_all, .cke_reset_all *, .cke_reset_all a, .cke_reset_all textarea{
+    font: inherit;
+}
+
 .ui-jqgrid-bdiv{
     max-height:400px;
 }

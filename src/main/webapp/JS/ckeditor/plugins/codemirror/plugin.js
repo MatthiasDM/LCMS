@@ -18,7 +18,7 @@
                     autoCloseTags: true,
                     autoFormatOnStart: false,
                     autoFormatOnUncomment: false,
-                    autoLoadCodeMirror: true,
+                    autoLoadCodeMirror: true,                   
                     continueComments: true,
                     enableCodeFolding: true,
                     enableCodeFormatting: true,
@@ -39,7 +39,7 @@
                     showUncommentButton: true,
                     styleActiveLine: true,
                     theme: "default",
-                    useBeautifyOnStart: false
+                    useBeautifyOnStart: true
                 };
 
             // Get Config & Lang
@@ -128,8 +128,8 @@
                 // Override Source Dialog
                 CKEDITOR.dialog.add("sourcedialog", function (editor) {
                     var sizeDialog = CKEDITOR.document.getWindow().getViewPaneSize(),
-                        minWidth = Math.min(sizeDialog.width - 70, 800),
-                        minHeight = sizeDialog.height / 1.5,
+                        minWidth = Math.min(sizeDialog.width - 70, 1600),
+                        minHeight = sizeDialog.height / 1.2,
                         oldData;
 
                     function loadCodeMirrorInline(editor, textarea, dialog) {

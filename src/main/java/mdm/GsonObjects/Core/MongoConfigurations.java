@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mdm.GsonObjects;
+package mdm.GsonObjects.Core;
 
 import mdm.pojo.annotations.MdmAnnotations;
 
@@ -60,16 +60,23 @@ public class MongoConfigurations {
     )
     public String idName;
 
+
+
     public MongoConfigurations() {
     }
 
-    public MongoConfigurations(String mongoconfigurationsid, String database, String collection, String className, String idName) {
+    public MongoConfigurations(String mongoconfigurationsid, String name, String database, String collection, String className, String idName) {
         this.mongoconfigurationsid = mongoconfigurationsid;
+        this.name = name;
         this.database = database;
         this.collection = collection;
         this.className = className;
         this.idName = idName;
     }
+
+
+ 
+    
 
     public String getMongoconfigurationsid() {
         return mongoconfigurationsid;

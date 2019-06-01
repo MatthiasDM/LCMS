@@ -5,6 +5,7 @@
  */
 package mdm.lis.lcms.credentials;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 
 import java.time.Instant;
@@ -26,8 +27,8 @@ import javax.servlet.http.HttpServletResponse;
 import mdm.Config.Actions;
 import static mdm.Core.checkSession;
 
-import mdm.GsonObjects.Session;
-import mdm.GsonObjects.User;
+import mdm.GsonObjects.Core.Session;
+import mdm.GsonObjects.Core.User;
 import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
 import org.jasypt.util.password.StrongPasswordEncryptor;
@@ -50,7 +51,7 @@ public class ServletCredentials extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException, JsonProcessingException {
         StringBuilder sb = new StringBuilder();
 
        // Map<String, String[]> requestParameters = request.getParameterMap();
@@ -60,9 +61,13 @@ public class ServletCredentials extends HttpServlet {
         ActionManagerCredentials aM = new ActionManagerCredentials(requestParameters);
 
         if (aM.getAction() == Actions.CREDENTIALS_LOGIN) {
-            Cookie cookie = aM.actionCREDENTIALS_LOGIN();
-            if (cookie != null) {
-                response.addCookie(cookie);
+            try {
+                Cookie cookie = aM.actionCREDENTIALS_LOGIN();
+                if (cookie != null) {
+                    response.addCookie(cookie);
+                }
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(ServletCredentials.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
             if (aM.getAction() != null) {

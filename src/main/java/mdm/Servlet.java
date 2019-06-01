@@ -50,8 +50,8 @@ public class Servlet extends HttpServlet {
         StringBuilder sb = new StringBuilder();
         String action = request.getParameter("page");
         Map<String, String[]> requestParameters = request.getParameterMap();
-        if (requestParameters.get("LCMS_session") != null) {
-            if (checkSession(requestParameters.get("LCMS_session")[0])) {
+        if (requestParameters.get("LCMS_session") != null || action.equals("pages")) {
+            if (checkSession(requestParameters.get("LCMS_session")[0]) || action.equals("pages")) {
                 ObjectMapper mapper = new ObjectMapper();
                 ObjectNode jsonData = mapper.createObjectNode();
                 if (action.equals("")) {

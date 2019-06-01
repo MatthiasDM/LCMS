@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mdm.GsonObjects;
+package mdm.GsonObjects.Core;
 
 import java.util.List;
 import mdm.pojo.annotations.MdmAnnotations;

@@ -112,6 +112,7 @@ function config2() { //for inline editing
         config.title = false;
         config.stylesSet = 'mdmConfig2:/styles.js';
         config.allowedContent = true;
+        
         //CKEDITOR.filter.allowedContent = true;
         CKEDITOR.config.protectedSource.push( /<([\S]+)[^>]*class="preserve"[^>]*>.*<\/\1>/g );
 

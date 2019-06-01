@@ -20,10 +20,10 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
-import mdm.Core;
+import mdm.Config.Actions;
 import static mdm.Core.checkSession;
-import mdm.GsonObjects.Session;
-import mdm.GsonObjects.User;
+import mdm.GsonObjects.Core.Session;
+import mdm.GsonObjects.Core.User;
 import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
 import org.apache.commons.io.FileUtils;
@@ -40,6 +40,14 @@ public class ActionManagerCredentials {
     mdm.Config.Actions action;
     String contextPath;
     HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
+
+    public Actions getAction() {
+        return action;
+    }
+
+    public void setAction(Actions action) {
+        this.action = action;
+    }
 
     public ActionManagerCredentials(Map<String, String[]> requestParameters) {
         this.requestParameters = new HashMap<String, String[]>(requestParameters);
@@ -59,10 +67,6 @@ public class ActionManagerCredentials {
         return cookie;
     }
 
-    public mdm.Config.Actions getAction() {
-        return action;
-    }
-
     public StringBuilder startAction() throws ClassNotFoundException, IOException {
         StringBuilder sb = new StringBuilder();
 
@@ -77,7 +81,7 @@ public class ActionManagerCredentials {
         return sb;
     }
 
-    public Cookie actionCREDENTIALS_LOGIN() throws JsonProcessingException {
+    public Cookie actionCREDENTIALS_LOGIN() throws JsonProcessingException, ClassNotFoundException {
 
         String _user = requestParameters.get("username")[0];
         String _pwd = requestParameters.get("password")[0];
@@ -96,7 +100,9 @@ public class ActionManagerCredentials {
             if (passwordEncryptor.checkPassword(_pwd, user.getPassword())) {
                 UUID sessionId = UUID.randomUUID();
                 Cookie loginCookie = new Cookie("LCMS_session", sessionId.toString());
-                loginCookie.setMaxAge(60 * 60 * 6);
+                mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
+                Map<String, Object> usr = DatabaseWrapper.getObjectHashMapv2(null, _action.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
+                loginCookie.setMaxAge((Integer.parseInt(usr.get("sessionValidity").toString())));
                 Session session = createSession(_user, loginCookie.getValue());
                 DatabaseActions.insertSession(session);
                 createTempDir(session.getSessionID());
@@ -138,10 +144,11 @@ public class ActionManagerCredentials {
         ObjectMapper mapper = new ObjectMapper();
         ArrayList<Document> results;
         Session session = null;
+
         try {
-            results = DatabaseActions.getObjectSpecific(mdm.Config.MongoConf.USERS, and(eq("username", _user)));
-            Document d = Document.parse(mapper.writeValueAsString(results.get(0)));
-            session = new Session(_user, _sessionId, now + (60 * 60 * 6), true, d.getString("userid"));
+            mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
+            Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, _action.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
+            session = new Session(_user, _sessionId, now + ((Integer.parseInt(user.get("sessionValidity").toString()))), true, user.get("userid").toString());
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ActionManagerCredentials.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -153,7 +160,7 @@ public class ActionManagerCredentials {
         //new File("C:\\mongodb\\temp\\" + _sessionId).mkdir();
         //new File("C:\\mongodb\\temp\\" + _sessionId).mkdir();
         new File(contextPath + "/" + _sessionId).mkdir();
-        
+
         System.out.print(contextPath + "/" + _sessionId);
     }
 
@@ -163,8 +170,11 @@ public class ActionManagerCredentials {
 
     private void devalidateSession(String _sessionId) throws IOException, ClassNotFoundException {
         //MongoMain.insertSession(createSession(_user, loginCookie.getValue()));
-
-        DatabaseActions.editSessionValidity(_sessionId, (60 * 60 * 6 * -1));
+            Session session = DatabaseActions.getSession(_sessionId);
+            mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
+            Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, _action.getMongoConfiguration(_action.mongoconfiguration), and(eq("username",  session.getUsername())));
+           
+        DatabaseActions.editSessionValidity(_sessionId, (Integer.parseInt(user.get("sessionValidity").toString())* -1));
         deleteTempDir(_sessionId);
     }
 

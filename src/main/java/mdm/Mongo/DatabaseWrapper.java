@@ -31,8 +31,8 @@ import static mdm.Core.createDatabaseObject;
 import static mdm.Core.encryptString;
 import static mdm.Core.loadScriptFile;
 import static mdm.Core.loadWebFile;
-import mdm.GsonObjects.MongoConfigurations;
-import mdm.GsonObjects.Session;
+import mdm.GsonObjects.Core.MongoConfigurations;
+import mdm.GsonObjects.Core.Session;
 import static mdm.Mongo.DatabaseActions.getDocumentPriveleges;
 import static mdm.Mongo.DatabaseActions.getObjects;
 import static mdm.Mongo.DatabaseActions.getObject;
@@ -411,6 +411,17 @@ public class DatabaseWrapper {
 
         DatabaseActions.insertObjectItem(_mongoConf, filteredDoc);
 
+    }
+
+    public static mdm.GsonObjects.Core.Actions getAction(String _action) throws ClassNotFoundException {
+        ObjectMapper mapper = new ObjectMapper();
+        mdm.GsonObjects.Core.Actions action;
+        BasicDBObject searchObject = new BasicDBObject();
+        searchObject.put("name", new BasicDBObject("$eq", _action));
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList("", MongoConf.ACTIONS, searchObject, null, 1000, new String[]{});
+        //String jsonObject = mapper.writeValueAsString(results.get(0));
+        action = mapper.convertValue(results.get(0), mdm.GsonObjects.Core.Actions.class);
+        return action;
     }
 
     public static StringBuilder actionEDITOBJECT(HashMap<String, String[]> requestParameters, String cookie, MongoConf _mongoConf) throws IOException, ClassNotFoundException, NoSuchFieldException {

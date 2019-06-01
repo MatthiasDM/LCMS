@@ -24,8 +24,6 @@ function worksummary_doLoad(type, soort) {
         dataOnverwerkt = data;
         loadPage(dataOnverwerkt, type);
 
-
-
         setTimeout(function () {
             worksummary_doLoad("refresh", "dagelijks");
         }, 100000);

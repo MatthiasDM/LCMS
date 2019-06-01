@@ -33,7 +33,7 @@ import static mdm.Core.StringToLong;
 import static mdm.Core.checkUserRole;
 import static mdm.Core.createDatabaseObject;
 import mdm.GsonObjects.Role;
-import mdm.GsonObjects.User;
+import mdm.GsonObjects.Core.User;
 import static mdm.Mongo.DatabaseActions.getDocumentPriveleges;
 import mdm.Mongo.DatabaseWrapper;
 import mdm.pojo.annotations.MdmAnnotations;

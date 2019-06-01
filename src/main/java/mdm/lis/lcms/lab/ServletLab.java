@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import mdm.Config.Actions;
 import mdm.Config.MongoConf;
+import static mdm.Core.checkSession;
 import static mdm.Core.loadWebFile;
 import mdm.GsonObjects.Lab.InventoryItem;
 import mdm.GsonObjects.Lab.LabItem;
@@ -112,7 +113,8 @@ public class ServletLab extends HttpServlet {
 
         public StringBuilder startAction() throws ClassNotFoundException, IOException, JsonProcessingException, NoSuchFieldException {
             StringBuilder sb = new StringBuilder();
-            if (cookie != null) {
+
+            if (checkSession(cookie)) {
 
                 if (action.toString().toUpperCase().contains("EDIT")) {
                     sb.append(DatabaseWrapper.actionEDITOBJECT(requestParameters, cookie, action.getMongoConf()));
@@ -129,9 +131,7 @@ public class ServletLab extends HttpServlet {
                         if (action == Actions.LAB_CHECKINVENTORY) {
                             sb.append(actionLAB_CHECKINVENTORY());
                         }
-                        if (action == Actions.LAB_WORKSUMMARY) {
-                            sb.append(actionLAB_WORKSUMMARY());
-                        }
+
                         if (action == Actions.LAB_KPI_HEMOLYSIS) {
                             sb.append(actionLAB_KPI("hemolysis", "json"));
                         }
@@ -156,12 +156,20 @@ public class ServletLab extends HttpServlet {
                         if (action == Actions.LAB_SENDCHAT) {
                             sb.append(actionLAB_SENDCHAT());
                         }
+                        if (action == Actions.LAB_WORKSUMMARY) {
+                            sb.append(actionLAB_WORKSUMMARY());
+                        }
 
                     }
                 }
 
             } else {
-                sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+                //UIT DE BEVEILIGDE ZONE!!!!!!!!!!!!!!!
+                if (action == Actions.LAB_WORKSUMMARY) {
+                    sb.append(actionLAB_WORKSUMMARY());
+                } else {
+                    sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+                }
             }
 
             return sb;
@@ -247,10 +255,20 @@ public class ServletLab extends HttpServlet {
                 e.printStackTrace();
             }
 
+//            List<String> unknownOE = new ArrayList<>();
+//            try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\worksummary\\issuers.json"), Charset.forName("ISO-8859-1"))) {
+//                unknownOE = stream
+//                        .map(String::toUpperCase)
+//                        .filter(line -> line.contains("'"))
+//                        .collect(Collectors.toList());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
             jsonData.put("data", mapper.writeValueAsString(lines));
             jsonData.put("issuers", mapper.writeValueAsString(issuers));
             jsonData.put("stations", mapper.writeValueAsString(stations));
             jsonData.put("tats", mapper.writeValueAsString(tats));
+            //jsonData.put("unknownOE", mapper.writeValueAsString(unknownOE));
             StringBuilder sb = new StringBuilder();
             sb.append(jsonData);
             return sb;

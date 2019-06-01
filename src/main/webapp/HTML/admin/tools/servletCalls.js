@@ -13,7 +13,16 @@ function mongoconfigurations_doLoad(_parent) {
 
 function actions_doLoad(_parent) {
     console.log("Actions load");
-    LCMSTableRequest("ACTIONS_LOADACTIONS", "ACTIONS_EDITACTIONS", "./admin", "actions-table", "actions-pager", "div-grid-actions-wrapper", lang["actions"]['title']);
+        var extraOptions = {
+                grouping: true,
+                groupingView: {
+                    groupField: ['mongoconfiguration'],
+                    groupColumnShow: [false],
+                    groupText: ['<b>{0} - {1} Item(s)</b>'],
+                    groupCollapse: true
+                }
+    };
+    LCMSTableRequest("ACTIONS_LOADACTIONS", "ACTIONS_EDITACTIONS", "./admin", "actions-table", "actions-pager", "div-grid-actions-wrapper", lang["actions"]['title'],2,extraOptions);
 }
 
 function pages_doLoad(_parent) {

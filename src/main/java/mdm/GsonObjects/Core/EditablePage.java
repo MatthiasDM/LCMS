@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mdm.GsonObjects.Lab;
+package mdm.GsonObjects.Core;
 
 import mdm.GsonObjects.Other.*;
 import mdm.GsonObjects.Lab.*;
@@ -34,14 +34,23 @@ public class EditablePage {
             reference = {"Mongo", "USERS", "userid", "username"},
             editRole = "ICTMANAGER",
             visibleOnTable = false
-    )    
+    )
     public String approver;
     @MdmAnnotations(
             editRole = "ICTMANAGER",
             type = "select",
-            choices = {"Algemeen","Glims", "Nomenclatuur", "Labo", "Software"}
+            choices = {"Algemeen", "Glims", "Nomenclatuur", "Labo", "Software"}
     )
     public String category;
+
+    @MdmAnnotations(
+            editRole = "ICTMANAGER",
+            //viewRole = "ICTMANAGER",
+            type = "select",
+            choices = {"public", "private"}
+    )
+    public String accessType;
+
     @MdmAnnotations(
             type = "date",
             visibleOnTable = false,
@@ -76,17 +85,29 @@ public class EditablePage {
     public EditablePage() {
     }
 
-    public EditablePage(String editablepageid, String title, String contents, String approver, String category, long approved_on, long created_on, String created_by, long edited_on) {
+    public EditablePage(String editablepageid, String title, String contents, String template, String approver, String category, String accessType, long approved_on, long created_on, String created_by, long edited_on) {
         this.editablepageid = editablepageid;
         this.title = title;
         this.contents = contents;
+        this.template = template;
         this.approver = approver;
         this.category = category;
+        this.accessType = accessType;
         this.approved_on = approved_on;
         this.created_on = created_on;
         this.created_by = created_by;
         this.edited_on = edited_on;
     }
+
+    public String getAccessType() {
+        return accessType;
+    }
+
+    public void setAccessType(String accessType) {
+        this.accessType = accessType;
+    }
+
+
 
     public String getEditablepageid() {
         return editablepageid;
@@ -160,5 +181,4 @@ public class EditablePage {
         this.edited_on = edited_on;
     }
 
-  
 }

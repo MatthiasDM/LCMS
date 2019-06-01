@@ -15,30 +15,22 @@ Object.filter = (obj, predicate) =>
             .reduce((res, key) => (res[key] = obj[key], res), {});
 
 $(function () {
-    replaceJumbo();
-    createJumboCard(jumboColumn);
-    
+    $("#jumbotron").css("display", "none");
+    $("#worklistSummary").appendTo($("#dynamic-content"));
+    createDynamicContent();
     worksummary_doLoad('new');
-
-
-
 });
 
-function replaceJumbo() {
-    $("#jumbotron").css("display", "none");
-    var jumbotron = $("#dynamic-content");
+function createDynamicContent() {
+    var contentContainer = $("#dynamic-content");
     var container = dom_div("container");
-    jumbotron.append(container);
+    contentContainer.append(container);
     var row = dom_row(uuidv4());
     container.append(row);
     var col1 = dom_col(uuidv4(), 12);
     row.append(col1);
-    jumboColumn = dom_col(uuidv4(), 12);
-    row.append(jumboColumn);
-
-}
-
-function createJumboCard(parent) {
+    var parent = dom_col(uuidv4(), 12);
+    row.append(parent);
 
     var container = dom_div("container", "infoButtons");
     var row1 = dom_row("infoButtonsRow1");
@@ -55,7 +47,7 @@ function createJumboCard(parent) {
     card.find(".card-body").css('padding', "0");
     card.find(".card-body").css('width', "100%");
     parent.append(card);
-    
+
 
 }
 
@@ -66,7 +58,6 @@ function createJumboElements(type) {
     createQuickview(type, "cyberlab", "btn-cyberlab", "barcode", "info", "cyberlab", "div-quickview", "", $("#infoButtonsRow1"));
     createQuickview(type, "doorbelwaarde", "btn-doorbelwaarde", "phone", "danger", "doorbelwaarde", "div-quickview", "", $("#infoButtonsRow1"));
     createQuickview(type, "tats", "btn-tats", "clock-o", "danger", "tats", "div-quickview", "", $("#infoButtonsRow1"));
-//function createQuickview(_type, _data, btnId, btnIcon, btnColor, gridId, collapseTarget, btnTxt, appendTo) {
     createQuickview(type, "brugge", "btn-brugge", "fa-stack-1x", "info", "brugge", "div-quickview", "<b>B</b>", $("#infoButtonsRow1"));
     createQuickview(type, "knokke", "btn-knokke", "fa-stack-1x", "info", "knokke", "div-quickview", "<b>K</b>", $("#infoButtonsRow1"));
 
@@ -75,18 +66,24 @@ function createJumboElements(type) {
         return el;
     }), "WERKPOST");
 
-    $("#div-station").empty();
+    $("#div-stations").empty();
+    $("#div-workposts").empty();
     var nav = dom_nav(distinctWorkposts, "workpost_nav");
-    $("#div-station").append(nav);
-    Object.keys(distinctWorkposts).forEach(function (key) {     
+    $("#div-workposts").append(nav);
+    Object.keys(distinctWorkposts).forEach(function (key) {
+        var workPostInfo = {Orders: 0};
         $.each(stations, function (index, station) {
             if (station.WERKPOST === distinctWorkposts[key]) {
-                createQuickview("new", station.NAAM, "btn-"+ key + "-tab" + index, "fa-stack-1x", "info", key + "-tab-" + index, "div-quickview", station.NAAM, $("#"+key + "-tab"));
+                var dataInfo = getInformation(dataVerwerkt[station.NAAM]);
+                workPostInfo.Orders += dataInfo.Orders;
+                createQuickview("new", station.NAAM, "btn-" + key + "-tab" + index, "fa-stack-1x", "info", key + "-tab-" + index, "div-quickview", station.NAAM, $("#" + key + "-tab"));
             }
         });
+        var badge = "<span> </span><span class='badge badge-info' style='color:white;margin:2px);'>" + workPostInfo.Orders + "</span>";
+        $("#" + key + "-pill").append(badge);
     });
 
-    
+
 
 
 
@@ -115,7 +112,7 @@ function createJumboButton(refresh, data, btnId, btnIcon, btnText, btnStyle, app
     $("#" + btnId).css("margin-right", "5px");
     $("#" + btnId).css("margin-bottom", "5px");
 
-    $("#" + btnId + " span").html($("#" + btnId + " span").text() + "<span class='badge badge-"+btnStyle+"' style='font-size: .9em;color:white;'>" + info["Orders"] + "</span>");
+    $("#" + btnId + " span").html($("#" + btnId + " span").text() + "<span class='badge badge-" + btnStyle + "' style='font-size: .9em;color:white;'>" + info["Orders"] + "</span>");
 
 }
 
@@ -310,14 +307,7 @@ function parseData(data) {
                     ));
     });
 
-//
-//    dataVerwerkt.ambulant = Object.filter(data, item => (
-//                String(item["STATION"]).includes("POCT") === false & String(item["ERNST"]) === "50"
-//                ));
-//
-//    dataVerwerkt.verblijvend = Object.filter(data, item => (
-//                String(item["STATION"]).includes("POCT") === false & String(item["ERNST"]) === "50"
-//                ));
+
 }
 
 function loadPage(data, type) {
@@ -346,9 +336,9 @@ function new_grid(colModel, extraOptions, gridData, gridId, parent) {
     var editor = parent;
     var data = [];
     var colData = {};
-   // colData.header = JSON.stringify(colModel);
-   // colModel = generateView2(colData);
-    
+    // colData.header = JSON.stringify(colModel);
+    // colModel = generateView2(colData);
+
     var colNames = [];
     for (var key in colModel) {
         if (typeof colModel[key].name !== 'undefined') {
