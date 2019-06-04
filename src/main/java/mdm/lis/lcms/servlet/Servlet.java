@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.util.Pair;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -138,17 +137,18 @@ public class Servlet extends HttpServlet {
 
             Boolean publicPage = false;
             if (mongoConfiguration.getCollection().equals("pages") && requestParameters.get("k") != null && requestParameters.get("v") != null) {
-                Pair<String, String> PKPair = new Pair(requestParameters.get("k")[0], requestParameters.get("v")[0]);
+                String key = requestParameters.get("k")[0];
+                String value = requestParameters.get("v")[0];
                 BasicDBObject searchObject = new BasicDBObject();
                 ObjectMapper mapper = new ObjectMapper();
                 ObjectNode jsonData = mapper.createObjectNode();
-                searchObject.put(PKPair.getKey(), new BasicDBObject("$eq", PKPair.getValue()));
+                searchObject.put(key, new BasicDBObject("$eq", value));
                 Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, mongoConfiguration, searchObject);
                 String accesstype = searchResult.get("accessType").toString();
                 if (accesstype.equals("0")) {
                     publicPage = true;
                     if (publicPage) {
-                        sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, PKPair));
+                        sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value));
                     }
                 }
             }
@@ -177,13 +177,14 @@ public class Servlet extends HttpServlet {
                     } else {
                         if (action.name.toUpperCase().contains("GET")) {
 
-                            Pair<String, String> PKPair = new Pair(requestParameters.get("k")[0], requestParameters.get("v")[0]);
-                            sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, PKPair));
+                            String key = requestParameters.get("k")[0];
+                            String value = requestParameters.get("v")[0];
+                            sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value));
                         }
                         if (action.name.toUpperCase().contains("DO")) {
-                            Pair<String, String> PKPair = new Pair("name", requestParameters.get("name")[0]);
-                            // ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, filter, null, 1000, excludes);
-                            sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, PKPair));
+                            String key = requestParameters.get("k")[0];
+                            String value = requestParameters.get("v")[0];
+                            sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value));
                             commandFunctions.doCommand(cookie);
 
                         }

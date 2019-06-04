@@ -49,6 +49,8 @@ public class Core {
 //    public enum MongoConf {
 //
 //    }
+    static String dirName = "LCMS/"; // ""
+    static String baseURL = "http://localhost:8080/"; // "http://localhost:80/";
     public enum taskCategories {
         //ICT-TICKET RELATED
         ICT_TICKET;
@@ -56,24 +58,22 @@ public class Core {
     }
 
     public static String readFile(String urlName) {
-        String baseURL;
-        try {
-            baseURL = "http://localhost:8080/";
-             String out = new Scanner(new URL(baseURL + urlName).openStream(), "UTF-8").useDelimiter("\\A").next();
+        try {           
+            String out = new Scanner(new URL(baseURL + urlName).openStream(), "UTF-8").useDelimiter("\\A").next();
             return out;
         } catch (IOException ex) {
             Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
-             return null;
-        }     
+            return null;
+        }
 
     }
 
     public static String loadWebFile(String url) {
         String file = "";
         if (url.equals("")) {
-            file = readFile("LCMS/HTML/pages/index.html");
+            file = readFile(dirName + "HTML/pages/index.html");
         } else {
-            file = readFile("LCMS/HTML/" + url);
+            file = readFile(dirName + "HTML/" + url);
         }
         return file;
     }
@@ -81,7 +81,7 @@ public class Core {
     public static String loadScriptFile(String url) {
         String file = "";
 
-        file = readFile("LCMS/HTML/" + url);
+        file = readFile(dirName + "HTML/" + url);
 
         return file;
     }
@@ -91,7 +91,7 @@ public class Core {
         if (session == null) {
             return false;
         }
-        if (session.getUsername().equals("admin")) {
+        if (session.getUsername().equals("root")) {
             return checkSession(_cookie);
         } else {
             User user = DatabaseActions.getUser(session.getUsername());
@@ -130,7 +130,7 @@ public class Core {
         if (!Core.checkSession(_cookie)) {
             return roles;
         }
-        if (session.getUsername().equals("admin")) {
+        if (session.getUsername().equals("root")) {
             roles.add(Roles.ADMIN.toString());
             roles.add(Roles.ICTMANAGER.toString());
             return roles;
@@ -309,8 +309,10 @@ public class Core {
 
     public static String encryptString(String pass) {
         StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
-        pass = passwordEncryptor.encryptPassword(pass);        
+        pass = passwordEncryptor.encryptPassword(pass);
         return pass;
     }
 
 }
+
+

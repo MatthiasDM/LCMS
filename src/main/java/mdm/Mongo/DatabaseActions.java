@@ -329,9 +329,9 @@ public class DatabaseActions {
     public static List<String> getDocumentPriveleges(String _privelegeType, String _cookie, String _className) throws ClassNotFoundException {
         Class cls = Class.forName(_className);
         List<Field> fields = Arrays.asList(cls.getDeclaredFields());
-
         List<String> userRoles = new ArrayList<>();
         List<String> columns = new ArrayList<>();
+        
 
         if (cls.getName().equals("MongoConfigurations") || cls.getName().equals("Actions")) {
             columns = fields.stream()
@@ -341,9 +341,10 @@ public class DatabaseActions {
             if (_cookie != null) {
                 userRoles = getUserRoles(_cookie);
 
-            } else {
-                userRoles.add("ADMIN");
-            }
+            } 
+//            else {
+//                userRoles.add("ADMIN");
+//            }
 
             for (Field field : fields) {
 
@@ -616,6 +617,11 @@ public class DatabaseActions {
         return newDoc[0].toString();
     }
 
+    public static Document revertDMP(String _object_id, String created_on){
+        Document document = null;
+        return document;
+    }
+    
     public static Document getObjectDifference(MongoConf mongoConf, Object original, Object revised) {
         ObjectMapper mapper = new ObjectMapper();
         Document document = null;
@@ -683,4 +689,6 @@ public class DatabaseActions {
         return document;
     }
 
+    
+    
 }

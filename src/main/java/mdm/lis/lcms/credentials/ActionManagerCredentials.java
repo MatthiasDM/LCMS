@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.Cookie;
 import mdm.Config.Actions;
 import static mdm.Core.checkSession;
+import static mdm.Core.getProp;
 import mdm.GsonObjects.Core.Session;
 import mdm.GsonObjects.Core.User;
 import mdm.Mongo.DatabaseActions;
@@ -81,18 +82,17 @@ public class ActionManagerCredentials {
         return sb;
     }
 
-    public Cookie actionCREDENTIALS_LOGIN() throws JsonProcessingException, ClassNotFoundException {
+    public Cookie actionCREDENTIALS_LOGIN() throws JsonProcessingException, ClassNotFoundException, IOException {
 
         String _user = requestParameters.get("username")[0];
         String _pwd = requestParameters.get("password")[0];
+        Boolean root = false;
         StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
-
-        if (_user.equals("admin") && passwordEncryptor.checkPassword(_pwd, "LcTFMqFglZI4VmJyyPAR/Js4ekJ3jr1xJZenBdn2Nd6o89FZoNY8F9xhQdpp+xB6")) {
-            try {
-                createDefaultUser();
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(ActionManagerCredentials.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        if (_user.equals(getProp("username")) && passwordEncryptor.checkPassword(_pwd, getProp("password"))) {
+          
+                root = true;
+                //createDefaultUser();
+         
         }
 
         User user = DatabaseActions.getUser(_user);
@@ -112,7 +112,17 @@ public class ActionManagerCredentials {
             }
 
         } else {
-            return null;
+            if (root == true) {
+                UUID sessionId = UUID.randomUUID();
+                Cookie loginCookie = new Cookie("LCMS_session", sessionId.toString());
+                loginCookie.setMaxAge(9999);
+                Session session = createSession(getProp("username"), loginCookie.getValue());
+                DatabaseActions.insertSession(session);
+                createTempDir(session.getSessionID());
+                return loginCookie;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -146,9 +156,13 @@ public class ActionManagerCredentials {
         Session session = null;
 
         try {
-            mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
-            Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, _action.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
-            session = new Session(_user, _sessionId, now + ((Integer.parseInt(user.get("sessionValidity").toString()))), true, user.get("userid").toString());
+            if (!_user.equals("root")) {
+                mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
+                Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, _action.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
+                session = new Session(_user, _sessionId, now + ((Integer.parseInt(user.get("sessionValidity").toString()))), true, user.get("userid").toString());
+            } else {
+                session = new Session(_user, _sessionId, now + (9999), true, "158");
+            }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ActionManagerCredentials.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -170,11 +184,11 @@ public class ActionManagerCredentials {
 
     private void devalidateSession(String _sessionId) throws IOException, ClassNotFoundException {
         //MongoMain.insertSession(createSession(_user, loginCookie.getValue()));
-            Session session = DatabaseActions.getSession(_sessionId);
-            mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
-            Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, _action.getMongoConfiguration(_action.mongoconfiguration), and(eq("username",  session.getUsername())));
-           
-        DatabaseActions.editSessionValidity(_sessionId, (Integer.parseInt(user.get("sessionValidity").toString())* -1));
+        Session session = DatabaseActions.getSession(_sessionId);
+        mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
+        Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, _action.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", session.getUsername())));
+
+        DatabaseActions.editSessionValidity(_sessionId, (Integer.parseInt(user.get("sessionValidity").toString()) * -1));
         deleteTempDir(_sessionId);
     }
 

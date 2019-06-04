@@ -513,16 +513,16 @@ public class DatabaseWrapper {
         return sb;
     }
 
-    public static StringBuilder actionGETOBJECTv2(String cookie, MongoConfigurations _mongoConf, Pair<String, String> PKPair) throws JsonProcessingException, JsonProcessingException, ClassNotFoundException, JsonProcessingException, JsonProcessingException {
+    public static StringBuilder actionGETOBJECTv2(String cookie, MongoConfigurations _mongoConf, String key, String value) throws JsonProcessingException, JsonProcessingException, ClassNotFoundException, JsonProcessingException, JsonProcessingException {
         StringBuilder sb = new StringBuilder();
         if (cookie == null) {
             sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
         } else {
-            if (!PKPair.getKey().equals("")) {
+            if (!key.equals("")) {
                 BasicDBObject searchObject = new BasicDBObject();
                 ObjectMapper mapper = new ObjectMapper();
                 ObjectNode jsonData = mapper.createObjectNode();
-                searchObject.put(PKPair.getKey(), new BasicDBObject("$eq", PKPair.getValue()));
+                searchObject.put(key, new BasicDBObject("$eq", value));
                 Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, _mongoConf, searchObject);
                 List<String> editRights = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
                 String menu = "";
