@@ -51,6 +51,7 @@ public class Core {
 //    }
     static String dirName = "LCMS/"; // ""
     static String baseURL = "http://localhost:8080/"; // "http://localhost:80/";
+
     public enum taskCategories {
         //ICT-TICKET RELATED
         ICT_TICKET;
@@ -58,7 +59,7 @@ public class Core {
     }
 
     public static String readFile(String urlName) {
-        try {           
+        try {
             String out = new Scanner(new URL(baseURL + urlName).openStream(), "UTF-8").useDelimiter("\\A").next();
             return out;
         } catch (IOException ex) {
@@ -204,7 +205,11 @@ public class Core {
     }
 
     public static String getTempDirWebUrl(String _sessionId) {
-        return "/LCMS/HTML/other/files/" + _sessionId + "\\";
+        String prefix = "/";
+        if (dirName.equals("")) {
+            prefix = "";
+        }
+        return prefix + dirName + "/HTML/other/files/" + _sessionId + "\\";
     }
 
     public static List<Field> getSystemFields(String _cls, String type) throws ClassNotFoundException {
@@ -314,5 +319,3 @@ public class Core {
     }
 
 }
-
-

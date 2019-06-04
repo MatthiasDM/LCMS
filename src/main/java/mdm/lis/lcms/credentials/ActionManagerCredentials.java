@@ -89,10 +89,10 @@ public class ActionManagerCredentials {
         Boolean root = false;
         StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
         if (_user.equals(getProp("username")) && passwordEncryptor.checkPassword(_pwd, getProp("password"))) {
-          
-                root = true;
-                //createDefaultUser();
-         
+
+            root = true;
+            //createDefaultUser();
+
         }
 
         User user = DatabaseActions.getUser(_user);
@@ -149,14 +149,14 @@ public class ActionManagerCredentials {
         return sb;
     }
 
-    private Session createSession(String _user, String _sessionId) throws JsonProcessingException {
+    private Session createSession(String _user, String _sessionId) throws JsonProcessingException, IOException {
         long now = Instant.now().toEpochMilli() / 1000;
         ObjectMapper mapper = new ObjectMapper();
         ArrayList<Document> results;
         Session session = null;
 
         try {
-            if (!_user.equals("root")) {
+            if (!_user.equals(getProp("username"))) {
                 mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
                 Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, _action.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
                 session = new Session(_user, _sessionId, now + ((Integer.parseInt(user.get("sessionValidity").toString()))), true, user.get("userid").toString());
@@ -185,10 +185,13 @@ public class ActionManagerCredentials {
     private void devalidateSession(String _sessionId) throws IOException, ClassNotFoundException {
         //MongoMain.insertSession(createSession(_user, loginCookie.getValue()));
         Session session = DatabaseActions.getSession(_sessionId);
-        mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
-        Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, _action.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", session.getUsername())));
-
-        DatabaseActions.editSessionValidity(_sessionId, (Integer.parseInt(user.get("sessionValidity").toString()) * -1));
+        if (!session.getUsername().equals(getProp("username"))) {
+            mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
+            Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, _action.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", session.getUsername())));
+            DatabaseActions.editSessionValidity(_sessionId, (Integer.parseInt(user.get("sessionValidity").toString()) * -1));
+        } else {
+            DatabaseActions.editSessionValidity(_sessionId, 9999 * -1);        
+        }              
         deleteTempDir(_sessionId);
     }
 
