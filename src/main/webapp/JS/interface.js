@@ -207,7 +207,6 @@ function removeElements(classname, source) {
     return $("<div></div>").append($s).html();
 }
 
-
 $.fn.textWidth = function (text, font) {
     if (!$.fn.textWidth.fakeEl)
         $.fn.textWidth.fakeEl = $('<span>').hide().appendTo(document.body);
@@ -439,7 +438,7 @@ function dom_col(id, size) {
     return $("<div id='" + id + "' class='col-sm-" + size + " mx-auto'></div>");
 }
 function dom_button(id, icon, text, color) {
-    return ("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "' style='margin-right:5px;width:auto;max-width:200px'>" + text + "</i><span></span></button>");
+    return $("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "' style='margin-right:5px;width:auto;max-width:200px'>" + text + "</i><span></span></button>");
 }
 function dom_list(id, items) {
     var ul = $("<ul class='list-group' id='" + id + "'></ul> ");
@@ -500,7 +499,6 @@ function dom_mainPageContainer(containerID, mainPageContentDivId) {
 
     return container;
 }
-
 function dom_jqGridContainer(name) {
     var container = $("<div class='container' id='" + name + "-container'></div>");
     var row = dom_row();
@@ -554,4 +552,32 @@ function openFile(filename, text) {
 
 function exists(obj) {
 
+}
+
+function canvasToString(canvas) {
+    var myImage = new Image();
+    myImage.src = canvas.toDataURL("image/png");
+    myImage.onload = function ()
+    {
+       // console.log(myImage.src);
+        return myImage.src;
+
+    };  
+}
+
+function convertURIToImageData(URI) {
+    return new Promise(function (resolve, reject) {
+        if (URI == null)
+            return reject();
+        var canvas = document.createElement('canvas'),
+                context = canvas.getContext('2d'),
+                image = new Image();
+        image.addEventListener('load', function () {
+            canvas.width = image.width;
+            canvas.height = image.height;
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+            resolve(context.getImageData(0, 0, canvas.width, canvas.height));
+        }, false);
+        image.src = URI;
+    });
 }

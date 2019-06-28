@@ -24,7 +24,7 @@ public class Backlog {
     public String changes;
 
     @MdmAnnotations(
-            type = "date",
+            type = "datetime",
             visibleOnTable = true,
             visibleOnForm = false,
             editRole = "ICTMANAGER",

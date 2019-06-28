@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 @WebServlet(name = "pageServlet", urlPatterns = {"/page"})
 public class Servlet extends HttpServlet {
 
+    String cookie;
     private ServletContext context;
 
     @Override
@@ -50,27 +51,25 @@ public class Servlet extends HttpServlet {
         StringBuilder sb = new StringBuilder();
         String action = request.getParameter("page");
         Map<String, String[]> requestParameters = request.getParameterMap();
-        if (requestParameters.get("LCMS_session") != null || action.equals("pages")) {
-            if (checkSession(requestParameters.get("LCMS_session")[0]) || action.equals("pages")) {
-                ObjectMapper mapper = new ObjectMapper();
-                ObjectNode jsonData = mapper.createObjectNode();
-                if (action.equals("")) {
-                    jsonData.put("webPage", Core.loadWebFile(""));
-                    sb.append(jsonData);
-                } else {
-                    if (action.contains(".") || action.contains(";")) {
-                        action = "";
-                    }
-                    // action = StringEscapeUtils.escapeHtml(action);
-                    jsonData.put("webPage", Core.loadWebFile(action));
-                    sb.append(jsonData);
-                }
+        if (requestParameters.get("LCMS_session") != null) {
+            cookie = requestParameters.get("LCMS_session")[0];
+        }
+        if (checkSession(cookie) || action.equals("pages") || action.equals("")) {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode jsonData = mapper.createObjectNode();
+            if (action.equals("")) {
+                jsonData.put("webPage", Core.loadWebFile(""));
+                sb.append(jsonData);
             } else {
-                sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+                if (action.contains(".") || action.contains(";")) {
+                    action = "";
+                }
+                // action = StringEscapeUtils.escapeHtml(action);
+                jsonData.put("webPage", Core.loadWebFile(action));
+                sb.append(jsonData);
             }
         } else {
             sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
-
         }
 
         if (sb.toString().length() > 0) {

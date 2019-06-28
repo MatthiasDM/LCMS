@@ -16,14 +16,17 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javafx.util.Pair;
 import mdm.Config.MongoConf;
 import mdm.Config.Roles;
 import mdm.Core;
@@ -232,8 +235,87 @@ public class DatabaseWrapper {
 
     }
 
+    //OBJECT SPECIFIC with known object   
+    public static ObjectNode getObjectDatav3(String cookie, MongoConfigurations _mongoConf, String tableName, Bson filter, String[] excludes) throws ClassNotFoundException, NoSuchFieldException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jsonData = mapper.createObjectNode();
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, filter, null, 1000, excludes);
+        List<String> columns = getDocumentPriveleges("view", cookie, _mongoConf.getClassName());
+        List<String> editableColumns = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
+        ArrayList<HashMap> header = new ArrayList<>();
+        ArrayList<HashMap> table = new ArrayList<>();
+        HashMap tableEntry = new HashMap();
+        for (String column : columns) {
+            Class cls = Class.forName(_mongoConf.getClassName());
+            Field field = cls.getField(column);
+            MdmAnnotations mdmAnnotations = field.getAnnotation(MdmAnnotations.class);
+            HashMap headerEntry = new HashMap();
+            headerEntry.put("name", field.getName());
+            if (mdmAnnotations != null) {
+                headerEntry.put("type", mdmAnnotations.type());
+                headerEntry.put("visibleOnTable", mdmAnnotations.visibleOnTable());
+                headerEntry.put("editable", mdmAnnotations.editable()); //editableColumns.contains(column));
+                headerEntry.put("multiple", mdmAnnotations.multiple());
+                headerEntry.put("visibleOnForm", mdmAnnotations.visibleOnForm());
+                headerEntry.put("tablename", tableName);
+                if (!"".equals(mdmAnnotations.reference()[0])) {
+                    String refType = mdmAnnotations.reference()[0];
+                    if (refType.equals("Mongo")) {
+                        ArrayList<String> fields = new ArrayList<>();
+                        fields.add(mdmAnnotations.reference()[2]);
+                        fields.add(mdmAnnotations.reference()[3]);
+                        ArrayList<Document> objectList = DatabaseActions.getObjectsList(cookie, mdm.Config.MongoConf.valueOf(mdmAnnotations.reference()[1]), fields);
+                        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                        HashMap<String, String> map = new HashMap<>();
+                        for (Object doc : objectList) {
+                            String json = mapper.writeValueAsString(doc);
+                            HashMap<String, String> tempMap2 = mapper.readValue(json, new TypeReference<Map<String, String>>() {
+                            });
+                            map.put(tempMap2.get(fields.get(0)), tempMap2.get(fields.get(1)));
+                        }
+                        headerEntry.put("choices", map);
+                    }
+                    if (refType.equals("Enum")) {
+                        String Enum = mdmAnnotations.reference()[1];
+                        if (Enum.equals("Roles")) {
+                            Map<String, Roles> roles = new HashMap<>();
+                            for (Roles role : Roles.class.getEnumConstants()) {
+                                roles.put(role.name(), role);
+                            }
+                            headerEntry.put("choices", roles);
+                        }
+                        if (Enum.equals("MongoConf")) {
+                            Map<String, MongoConf> mongoConfs = new HashMap<>();
+                            for (MongoConf mongoConf : MongoConf.class.getEnumConstants()) {
+                                mongoConfs.put(mongoConf.name(), mongoConf);
+                            }
+                            headerEntry.put("choices", mongoConfs);
+                        }
+                    }
+                } else {
+                    headerEntry.put("choices", mdmAnnotations.choices());
+                }
+            }
+            header.add(headerEntry);
+            tableEntry.put(field.getName(), "");
+        }
+        if (!results.isEmpty()) {
+            jsonData.put("table", mapper.writeValueAsString(results));
+        } else {
+            jsonData.put("table", mapper.writeValueAsString(table));
+        }
+        jsonData.put("header", mapper.writeValueAsString(header));
+        return jsonData;
+
+    }
+
     public static ArrayList<Document> getObjectSpecificRawData(String cookie, mdm.Config.MongoConf _mongoConf, Bson bson) throws ClassNotFoundException, NoSuchFieldException, IOException {
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, bson, null, 0, null);
+        return results;
+    }
+
+    public static ArrayList<Document> getObjectSpecificRawDatav2(String cookie, MongoConfigurations _mongoConf, Bson bson) throws ClassNotFoundException, NoSuchFieldException, IOException {
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, bson, null, 0, null);
         return results;
     }
 
@@ -359,6 +441,47 @@ public class DatabaseWrapper {
         if (backlog != null) {
             getObjects(MongoConf.BACKLOG).insertOne(backlog);
         }
+    }
+
+    public static Map<String, Object> revertChanges(ArrayList<Document> docs, Map<String, Object> currentDocument, MongoConfigurations objectConfiguration) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException {
+        ObjectMapper mapper = new ObjectMapper();
+        Collections.reverse(docs);
+        Map<String, Object> documentHashMap = null;
+        Map<String, Object> newHashMap;
+        Integer i = 0;
+        for (i = 1; i <= docs.size(); i++) {//Optional.ofNullable(entry.getValue()).orElse(""))
+
+            BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(docs.get(docs.size()-i)));
+            Map<String, Object> backlogHashMap = obj.entrySet().stream()
+                    .collect(Collectors.toMap(entry -> entry.getKey(), entry -> Optional.ofNullable(entry.getValue()).orElse("")));
+
+            BasicDBObject changes = BasicDBObject.parse(backlogHashMap.get("changes").toString());
+            Map<String, Object> changesHashMap = changes.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> Optional.ofNullable(entry.getValue()).orElse("")));
+
+            if (documentHashMap == null) {
+                documentHashMap = currentDocument;
+            } else {
+                ArrayList<String> currentHashMapKeys = new ArrayList<>(documentHashMap.keySet());
+                for (String key : changesHashMap.keySet()) {
+                    if (documentHashMap.containsKey(key)) {
+
+                        MdmAnnotations mdmAnnotations = Class.forName(objectConfiguration.getClassName()).getField(key).getAnnotation(MdmAnnotations.class);
+                        if (!mdmAnnotations.DMP()) {
+                            documentHashMap.put(key, changesHashMap.get(key));
+                            currentHashMapKeys.remove(key);
+                        } else {
+                            documentHashMap.put(key, DatabaseActions.revertDMP(currentDocument.get(key).toString(), changesHashMap.get(key).toString()));
+                        }
+                    }
+//                    for (String leftOverKey : currentHashMapKeys) {
+//                        currentHashMap.remove(leftOverKey);
+//                    }
+                }
+            }
+
+        }
+
+        return documentHashMap;
     }
 
     public static void addObjectv2(Document doc, MongoConfigurations _mongoConf, String cookie) throws ClassNotFoundException {
@@ -513,9 +636,9 @@ public class DatabaseWrapper {
         return sb;
     }
 
-    public static StringBuilder actionGETOBJECTv2(String cookie, MongoConfigurations _mongoConf, String key, String value) throws JsonProcessingException, JsonProcessingException, ClassNotFoundException, JsonProcessingException, JsonProcessingException {
+    public static StringBuilder actionGETOBJECTv2(String cookie, MongoConfigurations _mongoConf, String key, String value, Boolean publicPage) throws JsonProcessingException, JsonProcessingException, ClassNotFoundException, JsonProcessingException, JsonProcessingException {
         StringBuilder sb = new StringBuilder();
-        if (cookie == null) {
+        if (cookie == null && !publicPage) {
             sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
         } else {
             if (!key.equals("")) {
@@ -537,7 +660,6 @@ public class DatabaseWrapper {
                 searchResult.put("contents", "");
                 jsonData.put("webPage", loadWebFile(_mongoConf.getCollection() + "/template/index.html"));
                 jsonData.set("replaces", jsonReplaces);
-
                 sb.append(jsonData);
             }
         }

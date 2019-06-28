@@ -125,6 +125,9 @@ lang = {
     },
     pages: {
         title: "Aanpasbare pagina's"
+    },
+    backlog: {
+        title: "Versies"
     }
 };
 

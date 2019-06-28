@@ -1,4 +1,3 @@
-//
 //CKEDITOR.addTemplate('note',
 //        {
 //
@@ -82,35 +81,46 @@ CKEDITOR.addTemplates('default',
                             title: 'checklijst',
                             image: 'my-template.PNG',
                             description: 'Agemene checklijst',
-                            html:
-                                    '<script crossorigin="anonymous" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" src="./JS/dependencies/jquery/jquery.js"></script>' +
-                                    '<style type="text/css">.list-group-item:nth-of-type(odd) {' +
-                                    '    background : #f9f9f9;' +
-                                    '}' +
-                                    '  .list-group-item:hover{' +
-                                    '     background : #aeeeee;' +
-                                    '    cursor: pointer;' +
-                                    '  }' +
-                                    '  .list-group-item span{' +
-                                    '    margin-left:5px;' +
-                                    '  }' +
-                                    '  .card{' +
-                                    '    max-width:500px;    ' +
-                                    '  }' +
-                                    '</style>' +
-                                    '<div class="card" contenteditable="false">' +
-                                    '<div class="bg-success card-header" contenteditable="false">Checklijst titel</div>' +
-                                    '' +
-                                    '<ul class="list-group list-group-flush">' +
-                                    '	<li class="list-group-item" name="check"><input class="default" type="checkbox" /><span>Optie 1</span></li>' +
-                                    '	<li class="list-group-item" name="check"><input class="default" type="checkbox" /><span>Optie 2</span></li>' +
-                                    '	<li class="list-group-item" name="check"><input class="default" type="checkbox" /><span>Optie 3</span></li>' +
-                                    '</ul>' +
+                            html: '<p> </p><p>' +
+                                    '   <script crossorigin="anonymous" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" src="./JS/dependencies/jquery/jquery.js" name="jquery"></script>' +
+                                    '   <style type="text/css">.list-group-item:nth-of-type(odd) {    background : #f9f9f9;}  .list-group-item:hover{     background : #aeeeee;    cursor: pointer;  }  .list-group-item span{    margin-left:5px;  }  #card-check{    max-width:500px;      }</style>' +
+                                    '</p>' +
+                                    '<div class="card" id="card-check" contenteditable="false">' +
+                                    '   <div class="bg-success card-header" contenteditable="false"><span contenteditable="true">Checklijst overschakeling BN-nummering folaat en VB12</span></div>' +
+                                    '   <ul class="list-group list-group-flush"></ul>' +
+                                    '   <button class="btn btn-info" id="btn-new-line" type="button">nieuwe lijn</button>' +
                                     '</div>' +
-                                    '<script>' +
-                                    ' console.log($("input"));' +
-                                    '$("input").on("click", function(e){    console.log("clicked");    e.stopPropagation(); });' +
-                                    '$("li[name=\'check\']").on("click", function(e){  $(this).find("input")[0].click();  e.stopPropagation(); })</script>'
+                                    '<p>' +
+                                    '   <script>' +
+                                    '      console.log($("input"));' +
+                                    '      $("input").on("click", function(e){ ' +
+                                    '          console.log("clicked");' +
+                                    '          e.stopPropagation(); ' +
+                                    '      });' +
+                                    '      $("#btn-new-line").on("click", function(e){       ' +
+                                    '          console.log("clicked");' +
+                                    '          var list_item = $("<li class=\'list-group-item\' name=\'check\'><div class=\'container\'><div class=\'row\'><div class=\'col-sm-1\'><input checked=\'checked\' class=\'default\' type=\'checkbox\' /></div><div class=\'col-sm-10\'><span contenteditable=\'true\'>Nieuw item</span></div><div class=\'col-sm-1\'><span class=\'badge badge-secondary\' name=\'span-delete\'>X</span></div></div></div></li>");' +
+                                    '          list_item.on("click", function(e){' +
+                                    '          $(this).find("input")[0].click();' +
+                                    '          $(this).find("input").attr("checked", "checked");' +
+                                    '          e.stopPropagation(); ' +
+                                    '        });' +
+                                    '           list_item.find("span[name=\'span-delete\']").on("click", function(e){' +
+                                    '            $(this).closest("li").remove();' +
+                                    '          });' +
+                                    '           $("#btn-new-line").closest("div").find("ul").append(list_item);' +
+                                    '          e.stopPropagation(); ' +
+                                    '        });        ' +
+                                    '        $("li[name=\'check\']").on("click", function(e){' +
+                                    '          $(this).find("input")[0].click();' +
+                                    '          $(this).find("input").attr("checked", "checked");' +
+                                    '          e.stopPropagation(); ' +
+                                    '        });' +
+                                    '          $("span[name=\'span-delete\']").on("click", function(e){' +
+                                    '            $(this).closest("li").remove();' +
+                                    '          });' +
+                                    '   </script>' +
+                                    '</p><p> </p>'
                         }
                     ]
         });

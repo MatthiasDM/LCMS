@@ -44,20 +44,17 @@ import java.util.LinkedList;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import mdm.Config.MongoConf;
 import static mdm.Core.getUserRoles;
 import mdm.DiffMatchPatch;
-
-import mdm.GsonObjects.Lab.Instrument;
-import mdm.GsonObjects.Lab.InventoryItem;
+import mdm.DiffMatchPatch.Diff;
+import mdm.DiffMatchPatch.Operation;
 import mdm.GsonObjects.Core.MongoConfigurations;
-import mdm.GsonObjects.Note;
 import mdm.GsonObjects.Core.Backlog;
 import mdm.GsonObjects.Core.FileObject;
-import mdm.GsonObjects.Other.ICTTicket;
 
 import mdm.GsonObjects.Core.User;
-import mdm.GsonObjects.View;
 import mdm.pojo.annotations.MdmAnnotations;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -331,7 +328,6 @@ public class DatabaseActions {
         List<Field> fields = Arrays.asList(cls.getDeclaredFields());
         List<String> userRoles = new ArrayList<>();
         List<String> columns = new ArrayList<>();
-        
 
         if (cls.getName().equals("MongoConfigurations") || cls.getName().equals("Actions")) {
             columns = fields.stream()
@@ -341,7 +337,7 @@ public class DatabaseActions {
             if (_cookie != null) {
                 userRoles = getUserRoles(_cookie);
 
-            } 
+            }
 //            else {
 //                userRoles.add("ADMIN");
 //            }
@@ -617,11 +613,29 @@ public class DatabaseActions {
         return newDoc[0].toString();
     }
 
-    public static Document revertDMP(String _object_id, String created_on){
+    public static String revertDMP(String currentText, String patch) {
         Document document = null;
-        return document;
+        DiffMatchPatch dmp = new DiffMatchPatch();
+        StringBuilder reversePatch = new StringBuilder();
+        //List<DiffMatchPatch.Patch> invertedPatches = dmp.patch_deepCopy((LinkedList<DiffMatchPatch.Patch>) patches);
+        LinkedList<DiffMatchPatch.Patch> originalPatches = (LinkedList) dmp.patch_fromText(patch.toString());
+
+        for (DiffMatchPatch.Patch p : originalPatches) {
+            for (Diff d : p.diffs) {
+                if (d.operation == Operation.DELETE) {
+                    d.operation = Operation.INSERT;
+                } else {
+                    if (d.operation == Operation.INSERT) {
+                        d.operation = Operation.DELETE;
+                    }
+                }
+            }
+        }
+        Object[] newDoc = dmp.patch_apply(originalPatches, currentText);
+
+        return newDoc[0].toString();
     }
-    
+
     public static Document getObjectDifference(MongoConf mongoConf, Object original, Object revised) {
         ObjectMapper mapper = new ObjectMapper();
         Document document = null;
@@ -689,6 +703,4 @@ public class DatabaseActions {
         return document;
     }
 
-    
-    
 }

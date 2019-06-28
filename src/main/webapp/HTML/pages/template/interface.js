@@ -31,6 +31,7 @@ $(function () {
                     if ($("#div-page-menu").length > 0) {
                         loadSideBarMenu();
                         $("#sidebar").BootSideMenu({side: "left"});
+                        loadPageScripts();
                     }
                 }
             });
@@ -40,6 +41,7 @@ $(function () {
         if ($("#div-page-menu").length > 0) {
             loadSideBarMenu();
             $("#sidebar").BootSideMenu({side: "left"});
+            loadPageScripts();
         }
     }
     $("#page-elements").remove();
@@ -788,13 +790,14 @@ function new_editable_field() {
 function edit_page() {
     toggleCtrlClick();
     toggleCKmenu();
+    if (readonly) {
+        readonly = false;
+        periodic_save();
+    } else {
+        readonly = true;
 
+    }
     $("div[contenteditable]").each(function (a, b) {
-        if (readonly) {
-            readonly = false;
-        } else {
-            readonly = true;
-        }
         CKEDITOR.instances[b.id].setReadOnly(readonly);
     });
     $("#edit-menu button").each(function (index, btn) {
@@ -805,6 +808,17 @@ function edit_page() {
         }
 
     });
+}
+
+function periodic_save() {
+    if (readonly) {
+        console.log("periodic_save()");
+        setTimeout(function () {
+            documentPage.savePage();
+            periodic_save();
+        }, 60000);
+
+    }
 }
 
 function toggleCtrlClick() {
@@ -834,3 +848,5 @@ function toggleCKmenu() {
     }
 
 }
+
+

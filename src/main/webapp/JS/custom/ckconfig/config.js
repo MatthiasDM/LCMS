@@ -1,64 +1,7 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+function config3() {
 
-function config3(){
-    
-    
+
 }
-
-//function config0() { //used in de notes-module
-//    CKEDITOR.stylesSet.add('mdmConfig0', [
-//        // Block-level styles
-//        {name: 'Hoofdding 1', element: 'h1', styles: {'color': 'rgb(54,95,145)'}},
-//        {name: 'Hoofdding 2', element: 'h2', styles: {'color': 'rgb(79,129,189)'}},
-//        {name: 'Hoofdding 3', element: 'h3', styles: {'color': 'rgb(79,129,189)'}},
-//        {name: 'Hoofdding 4', element: 'h4', styles: {'color': 'rgb(79,129,189)', 'font-style': 'italic'}},
-//        {name: 'Hoofdding 5', element: 'h5', styles: {'color': 'rgb(36,63,96)'}},
-//
-//        // Inline styles
-//        {name: 'Normaal', element: 'span', attributes: {'class': 'my_style'}},
-//        {name: 'Marker: Yellow', element: 'span', styles: {'background-color': 'Yellow'}}
-//    ]);
-//
-//    CKEDITOR.editorConfig = function (config) {
-//
-//        config.templates_files = ['./ckeditor/plugins/templates/templates/defaultLCMS.js'];
-//
-//        config.toolbarGroups = [
-//            {name: 'document', groups: ['mode', 'document', 'doctools']},
-//            {name: 'clipboard', groups: ['clipboard', 'undo']},
-//            {name: 'basicstyles', groups: ['basicstyles', 'cleanup']},
-//            {name: 'insert', groups: ['insert']},
-//            {name: 'editing', groups: ['find', 'selection', 'spellchecker', 'editing']},
-//            {name: 'colors', groups: ['colors']},
-//            {name: 'forms', groups: ['forms']},
-//            {name: 'tools', groups: ['tools']},
-//            //'/',
-//            {name: 'styles', groups: ['styles']},
-//            {name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph']},
-//            {name: 'links', groups: ['links', 'mdmUploadFiles', 'mdmInsertFileReference']},
-//            //'/',
-//            {name: 'others', groups: ['others']},
-//            {name: 'about', groups: ['about']}
-//        ];
-//        //"http://localhost:8080/LCMS/JS/ckeditor/plugins/templates/templates/default.js?t=HBDD"
-//
-//        config.extraPlugins = 'sourcedialog,forms,codesnippet,codemirror,widget,dialog,pre,resize,autogrow,notificationaggregator,notification,mdmUploadFiles,mdmjexcel';
-//
-//        config.format_tags = 'div';
-//        config.removeButtons = 'Table,New,Radio,Save,Source,New,TextField,Textarea,Select,Button,ImageButton,HiddenField,Flash,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Anchor,Unlink,Language,BidiRtl,BidiLtr,Blockquote,CreateDiv,ShowBlocks,About,Scayt,PasteFromWord,PasteText,Paste,Copy,Cut';
-//        config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';
-//        //CKEDITOR.config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu';
-//        config.stylesSet = 'mdmConfig0:/styles.js';
-//
-//    };
-//
-//
-//
-//}
 
 function config2() { //for inline editing
     console.log("function config2");
@@ -79,11 +22,6 @@ function config2() { //for inline editing
             {name: 'Marker: Yellow', element: 'span', styles: {'background-color': 'Yellow'}}
         ]);
     }
-
-
-
-
-
 
     CKEDITOR.editorConfig = function (config) {
 
@@ -112,22 +50,9 @@ function config2() { //for inline editing
         config.title = false;
         config.stylesSet = 'mdmConfig2:/styles.js';
         config.allowedContent = true;
-        
-        //CKEDITOR.filter.allowedContent = true;
-        CKEDITOR.config.protectedSource.push( /<([\S]+)[^>]*class="preserve"[^>]*>.*<\/\1>/g );
-
-       // protectedSource : [/<script[\s\S]*?<\/script>/gi];
-
-
-
-
+        CKEDITOR.config.protectedSource.push(/<([\S]+)[^>]*class="preserve"[^>]*>.*<\/\1>/g);
     };
-
     CKEDITOR.config.contentsCss = ['./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css', "./CSS/style.css"];
-//    CKEDITOR.scriptLoader.load("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js", function (success)
-//    {
-//        console.log("bootstrap js loaded");
-//    });
     CKEDITOR.on('instanceReady', function (e) {
         console.log("loading images");
         var editor = $("#" + e.editor.name);
@@ -151,23 +76,19 @@ function config2() { //for inline editing
             }});
 
         editor.on('paste', function (e) {
-            capturePaste(e, editorId);
+            var pastedImages = capturePaste(e, editorId);
             setTimeout(function () {
-                var text = CKEDITOR.instances[editorId].getData();
-                text = text.replace(/<img (?!fileid).*?>/, "");
-                CKEDITOR.instances[editorId].setData(text);
-                // do something with text
+                if (pastedImages) {
+                    var text = CKEDITOR.instances[editorId].getData();
+                    text = text.replace(/<img (?!fileid).*?>/, "");
+                    CKEDITOR.instances[editorId].setData(text);
+                }
             }, 100);
         });
 
         loadImages(editorId);
         $("#cke_" + editorId).css("border", "1px dotted grey");
         $("#cke_" + editorId).css("padding", "10px");
-
-
-
-
-        // });
 
         $("textarea[title=ckedit]").each(function (index) {
             loadImages($(this).attr('id'));
@@ -177,46 +98,6 @@ function config2() { //for inline editing
             $("#cke_" + $(this).attr('id')).css("min-height", "300px");
             $("#cke_" + $(this).attr('id')).css("max-height", "700px");
         });
-
-//        if ($('iframe').length > 0) {
-//
-//            editor = $(CKEDITOR.instances["followup"].editable().$);
-//
-//            $('iframe').click(function (e) {
-//                if (typeof e.target.href !== 'undefined' && e.ctrlKey === true) {
-//                    window.open(e.target.href, 'new' + e.screenX);
-//                }
-//            });
-//
-//            editor.on("paste", function (e) {
-//                capturePaste(e, editor.attr("id"));
-//                setTimeout(function () {
-//                    var text = CKEDITOR.instances[editorId].getData();
-//                    text = text.replace(/<img (?!fileid).*?>/, "");
-//                    CKEDITOR.instances[editorId].setData(text);
-//                    // do something with text
-//                }, 100);
-//            });
-//
-//            editor.dropzone({
-//                url: "./upload",
-//                clickable: false,
-//                createImageThumbnails: false,
-//                previewsContainer: false,
-//                init: function () {
-//                    this.on("sending", function (file, xhr, formData) {
-//                        formData.append('action', 'FILE_UPLOAD');
-//                        formData.append('LCMS_session', $.cookie('LCMS_session'));
-//                        console.log(formData);
-//                    });
-//                    this.on("success", function (file, response) {
-//                        response = JSON.parse(response);
-//                        imageController.insertFileInEditor(response.name, response.fileid, editor);
-//                        bootstrap_alert.warning('Adding image succesfull', 'success', 1000);
-//                    });
-//                }});
-//        }
-
 
     });
 
@@ -230,7 +111,6 @@ function config2() { //for inline editing
 
 
 function capturePaste(e, _editable) {
-    let imageController = new LCMSImageController();
 
     var items = e.originalEvent.clipboardData.items;
     var images = Object.filter(items, item => item.type.includes("image"));
@@ -242,6 +122,8 @@ function capturePaste(e, _editable) {
         Dropzone.forElement("#" + _editable).addFile(blob);
 
     });
+
+    return images.keys.length > 0;
 }
 
 function loadTOC(editors, appendTo) {

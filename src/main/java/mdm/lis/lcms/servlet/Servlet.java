@@ -15,9 +15,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -148,7 +150,7 @@ public class Servlet extends HttpServlet {
                 if (accesstype.equals("0")) {
                     publicPage = true;
                     if (publicPage) {
-                        sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value));
+                        sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value, publicPage));
                     }
                 }
             }
@@ -168,25 +170,28 @@ public class Servlet extends HttpServlet {
                 } else {
                     if (action.name.toUpperCase().contains("LOAD")) {
                         ArrayList<String> excludes = new ArrayList<>();
+                        BasicDBObject filterObject = new BasicDBObject();
                         if (requestParameters.get("excludes") != null) {
                             excludes.addAll(Arrays.asList(requestParameters.get("excludes")));
                         }
                         excludes.add("contents");
-
-                        sb.append(DatabaseWrapper.actionLOADOBJECTv2(cookie, mongoConfiguration, new BasicDBObject(), excludes.toArray(new String[0])));
+                        if (mongoConfiguration.getCollection().equals("backlog")) {
+                            filterObject.put("object_id", new BasicDBObject("$eq", requestParameters.get("object_id")[0]));
+                        }
+                        sb.append(DatabaseWrapper.actionLOADOBJECTv2(cookie, mongoConfiguration, filterObject, excludes.toArray(new String[0])));
                     } else {
                         if (action.name.toUpperCase().contains("GET")) {
 
                             String key = requestParameters.get("k")[0];
                             String value = requestParameters.get("v")[0];
-                            sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value));
+                            sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value, publicPage));
                         }
                         if (action.name.toUpperCase().contains("DO")) {
-                            String key = requestParameters.get("k")[0];
-                            String value = requestParameters.get("v")[0];
-                            sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value));
-                            commandFunctions.doCommand(cookie);
+                            // List<String> parameters = new ArrayList<>();
+                            // parameters = Arrays.asList(requestParameters.get("parameters"));
 
+
+                            sb.append(commandFunctions.doCommand(requestParameters.get("action")[0], requestParameters));
                         }
                     }
                 }

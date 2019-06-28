@@ -28,7 +28,10 @@ function onDone(data) {
                     groupCollapse: true
                 },
                 onSelectRow: function (rowid) {
-                    return popupEdit(rowid, $("#ICT-ticket-table"), _parent, "ICT_EDITTICKETS");
+                    //return popupEdit(rowid, $("#ICT-ticket-table"), _parent, "ICT_EDITTICKETS");
+                    return ticketGrid.popupEdit(rowid, function () {
+                        return null;
+                    });
                 },
                 caption: "ICT-tickets in het labo"
             },
@@ -39,7 +42,10 @@ function onDone(data) {
         let ticketGrid = new LCMSGrid(gridData);
         ticketGrid.createGrid();
         ticketGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw ticket", "", function () {
-            return popupEdit('new', $("#ICT-ticket-table"), $(this), "ICT_EDITTICKETS", function () {
+//            return popupEdit('new', $("#ICT-ticket-table"), $(this), "ICT_EDITTICKETS", function () {
+//                return null;
+//            });
+            return ticketGrid.popupEdit('new', function () {
                 return null;
             });
         }));
@@ -58,9 +64,9 @@ function onDone(data) {
 
 function ICTtickets_doLoad(_parent) {
     console.log("ICT-tickets load");
-  //  LCMSTableRequest("ICT_LOADTICKETS", "ICT_EDITTICKETS", "./ict", "ICT-ticket-table", "ICT-ticket-pager", "div-grid-wrapper", lang["ICTTickets"]['title']);
+    //  LCMSTableRequest("ICT_LOADTICKETS", "ICT_EDITTICKETS", "./ict", "ICT-ticket-table", "ICT-ticket-pager", "div-grid-wrapper", lang["ICTTickets"]['title']);
 
-    
+
     var _cookie = $.cookie('LCMS_session');
 
     $.ajax({
@@ -121,6 +127,6 @@ function ICTtickets_doLoad(_parent) {
     }
     ).fail(function (data) {
         alert("Sorry. Server unavailable. ");
-           });
+    });
 }
 

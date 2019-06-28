@@ -110,14 +110,23 @@ function kpi_doLoad(kpiAction, _settings) {
             if (kpiAction === "LAB_KPI_NC") {
                 var res = line["NC"].split("}");
                 $.each(res, function (index, val) {
-                    if(val !== ""){
-                        line["NC"] = val.replace("{", "");
-                        var newLine = line;
-                        if (index > 0) {
+                    if (val !== "") {
+                        val = val.replace("{", "");
+                        val = val.replace(" ", "");
+                        val = val.toString().toUpperCase();
+                        if (line["ORDER"] === "B190326018") {
+                            console.log("test1");
+                        }
+                        if (index > 0) { 
+                            var newLine = $.extend( {}, line);
+                            // = Object.assign(line, newLine);
+                            newLine["NC"] = val;
                             data.push(newLine);
-                        } 
+                        } else {
+                            line["NC"] = val;
+                        }
                     }
-                  
+
                 });
             }
             data[i] = line;

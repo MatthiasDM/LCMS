@@ -98,14 +98,11 @@ function popupEdit(_action, _tableObject, _parentObject, _editAction, _afterSubm
                 CKEDITOR.replace($(this).attr('id'), {
                     customConfig: ' '
                 });
-//                var ck = CKEDITOR.inline($(this).attr('id'));
-//                ck.on('instanceReady', function (ev) {
-//                    var editor = ev.editor;
-//                    editor.setReadOnly(false);
-//                });
+
 
             });
-            $("#created_on").val(moment().format('D-M-YY'));
+
+
             scrollTo($($("input")[0]));
         },
         beforeSubmit: function (postdata, formid) {
@@ -115,6 +112,25 @@ function popupEdit(_action, _tableObject, _parentObject, _editAction, _afterSubm
                 var text = editorinstance.getData();
                 text = removeElements("nosave", text);
                 postdata[editorname] = text;
+            });
+            var colModel = $("#" + this.id).jqGrid("getGridParam").colModel;
+            var filteredModel = Object.filter(colModel, function (a) {
+                console.log(a.type);
+                if (a.type === "datetime") {
+                    return true;
+                } else {
+                    return false;
+                }
+                ;
+            });
+            $.each(filteredModel, function (a, b) {
+                var value = postdata[b.label];
+                if (value === "") {
+                    postdata[b.label] = moment().valueOf();
+                } else {
+                    postdata[b.label] = moment(value).valueOf();
+                }
+
             });
             console.log("Checking post data");
         },

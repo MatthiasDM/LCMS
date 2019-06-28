@@ -396,10 +396,14 @@ class LCMSEditablePage {
 //        pageId: "",
 //        idName = "",
 //    };
+
+
     constructor(pageData) {
         this.pageData = pageData;
         this.originalDocument = "";
         this.gridController = new LCMSgridController();
+        this.canvasses = new Object();
+
     }
 
     buildPageData(data, _parent) {
@@ -447,6 +451,28 @@ class LCMSEditablePage {
         $.each(parameters, function (key, value) {
             webPage.find("[LCMS='" + key + "']").append(value);
         });
+
+        //
+        webPage.find("input[name^='canvas_']").each(function (a, b) {
+            var canvas = $("<canvas style='border:1px solid' id='" + $(b).attr('id') + "'></canvas>");
+            var ctx = canvas[0].getContext('2d');
+            var myImage = new Image();
+            var URI = $(b).val();
+
+            me.canvasses[$(b).attr('id')] = URI;
+
+            myImage.src = URI;
+            myImage.onload = function ()
+            {
+                console.log(myImage.src);
+                ctx.drawImage(myImage, 0, 0);
+                $(b).after(canvas);
+                $(b).remove();
+            };
+        });
+
+
+
         jsonData.parent.append(webPage);
         jsonData.parent.append("<script>" + scripts + "</script>");
 
@@ -468,10 +494,8 @@ class LCMSEditablePage {
 
     }
 
-    savePage() {
-        console.log("savePage()");
-        var me = this;
-        var data = JSON.stringify(me.getDataFromPage());
+    doSave(me, data) {
+
         var patches = getPatches(me.originalDocument, data);
         var _cookie = $.cookie('LCMS_session');
         function onDone(_data) {
@@ -481,13 +505,11 @@ class LCMSEditablePage {
         }
         var formData = new FormData();
         var pageContent = new Blob([patches], {type: "text/xml"});
-        //var requestData = {action: me.pageData.editAction, LCMS_session: _cookie, contents: pageContent, oper: 'edit'};
         formData.append("action", me.pageData.editAction);
         formData.append("LCMS_session", _cookie);
         formData.append("oper", "edit");
         formData.append("contents", pageContent);
         formData.append(me.pageData.idName, me.pageData.pageId);
-        //requestData[me.pageData.idName] = me.pageData.pageId;
         var extraParams = {
             enctype: "multipart/form-data",
             processData: false,
@@ -497,6 +519,36 @@ class LCMSEditablePage {
             contentType: false
         };
         LCMSRequest(me.pageData.editUrl, formData, onDone, extraParams);
+    }
+
+    savePage() {
+        console.log("savePage()");
+        var me = this;
+        JSON.stringify(me.getDataFromPage(me, me.doSave));
+
+
+    }
+
+    getHistory() {
+        var me = this;
+        var extraOptions = {
+            onSelectRow: function (rowid) {
+                var modal = create_modal($("#public-menu"), "Geschiedenis bekijken", "");
+                modal.find("#btn-save").remove();
+                var btn = dom_button("btn-revert", "history", "Versie herstellen", "primary");
+                btn.on("click", function (e) {
+                    var rowData = $("#history-table").jqGrid('getRowData', rowid);
+
+                    LCMSRequest("./servlet", {action: "dobacklog", parameters: {object_id: rowData["object_id"], object_type: rowData["object_type"], created_on: moment(rowData["created_on"]).valueOf()}});
+                });
+                modal.find("div[class='modal-body']").append(btn);
+                modal.modal('show');
+                return true;
+                //return  popupEdit('view', $("#history-table"), $("#public-menu"), "", {});
+            }
+        };
+        LCMSTableRequest("loadbacklog", "", "./servlet", "history-table", "history-pager", "public-menu", lang["backlog"]['title'], 3, extraOptions, {excludes: "changes", object_id: me.pageData.pageId});
+
 
     }
 
@@ -660,8 +712,8 @@ class LCMSEditablePage {
         this.pageData.pageId = _pageId;
     }
 
-    getDataFromPage() {
-        var me = this;
+    getDataFromPage(me, onDone) {
+        //var me = this;
         var htmlData = $('<output>').append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"), document, true)));
         me.gridController.checkGrids();
         htmlData.find(("div[id^=gbox_grid]")).each(function (a, b) {
@@ -669,11 +721,43 @@ class LCMSEditablePage {
             $(b).remove();
         });
         var data = {};
-        data['html'] = htmlData.prop("innerHTML");
-        data['grids'] = me.getTrimmedGridControllerGrids();
-        data['html'] = removeElements("nosave", data['html']);
+        var size = htmlData.find("canvas").length;
 
-        return data;
+        if (size < 1) {
+            data['html'] = htmlData.prop("innerHTML");
+            data['grids'] = me.getTrimmedGridControllerGrids();
+            data['html'] = removeElements("nosave", data['html']);
+            onDone(me, JSON.stringify(data));
+        } else {
+            var c = 0;
+            htmlData.find("canvas").each(function (a, b) {
+                var canvasData = $("<input type='hidden' name='canvas_" + $(b).attr('id') + "' id='" + $(b).attr('id') + "'></div>");
+                var myImage = new Image();
+                myImage.src = document.getElementById($(b).attr('id')).toDataURL("image/png");
+                myImage.onload = function ()
+                {
+                    canvasData.val(myImage.src);
+                    console.log(canvasData.val());
+                    $(b).after(canvasData);
+                    $(b).remove();
+                    c++;
+                    if (c === size) {
+                        data['html'] = htmlData.prop("innerHTML");
+                        data['grids'] = me.getTrimmedGridControllerGrids();
+                        data['html'] = removeElements("nosave", data['html']);
+                        onDone(me, JSON.stringify(data));
+                    }
+                };
+
+            });
+        }
+
+
+
+
+
+
+
     }
 
     replaceViews(_classname, _content) {
@@ -782,8 +866,6 @@ class LCMSGrid {
      gridCONTROLLER
      */
 
-
-
     constructor(gridData) {
         this.gridData = gridData;
     }
@@ -884,24 +966,17 @@ class LCMSGrid {
 //        });
     }
 
-//    addGridButton(icon, title, caption, onClickFunction) {
-//        
-//        var gridData = this.gridData;
-//        $("#" + gridData.tableObject).navButtonAdd("#" + gridData.pagerID, {
-//            caption: caption,
-//            title: title,
-//            buttonicon: icon,
-//            onClickButton: function () {
-//                onClickFunction();
-//            },
-//            position: "last"
-//        });
-//    }
+    datetimeformatter(cellvalue, options, rowObject) {
+        console.log("creating datetimeformat()");
+        return moment(cellvalue).utcOffset(60).toString();
+
+    }
 
     createColModel(_data) {
         console.log("createColModel()");
         var cols = new Array();
         var view = [];
+        var me = this;
         $.each(_data, function (index, value) {
             var column = {};
             column.label = value.name;
@@ -919,9 +994,10 @@ class LCMSGrid {
                 column.template = numberTemplate;
             }
             if (type === "datetime") {
-                column.formatoptions = {srcformat: "u1000", newformat: "d-m-y h:i"};
-                column.formatter = "date";
-                column.sorttype = "date";
+                //column.formatoptions = {srcformat: "u1000", newformat: "d-m-y h:i"};
+                column.formatter = me.datetimeformatter;
+                column.type = "datetime";
+                //column.sorttype = "date";
                 column.editoptions = {dataInit: initDateTimeEdit};
             }
 
@@ -1256,6 +1332,72 @@ class LCMSGrid {
         }
 
     }
+
+    popupEdit(_action, _afterSubmitFunction) {
+        var gridData = this.gridData;
+        var grid = $("#" + gridData.tableObject);
+        console.log("new item");
+
+        grid.jqGrid('editGridRow', _action, {
+            reloadAfterSubmit: false,
+            afterShowForm: function (formid) {
+                $("div[id^=editmod]").css('position', 'absolute');
+                $("div[id^=editmod]").css('top', '5%');
+                $("div[id^=editmod]").css('width', '90%');
+                $("div[id^=editmod]").css('display', 'inline-block');
+                $("div[id^=editmod]").css('margin-left', '5%');
+                $("div[id^=editmod]").css('margin-right', '5%');
+                $("div[id^=editmod]").css('left', '');
+                $("textarea[title=ckedit]").each(function (index) {
+                    CKEDITOR.replace($(this).attr('id'), {
+                        customConfig: ' '
+                    });
+                });
+                scrollTo($($("input")[0]));
+            },
+            beforeSubmit: function (postdata, formid) {
+                $("textarea[title=ckedit]").each(function (index) {
+                    var editorname = $(this).attr('id');
+                    var editorinstance = CKEDITOR.instances[editorname];
+                    var text = editorinstance.getData();
+                    text = removeElements("nosave", text);
+                    postdata[editorname] = text;
+                });
+                var colModel = $("#" + this.id).jqGrid("getGridParam").colModel;
+                var filteredModel = Object.filter(colModel, function (a) {
+                    console.log(a.type);
+                    if (a.type === "datetime") {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                    ;
+                });
+                $.each(filteredModel, function (a, b) {
+                    var value = postdata[b.label];
+                    if (value === "") {
+                        postdata[b.label] = moment().valueOf();
+                    } else {
+                        postdata[b.label] = moment(value).valueOf();
+                    }
+
+                });
+                console.log("Checking post data");
+            },
+            afterComplete: function (response, postdata, formid) {
+                $("#cData").trigger("click");
+                bootstrap_alert.warning('Rij toegevoegd', 'info', 1000);
+                $(this).trigger("reloadGrid");
+                _afterSubmitFunction();
+
+            },
+            editData: {action: gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
+        }
+
+        );
+
+    }
+
 }
 
 class LCMSImageController {
@@ -1384,7 +1526,7 @@ function getPatches(oldData, newData) {
 
 }
 
-function LCMSTableRequest(loadAction, editAction, editUrl, tableName, pagerName, wrapperName, caption, tableType, jqGridOptions) {
+function LCMSTableRequest(loadAction, editAction, editUrl, tableName, pagerName, wrapperName, caption, tableType, jqGridOptions, extraRequestOptions) {
     function onDone(data) {
         var jsonData = JSON.parse(data);
         console.log(jsonData.webPage);
@@ -1396,12 +1538,22 @@ function LCMSTableRequest(loadAction, editAction, editUrl, tableName, pagerName,
                 LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption);
             } else if (tableType === 2) {
                 LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
+            } else if (tableType === 3) {
+                LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
             } else {
                 LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption);
             }
         }
     }
-    LCMSRequest(editUrl, {action: loadAction}, onDone);
+    var requestOptions = {};
+    if (typeof extraRequestOptions !== "undefined") {
+        console.log("extraRequestOptions");
+        requestOptions = extraRequestOptions;
+    }
+    requestOptions.action = loadAction;
+
+
+    LCMSRequest(editUrl, requestOptions, onDone);
 }
 
 function LCMSGridTemplateSimple(_jqGridOptions, _editAction, _editUrl, _tableName, _wrapperObject) {
@@ -1425,6 +1577,33 @@ function LCMSGridTemplateSimple(_jqGridOptions, _editAction, _editUrl, _tableNam
     let LcmsGrid = new LCMSGrid(gridData);
     return LcmsGrid;
     $("#" + _tableName).jqGrid('setGridWidth', 300);
+}
+
+function LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
+
+    var gridData = {
+        data: jsonData,
+        editAction: editAction, //"LAB_EDITDEPARTMENT",
+        editUrl: editUrl, // "./lab",
+        tableObject: tableName, //("department-table"),
+        pagerID: pagerName, //"department-pager",
+        wrapperObject: $("#" + wrapperName),
+        jqGridOptions: {
+            grouping: false,
+            caption: caption, //lang["department"]['title']
+        },
+        jqGridParameters: {
+            navGridParameters: {add: false, cancel: false, save: false, keys: true}
+        }
+    };
+    if (typeof jqGridOptions !== "undefined") {
+        $.each(jqGridOptions, function (i, n) {
+            gridData.jqGridOptions[i] = n;
+        });
+    }
+    let lcmsGrid = new LCMSGrid(gridData);
+    lcmsGrid.createGrid();
+
 }
 
 function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption) {
