@@ -1535,13 +1535,13 @@ function LCMSTableRequest(loadAction, editAction, editUrl, tableName, pagerName,
             loadParameters(jsonData);
         } else {
             if (tableType === 1) {
-                LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption);
+                return LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption);
             } else if (tableType === 2) {
-                LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
+                return LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
             } else if (tableType === 3) {
-                LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
+                return LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
             } else {
-                LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption);
+                return LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption);
             }
         }
     }
@@ -1606,7 +1606,7 @@ function LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pager
 
 }
 
-function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption) {
+function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
 
     var gridData = {
         data: jsonData,
@@ -1617,21 +1617,32 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
         wrapperObject: $("#" + wrapperName),
         jqGridOptions: {
             grouping: false,
-            caption: caption, //lang["department"]['title']
+            caption: caption //lang["department"]['title']
         },
         jqGridParameters: {
             navGridParameters: {add: false, cancel: true, save: true, keys: true}
         }
     };
+    if (typeof jqGridOptions !== "undefined") {
+        $.each(jqGridOptions, function (i, n) {
+            gridData.jqGridOptions[i] = n;
+        });
+    }
     let lcmsGrid = new LCMSGrid(gridData);
     lcmsGrid.createGrid();
     lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw item", "", function () {
-        return popupEdit('new', $("#" + gridData.tableObject), $(this), gridData.editAction, {});
+        return lcmsGrid.popupEdit("new", function () {
+            return null;
+        });
+        //return popupEdit('new', $("#" + gridData.tableObject), $(this), gridData.editAction, {});
     }));
     lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
         var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
         if (rowid !== null) {
-            return popupEdit(rowid, $("#" + gridData.tableObject), $(this), gridData.editAction);
+            return lcmsGrid.popupEdit(rowid, function () {
+                return null;
+            });
+            // return popupEdit(rowid, $("#" + gridData.tableObject), $(this), gridData.editAction);
         } else {
             return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
         }
@@ -1659,12 +1670,18 @@ function LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName,
     let lcmsGrid = new LCMSGrid(gridData);
     lcmsGrid.createGrid();
     lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw item", "", function () {
-        return popupEdit('new', $("#" + gridData.tableObject), $(this), gridData.editAction, {});
+        //  return popupEdit('new', $("#" + gridData.tableObject), $(this), gridData.editAction, {});
+        return lcmsGrid.popupEdit("new", function () {
+            return null;
+        });
     }));
     lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
         var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
         if (rowid !== null) {
-            return popupEdit(rowid, $("#" + gridData.tableObject), $(this), gridData.editAction);
+            return lcmsGrid.popupEdit(rowid, function () {
+                return null;
+            });
+            //return popupEdit(rowid, $("#" + gridData.tableObject), $(this), gridData.editAction);
         } else {
             return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
         }
@@ -1683,6 +1700,7 @@ function buildEditablePage(data, _parent) {
     config2();
     documentPage = new LCMSEditablePage({loadAction: "getpage", editAction: "editpages", editUrl: "./servlet", pageId: "", idName: "editablepageid"});
     documentPage.buildPageData(data, _parent);
+
     // documentPage.setPageId($($("div[id^='wrapper']")[0]).attr("id").substring(8));
 }
 

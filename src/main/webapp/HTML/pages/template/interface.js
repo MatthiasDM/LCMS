@@ -31,7 +31,7 @@ $(function () {
                     if ($("#div-page-menu").length > 0) {
                         loadSideBarMenu();
                         $("#sidebar").BootSideMenu({side: "left"});
-                        loadPageScripts();
+                        afterLoadComplete();
                     }
                 }
             });
@@ -41,13 +41,33 @@ $(function () {
         if ($("#div-page-menu").length > 0) {
             loadSideBarMenu();
             $("#sidebar").BootSideMenu({side: "left"});
-            loadPageScripts();
+            afterLoadComplete();
         }
     }
     $("#page-elements").remove();
 
 
 });
+
+function afterLoadComplete() {
+    $.each(documentPage.canvasses, function (a, b) {
+        var canvas = $("#" + a);
+        var ctx = canvas[0].getContext('2d');
+        var myImage = new Image();
+        var URI = b;
+        myImage.src = URI;
+        myImage.onload = function ()
+        {
+            console.log(myImage.src);
+            ctx.drawImage(myImage, 0, 0);
+        };
+        startCanvas(a);
+    });
+    if (typeof loadPageScripts !== "undefined") {
+        loadPageScripts();
+    }
+
+}
 
 function new_grid(parentID, colModel, extraOptions, importCSV, _gridData, gridId, location) {
     console.log("new_grid()");
@@ -785,6 +805,59 @@ function new_editable_field() {
         var editor = ev.editor;
         editor.setReadOnly(false);
     });
+}
+
+function newDrawing() {
+    var editor = $($("div[id^='wrapper']")[0]);
+    var drawingId = uuidv4();
+    var container = dom_oneColContainer(drawingId);
+    editor.append(container);
+    var canvas = $("<canvas id='canvas" + drawingId + "'></canvas>");
+    var btnDel = dom_button("btn-del", "remove", "", "info");
+    btnDel.on("click", function (e) {
+        console.log("Remove drawing");
+        $(this).parent().parent().remove();
+    });
+    $("#" + drawingId + "-center").append(btnDel);
+    $("#" + drawingId + "-center").append("<br/>");
+    $("#" + drawingId + "-center").append(canvas);
+    startCanvas(canvas.attr('id'));
+}
+
+function startCanvas(_id) {
+
+    console.log("starting canvas");
+    canvasContainer = $("#" + _id);
+    canvasContainer.css("border", "1px solid");
+    canvasContainer.css("cursor", "crosshair");
+    var canvas = canvasContainer[0];
+    var ctx = canvas.getContext('2d');
+    canvas.width = parseInt('400');
+    canvas.height = parseInt('200');
+    var mouse = {x: 0, y: 0};
+    canvas.addEventListener('mousemove', function (e) {
+        console.log("mouse move");
+        mouse.x = e.pageX - this.getBoundingClientRect().left;
+        mouse.y = e.pageY - this.getBoundingClientRect().top;
+    }, false);
+    ctx.lineWidth = 3;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#00CC99';
+    canvas.addEventListener('mousedown', function (e) {
+        ctx.beginPath();
+        ctx.moveTo(mouse.x, mouse.y);
+        canvas.addEventListener('mousemove', onPaint, false);
+    }, false);
+    canvas.addEventListener('mouseup', function () {
+        canvas.removeEventListener('mousemove', onPaint, false);
+    }, false);
+    var onPaint = function () {
+        ctx.lineTo(mouse.x, mouse.y);
+        ctx.stroke();
+    };
+
+
 }
 
 function edit_page() {

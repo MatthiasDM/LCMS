@@ -499,6 +499,33 @@ function dom_mainPageContainer(containerID, mainPageContentDivId) {
 
     return container;
 }
+function dom_oneColContainer(containerID) {
+    var container = dom_div("", containerID);
+    var row1 = dom_row();
+    row1.css('padding', '5px');
+    var col1 = dom_col("", 1);
+    var col2 = dom_col(containerID + "-center", 10);
+    var col3 = dom_col("", 1);
+
+    row1.append(col1);
+    row1.append(col2);
+    row1.append(col3);
+    container.append(row1);
+
+    return container;
+}
+
+function dom_twoColContainer(containerID) {
+    var container = dom_div("", containerID);
+    var row1 = dom_row();
+    row1.css('padding', '5px');
+    var col1 = dom_col(containerID + "-left", 6);
+    var col2 = dom_col(containerID + "-right", 6);
+    row1.append(col1);
+    row1.append(col2);
+    container.append(row1);
+    return container;
+}
 function dom_jqGridContainer(name) {
     var container = $("<div class='container' id='" + name + "-container'></div>");
     var row = dom_row();
