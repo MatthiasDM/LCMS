@@ -526,6 +526,35 @@ function dom_twoColContainer(containerID) {
     container.append(row1);
     return container;
 }
+function dom_threeColContainer(containerID) {
+    var container = dom_div("", containerID);
+    var row1 = dom_row();
+    row1.css('padding', '5px');
+    var col1 = dom_col(containerID + "-1", 4);
+    var col2 = dom_col(containerID + "-2", 4);
+    var col3 = dom_col(containerID + "-3", 4);
+    row1.append(col1);
+    row1.append(col2);
+    row1.append(col3);
+    container.append(row1);
+    return container;
+}
+function dom_fourColContainer(containerID) {
+    var container = dom_div("", containerID);
+    var row1 = dom_row();
+    row1.css('padding', '5px');
+    var col1 = dom_col(containerID + "-1", 3);
+    var col2 = dom_col(containerID + "-2", 3);
+    var col3 = dom_col(containerID + "-3", 3);
+    var col4 = dom_col(containerID + "-3", 3);
+    row1.append(col1);
+    row1.append(col2);
+    row1.append(col3);
+    row1.append(col4);
+    container.append(row1);
+    return container;
+}
+
 function dom_jqGridContainer(name) {
     var container = $("<div class='container' id='" + name + "-container'></div>");
     var row = dom_row();
@@ -542,6 +571,21 @@ function dom_jqGridContainer(name) {
     container.append(row);
     return container;
 
+}
+
+function dom_collapse() {
+    var wrapper = $("<div></div>");
+    var btn = $('<button aria-controls="collapseExample" aria-expanded="false" class="btn btn-primary" data-target="#collapseExample" data-toggle="collapse" type="button">Titel... <i class="fa fa-lg fa-fw fa-angle-up" style="margin-right:5px;width:auto;max-width:200px"></i></button>');
+    var collapse = $('<div class="collapse" id="collapseExample"></div>');
+    var content = $('<p style="margin-bottom: 0rem">&nbsp;</p><div class="card card-body">Inklapbare tekst</div>');
+    btn.on("click", function () {
+        console.log("show collapse");
+        collapse.collapse("toggle");
+    });
+    collapse.append(content);
+    wrapper.append(btn);
+    wrapper.append(collapse);
+    return wrapper;
 }
 
 function loadImages(editor, editorObject) {
@@ -586,10 +630,10 @@ function canvasToString(canvas) {
     myImage.src = canvas.toDataURL("image/png");
     myImage.onload = function ()
     {
-       // console.log(myImage.src);
+        // console.log(myImage.src);
         return myImage.src;
 
-    };  
+    };
 }
 
 function convertURIToImageData(URI) {

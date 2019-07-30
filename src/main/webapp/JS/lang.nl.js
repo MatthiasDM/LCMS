@@ -32,7 +32,8 @@ lang = {
         involved_persons: "Betrokken personen",
         created_on: "Aangemaakt op",
         approver: "Goedkeurder",
-        status: "Status"
+        status: "Status",
+        discriminator: "Kernwoord(en)"
     },
     file_table: {
         name: "Naam"

@@ -163,20 +163,23 @@ jqgrid-bootstrap tr.jqgrow>td {
 
 
 @media screen and (max-width: 3000px) {
-     /*Force table to not be like tables anymore */
+    /*Force table to not be like tables anymore */
     .EditTable table,
-     .EditTable thead,
-     .EditTable tbody,
-     .EditTable th,
-     .EditTable td,
-     .EditTable tr {
+    .EditTable thead,
+    .EditTable tbody,
+    .EditTable th,
+    .EditTable td,
+    .EditTable tr {
         display: block;
+    }
+    .FormData{
+        display: grid;
     }
 }
 
 textarea[title=ckedit] {
-    
-    
+
+
 }
 
 

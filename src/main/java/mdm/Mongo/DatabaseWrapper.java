@@ -5,6 +5,7 @@
  */
 package mdm.Mongo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -168,6 +169,9 @@ public class DatabaseWrapper {
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, filter, null, 1000, excludes);
         List<String> columns = getDocumentPriveleges("view", cookie, _mongoConf.getClassName());
         List<String> editableColumns = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
+        for (String column : columns) {
+
+        }
         ArrayList<HashMap> header = new ArrayList<>();
         ArrayList<HashMap> table = new ArrayList<>();
         HashMap tableEntry = new HashMap();
@@ -175,12 +179,14 @@ public class DatabaseWrapper {
             Class cls = Class.forName(_mongoConf.getClassName());
             Field field = cls.getField(column);
             MdmAnnotations mdmAnnotations = field.getAnnotation(MdmAnnotations.class);
+          
             HashMap headerEntry = new HashMap();
             headerEntry.put("name", field.getName());
             if (mdmAnnotations != null) {
                 headerEntry.put("type", mdmAnnotations.type());
-                headerEntry.put("visibleOnTable", mdmAnnotations.visibleOnTable());
-                headerEntry.put("editable", mdmAnnotations.editable()); //editableColumns.contains(column));
+                headerEntry.put("visibleOnTable", mdmAnnotations.visibleOnTable());            
+                headerEntry.put("editable", editableColumns.contains(column)); 
+                //headerEntry.put("editable", mdmAnnotations.editable()); //editableColumns.contains(column));
                 headerEntry.put("multiple", mdmAnnotations.multiple());
                 headerEntry.put("visibleOnForm", mdmAnnotations.visibleOnForm());
                 headerEntry.put("tablename", tableName);
@@ -451,7 +457,7 @@ public class DatabaseWrapper {
         Integer i = 0;
         for (i = 1; i <= docs.size(); i++) {//Optional.ofNullable(entry.getValue()).orElse(""))
 
-            BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(docs.get(docs.size()-i)));
+            BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(docs.get(docs.size() - i)));
             Map<String, Object> backlogHashMap = obj.entrySet().stream()
                     .collect(Collectors.toMap(entry -> entry.getKey(), entry -> Optional.ofNullable(entry.getValue()).orElse("")));
 
@@ -622,6 +628,7 @@ public class DatabaseWrapper {
                             parameters.put(key, value[0]);
                         });
                         ObjectMapper mapper = new ObjectMapper();
+                        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                         mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
                         Object labitem = mapper.readValue(mapper.writeValueAsString(parameters), cls);//createNoteObject(requestParameters.get("docid")[0], "create");
                         Document document = Document.parse(mapper.writeValueAsString(labitem));

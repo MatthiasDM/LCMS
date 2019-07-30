@@ -30,7 +30,7 @@ CKEDITOR.plugins.add( 'pre', {
 			editables: {
 				content: {
 					selector: 'div.pre-content',
-					allowedContent: 'br strong em a[href,target](*){*}'
+					//allowedContent: 'br strong em a[href,target](*){*}'
 				}
 			},
 			template:

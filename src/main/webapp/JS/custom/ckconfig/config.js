@@ -41,22 +41,43 @@ function config2() { //for inline editing
             {name: 'about', groups: ['about']}
         ];
         config.templates_files = ['./JS/ckeditor/plugins/templates/templates/defaultLCMS.js'];
+        config.templates_replaceContent = false;
         config.extraPlugins = 'mdmUploadFiles,codesnippet,pre,codemirror,sourcedialog,widget,dialog,mdmjexcel,templates';
         config.format_tags = 'div';
         config.removeButtons = 'Source,Save,Cut,Undo,Redo,Copy,MenuButton,Preview,Print,PasteText,Paste,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,NewPage,Outdent,Indent,CreateDiv,Blockquote,JustifyLeft,JustifyCenter,JustifyRight,JustifyBlock,Language,BidiRtl,Unlink,BidiLtr,Flash,Table,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Format,Font,Maximize,ShowBlocks,About,RemoveFormat,CopyFormatting,Subscript,Superscript';//Anchor
         config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';
         config.startupShowBorders = false;
-        config.height = 500;
+        config.height = 500;       
+       // config.autoGrow_minHeight = 500;
+        //config.autoGrow_maxHeight = 3000;
+        //config.autoGrow_onStartup = true;
+        config.resize_enabled = true;
         config.title = false;
         config.stylesSet = 'mdmConfig2:/styles.js';
         config.allowedContent = true;
+        CKEDITOR.dtd.$removeEmpty['span'] = false;
+        CKEDITOR.dtd.$removeEmpty['i'] = false;
         CKEDITOR.config.protectedSource.push(/<([\S]+)[^>]*class="preserve"[^>]*>.*<\/\1>/g);
     };
     CKEDITOR.config.contentsCss = ['./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css', "./CSS/style.css"];
+
+//    CKEDITOR.on('instanceCreated', function (e) {
+//        var editorId = e.editor.name;
+//        window.jQuery || CKEDITOR.instances[editorId].insertHtml('<script crossorigin="anonymous" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" name="jquery" src="./JS/dependencies/jquery/jquery.js"></script>');
+//    });
+
     CKEDITOR.on('instanceReady', function (e) {
         console.log("loading images");
         var editor = $("#" + e.editor.name);
+        
         var editorId = e.editor.name;
+        if ($("#cke_" + editorId).find("iframe").length > 0) {
+            var editor = $("#cke_" + editorId).find("iframe").contents().find("html");
+            editor.attr("id", editorId);
+
+        }
+
+
         editor.dropzone({
             url: "./upload",
             clickable: false,
@@ -87,18 +108,21 @@ function config2() { //for inline editing
         });
 
         loadImages(editorId);
-        $("#cke_" + editorId).css("border", "1px dotted grey");
+        $("#cke_" + editorId).css("border", "0px dotted grey");
         $("#cke_" + editorId).css("padding", "10px");
 
         $("textarea[title=ckedit]").each(function (index) {
             loadImages($(this).attr('id'));
             // loadTOC($(this).attr('id'));
-            $("#cke_" + $(this).attr('id')).css("border", "1px dotted grey");
+            $("#cke_" + $(this).attr('id')).css("border", "0px dotted grey");
             $("#cke_" + $(this).attr('id')).css("padding", "10px");
-            $("#cke_" + $(this).attr('id')).css("min-height", "300px");
+            $("#cke_" + $(this).attr('id')).css("min-height", "500px");
             $("#cke_" + $(this).attr('id')).css("max-height", "700px");
-        });
 
+        });
+   
+        
+        
     });
 
 
@@ -123,7 +147,7 @@ function capturePaste(e, _editable) {
 
     });
 
-    return images.keys.length > 0;
+    return (images.length > 0 && images.keys.length > 0);
 }
 
 function loadTOC(editors, appendTo) {

@@ -1058,7 +1058,7 @@ class LCMSGrid {
                 column.hidden = true;
             }
             if (value.editable === false) {
-                column.editable = false;
+                column.editable = "disabled";
             } else {
                 column.editable = true;
             }
@@ -1142,6 +1142,14 @@ class LCMSGrid {
             ondblClickRow: editRow,
             pager: "#" + gridData.pagerID,
             caption: "",
+            onSelectRow: function (rowid) {
+                if (typeof gridData.jqGridOptions.selectToEdit !== "undefined") {
+                    if (gridData.jqGridOptions.selectToEdit === true) {
+                        me.popupEdit(rowid);
+                    }
+                }
+            },
+            colModelData: colModelData,
             pgbuttons: tabelData.length > 150,
             pgtext: "",
             multiselect: true,
@@ -1334,13 +1342,31 @@ class LCMSGrid {
     }
 
     popupEdit(_action, _afterSubmitFunction) {
+        var me = this;
         var gridData = this.gridData;
         var grid = $("#" + gridData.tableObject);
         console.log("new item");
 
         grid.jqGrid('editGridRow', _action, {
             reloadAfterSubmit: false,
+            beforeShowForm: function (formid) {
+               
+                $("textarea[title=ckedit]").each(function (index) {
+                    
+                     $(this).replaceWith("<div contenteditable='true' title=ckedit id='"+$(this).attr("id")+"'>"+$(this).val()+"</div>");
+                   // CKEDITOR.replace($(this).attr('id'), {
+                   //     customConfig: ' '
+                  //  });
+                      
+                      
+                });
+                
+                 $("div[title=ckedit]").each(function (index) {
+                     CKEDITOR.inline($(this).attr('id'));
+                 });
+            },
             afterShowForm: function (formid) {
+                  var pills = me.createPills(formid);
                 $("div[id^=editmod]").css('position', 'absolute');
                 $("div[id^=editmod]").css('top', '5%');
                 $("div[id^=editmod]").css('width', '90%');
@@ -1348,15 +1374,20 @@ class LCMSGrid {
                 $("div[id^=editmod]").css('margin-left', '5%');
                 $("div[id^=editmod]").css('margin-right', '5%');
                 $("div[id^=editmod]").css('left', '');
-                $("textarea[title=ckedit]").each(function (index) {
-                    CKEDITOR.replace($(this).attr('id'), {
-                        customConfig: ' '
-                    });
-                });
+//                $("textarea[title=ckedit]").each(function (index) {
+//                    CKEDITOR.replace($(this).attr('id'), {
+//                        customConfig: ' '
+//                    });  
+//                  //  CKEDITOR.inline($(this).attr('id'));
+//                });
                 scrollTo($($("input")[0]));
             },
-            beforeSubmit: function (postdata, formid) {
-                $("textarea[title=ckedit]").each(function (index) {
+
+            onclickSubmit: function (params, postdata) {
+                console.log("onclickSubmit()");
+                var postdata = $("#FrmGrid_" + this.id).serializeObject();
+                ;
+                $("div[title=ckedit]").each(function (index) {
                     var editorname = $(this).attr('id');
                     var editorinstance = CKEDITOR.instances[editorname];
                     var text = editorinstance.getData();
@@ -1382,7 +1413,38 @@ class LCMSGrid {
                     }
 
                 });
+                return postdata;
+            },
+            beforeSubmit: function (postdata, formid) {
                 console.log("Checking post data");
+                //   postdata = formid.serializeObject();
+//                $("textarea[title=ckedit]").each(function (index) {
+//                    var editorname = $(this).attr('id');
+//                    var editorinstance = CKEDITOR.instances[editorname];
+//                    var text = editorinstance.getData();
+//                    text = removeElements("nosave", text);
+//                    postdata[editorname] = text;
+//                });
+//                var colModel = $("#" + this.id).jqGrid("getGridParam").colModel;
+//                var filteredModel = Object.filter(colModel, function (a) {
+//                    console.log(a.type);
+//                    if (a.type === "datetime") {
+//                        return true;
+//                    } else {
+//                        return false;
+//                    }
+//                    ;
+//                });
+//                $.each(filteredModel, function (a, b) {
+//                    var value = postdata[b.label];
+//                    if (value === "") {
+//                        postdata[b.label] = moment().valueOf();
+//                    } else {
+//                        postdata[b.label] = moment(value).valueOf();
+//                    }
+//
+//                });
+
             },
             afterComplete: function (response, postdata, formid) {
                 $("#cData").trigger("click");
@@ -1396,6 +1458,49 @@ class LCMSGrid {
 
         );
 
+    }
+
+    createPills(form) {
+        var me = this;
+        var pills = [];
+        var header = $.extend(true, [], me.gridData.data.header);
+        var tabId = uuidv4();
+        pills.push("Algemeen");
+        if (typeof me.gridData.data.header === "string") {
+            me.gridData.data.header = JSON.parse(me.gridData.data.header);
+        }
+        $(form).find("tr[data-rowpos]").each(function () {
+            if ($(this).find("td.DataTD").find("div[title='ckedit']").length > 0) {
+                var rowId = ($($(this).find("td.DataTD").find("div[title='ckedit']")).attr("id"));
+                var headerItem = Object.filter(me.gridData.data.header, obj => obj.name === rowId);
+
+                var tableName = headerItem[Object.keys(headerItem)[0]].tablename;
+                pills.push(lang[tableName][rowId]);
+            }
+            ;
+        });
+
+        $(form).append(dom_nav(pills, tabId));
+        $(form).find("tr[data-rowpos]").each(function () {
+            if ($(this).find("td.DataTD").find("div[title='ckedit']").length > 0) {
+                console.log(header);
+                var rowId = ($($(this).find("td.DataTD").find("div[title='ckedit']")).attr("id"));
+                var headerItem = Object.filter(me.gridData.data.header, obj => obj.name === rowId);
+                var tableName = headerItem[Object.keys(headerItem)[0]].tablename;
+                var rowIndex = pills.indexOf(lang[tableName][rowId]);
+                if (rowIndex > 0) {
+                    $("#" + (rowIndex) + "-tab").append((this));
+                }
+            } else {
+                $("#0-tab").append((this));
+            }
+
+        });
+
+
+        $("#" + tabId + " a[id='0-pill']").tab('show');
+        console.log(pills);
+        return pills;
     }
 
 }
@@ -1553,7 +1658,7 @@ function LCMSTableRequest(loadAction, editAction, editUrl, tableName, pagerName,
     requestOptions.action = loadAction;
 
 
-    LCMSRequest(editUrl, requestOptions, onDone);
+    return LCMSRequest(editUrl, requestOptions, onDone);
 }
 
 function LCMSGridTemplateSimple(_jqGridOptions, _editAction, _editUrl, _tableName, _wrapperObject) {
@@ -1575,8 +1680,8 @@ function LCMSGridTemplateSimple(_jqGridOptions, _editAction, _editUrl, _tableNam
         }
     };
     let LcmsGrid = new LCMSGrid(gridData);
-    return LcmsGrid;
     $("#" + _tableName).jqGrid('setGridWidth', 300);
+    return LcmsGrid;
 }
 
 function LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
@@ -1603,11 +1708,11 @@ function LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pager
     }
     let lcmsGrid = new LCMSGrid(gridData);
     lcmsGrid.createGrid();
-
+    return lcmsGrid;
 }
 
 function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
-
+    console.log("LCMSGridTemplateStandard()");
     var gridData = {
         data: jsonData,
         editAction: editAction, //"LAB_EDITDEPARTMENT",
@@ -1647,6 +1752,7 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
             return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
         }
     }));
+    return lcmsGrid;
 }
 
 function LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
@@ -1686,6 +1792,10 @@ function LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName,
             return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
         }
     }));
+    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-download", "Export", "", function () {
+        return lcmsGrid.export_as_html();
+    }));
+    return lcmsGrid;
 }
 
 function LCMSTemplateGridButton(icon, title, caption, onClickFunction) {

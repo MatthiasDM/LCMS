@@ -43,6 +43,12 @@ public class ICTTicket {
             choices = {"Glims", "Cyberlab", "Sharepoint", "Hardware", ""}
     )
     public String category;
+        @MdmAnnotations(
+            editRole = "ICTMANAGER",
+            //viewRole = "ICTMANAGER",
+            type = "string"            
+    )
+    public String discriminator;
     @MdmAnnotations(
             type = "cktext",            
             editRole = "ICTMANAGER",
@@ -85,7 +91,7 @@ public class ICTTicket {
     )
     public boolean approved;
     @MdmAnnotations(
-            type = "date",
+            type = "datetime",
             visibleOnTable = false,
             visibleOnForm = false,
             viewRole = "ICTMANAGER",
@@ -118,20 +124,49 @@ public class ICTTicket {
     public ICTTicket() {
     }
 
-    public ICTTicket(String ticketid, String number, String subject, String overview, String followup, String status, List<String> involved_persons, String approver, long approved_on, long created_on, String created_by, long edited_on) {
+    public ICTTicket(String ticketid, String number, String subject, String category, String discriminator, String overview, String followup, String status, List<String> involved_persons, String approver, boolean approved, long approved_on, long created_on, String created_by, long edited_on) {
         this.ticketid = ticketid;
         this.number = number;
         this.subject = subject;
+        this.category = category;
+        this.discriminator = discriminator;
         this.overview = overview;
         this.followup = followup;
         this.status = status;
         this.involved_persons = involved_persons;
         this.approver = approver;
+        this.approved = approved;
         this.approved_on = approved_on;
         this.created_on = created_on;
         this.created_by = created_by;
         this.edited_on = edited_on;
     }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getDiscriminator() {
+        return discriminator;
+    }
+
+    public void setDiscriminator(String discriminator) {
+        this.discriminator = discriminator;
+    }
+
+    public boolean isApproved() {
+        return approved;
+    }
+
+    public void setApproved(boolean approved) {
+        this.approved = approved;
+    }
+
+ 
 
     public String getTicketid() {
         return ticketid;
