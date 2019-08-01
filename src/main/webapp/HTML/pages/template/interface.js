@@ -861,11 +861,12 @@ function startCanvas(_id) {
 }
 
 function edit_page() {
+    console.log("edit_page()");
     toggleCtrlClick();
     toggleCKmenu();
     if (readonly) {
         readonly = false;
-        periodic_save();
+       // periodic_save();
     } else {
         readonly = true;
 
@@ -887,8 +888,8 @@ function periodic_save() {
     if (!readonly) {
         console.log("periodic_save()");
         setTimeout(function () {
-            documentPage.savePage();
-            periodic_save();
+            //documentPage.savePage();
+            //periodic_save();
         }, 60000);
 
     }

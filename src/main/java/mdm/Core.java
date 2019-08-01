@@ -13,7 +13,9 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Field;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -322,4 +324,14 @@ public class Core {
         return pass;
     }
 
+    public static String getClientPCName(String ipAddr) {
+        String host = "";
+        try {
+            InetAddress addr = InetAddress.getByName(ipAddr);
+            host = addr.getHostName();
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return host;
+    }
 }

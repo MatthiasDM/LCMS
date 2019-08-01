@@ -62,7 +62,7 @@ public class Servlet extends HttpServlet {
         StringBuilder sb = new StringBuilder();
 
         Map<String, String[]> requestParameters = request.getParameterMap();
-
+        String ipAddress = request.getRemoteAddr();
         ActionManager aM;
 
         try {
