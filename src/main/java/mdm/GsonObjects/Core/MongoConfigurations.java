@@ -16,7 +16,7 @@ public class MongoConfigurations {
     @MdmAnnotations(
             type = "string",
             createRole = "SYSTEM",
-            editRole = "SYSTEM",
+            //editRole = "SYSTEM",
             visibleOnTable = false,
             visibleOnForm = false
     )

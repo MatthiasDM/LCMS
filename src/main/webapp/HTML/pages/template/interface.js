@@ -884,7 +884,7 @@ function edit_page() {
 }
 
 function periodic_save() {
-    if (readonly) {
+    if (!readonly) {
         console.log("periodic_save()");
         setTimeout(function () {
             documentPage.savePage();

@@ -494,6 +494,23 @@ public class DatabaseActions {
         return results;
     }
 
+    public static ArrayList<Document> getObjectsListv2(String _cookie, MongoConfigurations mongoConf, List<String> columns) throws ClassNotFoundException {
+
+        ArrayList<Document> results = null;
+        try {
+            MongoCollection<Document> ObjectItems = getObjectsv2(mongoConf);
+            //    ObjectItems.deleteMany(exists("userid"));
+
+            results = ObjectItems.find().projection(
+                    fields(include(columns))
+            ).into(new ArrayList<Document>());
+        } catch (Exception e) {
+            LOG.severe(e.getMessage());
+            return results;
+        }
+        return results;
+    }
+
     public static ArrayList<Document> getObjectsSpecificList(String _cookie, MongoConf mongoConf, Bson bson, Bson sort, int limit, String[] excludes) throws ClassNotFoundException {
 
         List<String> columns = getDocumentPriveleges("view", _cookie, mongoConf.getClassName());
@@ -703,4 +720,19 @@ public class DatabaseActions {
         return document;
     }
 
+    public static MongoConfigurations getMongoConfiguration(String _mongoConfigurationName) throws ClassNotFoundException {
+        ObjectMapper mapper = new ObjectMapper();
+        MongoConfigurations mongoConf;
+        BasicDBObject searchObject = new BasicDBObject();
+        searchObject.put("mongoconfigurationsid", new BasicDBObject("$eq", _mongoConfigurationName));
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList("", MongoConf.MONGOCONFIGURATIONS, searchObject, null, 1000, new String[]{});
+        if (results.size() < 1) {
+            searchObject.remove("mongoconfigurationsid");
+            searchObject.put("name", new BasicDBObject("$eq", _mongoConfigurationName));
+            results = DatabaseActions.getObjectsSpecificList("", MongoConf.MONGOCONFIGURATIONS, searchObject, null, 1000, new String[]{});
+        }
+//String jsonObject = mapper.writeValueAsString(results.get(0));
+        mongoConf = mapper.convertValue(results.get(0), MongoConfigurations.class);
+        return mongoConf;
+    }
 }

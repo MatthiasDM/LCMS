@@ -14,7 +14,7 @@ import mdm.pojo.annotations.MdmAnnotations;
  */
 public class Command {
 
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false, editRole = "SYSTEM")
+    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String commandid;
     @MdmAnnotations(
             type = "string",

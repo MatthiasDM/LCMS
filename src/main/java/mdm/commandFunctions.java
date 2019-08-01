@@ -51,11 +51,11 @@ public class commandFunctions {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
         mdm.GsonObjects.Core.Actions action = DatabaseWrapper.getAction(parameters.get("action")[0]);
-        MongoConfigurations backlogConfiguration = action.getMongoConfiguration(action.mongoconfiguration);
+        MongoConfigurations backlogConfiguration = DatabaseActions.getMongoConfiguration(action.mongoconfiguration);
         ArrayList<Document> backlogs = DatabaseWrapper.getObjectSpecificRawDatav2(parameters.get("LCMS_session")[0],
                 backlogConfiguration,
                 and(eq("object_id", parameters.get("parameters[object_id]")[0]), gte("created_on", new Long(parameters.get("parameters[created_on]")[0]))));
-        MongoConfigurations mongoConfiguration = action.getMongoConfiguration("88d14fb4-6694-4aa9-aa67-de6857e328ec");
+        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("88d14fb4-6694-4aa9-aa67-de6857e328ec");
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(parameters.get("LCMS_session")[0], mongoConfiguration, and(eq("className", parameters.get("parameters[object_type]")[0])), null, 1000, new String[]{});
         MongoConfigurations objectConfiguration = mapper.convertValue(results.get(0), mdm.GsonObjects.Core.MongoConfigurations.class);
         Map<String, Object> objectHashMap = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session")[0], objectConfiguration, and(eq(objectConfiguration.getIdName(), parameters.get("parameters[object_id]")[0])));

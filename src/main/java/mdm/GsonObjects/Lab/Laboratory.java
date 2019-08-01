@@ -26,7 +26,7 @@ public class Laboratory {
     public String NIHII;
     @MdmAnnotations(
             type = "select",           
-            reference = {"Mongo", "USERS", "userid", "username"},
+            reference = {"Mongo", "users", "userid", "username"},
             editRole = "ICTMANAGER"
     )
     public String head;

@@ -135,7 +135,7 @@ public class Servlet extends HttpServlet {
 
         public StringBuilder startAction() throws ClassNotFoundException, IOException, JsonProcessingException, NoSuchFieldException {
             StringBuilder sb = new StringBuilder();
-            MongoConfigurations mongoConfiguration = action.getMongoConfiguration(action.mongoconfiguration);
+            MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration(action.mongoconfiguration);
 
             Boolean publicPage = false;
             if (mongoConfiguration.getCollection().equals("pages") && requestParameters.get("k") != null && requestParameters.get("v") != null) {

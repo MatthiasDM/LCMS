@@ -17,7 +17,7 @@ public class Rights {
     @MdmAnnotations(
             viewRole = "ICTMANAGER",
             createRole = "SYSTEM",
-            editRole = "ICTMANAGER",
+            //editRole = "ICTMANAGER",
             type = "string",
             visibleOnTable = false,
             visibleOnForm = false)

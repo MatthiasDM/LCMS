@@ -311,79 +311,79 @@ class LCMSgridController {
     }
 }
 
-class LCMSSidebarPage {
-    constructor(pageData, gridData) {
-        console.log("LCMSSidebarPage()");
-        this.pageData = pageData;
-        this.gridData = gridData;
-        this.requestHeader = {};
-    }
-    loadFromServer() {
-        var gridData = this.gridData;
-        console.log(gridData.editUrl + ": getting data from server...");
-        function onDone(data) {
-            var jsonData = JSON.parse(data);
-            gridData.data = jsonData;
-            let grid = new LCMSGrid(gridData);
-            grid.createGrid();
-            grid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw item", "", function () {
-                return popupEdit('new', $("#" + gridData.tableObject), $(this), gridData.editAction, {});
-            }));
-            grid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
-                var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
-                if (rowid !== null) {
-                    return popupEdit(rowid, $("#" + gridData.tableObject), $(this), gridData.editAction);
-                } else {
-                    return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
-                }
-            }));
-
-            if (typeof gridData.extraButtons !== "undefined") {
-                $.each(gridData.extraButtons, function (index, btn) {
-                    grid.addGridButton(btn);
-                });
-            }
-        }
-
-
-        this.requestHeader = gridData.loadAction;
-        LCMSRequest(gridData.editUrl, this.requestHeader, onDone);
-    }
-
-    addLoadRequestParam() {
-
-    }
-
-    createPage() {
-        var _this = this;
-        var pageData = _this.pageData;
-        var wrapper = $("<div></div>");
-        var sidebarLeft = dom_div("", this.pageData.sidebarLeft);
-        var sidebarLeftList = dom_list(this.pageData.sidebarLeftList, []);
-        var sidebarRight = dom_div("", this.pageData.sidebarRight);
-        var sidebarRightTable = $("<table id='" + this.pageData.sidebarRightTable + "'></table>");
-        var sidebarRightTablePager = dom_div("", this.pageData.sidebarRightTablePager);
-        var mainPageContainer = dom_mainPageContainer(this.pageData.containerID, this.pageData.mainPageContentDivId);
-
-        sidebarLeft.append(sidebarLeftList);
-        sidebarRight.append(sidebarRightTable);
-        sidebarRight.append(sidebarRightTablePager);
-
-        wrapper.append(sidebarLeft);
-        wrapper.append(sidebarRight);
-        wrapper.append(mainPageContainer);
-
-        $(function () {
-            sidebarLeft.BootSideMenu({side: "left"});
-            sidebarRight.BootSideMenu({side: "right"});
-            sidebarRight.BootSideMenu.open();
-            _this.loadFromServer();
-            pageData.ckConfig();
-        });
-        return wrapper;
-    }
-
-}
+//class LCMSSidebarPage {
+//    constructor(pageData, gridData) {
+//        console.log("LCMSSidebarPage()");
+//        this.pageData = pageData;
+//        this.gridData = gridData;
+//        this.requestHeader = {};
+//    }
+//    loadFromServer() {
+//        var gridData = this.gridData;
+//        console.log(gridData.editUrl + ": getting data from server...");
+//        function onDone(data) {
+//            var jsonData = JSON.parse(data);
+//            gridData.data = jsonData;
+//            let grid = new LCMSGrid(gridData);
+//            grid.createGrid();
+//            grid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw item", "", function () {
+//                return popupEdit('new', $("#" + gridData.tableObject), $(this), gridData.editAction, {});
+//            }));
+//            grid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
+//                var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
+//                if (rowid !== null) {
+//                    return popupEdit(rowid, $("#" + gridData.tableObject), $(this), gridData.editAction);
+//                } else {
+//                    return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
+//                }
+//            }));
+//
+//            if (typeof gridData.extraButtons !== "undefined") {
+//                $.each(gridData.extraButtons, function (index, btn) {
+//                    grid.addGridButton(btn);
+//                });
+//            }
+//        }
+//
+//
+//        this.requestHeader = gridData.loadAction;
+//        LCMSRequest(gridData.editUrl, this.requestHeader, onDone);
+//    }
+//
+//    addLoadRequestParam() {
+//
+//    }
+//
+//    createPage() {
+//        var _this = this;
+//        var pageData = _this.pageData;
+//        var wrapper = $("<div></div>");
+//        //var sidebarLeft = dom_div("", this.pageData.sidebarLeft);
+//        //var sidebarLeftList = dom_list(this.pageData.sidebarLeftList, []);
+//        var sidebarRight = dom_div("", this.pageData.sidebarRight);
+//        var sidebarRightTable = $("<table id='" + this.pageData.sidebarRightTable + "'></table>");
+//        var sidebarRightTablePager = dom_div("", this.pageData.sidebarRightTablePager);
+//        var mainPageContainer = dom_mainPageContainer(this.pageData.containerID, this.pageData.mainPageContentDivId);
+//
+//        //sidebarLeft.append(sidebarLeftList);
+//        sidebarRight.append(sidebarRightTable);
+//        sidebarRight.append(sidebarRightTablePager);
+//
+//        //wrapper.append(sidebarLeft);
+//        wrapper.append(sidebarRight);
+//        wrapper.append(mainPageContainer);
+//
+//        $(function () {
+//         //   sidebarLeft.BootSideMenu({side: "left"});
+//            sidebarRight.BootSideMenu({side: "right"});
+//            sidebarRight.BootSideMenu.open();
+//            _this.loadFromServer();
+//            pageData.ckConfig();
+//        });
+//        return wrapper;
+//    }
+//
+//}
 
 class LCMSNormalPage {
 

@@ -101,7 +101,7 @@ public class ActionManagerCredentials {
                 UUID sessionId = UUID.randomUUID();
                 Cookie loginCookie = new Cookie("LCMS_session", sessionId.toString());
                 mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
-                Map<String, Object> usr = DatabaseWrapper.getObjectHashMapv2(null, _action.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
+                Map<String, Object> usr = DatabaseWrapper.getObjectHashMapv2(null, DatabaseActions.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
                 loginCookie.setMaxAge((Integer.parseInt(usr.get("sessionValidity").toString())));
                 Session session = createSession(_user, loginCookie.getValue());
                 DatabaseActions.insertSession(session);
@@ -158,7 +158,7 @@ public class ActionManagerCredentials {
         try {
             if (!_user.equals(getProp("username"))) {
                 mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
-                Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, _action.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
+                Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, DatabaseActions.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
                 session = new Session(_user, _sessionId, now + ((Integer.parseInt(user.get("sessionValidity").toString()))), true, user.get("userid").toString());
             } else {
                 session = new Session(_user, _sessionId, now + (9999), true, "158");
@@ -187,7 +187,7 @@ public class ActionManagerCredentials {
         Session session = DatabaseActions.getSession(_sessionId);
         if (!session.getUsername().equals(getProp("username"))) {
             mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
-            Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, _action.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", session.getUsername())));
+            Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, DatabaseActions.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", session.getUsername())));
             DatabaseActions.editSessionValidity(_sessionId, (Integer.parseInt(user.get("sessionValidity").toString()) * -1));
         } else {
             DatabaseActions.editSessionValidity(_sessionId, 9999 * -1);        

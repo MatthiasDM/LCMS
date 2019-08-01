@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mdm.GsonObjects.Other;
+package mdm.GsonObjects.Core;
 
+import mdm.GsonObjects.Other.*;
 import mdm.GsonObjects.Lab.*;
 import mdm.pojo.annotations.MdmAnnotations;
 
@@ -12,10 +13,10 @@ import mdm.pojo.annotations.MdmAnnotations;
  *
  * @author matmey
  */
-public class Validation {
+public class Document {
 
     @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
-    public String validationid;
+    public String documentid;
     @MdmAnnotations(type = "string", visibleOnTable = true, visibleOnForm = true)
     public String title;
     @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false, DMP = true)
@@ -64,11 +65,11 @@ public class Validation {
             editRole = "SYSTEM")
     public long edited_on;
 
-    public Validation() {
+    public Document() {
     }
 
-    public Validation(String validationid, String title, String contents, String approver, String category, long approved_on, long created_on, String created_by, long edited_on) {
-        this.validationid = validationid;
+    public Document(String validationid, String title, String contents, String approver, String category, long approved_on, long created_on, String created_by, long edited_on) {
+        this.documentid = validationid;
         this.title = title;
         this.contents = contents;
         this.approver = approver;
@@ -80,11 +81,11 @@ public class Validation {
     }
 
     public String getValidationid() {
-        return validationid;
+        return documentid;
     }
 
     public void setValidationid(String validationid) {
-        this.validationid = validationid;
+        this.documentid = validationid;
     }
 
     public String getTitle() {

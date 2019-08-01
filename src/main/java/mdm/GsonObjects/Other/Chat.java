@@ -13,9 +13,9 @@ import mdm.pojo.annotations.MdmAnnotations;
  */
 public class Chat {
 
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false, editRole = "SYSTEM", createRole = "SYSTEM")
+    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false, createRole = "SYSTEM")
     public String chatid;
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false, editRole = "SYSTEM", createRole = "SYSTEM")
+    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false, createRole = "SYSTEM")
     public String sessionid;
     @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String correspondent;

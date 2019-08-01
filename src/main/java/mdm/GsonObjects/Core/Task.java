@@ -16,7 +16,7 @@ public class Task {
     @MdmAnnotations(
             viewRole = "ICTMANAGER",
             createRole = "SYSTEM",
-            editRole = "SYSTEM",
+            //editRole = "SYSTEM",
             type = "string",
             visibleOnTable = false,
             visibleOnForm = false)
@@ -36,7 +36,7 @@ public class Task {
 
     @MdmAnnotations(
             type = "select",
-            reference = {"Mongo", "USERS", "userid", "username"},
+            reference = {"Mongo", "users", "userid", "username"},
             editRole = "ICTMANAGER",
             visibleOnTable = false
     )

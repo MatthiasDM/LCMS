@@ -14,7 +14,7 @@ import mdm.pojo.annotations.MdmAnnotations;
  */
 public class Suggestion {
 
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false, editRole = "SYSTEM")
+    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String suggestionid;
     @MdmAnnotations(
             type = "string",

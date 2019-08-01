@@ -21,7 +21,7 @@ public class ICTTicket {
     @MdmAnnotations(
             //viewRole = "ICTMANAGER",
             createRole = "SYSTEM",
-            editRole = "SYSTEM",
+            //editRole = "SYSTEM",
             type = "string",
             visibleOnTable = false,
             visibleOnForm = false)
@@ -71,14 +71,14 @@ public class ICTTicket {
             viewRole = "ICTMANAGER",
             type = "select",
             multiple = true,
-            reference = {"Mongo", "USERS", "userid", "username"},
+            reference = {"Mongo", "users", "userid", "username"},
             visibleOnTable = false
     )
     public List<String> involved_persons;
     @MdmAnnotations(
             type = "select",
             viewRole = "ICTMANAGER",
-            reference = {"Mongo", "USERS", "userid", "username"},
+            reference = {"Mongo", "users", "userid", "username"},
             editRole = "ICTMANAGER",
             visibleOnTable = false
     )

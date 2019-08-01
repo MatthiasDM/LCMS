@@ -129,7 +129,8 @@ lang = {
     },
     backlog: {
         title: "Versies"
-    }
+    },
+    document: {}
 };
 
 

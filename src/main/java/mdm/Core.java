@@ -253,7 +253,7 @@ public class Core {
             requestParameters.remove("id");
             HashMap<String, Object> parameters = new HashMap<>();
             requestParameters.forEach((key, value) -> {
-
+                key = key.replaceAll("\\[|\\]", "");
                 try {
                     System.out.println(cls.getField(key).getType().toString());
                     String val = value[0];
@@ -262,7 +262,11 @@ public class Core {
                         parameters.put(key, Long.parseLong(val));
                     }
                     if (cls.getField(key).getType().equals(List.class) && !val.equals("") && val != null) {
-                        parameters.put(key, new ArrayList<>(Arrays.asList(val.split(","))));
+                        if (val.split(",").length < 2) {
+                            parameters.put(key, new ArrayList<>(Arrays.asList(value)));
+                        } else {
+                            parameters.put(key, new ArrayList<>(Arrays.asList(val.split(","))));
+                        }
                     }
                     if (cls.getField(key).getType().equals(String.class) && !val.equals("") && val != null) {
                         parameters.put(key, (val));

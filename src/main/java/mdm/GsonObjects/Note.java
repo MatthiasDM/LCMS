@@ -22,42 +22,42 @@ public class Note {
     public String content;
     @MdmAnnotations(
             type = "select",
-            reference = {"Mongo", "USERS", "userid", "username"},
+            reference = {"Mongo", "users", "userid", "username"},
             editRole = "ICTMANAGER",
             visibleOnTable = false            
     )
     public String owner;
     @MdmAnnotations(
             type = "select",
-            reference = {"Mongo", "USERS", "userid", "username"},
+            reference = {"Mongo", "users", "userid", "username"},
             editRole = "ICTMANAGER",
             visibleOnTable = false
     )
     public String author;
     @MdmAnnotations(
             type = "select",
-            reference = {"Mongo", "USERS", "userid", "username"},
+            reference = {"Mongo", "users", "userid", "username"},
             editRole = "ICTMANAGER",
             visibleOnTable = false
     )
     public String qualitymanager;
     @MdmAnnotations(
             type = "select",
-            reference = {"Mongo", "USERS", "userid", "username"},
+            reference = {"Mongo", "users", "userid", "username"},
             editRole = "ICTMANAGER",
             visibleOnTable = false
     )
     public String inspector;
     @MdmAnnotations(
             type = "select",
-            reference = {"Mongo", "USERS", "userid", "username"},
+            reference = {"Mongo", "users", "userid", "username"},
             editRole = "ICTMANAGER",
             visibleOnTable = false
     )
     public String exciter;
     @MdmAnnotations(
             type = "select",
-            reference = {"Mongo", "USERS", "userid", "username"},
+            reference = {"Mongo", "users", "userid", "username"},
             editRole = "ICTMANAGER",
             visibleOnTable = false
     )

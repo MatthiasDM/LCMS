@@ -16,8 +16,8 @@ public class FileObject {
     @MdmAnnotations(
             visibleOnForm = false,      
             visibleOnTable = false,
-            createRole = "GOD",
-            editRole = "GOD",
+//            createRole = "GOD",
+//            editRole = "GOD",
             type = "string")
     public String fileid;
     @MdmAnnotations(

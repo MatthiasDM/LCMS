@@ -31,7 +31,7 @@ public class EditablePage {
     public String template;
     @MdmAnnotations(
             type = "select",
-            reference = {"Mongo", "USERS", "userid", "username"},
+            reference = {"Mongo", "users", "userid", "username"},
             editRole = "ICTMANAGER",
             visibleOnTable = false
     )

@@ -23,7 +23,7 @@ public class Actions {
     @MdmAnnotations(
             type = "string",
             createRole = "SYSTEM",
-            editRole = "SYSTEM",
+            //editRole = "SYSTEM",
             visibleOnTable = false,
             visibleOnForm = false
     )
@@ -43,16 +43,16 @@ public class Actions {
     )
     public String mongoconfiguration;
 
-    public MongoConfigurations getMongoConfiguration(String _mongoConfigurationName) throws ClassNotFoundException {
-        ObjectMapper mapper = new ObjectMapper();
-        MongoConfigurations mongoConf;
-        BasicDBObject searchObject = new BasicDBObject();
-        searchObject.put("mongoconfigurationsid", new BasicDBObject("$eq", _mongoConfigurationName));
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList("", MongoConf.MONGOCONFIGURATIONS, searchObject, null, 1000, new String[]{});
-        //String jsonObject = mapper.writeValueAsString(results.get(0));
-        mongoConf = mapper.convertValue(results.get(0), MongoConfigurations.class);
-        return mongoConf;
-    }
+//    public MongoConfigurations getMongoConfiguration(String _mongoConfigurationName) throws ClassNotFoundException {
+//        ObjectMapper mapper = new ObjectMapper();
+//        MongoConfigurations mongoConf;
+//        BasicDBObject searchObject = new BasicDBObject();
+//        searchObject.put("mongoconfigurationsid", new BasicDBObject("$eq", _mongoConfigurationName));
+//        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList("", MongoConf.MONGOCONFIGURATIONS, searchObject, null, 1000, new String[]{});
+//        //String jsonObject = mapper.writeValueAsString(results.get(0));
+//        mongoConf = mapper.convertValue(results.get(0), MongoConfigurations.class);
+//        return mongoConf;
+//    }
     
     
 
