@@ -30,7 +30,7 @@ public class Workflow {
 
     @MdmAnnotations(
             type = "select",
-            reference = {"Mongo", "MONGOCONFIGURATIONS", "mongoconfigurationsid", "collection"},
+            reference = {"Mongo", "mongoconfigurations", "mongoconfigurationsid", "collection"},
             editRole = "ICTMANAGER"
     )
     public String mongoconfiguration;

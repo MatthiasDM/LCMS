@@ -902,6 +902,7 @@ class LCMSGrid {
     }
 
     download_grid() {
+        console.log("Download as CSV");
         var gridData = this.gridData;
         var selRows = $("#" + gridData.tableObject).jqGrid("getGridParam", "selarrrow");
         var data = $("#" + gridData.tableObject).jqGrid("getGridParam", "data");
@@ -933,8 +934,20 @@ class LCMSGrid {
         htmlData.append(style);
         htmlData.append($($.parseHTML($(gridData.wrapperObject[0]).prop("innerHTML"))));
         var htmlTableObject = {};
+        var tableData = {};
+        if ($('#' + gridData.tableObject + ' .cbox:visible').length > 0) {
+            var selRows = $("#" + gridData.tableObject).jqGrid("getGridParam", "selarrrow");
+            var selRowsData = Object.filter($("#" + gridData.tableObject).jqGrid('getGridParam').data, item => selRows.includes(String(item.id)) === true);
+            var arr = [];
+            $.each(selRowsData, function (key, value) {
+                arr.push(value);
+            });
+            tableData = arr;
+        } else {
+            tableData = $("#" + gridData.tableObject).jqGrid('getGridParam').data;
+        }
 
-        htmlTableObject = buildHtmlTable($("#" + gridData.tableObject).jqGrid('getGridParam').data);
+        htmlTableObject = buildHtmlTable(tableData);
 
         htmlData.find(("div[id^=gbox_]")).each(function (a, b) {
             var htmlTable = "<table class='table'>" + htmlTableObject[0].innerHTML + "</table>";
@@ -1350,23 +1363,23 @@ class LCMSGrid {
         grid.jqGrid('editGridRow', _action, {
             reloadAfterSubmit: false,
             beforeShowForm: function (formid) {
-               
+
                 $("textarea[title=ckedit]").each(function (index) {
-                    
-                     $(this).replaceWith("<div contenteditable='true' title=ckedit id='"+$(this).attr("id")+"'>"+$(this).val()+"</div>");
-                   // CKEDITOR.replace($(this).attr('id'), {
-                   //     customConfig: ' '
-                  //  });
-                      
-                      
+
+                    $(this).replaceWith("<div contenteditable='true' title=ckedit id='" + $(this).attr("id") + "'>" + $(this).val() + "</div>");
+                    // CKEDITOR.replace($(this).attr('id'), {
+                    //     customConfig: ' '
+                    //  });
+
+
                 });
-                
-                 $("div[title=ckedit]").each(function (index) {
-                     CKEDITOR.inline($(this).attr('id'));
-                 });
+
+                $("div[title=ckedit]").each(function (index) {
+                    CKEDITOR.inline($(this).attr('id'));
+                });
             },
             afterShowForm: function (formid) {
-                  var pills = me.createPills(formid);
+                var pills = me.createPills(formid);
                 $("div[id^=editmod]").css('position', 'absolute');
                 $("div[id^=editmod]").css('top', '5%');
                 $("div[id^=editmod]").css('width', '90%');
@@ -1640,13 +1653,13 @@ function LCMSTableRequest(loadAction, editAction, editUrl, tableName, pagerName,
             loadParameters(jsonData);
         } else {
             if (tableType === 1) {
-                return LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption);
+                return LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
             } else if (tableType === 2) {
                 return LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
             } else if (tableType === 3) {
                 return LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
             } else {
-                return LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption);
+                return LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
             }
         }
     }
@@ -1781,6 +1794,7 @@ function LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName,
             return null;
         });
     }));
+
     lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
         var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
         if (rowid !== null) {
@@ -1794,6 +1808,13 @@ function LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName,
     }));
     lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-download", "Export", "", function () {
         return lcmsGrid.export_as_html();
+    }));
+    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-arrow-down", "Download as CSV", "", function () {
+        return lcmsGrid.download_grid();
+    }));
+    //
+    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-list-ul", "Click here to change columns", "", function () {
+        return lcmsGrid.toggle_multiselect($("#" + gridData.tableObject).jqGrid('getGridParam', 'id'));
     }));
     return lcmsGrid;
 }

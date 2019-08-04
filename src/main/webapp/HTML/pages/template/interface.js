@@ -14,11 +14,11 @@ $(function () {
             $("#" + key).trigger("reloadGrid");
         }
     });
-    var numEditors = $("div[contenteditable]").length;
+    var numEditors = $("div[id*=editable]").length;
     if (numEditors > 0) {
         showLoading();
         var counter = 0;
-        $("div[contenteditable]").each(function (a, b) {
+        $("div[id*=editable]").each(function (a, b) {
             var ck = CKEDITOR.inline($(b).attr('id'));
             ck.on('instanceReady', function (ev) {
                 var editor = ev.editor;
