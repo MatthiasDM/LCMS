@@ -38,6 +38,7 @@ Technical documentation will be found on the Github wiki page.
 # Contact
 
 de.mey.mat@gmail.com
+
 [S-DM: IT solutions](http://www.s-dm.be/index.html?p=pages&k=title&v=LCMS)
 
 
