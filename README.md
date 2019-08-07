@@ -38,3 +38,8 @@ Technical documentation will be found on the Github wiki page.
 # Contact
 
 de.mey.mat@gmail.com
+[S-DM: IT solutions](http://www.s-dm.be/index.html?p=pages&k=title&v=LCMS)
+
+
+
+*Disclaimer: This software is completely open source and the responsibility for the use and the consequences thereof falls entirely on the end user. The software developers cannot be held liable in any way for any errors. This is partly because the complete validation process is the responsibility of the end user.*
