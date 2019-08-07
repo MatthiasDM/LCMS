@@ -33,7 +33,7 @@ Software packages must, certainly in a laboratory, be validated and verified. Du
 
 # Technical documentation
 
-Technical documentation will be found here and on the Github wiki page.
+Technical documentation will be found on the Github wiki page.
 
 # Contact
 
