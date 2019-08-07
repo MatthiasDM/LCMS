@@ -1,69 +1,38 @@
-# LCMS
-Laboratory Content Management System
+#What
+The LCMS is a digital system that allows flexible management of information about the laboratory that falls outside the LIS target area. 
 
-LCMS is a content management system specifically designed for use in (clinical, or other) laboratories.
-While this software is designed for use in a Belgian hospital laboratory, it may be of use in other settings. 
+From my own practical experience I know that a software package for this is hard to find, and often cannot fully meet the needs of the lab. The lack of functionalities and flexibility is the reason why I started this project.
 
-The system will consist out of multiple modules, the first one being a document management system.
+To start with, there is a very big plus: it is free and can be adapted and used by everyone.
 
-## Modules
+The three largest functionalities that will be further developed first are:
 
-1. Document management
-      - Versioning
-      - Full history
-      - Workflows
-2. Nonconformity management
-      - Action management
-      - Workflows
-3. Inventory management
-4. Skill management
+A document management system: a system in which the documents are subject to extensive control before they become official. These documents must be reviewed periodically and the changes are fully traceable.
+A non-compliance system: a system in which events are noted that do not conform to the normal or intended functioning of a system. In this system, all incidents are followed up and submitted to a responsible person for approval before they receive a completed status.
+A competence management system: a system in which all competencies (~ what and who may perform something) of the employees can be managed.
+Other functionalities can certainly be added. I am thinking, for example, of an eHealthBox that allows secure communication between labs, a stock management system, ...
 
-### Behind the scenes
+#For whom
+The software is written in the context of a clinical laboratory, but actually applies to every laboratory. Because this project is open source, anyone who wants to copy and modify this project can. One can also help to develop it.
 
-#### 1. Rights management
-All fields of the tables defined in Java are under access control. At the moment this is hard-coded into Java, but the goal is to create a module where these access rights are defined in the database, and are thus modifiable for those who have the rights to do so. 
-#### 2. Workflows
-These workflows need to be hard-coded into Java. When i have time i will think about a way to define these workflows in a more abstract way.
+#Where to obtain
+The full project can be found at https://github.com/MatthiasDM/LCMS.
 
-### Lab specific
+To get started with this project a number of other (free) software packages are needed:
 
-1. Lab structure management
-      - Lab sites
-      - Workplaces
-      - Machines
+JDK 8 or higher
+MongoDB: the database software
+Netbeans: the IDE (development environment) in which this project is written
+#Development
+This project is in full development and is therefore subject to change. Functionalities can be created, updated or even deleted.
 
-## Progress
+Software packages must, certainly in a laboratory, be validated and verified. Due to the transparent nature of this project, all source code can be found on Github. The task of validating and verifying falls on the shoulders of the end user. This does not necessarily mean that all users will have to validate the same. Once a user has validated a certain functionality, he has the option to share his work with others who use the exact same code for the same purpose.
 
-### Document management
 
-- [x] Working on the editabiliy of documents. Two main libraries are used: CKeditor4 and Free-JqGrid.
-- [x] (partial) Make it possible to reference from one table to another withing the samen document
-- [ ] Upload image on paste  
-- [x] Export entire document to HTML.
-- [x] Export table (jqGrid) to csv.
-- [x] (partial) Modify jqGrid definition at will.
-- [x] (partial) Change position of CKEditor-fields and jqGrid-tables at will (needs to refresh when done).
 
-### Rights management
 
-- [ ] Databasify the rights system. 
+#Technical documentation
+Technical documentation will be found here and on the Github wiki page.
 
-### Nonconformity management
-At the moment this module is only used to monitor IT-related problems. 
-
-- [ ] Create extra field to defined the action type. 
-- [ ] Complete the workflows
-
-#### IT-problems
-IT-problems are registered by any user who has right to do so. The follow-up of these problems happen by the IT-personel. At the moment there are four statusfields of an IT-problem. These are used in de workflow below:
-- Registered: IT-personel is informed of the problem.
-- Analysis: Status change done by IT-personel. Inidcates the problem is under investigation. In this stage the follow-up field is edited and appended to. 
-- Validation: Status changed caused by IT-personel. The solution is to be validated by the assigned person, prefferable a non-IT-personel. 
-- Complete: The validator has confirmed the problem is solved. 
-
-- [ ] Create extra field for subcategory specification, this is to group problems more easily. 
-- [ ] Complete the workflow. 
-- [ ] Use the module "Tasks" for centralisation of workflow-tasks. 
-- [ ] A "Task" is found in a jqGrid where all "Tasks" are shown. An IT-related task will redirect to the problem in the Nonconformity management module. A validation task to confirm a problem is solved will show the follow-up of the problem and will have a link that send a server-request to change the status of the ticket, which will 'complete' the task.
-- [ ] Change mark-up of email notifications.
-
+#Contact
+de.mey.mat@gmail.com
