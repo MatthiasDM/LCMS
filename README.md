@@ -1,4 +1,5 @@
 #What
+
 The LCMS is a digital system that allows flexible management of information about the laboratory that falls outside the LIS target area. 
 
 From my own practical experience I know that a software package for this is hard to find, and often cannot fully meet the needs of the lab. The lack of functionalities and flexibility is the reason why I started this project.
@@ -13,9 +14,11 @@ A competence management system: a system in which all competencies (~ what and w
 Other functionalities can certainly be added. I am thinking, for example, of an eHealthBox that allows secure communication between labs, a stock management system, ...
 
 #For whom
+
 The software is written in the context of a clinical laboratory, but actually applies to every laboratory. Because this project is open source, anyone who wants to copy and modify this project can. One can also help to develop it.
 
 #Where to obtain
+
 The full project can be found at https://github.com/MatthiasDM/LCMS.
 
 To get started with this project a number of other (free) software packages are needed:
@@ -32,7 +35,9 @@ Software packages must, certainly in a laboratory, be validated and verified. Du
 
 
 #Technical documentation
+
 Technical documentation will be found here and on the Github wiki page.
 
 #Contact
+
 de.mey.mat@gmail.com
