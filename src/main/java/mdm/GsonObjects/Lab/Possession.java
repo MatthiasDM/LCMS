@@ -29,11 +29,12 @@ public class Possession {
     @MdmAnnotations(
             type = "select",
             multiple = true,
-            reference = {"Mongo", "DEPARTMENT", "departmentid", "name"}
+            reference = {"Mongo", "labDepartments", "departmentid", "name"}
     )
     public String department;  //
     @MdmAnnotations(
-            type = "cktext")
+            type = "cktext",
+            visibleOnTable = false)
     public String info;
     @MdmAnnotations(
             type = "date",

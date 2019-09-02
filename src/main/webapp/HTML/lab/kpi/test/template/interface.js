@@ -310,7 +310,7 @@ function createGridBasedOnModel(_gridData, _colModelWrapper, _parent) {
 
 function createGridBasedOnImportFile(_parent, importData, caption) {
     var gridId = "grid_" + uuidv4();
-    new_grid(_parent.attr('id'), importData.colModel, {caption: caption}, [], importData.data, gridId);
+    new_grid(_parent.attr('id'), importData.colModel, {caption: caption}, [], importData.table, gridId);
 }
 
 function createColModel(form, _gridData, parent) {

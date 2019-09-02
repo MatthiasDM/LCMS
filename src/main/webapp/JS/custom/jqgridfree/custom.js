@@ -176,7 +176,7 @@ function createDataAndModelFromCSV(val) {
         }
         c++;
     });
-    return {colModel: colModel, colNames: colNames, data: data};
+    return {colModel: colModel, colNames: colNames, table: data};
 }
 
 function getValuesOfAttributeInList(_list, _attribute) {

@@ -22,7 +22,7 @@ public class Command {
     )
     public String name;
     @MdmAnnotations(
-            type = "cktext",
+            type = "string",
             editRole = "ADMIN",
             visibleOnTable = false
     )

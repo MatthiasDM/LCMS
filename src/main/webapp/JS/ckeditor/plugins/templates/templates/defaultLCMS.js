@@ -53,7 +53,7 @@ CKEDITOR.addTemplates('default',
                                     '  /*  #container .card-title a{          color: white;             ' +
                                     '                                                                                                          *  }*/' +
                                     '</style>' +
-                                    '<div class="card" contenteditable="false">' +
+                                    '<div class="card" contenteditable="true">' +
                                     '<div class="card-header" contenteditable="false">Analyse</div>' +
                                     '' +
                                     '<div class="card-body" contenteditable="true">' +
@@ -61,7 +61,7 @@ CKEDITOR.addTemplates('default',
                                     '</div>' +
                                     '</div>' +
                                     '<p> </p>' +
-                                    '<div class="card" contenteditable="false">' +
+                                    '<div class="card" contenteditable="true">' +
                                     '<div class="bg-info card-header text-white" contenteditable="false">Implementatie</div>' +
                                     '<div class="card-body" contenteditable="true">' +
                                     '<p> </p>' +
@@ -69,7 +69,7 @@ CKEDITOR.addTemplates('default',
                                     '</div>' +
                                     '<p> </p>' +
                                     '' +
-                                    '<div class="card" contenteditable="false">' +
+                                    '<div class="card" contenteditable="true">' +
                                     '<div class="bg-success card-header text-white" contenteditable="false">Validatie</div>' +
                                     '<div class="card-body" contenteditable="true">' +
                                     '<p> </p>' +
@@ -82,7 +82,6 @@ CKEDITOR.addTemplates('default',
                             image: 'my-template.PNG',
                             description: 'Agemene checklijst',
                             html: '<p> </p><p>' +
-                                    '   <script crossorigin="anonymous" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" src="./JS/dependencies/jquery/jquery.js" name="jquery"></script>' +
                                     '   <style type="text/css">.list-group-item:nth-of-type(odd) {    background : #f9f9f9;}  .list-group-item:hover{     background : #aeeeee;    cursor: pointer;  }  .list-group-item span{    margin-left:5px;  }  #card-check{    max-width:500px;      }</style>' +
                                     '</p>' +
                                     '<div class="card" id="card-check" contenteditable="false">' +

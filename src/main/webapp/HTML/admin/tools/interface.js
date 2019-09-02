@@ -25,4 +25,5 @@ $(function () {
     mongoconfigurations_doLoad($("#admin-container"));
     actions_doLoad($("#admin-container"));
     pages_doLoad($("#pages-container"));
+    commands_doLoad($("#admin-container"));
 });

@@ -30,3 +30,8 @@ function pages_doLoad(_parent) {
     console.log("Pages load");
     LCMSTableRequest("loadpages", "editpages", "./servlet", "pages-table", "pages-pager", "div-grid-pages-wrapper", lang["pages"]['title'], 1,{hiddengrid: true});
 }
+
+function commands_doLoad(_parent) {
+    console.log("Commands load");
+    LCMSTableRequest("loadcommands", "editcommands", "./servlet", "commands-table", "commands-pager", "div-grid-commands-wrapper", lang["commands"]['title'], 1,{hiddengrid: true});
+}

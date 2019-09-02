@@ -11,15 +11,22 @@ import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.gte;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import mdm.Config.MongoConf;
+import mdm.Core.StringPair;
+import static mdm.Core.buildRegex;
+import static mdm.Core.getLatestFile;
+import static mdm.Core.getProp;
+import static mdm.Core.readAllLines;
+import static mdm.Core.search;
 import mdm.GsonObjects.Core.MongoConfigurations;
 import mdm.Mongo.DatabaseActions;
-import static mdm.Mongo.DatabaseActions.getDocumentPriveleges;
 import mdm.Mongo.DatabaseWrapper;
 import org.bson.Document;
 
@@ -34,11 +41,60 @@ public class commandFunctions {
         if (name.equals("dobacklog")) {
             sb.append(command_doBacklog(parameters));
         }
+        if (name.equals("doCheckCyberlabLogsForNewOrders")) {
+            sb.append(command_checkCyberlabLogsForIncompleteOrders(parameters));
+        }
         return sb;
     }
 
     public static StringBuilder command1() {
         StringBuilder sb = new StringBuilder();
+        return sb;
+    }
+
+    public static StringBuilder command_checkCyberlabLogsForIncompleteOrders(Map<String, String[]> parameters) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        String glimsLogFilterPath = getProp("glimsLogFilter.Path");
+        StringBuilder sb = new StringBuilder();
+        StringBuffer log = readAllLines(getLatestFile(glimsLogFilterPath, 2));
+        String reg = buildRegex("\\*\\*\\*(.*)\\*\\*\\s\\d.*(cyberlabcode.*)(\\n|\\r|\\r\\n|\\n\\r)", null);//logFilter.getRegexExpression(), logFilter.getRegexFilters());
+        List<String> regexResults = search(log, reg, new int[]{1, 2}, false);
+        HashMap<String, String> processedResults = new HashMap<>();
+
+        for (int i = 0; i < regexResults.size() - 2; i += 2) {
+            String[] info = regexResults.get(i + 1).split("tests=");
+            String info2 = "";
+            if (info.length > 1) {
+                info[0] = info[0].replace("=%22", "");  
+                info[0] = info[0].replace(",%20", " ");  
+                info[0] = URLDecoder.decode(info[0]);     
+                info[0] = info[0].replaceAll("\\<[^>]*>","");
+                info[0] = info[0].replaceAll("/[!@#$%^&*:,]/g", "");
+                
+                
+                info[1] = info[1].replaceAll("/[!@#$%^&*:]/g", "");
+                info[1] = info[1].replace("=on", "");
+                info[1] = info[1].replace("&", ";");
+                info2 = info[0] + "tests=" + info[1];
+            } else {
+                info[0] = URLDecoder.decode(info[0]);
+                info[0] = info[0].replaceAll("/[!@#$%^&*:]/g", "");
+                info2 = info[0] + "tests=0";
+            }
+            if (info[0].length() > 30) {
+                processedResults.put(info[0].substring(0, 30), "\"issuer=" + regexResults.get(i).replace(" ", "") + "&" + info2);
+            }
+        }
+
+        ArrayList<String> output = new ArrayList<>();
+        Iterator it = processedResults.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            output.add(Core.paramJson(pair.getValue().toString()));
+            it.remove(); // avoids a ConcurrentModificationException
+        }
+
+        sb.append(mapper.writeValueAsString(output));
         return sb;
     }
 

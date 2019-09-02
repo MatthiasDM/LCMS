@@ -69,11 +69,12 @@ lang = {
         title: "De verschillende toestellen gebruikt in het labo"
     },
     possession: {
-        title: "Goederen die een permanent deel uitmaken van het labo. (Koelkasten, pipetten, ...)",
-        name: "Vast materiaal",
+        title: "Iventaris",
+        name: "Inventarisgoed",
         identifier: "Unieke code",
+        category: "Categorie",
         department: "Departement",
-        info: "Info"
+        info: "Extra informatie"
     },
     department: {
         title: "Activiteitencentra van het laboratorium",
@@ -130,7 +131,20 @@ lang = {
     backlog: {
         title: "Versies"
     },
-    document: {}
+    commands: {
+        title: "Opdrachten",
+        name: "Naam"
+    },
+    document: {},
+    labPossessions: {
+        title: "Iventaris",
+        name: "Inventarisgoed",
+        identifier: "Unieke code",
+        category: "Categorie",
+        department: "Departement",
+        info: "Extra informatie"
+    }
+    
 };
 
 

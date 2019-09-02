@@ -631,6 +631,7 @@ public class DatabaseWrapper {
                         ObjectMapper mapper = new ObjectMapper();
                         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                         mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+                        mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
                         Object labitem = mapper.readValue(mapper.writeValueAsString(parameters), cls);//createNoteObject(requestParameters.get("docid")[0], "create");
                         Document document = Document.parse(mapper.writeValueAsString(labitem));
                         document.append(_mongoConf.getIdName(), UUID.randomUUID().toString());

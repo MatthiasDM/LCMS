@@ -47,8 +47,8 @@ function config2() { //for inline editing
         config.removeButtons = 'Source,Save,Cut,Undo,Redo,Copy,MenuButton,Preview,Print,PasteText,Paste,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,NewPage,Outdent,Indent,CreateDiv,Blockquote,JustifyLeft,JustifyCenter,JustifyRight,JustifyBlock,Language,BidiRtl,Unlink,BidiLtr,Flash,Table,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Format,Font,Maximize,ShowBlocks,About,RemoveFormat,CopyFormatting,Subscript,Superscript';//Anchor
         config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';
         config.startupShowBorders = false;
-        config.height = 500;       
-       // config.autoGrow_minHeight = 500;
+        config.height = 500;
+        // config.autoGrow_minHeight = 500;
         //config.autoGrow_maxHeight = 3000;
         //config.autoGrow_onStartup = true;
         config.resize_enabled = true;
@@ -58,6 +58,10 @@ function config2() { //for inline editing
         CKEDITOR.dtd.$removeEmpty['span'] = false;
         CKEDITOR.dtd.$removeEmpty['i'] = false;
         CKEDITOR.config.protectedSource.push(/<([\S]+)[^>]*class="preserve"[^>]*>.*<\/\1>/g);
+
+        config.codemirror = {
+            theme: 'base16-light'
+        };
     };
     CKEDITOR.config.contentsCss = ['./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css', "./CSS/style.css"];
 
@@ -67,62 +71,69 @@ function config2() { //for inline editing
 //    });
 
     CKEDITOR.on('instanceReady', function (e) {
-        console.log("loading images");
-        var editor = $("#" + e.editor.name);
-        
-        var editorId = e.editor.name;
-        if ($("#cke_" + editorId).find("iframe").length > 0) {
-            var editor = $("#cke_" + editorId).find("iframe").contents().find("html");
-            editor.attr("id", editorId);
+        ckOnInstanceReady(e, imageController);
+    });
 
-        }
+}
 
+function ckOnInstanceReady(e, imageController) {
 
-        editor.dropzone({
-            url: "./upload",
-            clickable: false,
-            createImageThumbnails: false,
-            previewsContainer: false,
-            init: function () {
-                this.on("sending", function (file, xhr, formData) {
-                    formData.append('action', 'FILE_UPLOAD');
-                    formData.append('LCMS_session', $.cookie('LCMS_session'));
-                    console.log(formData);
-                });
-                this.on("success", function (file, response) {
-                    response = JSON.parse(response);
-                    imageController.insertFileInEditor(response.name, response.fileid, editor);
-                    bootstrap_alert.warning('Adding image succesfull', 'success', 1000);
-                });
-            }});
+    var editor = $("#" + e.editor.name);
+    console.log("loading image & file management for: " + e.editor.name);
+    var editorId = e.editor.name;
+    if ($("#cke_" + editorId).find("iframe").length > 0) {
+        var editor = $("#cke_" + editorId).find("iframe").contents().find("html");
+        editor.attr("id", editorId);
 
-        editor.on('paste', function (e) {
-            var pastedImages = capturePaste(e, editorId);
-            setTimeout(function () {
-                if (pastedImages) {
-                    var text = CKEDITOR.instances[editorId].getData();
-                    text = text.replace(/<img (?!fileid).*?>/, "");
-                    CKEDITOR.instances[editorId].setData(text);
-                }
-            }, 100);
-        });
+    }
 
-        loadImages(editorId);
-        $("#cke_" + editorId).css("border", "0px dotted grey");
-        $("#cke_" + editorId).css("padding", "10px");
+    //  if (typeof editor.dropzone === "undefined") {
+    console.log("loading dropzone for: " + e.editor.name);
+    if (typeof editor.dropzone.destroy !== "undefined") {
+        editor.dropzone.destroy();
+    }
+    editor.dropzone({
+        url: "./upload",
+        clickable: false,
+        createImageThumbnails: false,
+        previewsContainer: false,
+        init: function () {
+            this.on("sending", function (file, xhr, formData) {
+                formData.append('action', 'FILE_UPLOAD');
+                formData.append('LCMS_session', $.cookie('LCMS_session'));
+                console.log(formData);
+            });
+            this.on("success", function (file, response) {
+                response = JSON.parse(response);
+                imageController.insertFileInEditor(response.name, response.fileid, editor);
+                bootstrap_alert.warning('Adding image succesfull', 'success', 1000);
+            });
+        }});
+    // }
 
-        $("textarea[title=ckedit]").each(function (index) {
-            loadImages($(this).attr('id'));
-            // loadTOC($(this).attr('id'));
-            $("#cke_" + $(this).attr('id')).css("border", "0px dotted grey");
-            $("#cke_" + $(this).attr('id')).css("padding", "10px");
-            $("#cke_" + $(this).attr('id')).css("min-height", "500px");
-            $("#cke_" + $(this).attr('id')).css("max-height", "700px");
+    editor.on('paste', function (e) {
+        var pastedImages = capturePaste(e, editorId);
+        setTimeout(function () {
+            if (pastedImages) {
+                var text = CKEDITOR.instances[editorId].getData();
+                text = text.replace(/<img (?!fileid).*?>/, "");
+                CKEDITOR.instances[editorId].setData(text);
+            }
+        }, 100);
+    });
 
-        });
-   
-        
-        
+    loadImages(editorId);
+    $("#cke_" + editorId).css("border", "0px dotted grey");
+    $("#cke_" + editorId).css("padding", "10px");
+
+    $("textarea[title=ckedit]").each(function (index) {
+        loadImages($(this).attr('id'));
+        // loadTOC($(this).attr('id'));
+        $("#cke_" + $(this).attr('id')).css("border", "0px dotted grey");
+        $("#cke_" + $(this).attr('id')).css("padding", "10px");
+        $("#cke_" + $(this).attr('id')).css("min-height", "500px");
+        $("#cke_" + $(this).attr('id')).css("max-height", "700px");
+
     });
 
 

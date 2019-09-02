@@ -39,6 +39,8 @@ function filterUniqueJson(data, filterBy) {
     return result;
 }
 
+
+
 function filterUnique(data, filterBy) {
     var lookup = {};
     var items = data;
@@ -56,6 +58,8 @@ function filterUnique(data, filterBy) {
     }
     return result;
 }
+
+
 
 function scrollTo(target) {
     //var target = editorContents.contents().find(this.getAttribute('anchor'));
@@ -539,7 +543,7 @@ class LCMSEditablePage {
                 btn.on("click", function (e) {
                     var rowData = $("#history-table").jqGrid('getRowData', rowid);
 
-                    LCMSRequest("./servlet", {action: "dobacklog", parameters: {object_id: rowData["object_id"], object_type: rowData["object_type"], created_on: moment(rowData["created_on"]).valueOf()}});
+                    LCMSRequest("./servlet", {action: "dobacklog", k: "dobacklog", parameters: {object_id: rowData["object_id"], object_type: rowData["object_type"], created_on: moment(rowData["created_on"]).valueOf()}});
                 });
                 modal.find("div[class='modal-body']").append(btn);
                 modal.modal('show');
@@ -1476,12 +1480,13 @@ class LCMSGrid {
     createPills(form) {
         var me = this;
         var pills = [];
-        var header = $.extend(true, [], me.gridData.data.header);
-        var tabId = uuidv4();
-        pills.push("Algemeen");
         if (typeof me.gridData.data.header === "string") {
             me.gridData.data.header = JSON.parse(me.gridData.data.header);
         }
+        var header = $.extend(true, [], me.gridData.data.header);
+        var tabId = uuidv4();
+        pills.push("Algemeen");
+
         $(form).find("tr[data-rowpos]").each(function () {
             if ($(this).find("td.DataTD").find("div[title='ckedit']").length > 0) {
                 var rowId = ($($(this).find("td.DataTD").find("div[title='ckedit']")).attr("id"));
@@ -1605,7 +1610,7 @@ function getPostDataFromUrl() {
 
 }
 
-function LCMSRequest(_url, _data, _onDone, _extraParam) {
+async function LCMSRequest(_url, _data, _onDone, _extraParam) {
 
 
     if (!_data.__proto__.toString().includes("FormData")) {
@@ -1626,12 +1631,19 @@ function LCMSRequest(_url, _data, _onDone, _extraParam) {
 
 
 
-    $.ajax(ajaxParameters).done(function (data) {
-        _onDone(data);
+    return await $.ajax(ajaxParameters).done(function (data) {
+
+        if (typeof _onDone !== "undefined") {
+            _onDone(data);
+        }
+        return data;
+
         bootstrap_alert.warning('Success', 'success', 1000);
     }).fail(function (jqXHR, textStatus, errorThrown) {
         bootstrap_alert.warning('Something went wrong + \n ' + errorThrown, 'error', 5000);
     });
+
+
 }
 
 function getPatches(oldData, newData) {

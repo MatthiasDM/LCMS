@@ -5,6 +5,7 @@
  */
 package mdm.GsonObjects.Other;
 
+import java.util.HashMap;
 import java.util.List;
 import mdm.pojo.annotations.MdmAnnotations;
 import org.apache.commons.lang3.builder.DiffBuilder;
@@ -43,14 +44,14 @@ public class ICTTicket {
             choices = {"Glims", "Cyberlab", "Sharepoint", "Hardware", ""}
     )
     public String category;
-        @MdmAnnotations(
+    @MdmAnnotations(
             editRole = "ICTMANAGER",
             //viewRole = "ICTMANAGER",
-            type = "string"            
+            type = "string"
     )
     public String discriminator;
     @MdmAnnotations(
-            type = "cktext",            
+            type = "cktext",
             editRole = "ICTMANAGER",
             visibleOnTable = false)
     public String overview;
@@ -83,11 +84,11 @@ public class ICTTicket {
             visibleOnTable = false
     )
     public String approver;
-        @MdmAnnotations(
-            type = "boolean",                
+    @MdmAnnotations(
+            type = "boolean",
             visibleOnTable = false,
             editRole = "@approver",
-            viewRole = "@approver"                
+            viewRole = "@approver"
     )
     public boolean approved;
     @MdmAnnotations(
@@ -120,6 +121,14 @@ public class ICTTicket {
             createRole = "SYSTEM",
             editRole = "SYSTEM")
     public long edited_on;
+    @MdmAnnotations(
+            type = "json",
+            visibleOnTable = false,
+            visibleOnForm = true,
+            viewRole = "ICTMANAGER",
+            createRole = "ICTMANAGER",
+            editRole = "ICTMANAGER")
+    public HashMap<String, List<String>> events;
 
     public ICTTicket() {
     }
@@ -165,8 +174,6 @@ public class ICTTicket {
     public void setApproved(boolean approved) {
         this.approved = approved;
     }
-
- 
 
     public String getTicketid() {
         return ticketid;

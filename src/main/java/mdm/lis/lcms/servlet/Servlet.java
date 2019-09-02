@@ -10,16 +10,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -62,14 +61,13 @@ public class Servlet extends HttpServlet {
         StringBuilder sb = new StringBuilder();
 
         Map<String, String[]> requestParameters = request.getParameterMap();
-        String ipAddress = request.getRemoteAddr();
-        ActionManager aM;
-
+        ActionManager aM;  
+        String host = Core.getClientPCName(request.getRemoteAddr());
         try {
             if (request.getContentType().contains("multipart")) {
-                aM = new ActionManager(requestParameters, request.getParts());
+                aM = new ActionManager(requestParameters, request.getParts(), host);
             } else {
-                aM = new ActionManager(requestParameters);
+                aM = new ActionManager(requestParameters, host);
             }
 
             if (aM.getAction() != null) {
@@ -99,13 +97,14 @@ public class Servlet extends HttpServlet {
 
     class ActionManager {
 
-        String cookie;
+        String cookie, hostName;
         mdm.GsonObjects.Core.Actions action;
         HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
         Collection<Part> parts;
 
-        public ActionManager(Map<String, String[]> requestParameters) throws ClassNotFoundException {
+        public ActionManager(Map<String, String[]> requestParameters, String hostName) throws ClassNotFoundException {
             this.requestParameters = new HashMap<String, String[]>(requestParameters);
+            this.hostName = hostName;
             if (requestParameters.get("action") != null) {
                 action = DatabaseWrapper.getAction(requestParameters.get("action")[0]);
             }
@@ -114,7 +113,8 @@ public class Servlet extends HttpServlet {
             }
         }
 
-        public ActionManager(Map<String, String[]> requestParameters, Collection<Part> parts) throws ClassNotFoundException {
+        public ActionManager(Map<String, String[]> requestParameters, Collection<Part> parts, String hostName) throws ClassNotFoundException {
+            this.hostName = hostName;
             this.requestParameters = new HashMap<String, String[]>(requestParameters);
             if (requestParameters.get("action") != null) {
                 action = DatabaseWrapper.getAction(requestParameters.get("action")[0]);
@@ -138,6 +138,7 @@ public class Servlet extends HttpServlet {
             MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration(action.mongoconfiguration);
 
             Boolean publicPage = false;
+           
             if (mongoConfiguration.getCollection().equals("pages") && requestParameters.get("k") != null && requestParameters.get("v") != null) {
                 String key = requestParameters.get("k")[0];
                 String value = requestParameters.get("v")[0];
@@ -148,14 +149,14 @@ public class Servlet extends HttpServlet {
                 Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, mongoConfiguration, searchObject);
                 String accesstype = searchResult.get("accessType").toString();
                 if (accesstype.equals("0")) {
-                    publicPage = true;
+                    publicPage = true;                   
                     if (publicPage) {
                         sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value, publicPage));
                     }
                 }
             }
 
-            if (Core.checkSession(cookie) && !publicPage) {
+            if ((Core.checkSession(cookie) && !publicPage)) {
 
                 if (parts != null) {
                     for (Part part : parts) {
@@ -167,6 +168,7 @@ public class Servlet extends HttpServlet {
 
                 if (action.name.toUpperCase().contains("EDIT")) {
                     sb.append(DatabaseWrapper.actionEDITOBJECTv2(requestParameters, cookie, mongoConfiguration));
+                   
                 } else {
                     if (action.name.toUpperCase().contains("LOAD")) {
                         ArrayList<String> excludes = new ArrayList<>();
@@ -181,7 +183,6 @@ public class Servlet extends HttpServlet {
                         sb.append(DatabaseWrapper.actionLOADOBJECTv2(cookie, mongoConfiguration, filterObject, excludes.toArray(new String[0])));
                     } else {
                         if (action.name.toUpperCase().contains("GET")) {
-
                             String key = requestParameters.get("k")[0];
                             String value = requestParameters.get("v")[0];
                             sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value, publicPage));
@@ -189,9 +190,8 @@ public class Servlet extends HttpServlet {
                         if (action.name.toUpperCase().contains("DO")) {
                             // List<String> parameters = new ArrayList<>();
                             // parameters = Arrays.asList(requestParameters.get("parameters"));
-
-
-                            sb.append(commandFunctions.doCommand(requestParameters.get("action")[0], requestParameters));
+                            String key = requestParameters.get("k")[0];
+                            sb.append(commandFunctions.doCommand(key, requestParameters));
                         }
                     }
                 }

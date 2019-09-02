@@ -10,12 +10,19 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -28,7 +35,10 @@ import java.util.Properties;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import mdm.Config.Roles;
 import mdm.GsonObjects.Core.Session;
 import mdm.GsonObjects.Core.User;
@@ -318,6 +328,28 @@ public class Core {
         return prop.getProperty(name);
     }
 
+    public static String getProperty(String name) {
+
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+
+        try (InputStream input = loader.getResourceAsStream("config.properties")) {
+
+            Properties prop = new Properties();
+
+            // load a properties file
+            prop.load(input);
+
+            // get the property value and print it out
+            return prop.getProperty(name);
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        return "";
+
+    }
+
     public static String encryptString(String pass) {
         StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
         pass = passwordEncryptor.encryptPassword(pass);
@@ -329,9 +361,214 @@ public class Core {
         try {
             InetAddress addr = InetAddress.getByName(ipAddr);
             host = addr.getHostName();
+
         } catch (UnknownHostException ex) {
-            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Core.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
         return host;
     }
+
+    public static List<File> getLatestFile(String dir, int number) {
+        File folder = new File(dir);
+        File[] listOfFiles = folder.listFiles();
+        ArrayList listOfFiles2 = Arrays.asList(listOfFiles).stream().filter(f -> f.getName().contains("web")).collect(Collectors.toCollection(ArrayList::new));
+        listOfFiles = (File[]) listOfFiles2.toArray(new File[0]);
+        if (listOfFiles.length > 1) {
+            FilePair[] pairs = new FilePair[listOfFiles.length];
+            for (int i = 0; i < listOfFiles.length; i++) {
+                pairs[i] = new FilePair(listOfFiles[i]);
+            }
+            Arrays.sort(pairs);
+            for (int i = 0; i < listOfFiles.length; i++) {
+                listOfFiles[i] = pairs[i].f;
+            }
+        }
+        if (number > listOfFiles.length) {
+            number = listOfFiles.length;
+        }
+        List<File> output = new ArrayList<>();
+        for (int i = 0; i < number; i++) {
+            output.add(listOfFiles[i]);
+        }
+
+        return output;
+
+    }
+
+    public static class FilePair implements Comparable {
+
+        public long t;
+        public File f;
+
+        public FilePair(File file) {
+            f = file;
+            t = file.lastModified();
+        }
+
+        public int compareTo(Object o) {
+            long u = ((FilePair) o).t;
+            return t > u ? -1 : t == u ? 0 : 1;
+        }
+    };
+
+    public static class StringPair {
+
+        public String name;
+        public String value;
+
+        public StringPair() {
+        }
+
+        public StringPair(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+    };
+
+    public static StringBuffer readAllLines(List<File> files) {
+        StringBuffer allLines = new StringBuffer();
+        try {
+            for (File f : files) {
+                allLines.append(readAllLines(new StringBuffer(), f.toPath(), "UTF-8"));
+                Logger
+                        .getLogger(Core.class
+                                .getName()).log(Level.INFO, null, "Succesfull read of file (" + (int) (f.length() / 1000) + "kb" + "): " + f.getName());
+
+            }
+        } catch (Exception e) {
+            Logger.getLogger(Core.class
+                    .getName()).log(Level.INFO, null, "Error while reading file. \n" + e.getMessage());
+        }
+        return allLines;
+    }
+
+    public static StringBuffer readAllLines(StringBuffer sb, Path p, String charset) throws IOException {
+        String scan;
+        FileReader file = new FileReader(p.toFile());
+        BufferedReader br = new BufferedReader(file);
+
+        while ((scan = br.readLine()) != null) {
+            scan += "\r";
+            sb.append(scan);
+        }
+        br.close();
+        return sb;
+    }
+
+    public static StringBuilder readAllLines(StringBuilder sb, Path p, String charset) throws IOException {
+
+        try (Stream<String> stream = Files.lines(p)) {
+            stream.forEach(sb::append);
+        }
+
+        return sb;
+    }
+
+    public static String buildRegex(String reg, List<StringPair> filters) {
+        if (filters != null) {
+            for (StringPair filter : filters) {
+                String name = filter.getName();
+                String value = filter.getValue();
+                reg = reg.replace(name, value);
+            }
+        }
+
+        return reg;
+    }
+
+    public static List<String> search(StringBuffer source, String reg, int[] groups, boolean newLines) { //groups mag null zijn als je geen groepen terug wilt krijgen
+        Regex.compile(reg, newLines);
+        return Regex.search(source.toString(), groups);
+    }
+
+    public static String paramJson(String paramIn) 
+    {
+        paramIn = paramIn.replaceAll(":", "");
+        paramIn = paramIn.replaceAll("=", "\":\"");
+        paramIn = paramIn.replaceAll("&", "\",\"");
+        return "{" + paramIn + "\"}";
+    }
+}
+
+class Regex {
+
+    public static Pattern r;
+    public static Matcher m;
+
+    public static void compile(String regex, boolean newLines) {
+        if (newLines) {
+            r = Pattern.compile(regex, Pattern.DOTALL);
+        } else {
+            r = Pattern.compile(regex);
+        }
+
+    }
+
+    public static List<String> search(String lines, int[] groups) {
+        List<String> results = new ArrayList<>();
+        m = r.matcher(lines);
+
+        while (m.find()) {
+
+            if (groups != null) {
+                for (int group : groups) {
+                    results.add(m.group(group));
+                }
+            } else {
+                results.add(m.group());
+            }
+
+        }
+        return results;
+    }
+
+    public static List<String> search(StringBuffer lines, int[] groups) {
+        List<String> results = new ArrayList<>();
+        m = r.matcher(lines);
+
+        while (m.find()) {
+
+            if (groups != null) {
+                for (int group : groups) {
+                    results.add(m.group(group));
+                }
+            } else {
+                results.add(m.group());
+            }
+
+        }
+        return results;
+    }
+
+    public static String getField(String delimiter, int fieldNumber) {
+        String regex = "";
+        for (int i = 1; i <= fieldNumber; i++) {
+
+            if (i == fieldNumber) {
+                regex += "(.*?)|";
+            } else {
+                regex += ".*?|";
+            }
+        }
+        return regex;
+    }
+
 }

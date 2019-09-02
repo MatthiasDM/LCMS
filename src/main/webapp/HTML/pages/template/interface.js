@@ -14,29 +14,20 @@ $(function () {
             $("#" + key).trigger("reloadGrid");
         }
     });
-    var numEditors = $("div[id*=editable]").length;
+    var numEditors = $("div[id^=editable]").length;
     if (numEditors > 0) {
-        showLoading();
-        var counter = 0;
-        $("div[id*=editable]").each(function (a, b) {
-            var ck = CKEDITOR.inline($(b).attr('id'));
-            ck.on('instanceReady', function (ev) {
-                var editor = ev.editor;
-                console.log(editor.filter.allowedContent);
-                editor.setReadOnly(readonly);
-                counter++;
-                if (counter === numEditors) {
-                    toggleCKmenu();
-                    hideLoading();
-                    if ($("#div-page-menu").length > 0) {
-                        loadSideBarMenu();
-                        $("#sidebar").BootSideMenu({side: "left"});
-                        afterLoadComplete();
-                    }
-                }
-            });
-            ;
-        });
+        (async () => {
+            showLoading();
+            let editorsLoaded = await loadEditors();
+            if ($("#div-page-menu").length > 0) {
+                loadSideBarMenu();
+                $("#sidebar").BootSideMenu({side: "left"});
+                afterLoadComplete();
+            }
+            hideLoading();
+        })();
+
+
     } else {
         if ($("#div-page-menu").length > 0) {
             loadSideBarMenu();
@@ -48,6 +39,34 @@ $(function () {
 
 
 });
+
+async function loadEditors() {
+    $("div[id^=editable]").each(function (a, b) {
+        if (CKEDITOR.instances[$(b).attr('id')]) {
+            CKEDITOR.remove(CKEDITOR.instances[$(b).attr('id')]);
+        }
+        var ck = CKEDITOR.inline($(b).attr('id'));
+        ck.on('instanceReady', function (ev) {
+            console.log("instance rezady");
+            var editor = ev.editor;
+            console.log(editor.filter.allowedContent);
+            editor.setReadOnly(readonly);
+            toggleCKmenu(editor);
+//                counter++;
+//                if (counter === numEditors) {
+//                    toggleCKmenu();
+//                    hideLoading();
+//                    if ($("#div-page-menu").length > 0) {
+//                        loadSideBarMenu();
+//                        $("#sidebar").BootSideMenu({side: "left"});
+//                        afterLoadComplete();
+//                    }
+//                }
+        });
+        ;
+    });
+    return "done";
+}
 
 function afterLoadComplete() {
     $.each(documentPage.canvasses, function (a, b) {
@@ -64,6 +83,7 @@ function afterLoadComplete() {
         startCanvas(a);
     });
     if (typeof loadPageScripts !== "undefined") {
+        console.log("Load page scripts");
         loadPageScripts();
     }
 
@@ -145,7 +165,7 @@ function new_grid(parentID, colModel, extraOptions, importCSV, _gridData, gridId
         let documentGrid = new LCMSGrid(gridData);
         var gridObject = documentGrid.createGrid();
         documentPage.addGridButtons(documentGrid, gridObject, gridData, editor);
-
+        return gridObject;
 
     }
 
@@ -247,7 +267,7 @@ function createGridBasedOnModel(_gridData, _colModelWrapper, _parent) {
 
 function createGridBasedOnImportFile(_parent, importData, caption) {
     var gridId = "grid_" + uuidv4();
-    new_grid(_parent.attr('id'), importData.colModel, {caption: caption}, [], importData.data, gridId);
+    return new_grid(_parent.attr('id'), importData.colModel, {caption: caption}, [], importData.table, gridId);
 }
 
 function createColModel(form, _gridData, parent) {
@@ -863,12 +883,14 @@ function startCanvas(_id) {
 function edit_page() {
     console.log("edit_page()");
     toggleCtrlClick();
-    toggleCKmenu();
+    //toggleCKmenu();
     if (readonly) {
         readonly = false;
-       // periodic_save();
+        setCKmenu("flex");
+        // periodic_save();
     } else {
         readonly = true;
+        setCKmenu("none");
 
     }
     $("div[contenteditable]").each(function (a, b) {
@@ -914,12 +936,31 @@ function toggleCtrlClick() {
 
 }
 
-function toggleCKmenu() {
-    if ($(".cke_inner").css("display") === "none") {
-        $(".cke_inner").css("display", "flex");
+function setCKmenu(state) {
+
+    $(".cke_inner").css("display", state);
+
+}
+
+function toggleCKmenu(editor) {
+
+    if (typeof editor !== "undefined") {
+        var elements = $("#cke_" + editor.name).find(".cke_inner");
+        if (elements.css("display") === "none") {
+            elements.css("display", "flex");
+        } else {
+            elements.css("display", "none");
+        }
     } else {
-        $(".cke_inner").css("display", "none");
+        if ($(".cke_inner").css("display") === "none") {
+            $(".cke_inner").css("display", "flex");
+        } else {
+            $(".cke_inner").css("display", "none");
+        }
     }
+
+    console.log("Load completed");
+
 
 }
 

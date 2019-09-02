@@ -47,7 +47,7 @@ public class EditablePage {
             editRole = "ICTMANAGER",
             //viewRole = "ICTMANAGER",
             type = "select",
-            choices = {"public", "private"}
+            choices = {"public", "private", "partial"}
     )
     public String accessType;
 
