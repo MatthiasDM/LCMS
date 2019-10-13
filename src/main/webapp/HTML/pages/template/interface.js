@@ -16,17 +16,24 @@ $(function () {
     });
     var numEditors = $("div[id^=editable]").length;
     if (numEditors > 0) {
+        showLoading();
         (async () => {
-            showLoading();
-            let editorsLoaded = await loadEditors();
-            if ($("#div-page-menu").length > 0) {
-                loadSideBarMenu();
-                $("#sidebar").BootSideMenu({side: "left"});
-                afterLoadComplete();
+            try {
+                let editorsLoaded = await loadEditors();
+                if ($("#div-page-menu").length > 0) {
+                    loadSideBarMenu();
+                    $("#sidebar").BootSideMenu({side: "left"});
+                    afterLoadComplete();
+                    hideLoading();
+                }
+            } catch (e) {
+                hideLoading();
             }
-            hideLoading();
-        })();
 
+
+
+        })();
+        hideLoading();
 
     } else {
         if ($("#div-page-menu").length > 0) {

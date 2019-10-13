@@ -35,33 +35,39 @@ public class ICTTicket {
     public String number;
     @MdmAnnotations(
             editRole = "ICTMANAGER",
+            createRole = "LABASSISTANT",
             type = "string")
     public String subject;
     @MdmAnnotations(
             editRole = "ICTMANAGER",
             //viewRole = "ICTMANAGER",
             type = "select",
+            createRole = "LABASSISTANT",
             choices = {"Glims", "Cyberlab", "Sharepoint", "Hardware", ""}
     )
     public String category;
     @MdmAnnotations(
             editRole = "ICTMANAGER",
             //viewRole = "ICTMANAGER",
-            type = "string"
+            type = "string",
+            createRole = "ICTMANAGER"
     )
     public String discriminator;
     @MdmAnnotations(
             type = "cktext",
             editRole = "ICTMANAGER",
+            createRole = "LABASSISTANT",
             visibleOnTable = false)
     public String overview;
     @MdmAnnotations(
             editRole = "ICTMANAGER",
+            createRole = "ICTMANAGER",
             type = "cktext",
             visibleOnTable = false)
     public String followup;
     @MdmAnnotations(
             editRole = "ICTMANAGER",
+            createRole = "LABASSISTANT",
             //viewRole = "ICTMANAGER",
             type = "select",
             choices = {"Gemeld", "Analyse", "Validatie", "Voltooid"}
@@ -70,6 +76,7 @@ public class ICTTicket {
     @MdmAnnotations(
             editRole = "ICTMANAGER",
             viewRole = "ICTMANAGER",
+            createRole = "ICTMANAGER",
             type = "select",
             multiple = true,
             reference = {"Mongo", "users", "userid", "username"},
@@ -81,6 +88,7 @@ public class ICTTicket {
             viewRole = "ICTMANAGER",
             reference = {"Mongo", "users", "userid", "username"},
             editRole = "ICTMANAGER",
+            createRole = "ICTMANAGER",
             visibleOnTable = false
     )
     public String approver;

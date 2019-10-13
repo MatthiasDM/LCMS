@@ -135,7 +135,9 @@ function ckOnInstanceReady(e, imageController) {
         $("#cke_" + $(this).attr('id')).css("max-height", "700px");
 
     });
-
+    if(typeof _afterShowFormFunction === "function"){
+         _afterShowFormFunction();
+    }   
 
 }
 

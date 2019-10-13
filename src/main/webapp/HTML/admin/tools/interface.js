@@ -26,4 +26,5 @@ $(function () {
     actions_doLoad($("#admin-container"));
     pages_doLoad($("#pages-container"));
     commands_doLoad($("#admin-container"));
+    workflows_doLoad($("#workflow-container"));
 });

@@ -35,3 +35,8 @@ function commands_doLoad(_parent) {
     console.log("Commands load");
     LCMSTableRequest("loadcommands", "editcommands", "./servlet", "commands-table", "commands-pager", "div-grid-commands-wrapper", lang["commands"]['title'], 1,{hiddengrid: true});
 }
+
+function workflows_doLoad(_parent) {
+    console.log("Workflows load");
+    LCMSTableRequest("loadworkflows", "editworkflow", "./servlet", "workflows-table", "workflows-pager", "div-grid-workflows-wrapper", lang["workflows"]['title'], 1,{hiddengrid: true});
+}

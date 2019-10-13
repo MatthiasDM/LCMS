@@ -31,7 +31,7 @@ public class Document {
     @MdmAnnotations(
             editRole = "ICTMANAGER",
             type = "select",
-            choices = {"Algemeen","Glims", "Nomenclatuur", "Labo", "Software"}
+            choices = {"Algemeen","Glims", "Nomenclatuur", "Labo", "Software", "Gearchiveerd"}
     )
     public String category;
     @MdmAnnotations(

@@ -926,8 +926,10 @@ class LCMSGrid {
         document.body.removeChild(link);
     }
 
-    export_as_html() {
+    async export_as_html() {
         var gridData = this.gridData;
+        var getFullRowData = this.getFullRowData;
+        var callFullRowDataRequest = this.callFullRowDataRequest;
         console.log("exportToHTML()");
         var htmlData = $("<output id='tempOutput'>");
         htmlData.append("<link rel='stylesheet' href='./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css'>");
@@ -940,13 +942,32 @@ class LCMSGrid {
         var htmlTableObject = {};
         var tableData = {};
         if ($('#' + gridData.tableObject + ' .cbox:visible').length > 0) {
+
             var selRows = $("#" + gridData.tableObject).jqGrid("getGridParam", "selarrrow");
+            //first download complete row data if this had been configured
+
             var selRowsData = Object.filter($("#" + gridData.tableObject).jqGrid('getGridParam').data, item => selRows.includes(String(item.id)) === true);
             var arr = [];
-            $.each(selRowsData, function (key, value) {
-                arr.push(value);
-            });
+
+            async function callFullRowDataRequest(selRowsData) {
+                console.log("start");
+                var keys = Object.keys(selRowsData);
+                for (var i = 0; i < keys.length; i++) {
+                    var rowData = selRowsData[keys[i]];
+                    let newRowData = await getFullRowData(gridData, rowData.id, rowData[gridData.jqGridOptions.idColumn]);
+                    arr.push(newRowData); //$("#" + gridData.tableObject).jqGrid ('getRowData', rowId);
+                    console.log("pushing data to export...");
+                }
+                console.log("end");
+
+            }
+
+
+            await callFullRowDataRequest(selRowsData);
             tableData = arr;
+
+
+
         } else {
             tableData = $("#" + gridData.tableObject).jqGrid('getGridParam').data;
         }
@@ -958,7 +979,31 @@ class LCMSGrid {
             $(b).after("<div name='" + $(b).attr('id') + "' style='overflow-x:auto'>" + htmlTable + "</div>");
             $(b).remove();
         });
-        openFile("test.html", "<div id='export' class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + htmlData[0].innerHTML + "</div><div class='col-sm-1 mx-auto'></div></div>");
+
+        var images = loadImages("", htmlData);
+        var imagesWrapper = $("<div></div>");
+        let imageController = new LCMSImageController();
+        var allImagesLoaded = false;
+        var imagesLoadedCounter = 0;
+        if (images.length > 0) {
+            images.each(function (index) {
+                //htmlData.find("img[fileid=" + $(images[index]).attr('fileid') + "]").replaceWith($(images[index]));
+                imageController.toDataURL($(images[index]).attr('src'), function (dataUrl) {
+                    htmlData.find("img[fileid=" + $(images[index]).attr('fileid') + "]").replaceWith("<img src='" + dataUrl + "' >");
+                    bootstrap_alert.warning('Images loaded: ' + imagesLoadedCounter, 'success', 1000);
+                    if (imagesLoadedCounter === images.length - 1) {
+                        htmlData.find("div").attr("contenteditable", false);
+                        openFile("test.html", "<div id='export' class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + htmlData[0].innerHTML + "</div><div class='col-sm-1 mx-auto'></div></div>");
+                    }
+                    imagesLoadedCounter++;
+                });
+            });
+        } else {
+            openFile("test.html", "<div id='export' class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + htmlData[0].innerHTML + "</div><div class='col-sm-1 mx-auto'></div></div>");
+
+        }
+
+
 
 //        var images = loadImages("", htmlData);
 //        var imagesWrapper = $("<div></div>");
@@ -1078,6 +1123,11 @@ class LCMSGrid {
                 column.editable = "disabled";
             } else {
                 column.editable = true;
+            }
+            if (value.creatable === false) {
+                column.creatable = false;
+            } else {
+                column.creatable = true;
             }
             if (value.visibleOnForm === true) {
                 column.editrules = {edithidden: true};
@@ -1358,29 +1408,48 @@ class LCMSGrid {
 
     }
 
-    popupEdit(_action, _afterSubmitFunction) {
+    async getFullRowData(_gridData, _id, _rowId) {
+        let request = await LCMSRequest("./servlet", {action: _gridData.jqGridOptions.getAction, k: _gridData.jqGridOptions.idColumn, v: _rowId});
+
+        async function onDone(data, _id, gridData) {
+            var grid = $("#" + gridData.tableObject);
+            grid.jqGrid('setRowData', _id, $.parseJSON(data));
+            return $.parseJSON(data);
+        }
+        let afterRequest = await onDone(request, _id, _gridData);
+        return afterRequest;
+    }
+
+    async popupEdit(_action, _afterSubmitFunction) {
         var me = this;
         var gridData = this.gridData;
         var grid = $("#" + gridData.tableObject);
         console.log("new item");
 
+        if (_action !== "new" && typeof this.gridData.jqGridOptions.getAction !== "undefined") {
+            var rowData = grid.jqGrid('getRowData', _action);
+            var id = rowData[this.gridData.jqGridOptions.idColumn];
+            let fullRowDataRequest = await this.getFullRowData(gridData, _action, id);
+        }
+        if (_action === "new") {
+            $.each(Object.values(Object.filter(grid.jqGrid("getGridParam").colModel, model => model.creatable === true)), function (index, val) {
+                val.editable = true;
+            });
+        }
+
         grid.jqGrid('editGridRow', _action, {
             reloadAfterSubmit: false,
             beforeShowForm: function (formid) {
-
                 $("textarea[title=ckedit]").each(function (index) {
-
                     $(this).replaceWith("<div contenteditable='true' title=ckedit id='" + $(this).attr("id") + "'>" + $(this).val() + "</div>");
                     // CKEDITOR.replace($(this).attr('id'), {
                     //     customConfig: ' '
                     //  });
-
-
                 });
-
                 $("div[title=ckedit]").each(function (index) {
-                    CKEDITOR.inline($(this).attr('id'));
+                   CKEDITOR.inline($(this).attr('id'), {});
                 });
+            
             },
             afterShowForm: function (formid) {
                 var pills = me.createPills(formid);
@@ -1397,6 +1466,7 @@ class LCMSGrid {
 //                    });  
 //                  //  CKEDITOR.inline($(this).attr('id'));
 //                });
+
                 scrollTo($($("input")[0]));
             },
 
@@ -1434,34 +1504,6 @@ class LCMSGrid {
             },
             beforeSubmit: function (postdata, formid) {
                 console.log("Checking post data");
-                //   postdata = formid.serializeObject();
-//                $("textarea[title=ckedit]").each(function (index) {
-//                    var editorname = $(this).attr('id');
-//                    var editorinstance = CKEDITOR.instances[editorname];
-//                    var text = editorinstance.getData();
-//                    text = removeElements("nosave", text);
-//                    postdata[editorname] = text;
-//                });
-//                var colModel = $("#" + this.id).jqGrid("getGridParam").colModel;
-//                var filteredModel = Object.filter(colModel, function (a) {
-//                    console.log(a.type);
-//                    if (a.type === "datetime") {
-//                        return true;
-//                    } else {
-//                        return false;
-//                    }
-//                    ;
-//                });
-//                $.each(filteredModel, function (a, b) {
-//                    var value = postdata[b.label];
-//                    if (value === "") {
-//                        postdata[b.label] = moment().valueOf();
-//                    } else {
-//                        postdata[b.label] = moment(value).valueOf();
-//                    }
-//
-//                });
-
             },
             afterComplete: function (response, postdata, formid) {
                 $("#cData").trigger("click");

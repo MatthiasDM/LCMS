@@ -26,6 +26,10 @@ import org.bson.Document;
  */
 public class Workflows {
 
+    //workflows are a group of commands linked together. 
+    
+    
+    
     //Workflow ICTTickets
     public static void workflowICTTicket(HashMap<String, String[]> requestParameters, String operation, String cookie) throws ClassNotFoundException, JsonProcessingException, IOException, NoSuchFieldException {
 
@@ -56,12 +60,7 @@ public class Workflows {
             String content = "Beste,<br><br>Er is een nieuw ICT-ticket aangemaakt.<br><br><b>Titel:</b> " + requestParameters.get("subject")[0] + "<br><br><b>Inhoud:</b><br><br>" + requestParameters.get("overview")[0];
             HashMap<String, Object> parameters = Core.createMailParameters(receivers, "Update ICT-melding: " + requestParameters.get("subject")[0], content);
             SendMail.send(parameters);
-
-            //ActionManagerTasks aM = new ActionManagerTasks(taskParameters);
-            //aM.startAction();
-            //ObjectMapper mapper = new ObjectMapper();
-            //Document document = Document.parse(mapper.writeValueAsString(ActionManagerTasks.createTaskObject(id.toString(), "create", taskParameters, cookie)));
-            //DatabaseWrapper.addObject(document, mdm.Config.MongoConf.TASKS, cookie);
+   
         }
         if (operation.equals("edit")) {
             if (Arrays.asList(choiceValues).contains(requestParameters.get("status")[0])) {

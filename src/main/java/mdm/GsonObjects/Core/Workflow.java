@@ -20,14 +20,6 @@ public class Workflow {
             editRole = "ADMIN"
     )
     public String name;
-
-    @MdmAnnotations(
-            type = "select",
-            reference = {"Mongo", "commands", "commandid", "commands"},
-            editRole = "ICTMANAGER"
-    )
-    public String command;
-
     @MdmAnnotations(
             type = "select",
             reference = {"Mongo", "mongoconfigurations", "mongoconfigurationsid", "collection"},

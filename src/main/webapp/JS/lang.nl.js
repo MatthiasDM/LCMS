@@ -135,6 +135,10 @@ lang = {
         title: "Opdrachten",
         name: "Naam"
     },
+    workflows: {
+        title: "Werkstromen",
+        name: "Naam"
+    },
     document: {},
     labPossessions: {
         title: "Iventaris",
@@ -144,7 +148,7 @@ lang = {
         department: "Departement",
         info: "Extra informatie"
     }
-    
+
 };
 
 

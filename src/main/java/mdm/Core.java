@@ -321,25 +321,23 @@ public class Core {
         return parameters;
     }
 
-    public static String getProp(String name) throws IOException {
+    public static String getProp(String name) throws IOException {        
         Properties prop = new Properties();
-        String propFileName = "conf/conf.properties";
-        prop.load(new StringReader(Core.loadWebFile(propFileName)));
-        return prop.getProperty(name);
+        String basePath = System.getProperties().getProperty("user.home");  
+        String propFileName = "conf.properties";  
+        File f = new File(basePath + "\\LCMS\\" + propFileName);                
+        prop.load(new StringReader(readAllLines(Arrays.asList(f)).toString()));
+        return prop.getProperty(name); 
     }
 
     public static String getProperty(String name) {
 
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-
+        
         try (InputStream input = loader.getResourceAsStream("config.properties")) {
 
             Properties prop = new Properties();
-
-            // load a properties file
             prop.load(input);
-
-            // get the property value and print it out
             return prop.getProperty(name);
 
         } catch (IOException ex) {

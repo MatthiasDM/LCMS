@@ -8,6 +8,7 @@
 }
 #export tr {
     border : #ccc solid 1px;
+    margin: 10px;
 }
 #export tr:nth-of-type(odd) {
     background : #e0e0e0;

@@ -616,7 +616,7 @@ function openFile(filename, text) {
     var blob = new Blob([text], {type: "text/html;charset=utf-8"});
     saveAs(blob, filename);
 
-    var x = window.open('http://localhost:8080/LCMS/index.html?p=temp', '_blank');
+    var x = window.open('http://10.210.202.21:8080/LCMS/index.html?p=temp', '_blank');
     x.document.write(text);
     x.document.close();
 }

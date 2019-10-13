@@ -42,6 +42,7 @@ import static mdm.Mongo.DatabaseActions.getObjects;
 import static mdm.Mongo.DatabaseActions.getObject;
 import static mdm.Mongo.DatabaseActions.getObjectCount;
 import static mdm.Mongo.DatabaseActions.getObjectv2;
+import mdm.commandFunctions;
 import mdm.pojo.annotations.MdmAnnotations;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -169,9 +170,7 @@ public class DatabaseWrapper {
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, filter, null, 1000, excludes);
         List<String> columns = getDocumentPriveleges("view", cookie, _mongoConf.getClassName());
         List<String> editableColumns = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
-        for (String column : columns) {
-
-        }
+        List<String> createableColumns = getDocumentPriveleges("create", cookie, _mongoConf.getClassName());
         ArrayList<HashMap> header = new ArrayList<>();
         ArrayList<HashMap> table = new ArrayList<>();
         HashMap tableEntry = new HashMap();
@@ -179,13 +178,13 @@ public class DatabaseWrapper {
             Class cls = Class.forName(_mongoConf.getClassName());
             Field field = cls.getField(column);
             MdmAnnotations mdmAnnotations = field.getAnnotation(MdmAnnotations.class);
-
             HashMap headerEntry = new HashMap();
             headerEntry.put("name", field.getName());
             if (mdmAnnotations != null) {
                 headerEntry.put("type", mdmAnnotations.type());
                 headerEntry.put("visibleOnTable", mdmAnnotations.visibleOnTable());
                 headerEntry.put("editable", editableColumns.contains(column));
+                headerEntry.put("creatable", createableColumns.contains(column));
                 //headerEntry.put("editable", mdmAnnotations.editable()); //editableColumns.contains(column));
                 headerEntry.put("multiple", mdmAnnotations.multiple());
                 headerEntry.put("visibleOnForm", mdmAnnotations.visibleOnForm());
@@ -552,7 +551,7 @@ public class DatabaseWrapper {
         action = mapper.convertValue(results.get(0), mdm.GsonObjects.Core.Actions.class);
         return action;
     }
-
+   
     public static StringBuilder actionEDITOBJECT(HashMap<String, String[]> requestParameters, String cookie, MongoConf _mongoConf) throws IOException, ClassNotFoundException, NoSuchFieldException {
         StringBuilder sb = new StringBuilder();
         if (cookie != null) {
@@ -620,6 +619,7 @@ public class DatabaseWrapper {
                     if (operation.equals("edit")) {
                         HashMap<String, Object> obj = createDatabaseObject(requestParameters, cls);
                         DatabaseWrapper.editObjectDatav2(obj, _mongoConf, cookie);
+                        commandFunctions.doWorkflow("edit", _mongoConf);
                     }
                     if (operation.equals("add")) {
                         requestParameters.remove("oper");
@@ -636,6 +636,7 @@ public class DatabaseWrapper {
                         Document document = Document.parse(mapper.writeValueAsString(labitem));
                         document.append(_mongoConf.getIdName(), UUID.randomUUID().toString());
                         DatabaseWrapper.addObjectv2(document, _mongoConf, cookie);
+                        commandFunctions.doWorkflow("add", _mongoConf);
                     }
                 }
             }
@@ -645,7 +646,7 @@ public class DatabaseWrapper {
         return sb;
     }
 
-    public static StringBuilder actionGETOBJECTv2(String cookie, MongoConfigurations _mongoConf, String key, String value, Boolean publicPage) throws JsonProcessingException, JsonProcessingException, ClassNotFoundException, JsonProcessingException, JsonProcessingException {
+    public static StringBuilder actionGETOBJECTv2(String cookie, MongoConfigurations _mongoConf, String key, String value, Boolean publicPage) throws JsonProcessingException, JsonProcessingException, ClassNotFoundException, JsonProcessingException, JsonProcessingException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
         if (cookie == null && !publicPage) {
             sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
@@ -674,8 +675,9 @@ public class DatabaseWrapper {
                     jsonData.put("webPage", loadWebFile("pages/template/index.html"));
                     jsonData.set("replaces", jsonReplaces);
                     sb.append(jsonData);
-                } else {
-
+                } else {     
+                    ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, searchObject, null, 1000, new String[]{""});
+                    sb.append(mapper.writeValueAsString(results.get(0)));
                 }
 
             }
@@ -698,4 +700,6 @@ public class DatabaseWrapper {
         return sb;
     }
 
+    
+    
 }

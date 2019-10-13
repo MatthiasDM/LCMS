@@ -39,7 +39,7 @@ function startScanner() {
     var m = create_blank_modal($("body"), "QR-modal", '<video autoplay="" height="300" id="video" muted="" playsinline="" width="400">&nbsp;</video>', "top:30%;");
     m.modal('show');
 
-    var codeReader = new ZXing.BrowserQRCodeReader();
+    var codeReader = new ZXing.BrowserMultiFormatReader();
     codeReader
             .listVideoInputDevices()
             .then(function (videoInputDevices) {
