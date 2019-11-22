@@ -54,19 +54,23 @@ public class Servlet extends HttpServlet {
         if (requestParameters.get("LCMS_session") != null) {
             cookie = requestParameters.get("LCMS_session")[0];
         }
+        //add json parameter for software name and version and enviroment
         if (checkSession(cookie) || action.equals("pages") || action.equals("")) {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode jsonData = mapper.createObjectNode();
             if (action.equals("")) {
-                jsonData.put("webPage", Core.loadWebFile(""));
-                sb.append(jsonData);
+               // jsonData.put("webPage", Core.loadWebFile(""));
+                 sb.append(DatabaseWrapper.getWebPage("", new String[]{}));
+               // sb.append(jsonData);
             } else {
                 if (action.contains(".") || action.contains(";")) {
                     action = "";
                 }
-                // action = StringEscapeUtils.escapeHtml(action);
-                jsonData.put("webPage", Core.loadWebFile(action));
-                sb.append(jsonData);
+                 action = StringEscapeUtils.escapeHtml(action);
+              //  jsonData.put("webPage", Core.loadWebFile(action));
+                sb.append(DatabaseWrapper.getWebPage(action, new String[]{}));
+
+             //   sb.append(jsonData);
             }
         } else {
             sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));

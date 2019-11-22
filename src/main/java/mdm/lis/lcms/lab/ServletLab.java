@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import mdm.Config.Actions;
 import mdm.Config.MongoConf;
 import static mdm.Core.checkSession;
+import static mdm.Core.getProp;
 import static mdm.Core.loadWebFile;
 import mdm.GsonObjects.Lab.InventoryItem;
 import mdm.GsonObjects.Lab.LabItem;
@@ -213,9 +214,13 @@ public class ServletLab extends HttpServlet {
         private StringBuilder actionLAB_WORKSUMMARY() throws ClassNotFoundException, NoSuchFieldException, IOException {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode jsonData = mapper.createObjectNode();
-
+            String dataURL =  getProp("worksummary.data");
+            String issuersURL = getProp("worksummary.issuers");
+            String stationsURL = getProp("worksummary.stations");
+            String tatsURL = getProp("worksummary.tats");
+            
             List<String> lines = new ArrayList<>();
-            String pth = context.getRealPath("/HTML/other/worksummary/worksummarydata/data.txt");
+            String pth = context.getRealPath(dataURL);
             try (Stream<String> stream = Files.lines(Paths.get(pth), Charset.forName("ISO-8859-1"))) {
                 lines = stream
                         .map(String::toUpperCase)
@@ -226,7 +231,7 @@ public class ServletLab extends HttpServlet {
             }
 
             List<String> issuers = new ArrayList<>();
-            try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\worksummary\\issuers.json"), Charset.forName("ISO-8859-1"))) {
+            try (Stream<String> stream = Files.lines(Paths.get(issuersURL), Charset.forName("ISO-8859-1"))) {
                 issuers = stream
                         .map(String::toUpperCase)
                         .filter(line -> line.contains("'"))
@@ -236,7 +241,7 @@ public class ServletLab extends HttpServlet {
             }
 
             List<String> stations = new ArrayList<>();
-            try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\worksummary\\stations.json"), Charset.forName("ISO-8859-1"))) {
+            try (Stream<String> stream = Files.lines(Paths.get(stationsURL), Charset.forName("ISO-8859-1"))) {
                 stations = stream
                         .map(String::toUpperCase)
                         .filter(line -> line.contains("'"))
@@ -246,7 +251,7 @@ public class ServletLab extends HttpServlet {
             }
 
             List<String> tats = new ArrayList<>();
-            try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\worksummary\\tats.json"), Charset.forName("ISO-8859-1"))) {
+            try (Stream<String> stream = Files.lines(Paths.get(tatsURL), Charset.forName("ISO-8859-1"))) {
                 tats = stream
                         .map(String::toUpperCase)
                         .filter(line -> line.contains("'"))
@@ -255,20 +260,12 @@ public class ServletLab extends HttpServlet {
                 e.printStackTrace();
             }
 
-//            List<String> unknownOE = new ArrayList<>();
-//            try (Stream<String> stream = Files.lines(Paths.get("\\\\knolab\\Kwalsys\\mdmTools\\LCMSdata\\worksummary\\issuers.json"), Charset.forName("ISO-8859-1"))) {
-//                unknownOE = stream
-//                        .map(String::toUpperCase)
-//                        .filter(line -> line.contains("'"))
-//                        .collect(Collectors.toList());
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
+
             jsonData.put("data", mapper.writeValueAsString(lines));
             jsonData.put("issuers", mapper.writeValueAsString(issuers));
             jsonData.put("stations", mapper.writeValueAsString(stations));
             jsonData.put("tats", mapper.writeValueAsString(tats));
-            //jsonData.put("unknownOE", mapper.writeValueAsString(unknownOE));
+          
             StringBuilder sb = new StringBuilder();
             sb.append(jsonData);
             return sb;

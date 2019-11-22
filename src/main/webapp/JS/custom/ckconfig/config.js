@@ -42,7 +42,7 @@ function config2() { //for inline editing
         ];
         config.templates_files = ['./JS/ckeditor/plugins/templates/templates/defaultLCMS.js'];
         config.templates_replaceContent = false;
-        config.extraPlugins = 'mdmUploadFiles,codesnippet,pre,codemirror,sourcedialog,widget,dialog,mdmjexcel,templates';
+        config.extraPlugins = 'mdmUploadFiles,codesnippet,pre,codemirror,sourcedialog,widget,dialog,mdmjexcel,templates,plantuml';
         config.format_tags = 'div';
         config.removeButtons = 'Source,Save,Cut,Undo,Redo,Copy,MenuButton,Preview,Print,PasteText,Paste,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,NewPage,Outdent,Indent,CreateDiv,Blockquote,JustifyLeft,JustifyCenter,JustifyRight,JustifyBlock,Language,BidiRtl,Unlink,BidiLtr,Flash,Table,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Format,Font,Maximize,ShowBlocks,About,RemoveFormat,CopyFormatting,Subscript,Superscript';//Anchor
         config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';
@@ -57,10 +57,11 @@ function config2() { //for inline editing
         config.allowedContent = true;
         CKEDITOR.dtd.$removeEmpty['span'] = false;
         CKEDITOR.dtd.$removeEmpty['i'] = false;
-        CKEDITOR.config.protectedSource.push(/<([\S]+)[^>]*class="preserve"[^>]*>.*<\/\1>/g);
+        console.log("pushing protected source");
+        config.protectedSource.push(/<([\S]+)[^>]*class="preserve"[^>]*>.*<\/\1>/g);
 
         config.codemirror = {
-            theme: 'base16-light'
+          //  theme: 'abcdef'
         };
     };
     CKEDITOR.config.contentsCss = ['./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css', "./CSS/style.css"];

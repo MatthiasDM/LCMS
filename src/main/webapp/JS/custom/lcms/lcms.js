@@ -1216,6 +1216,7 @@ class LCMSGrid {
                     }
                 }
             },
+            newItem: me.popupEdit, 
             colModelData: colModelData,
             pgbuttons: tabelData.length > 150,
             pgtext: "",
@@ -1447,7 +1448,8 @@ class LCMSGrid {
                     //  });
                 });
                 $("div[title=ckedit]").each(function (index) {
-                   CKEDITOR.inline($(this).attr('id'), {});
+                   $(this).addClass("border rounded p-3");
+                   CKEDITOR.inline($(this).attr('id'));                                     
                 });
             
             },
@@ -1460,7 +1462,7 @@ class LCMSGrid {
                 $("div[id^=editmod]").css('margin-left', '5%');
                 $("div[id^=editmod]").css('margin-right', '5%');
                 $("div[id^=editmod]").css('left', '');
-//                $("textarea[title=ckedit]").each(function (index) {
+//                $("textarea[title=ckedit]").each(function (index) {100
 //                    CKEDITOR.replace($(this).attr('id'), {
 //                        customConfig: ' '
 //                    });  

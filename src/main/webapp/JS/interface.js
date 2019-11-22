@@ -35,27 +35,6 @@ $(function () {
 
     };
 
-//    Object.prototype.clone = Array.prototype.clone = function ()
-//    {
-//        if (Object.prototype.toString.call(this) === '[object Array]')
-//        {
-//            var clone = [];
-//            for (var i = 0; i < this.length; i++)
-//                clone[i] = this[i].clone();
-//
-//            return clone;
-//        } else if (typeof (this) == "object")
-//        {
-//            var clone = {};
-//            for (var prop in this)
-//                if (this.hasOwnProperty(prop))
-//                    clone[prop] = this[prop].clone();
-//
-//            return clone;
-//        } else
-//            return this;
-//    }
-
 
 });
 
@@ -438,7 +417,7 @@ function dom_col(id, size) {
     return $("<div id='" + id + "' class='col-sm-" + size + " mx-auto'></div>");
 }
 function dom_button(id, icon, text, color) {
-    return $("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "' style='margin-right:5px;width:auto;max-width:200px'>" + text + "</i><span></span></button>");
+    return $("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "' style='margin-right:5px;width:auto;max-width:200px'></i><span>" + text + "</span></button>");
 }
 function dom_list(id, items) {
     var ul = $("<ul class='list-group' id='" + id + "'></ul> ");

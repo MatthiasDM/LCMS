@@ -13,27 +13,6 @@ function page_doLoadPage(_page, parent) {
         setJumbo(_page);
     }
     LCMSRequest("./page", {page: _page}, onDone);
-//    var _cookie = $.cookie('LCMS_session');
-//    console.log("Loading page...");
-//    $.ajax({
-//        method: "POST",
-//        url: "./page",
-//        data: {page: _page, LCMS_session: _cookie},
-//        beforeSend: function (xhr) {
-//            xhr.overrideMimeType("application/html");
-//        }
-//    }).done(function (data) {
-//        //parent.append(data);
-//
-//        var jsonData = JSON.parse(data, parent);
-//        jsonData.parent = parent;
-//        loadParameters(jsonData);
-//
-//        setJumbo(_page);
-//    }).fail(function (data) {
-//        alert("Sorry. Server unavailable. ");
-//    });
-
 }
 
 function credentials_doUserInfo(_parent) {

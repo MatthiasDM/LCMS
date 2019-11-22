@@ -116,6 +116,15 @@ public class DatabaseActions {
         return databases.get(db);
     }
 
+    //SOFTWARE VERSION METHODS
+    static public String getEnviromentInfo() {
+        StringBuilder sb = new StringBuilder();
+        if (checkConnection("lcms")) {
+
+        }
+        return sb.toString();
+    }
+
     //COLLECTION METHODS
     static public void createCollection(String _db, String _colName) {
         MongoDatabase db = databases.get(_db);

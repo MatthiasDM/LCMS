@@ -38,6 +38,7 @@ import static mdm.Core.loadWebFile;
 import mdm.GsonObjects.Core.MongoConfigurations;
 import mdm.GsonObjects.Core.Session;
 import static mdm.Mongo.DatabaseActions.getDocumentPriveleges;
+import static mdm.Mongo.DatabaseActions.getEnviromentInfo;
 import static mdm.Mongo.DatabaseActions.getObjects;
 import static mdm.Mongo.DatabaseActions.getObject;
 import static mdm.Mongo.DatabaseActions.getObjectCount;
@@ -79,13 +80,16 @@ public class DatabaseWrapper {
     public static ObjectNode getWebPage(String page, String[] scripts) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
+                ObjectNode jsonParameters = mapper.createObjectNode();
+
         StringBuilder scriptBuilder = new StringBuilder();
         for (String script : scripts) {
             scriptBuilder.append(loadScriptFile(script));
         }
+        jsonParameters.put("software-version", getEnviromentInfo());
         jsonData.put("webPage", loadWebFile(page));
         jsonData.put("scripts", scriptBuilder.toString());
-
+        jsonData.set("parameters", jsonParameters);
         return jsonData;
     }
 

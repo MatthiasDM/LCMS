@@ -4,7 +4,7 @@ var references = [];
 
 
 $(function () {
-    console.log("Startup template");
+    console.log("Startup template kpi");
     $("div[id^=editable]").click(function (e) {
         console.log("clicked");
         if (typeof e.target.href !== 'undefined' && e.ctrlKey === true) {

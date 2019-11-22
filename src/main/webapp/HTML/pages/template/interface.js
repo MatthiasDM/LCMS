@@ -901,7 +901,9 @@ function edit_page() {
 
     }
     $("div[contenteditable]").each(function (a, b) {
-        CKEDITOR.instances[b.id].setReadOnly(readonly);
+        if(typeof CKEDITOR.instances[b.id] !== "undefined"){
+                  CKEDITOR.instances[b.id].setReadOnly(readonly);
+        }  
     });
     $("#edit-menu button").each(function (index, btn) {
         if ($(btn).prop('disabled') === true) {
