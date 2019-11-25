@@ -36,6 +36,7 @@ import static com.mongodb.client.model.Projections.include;
 import difflib.DiffUtils;
 import difflib.Patch;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.time.Instant;
@@ -46,6 +47,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import mdm.Config.MongoConf;
+import mdm.Core;
 import static mdm.Core.getUserRoles;
 import mdm.DiffMatchPatch;
 import mdm.DiffMatchPatch.Diff;
@@ -117,10 +119,15 @@ public class DatabaseActions {
     }
 
     //SOFTWARE VERSION METHODS
-    static public String getEnviromentInfo() {
+    static public String getEnviromentInfo() throws IOException {
         StringBuilder sb = new StringBuilder();
-        if (checkConnection("lcms")) {
-
+        sb.append(Core.getProp("env"));
+        try {
+            sb.append(" ");
+            sb.append(Core.getProperty("git.properties", "git.build.version"));
+            sb.append("-");
+            sb.append(Core.getProperty("git.properties", "git.commit.id.abbrev"));
+        } catch (Exception e) {
         }
         return sb.toString();
     }

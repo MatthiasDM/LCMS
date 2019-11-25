@@ -321,20 +321,21 @@ public class Core {
         return parameters;
     }
 
-    public static String getProp(String name) throws IOException {        
+    public static String getProp(String name) throws IOException {
         Properties prop = new Properties();
-        String basePath = System.getProperties().getProperty("user.home");  
-        String propFileName = "conf.properties";  
-        File f = new File(basePath + "\\LCMS\\" + propFileName);                
+        String basePath = System.getProperties().getProperty("user.home");
+        String propFileName = "conf.properties";
+        System.out.println("getProp() basepath: " + basePath + "(" + basePath + "/LCMS/" + propFileName + ")");
+        File f = new File(basePath + "/LCMS/" + propFileName);
         prop.load(new StringReader(readAllLines(Arrays.asList(f)).toString()));
-        return prop.getProperty(name); 
+        return prop.getProperty(name);
     }
 
-    public static String getProperty(String name) {
+    public static String getProperty(String resource, String name) {
 
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        
-        try (InputStream input = loader.getResourceAsStream("config.properties")) {
+
+        try ( InputStream input = loader.getResourceAsStream(resource)) {
 
             Properties prop = new Properties();
             prop.load(input);
@@ -473,7 +474,7 @@ public class Core {
 
     public static StringBuilder readAllLines(StringBuilder sb, Path p, String charset) throws IOException {
 
-        try (Stream<String> stream = Files.lines(p)) {
+        try ( Stream<String> stream = Files.lines(p)) {
             stream.forEach(sb::append);
         }
 
@@ -497,8 +498,7 @@ public class Core {
         return Regex.search(source.toString(), groups);
     }
 
-    public static String paramJson(String paramIn) 
-    {
+    public static String paramJson(String paramIn) {
         paramIn = paramIn.replaceAll(":", "");
         paramIn = paramIn.replaceAll("=", "\":\"");
         paramIn = paramIn.replaceAll("&", "\",\"");

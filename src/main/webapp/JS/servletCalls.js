@@ -11,8 +11,11 @@ function page_doLoadPage(_page, parent) {
         jsonData.parent = parent;
         loadParameters(jsonData);
         setJumbo(_page);
+        setEnviroment(jsonData.parameters['software-version']);
     }
     LCMSRequest("./page", {page: _page}, onDone);
+
+
 }
 
 function credentials_doUserInfo(_parent) {

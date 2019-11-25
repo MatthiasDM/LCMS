@@ -58,6 +58,10 @@ function escapeRegExp(str) {
     return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
 }
 
+function setEnviroment(env){
+    $("[LCMS='software-version']").append(env);    
+}
+
 function setJumbo(page) {
 
     if (page === null || typeof page === 'undefined') {

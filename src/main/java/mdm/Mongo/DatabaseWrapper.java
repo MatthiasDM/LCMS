@@ -77,7 +77,7 @@ public class DatabaseWrapper {
         return jsonData;
     }
 
-    public static ObjectNode getWebPage(String page, String[] scripts) throws JsonProcessingException {
+    public static ObjectNode getWebPage(String page, String[] scripts) throws JsonProcessingException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
                 ObjectNode jsonParameters = mapper.createObjectNode();
