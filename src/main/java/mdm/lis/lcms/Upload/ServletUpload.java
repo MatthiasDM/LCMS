@@ -26,8 +26,8 @@ import javax.servlet.http.Part;
 import org.apache.commons.io.IOUtils;
 
 @WebServlet(name = "uploadServlet", urlPatterns = {"/upload"})
-@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, // 2MB
-        maxFileSize = 1024 * 1024 * 10, // 10MB
+@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 20, // 2MB
+        maxFileSize = 1024 * 1024 * 20, // 10MB
         maxRequestSize = 1024 * 1024 * 50)   // 50MB
 public class ServletUpload extends HttpServlet {
 
