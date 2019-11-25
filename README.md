@@ -35,6 +35,13 @@ Software packages must, certainly in a laboratory, be validated and verified. Du
 
 Technical documentation will be found on the Github wiki page.
 
+# Feature development
+
+- [ ] Upload pictures from mobile phones
+- [ ] Create workflow architecture
+- [ ] (attempt) Integrate JqgridFree into CKeditor
+
+
 # Contact
 
 de.mey.mat@gmail.com
