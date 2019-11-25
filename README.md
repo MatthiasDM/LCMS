@@ -40,7 +40,7 @@ Technical documentation will be found on the Github wiki page.
 - [ ] Upload pictures from mobile phones
 - [ ] Create workflow architecture
 - [ ] (attempt) Integrate JqgridFree into CKeditor
-
+- [ ] create API-architecture to allow communication with other web services
 
 # Contact
 
