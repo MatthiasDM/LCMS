@@ -1216,7 +1216,7 @@ class LCMSGrid {
                     }
                 }
             },
-            newItem: me.popupEdit, 
+            newItem: me.popupEdit,
             colModelData: colModelData,
             pgbuttons: tabelData.length > 150,
             pgtext: "",
@@ -1448,10 +1448,10 @@ class LCMSGrid {
                     //  });
                 });
                 $("div[title=ckedit]").each(function (index) {
-                   $(this).addClass("border rounded p-3");
-                   CKEDITOR.inline($(this).attr('id'));                                     
+                    $(this).addClass("border rounded p-3");
+                    CKEDITOR.inline($(this).attr('id'));
                 });
-            
+
             },
             afterShowForm: function (formid) {
                 var pills = me.createPills(formid);
@@ -1568,7 +1568,8 @@ class LCMSGrid {
 }
 
 class LCMSImageController {
-    constructor() {
+    constructor(publicPage) {
+        this.publicPage = publicPage;
     }
 
     uploadFile() {}
@@ -1578,8 +1579,10 @@ class LCMSImageController {
         var type = re.exec(_fileName)[0];
         var formData = new FormData();
         var ckeditor = CKEDITOR.instances[_ckeditor.attr('id')];
+
         formData.append('action', 'FILE_DOWNLOADTEMP');
         formData.append('LCMS_session', $.cookie('LCMS_session'));
+        formData.append('public', this.publicPage);
         formData.append('filename', _fileName);
         var request = new XMLHttpRequest();
         request.onreadystatechange = function () {
@@ -1884,7 +1887,9 @@ function LCMSTemplateGridButton(icon, title, caption, onClickFunction) {
 
 function buildEditablePage(data, _parent) {
     console.log("buildDocumentPage()");
-    config2();
+    var jsonData = JSON.parse(data, _parent);
+    var publicPage = typeof jsonData.parameters.public !== "undefined" ? jsonData.parameters.public : false;
+    config2(publicPage);
     documentPage = new LCMSEditablePage({loadAction: "getpage", editAction: "editpages", editUrl: "./servlet", pageId: "", idName: "editablepageid"});
     documentPage.buildPageData(data, _parent);
 

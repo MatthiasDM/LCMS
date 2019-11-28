@@ -331,6 +331,16 @@ public class Core {
         return prop.getProperty(name);
     }
 
+    public static boolean checkDir(String _directoryName) {
+        File directory = new File(_directoryName);
+        if (!directory.exists()) {
+            directory.mkdir();
+            return true;
+        } else {
+            return true;
+        }
+    }
+
     public static String getProperty(String resource, String name) {
 
         ClassLoader loader = Thread.currentThread().getContextClassLoader();

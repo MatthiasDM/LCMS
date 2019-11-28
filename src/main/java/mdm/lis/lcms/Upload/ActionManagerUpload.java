@@ -46,6 +46,7 @@ public class ActionManagerUpload {
     mdm.Config.Actions action;
     Collection<Part> parts;
     String contextPath;
+    Boolean publicPage = false;
     HashMap<String, String[]> requestParameters = new HashMap<String, String[]>();
 
     public ActionManagerUpload(Map<String, String[]> requestParameters, Collection<Part> parts) {
@@ -59,7 +60,9 @@ public class ActionManagerUpload {
         if (requestParameters.get("contextPath") != null) {
             contextPath = requestParameters.get("contextPath")[0];
         }
-
+        if (requestParameters.get("public") != null) {
+            publicPage = Boolean.valueOf(requestParameters.get("public")[0]);
+        }
         this.parts = parts;
     }
 
@@ -73,6 +76,9 @@ public class ActionManagerUpload {
         }
         if (requestParameters.get("contextPath") != null) {
             contextPath = requestParameters.get("contextPath")[0];
+        }
+        if (requestParameters.get("public") != null) {
+            publicPage = Boolean.valueOf(requestParameters.get("public")[0]);
         }
 
     }
@@ -108,7 +114,7 @@ public class ActionManagerUpload {
             if (part.getName().equals("file")) {
                 UUID id = UUID.randomUUID();
                 String fileName = id + part.getSubmittedFileName();
-                part.write(mdm.Core.getTempDir(cookie, contextPath) + fileName);                
+                part.write(mdm.Core.getTempDir(cookie, contextPath) + fileName);
                 FileObject fileobject = createFileObject(id.toString(), fileName, "image", "image/jpg", "private");
                 sb.append(mapper.writeValueAsString(fileobject));
                 DatabaseActions.insertFile(part.getInputStream(), fileName, fileobject);
@@ -182,7 +188,7 @@ public class ActionManagerUpload {
         if (Core.checkSession(cookie)) {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode jsonData = mapper.createObjectNode();
-            jsonData.put("filePath", DatabaseActions.downloadFileToTemp(requestParameters.get("filename")[0], cookie, contextPath));
+            jsonData.put("filePath", DatabaseActions.downloadFileToTemp(requestParameters.get("filename")[0], cookie, contextPath, publicPage));
 
             sb.append(jsonData);
         }
