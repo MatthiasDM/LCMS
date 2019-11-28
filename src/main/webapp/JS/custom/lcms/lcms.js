@@ -1586,7 +1586,7 @@ class LCMSImageController {
             if (request.readyState === 4) {
                 var jsonData = JSON.parse(request.responseText);
                 var filePath = jsonData.filePath;
-                if (type === ".png" || type === ".jpg" || type === ".JPG" || type === ".gif") {
+                if (type === ".png" || type === ".jpg" || type === ".JPG" || type === ".gif" || type === ".PNG") {
                     ckeditor.insertHtml("<div style='overflow-x:auto'><img name='" + _fileName + "' fileid='" + _fileId + "' src='" + filePath + "'/></div>");
                 } else {
                     ckeditor.insertHtml("<a name='" + _fileName + "'  href='" + filePath + "' fileid='" + _fileId + "'>" + _fileName + "</a>");
