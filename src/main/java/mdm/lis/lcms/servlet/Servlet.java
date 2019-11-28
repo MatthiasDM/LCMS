@@ -42,8 +42,8 @@ import org.apache.commons.io.IOUtils;
  * @author matmey
  */
 @WebServlet(name = "Servlet", urlPatterns = {"/servlet"})
-@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, // 2MB
-        maxFileSize = 1024 * 1024 * 10, // 10MB
+@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 20, // 20MB
+        maxFileSize = 1024 * 1024 * 20, // 20MB
         maxRequestSize = 1024 * 1024 * 50)   // 50MB
 public class Servlet extends HttpServlet {
 

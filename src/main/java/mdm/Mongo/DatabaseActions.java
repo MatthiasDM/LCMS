@@ -282,9 +282,15 @@ public class DatabaseActions {
 
     }
 
-    public static String downloadFileToTemp(String _fileName, String _cookie, String _contextPath) {
+    public static String downloadFileToTemp(String _fileName, String _cookie, String _contextPath, boolean _publicPage) {
         System.out.println("Calling download..");
         String outputPath = mdm.Core.getTempDir(_cookie, _contextPath) + _fileName;
+        if (_publicPage) {
+            if (Core.checkDir(_contextPath + "/public/")) {
+                outputPath = _contextPath + "/public/" + _fileName;
+            }
+        }
+
         try {
             MongoDatabase database = databases.get("files");
             GridFSBucket gridBucket = GridFSBuckets.create(database);

@@ -645,3 +645,4 @@ function validURL(str) {
     '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
   return true;//!!pattern.test(str);
 }
+

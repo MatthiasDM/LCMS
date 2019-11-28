@@ -3,9 +3,9 @@ function config3() {
 
 }
 
-function config2() { //for inline editing
+function config2(publicPage) { //for inline editing
     console.log("function config2");
-    let imageController = new LCMSImageController();
+    let imageController = new LCMSImageController(publicPage);
 
 
     if (typeof CKEDITOR.stylesSet.registered["mdmConfig2"] === "undefined") {

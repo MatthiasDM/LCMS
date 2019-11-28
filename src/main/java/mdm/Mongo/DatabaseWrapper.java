@@ -80,7 +80,7 @@ public class DatabaseWrapper {
     public static ObjectNode getWebPage(String page, String[] scripts) throws JsonProcessingException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
-                ObjectNode jsonParameters = mapper.createObjectNode();
+        ObjectNode jsonParameters = mapper.createObjectNode();
 
         StringBuilder scriptBuilder = new StringBuilder();
         for (String script : scripts) {
@@ -555,7 +555,7 @@ public class DatabaseWrapper {
         action = mapper.convertValue(results.get(0), mdm.GsonObjects.Core.Actions.class);
         return action;
     }
-   
+
     public static StringBuilder actionEDITOBJECT(HashMap<String, String[]> requestParameters, String cookie, MongoConf _mongoConf) throws IOException, ClassNotFoundException, NoSuchFieldException {
         StringBuilder sb = new StringBuilder();
         if (cookie != null) {
@@ -659,6 +659,7 @@ public class DatabaseWrapper {
                 BasicDBObject searchObject = new BasicDBObject();
                 ObjectMapper mapper = new ObjectMapper();
                 ObjectNode jsonData = mapper.createObjectNode();
+                ObjectNode jsonParameters = mapper.createObjectNode();
                 searchObject.put(key, new BasicDBObject("$eq", value));
                 Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, _mongoConf, searchObject);
                 List<String> editRights = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
@@ -675,11 +676,13 @@ public class DatabaseWrapper {
                     }
                     jsonReplaces.put("LCMSEditablePage-menu", menu);
                     searchResult.put("contents", "");
-                    //jsonData.put("webPage", loadWebFile(_mongoConf.getCollection() + "/template/index.html"));
+
+                    jsonParameters.put("public", publicPage);
+                    jsonData.set("parameters", jsonParameters);
                     jsonData.put("webPage", loadWebFile("pages/template/index.html"));
                     jsonData.set("replaces", jsonReplaces);
                     sb.append(jsonData);
-                } else {     
+                } else {
                     ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, searchObject, null, 1000, new String[]{""});
                     sb.append(mapper.writeValueAsString(results.get(0)));
                 }
@@ -704,6 +707,4 @@ public class DatabaseWrapper {
         return sb;
     }
 
-    
-    
 }
