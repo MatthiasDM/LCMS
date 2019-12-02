@@ -1119,6 +1119,7 @@ class LCMSGrid {
             if (value.hidden === true) {
                 column.hidden = true;
             }
+
             if (value.editable === false) {
                 column.editable = "disabled";
             } else {
@@ -1134,7 +1135,15 @@ class LCMSGrid {
             } else {
                 column.editrules = {edithidden: false};
             }
-
+            if (typeof value.searchoptions !== "undefined") {
+                column.searchoptions = value.searchoptions;
+            }
+            if (typeof value.formatter !== "undefined") {
+                column.formatter = value.formatter;
+            }
+            if (typeof value.classes !== "undefined") {
+                column.classes = value.classes;
+            }
             if (typeof value.summaryTpl !== "undefined") {
                 column.summaryTpl = value.summaryTpl;
             }
