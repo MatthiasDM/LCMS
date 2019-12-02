@@ -139,6 +139,10 @@ lang = {
         title: "Werkstromen",
         name: "Naam"
     },
+    apikeys: {
+        title: "API-keys",
+        name: "Naam"
+    },
     document: {},
     labPossessions: {
         title: "Iventaris",

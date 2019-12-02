@@ -6,8 +6,5 @@
 
 $(function () {
 
-    //check password for admin
-//StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
-//String encryptedPassword = passwordEncryptor.encryptPassword(userPassword);
     admin_doLoad($("#admin-container"));
 });

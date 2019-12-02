@@ -89,10 +89,7 @@ public class ActionManagerCredentials {
         Boolean root = false;
         StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
         if (_user.equals(getProp("username")) && passwordEncryptor.checkPassword(_pwd, getProp("password"))) {
-
             root = true;
-            //createDefaultUser();
-
         }
 
         User user = DatabaseActions.getUser(_user);
@@ -171,44 +168,43 @@ public class ActionManagerCredentials {
     }
 
     private void createTempDir(String _sessionId) {
-        //new File("C:\\mongodb\\temp\\" + _sessionId).mkdir();
-        //new File("C:\\mongodb\\temp\\" + _sessionId).mkdir();
         new File(contextPath + "/" + _sessionId).mkdir();
-
         System.out.print(contextPath + "/" + _sessionId);
     }
 
     private void deleteTempDir(String _sessionId) throws IOException {
-        FileUtils.deleteDirectory(new File(contextPath + "\\" + _sessionId));
+        try {
+            FileUtils.deleteDirectory(new File(contextPath + "\\" + _sessionId));
+        } catch (Exception e) {
+            System.out.println((e.getMessage()));
+        }
     }
 
     private void devalidateSession(String _sessionId) throws IOException, ClassNotFoundException {
-        //MongoMain.insertSession(createSession(_user, loginCookie.getValue()));
         Session session = DatabaseActions.getSession(_sessionId);
         if (!session.getUsername().equals(getProp("username"))) {
             mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
             Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, DatabaseActions.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", session.getUsername())));
             DatabaseActions.editSessionValidity(_sessionId, (Integer.parseInt(user.get("sessionValidity").toString()) * -1));
         } else {
-            DatabaseActions.editSessionValidity(_sessionId, 9999 * -1);        
-        }              
+            DatabaseActions.editSessionValidity(_sessionId, 9999 * -1);
+        }
         deleteTempDir(_sessionId);
     }
 
-    private void createDefaultUser() throws JsonProcessingException, ClassNotFoundException {
-        StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
-
-        UUID id = UUID.randomUUID();
-        ObjectMapper mapper = new ObjectMapper();
-        User user = new User();
-        user.setUsername("LCMS");
-        user.setUserid(id.toString());
-        user.setPassword(passwordEncryptor.encryptPassword("LCMS"));
-        user.setEmail("LCMS@klinilab.be");
-        user.setRoles(Arrays.asList(new String[]{"ADMIN", "ICTMANAGER"}));
-        user.setLdap(false);
-        Document document = Document.parse(mapper.writeValueAsString(user));
-        DatabaseWrapper.addObject(document, mdm.Config.MongoConf.USERS, cookie);
-    }
-
+//    private void createDefaultUser() throws JsonProcessingException, ClassNotFoundException {
+//        StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
+//
+//        UUID id = UUID.randomUUID();
+//        ObjectMapper mapper = new ObjectMapper();
+//        User user = new User();
+//        user.setUsername("LCMS");
+//        user.setUserid(id.toString());
+//        user.setPassword(passwordEncryptor.encryptPassword("LCMS"));
+//        user.setEmail("LCMS@klinilab.be");
+//        user.setRoles(Arrays.asList(new String[]{"ADMIN", "ICTMANAGER"}));
+//        user.setLdap(false);
+//        Document document = Document.parse(mapper.writeValueAsString(user));
+//        DatabaseWrapper.addObject(document, mdm.Config.MongoConf.USERS, cookie);
+//    }
 }
