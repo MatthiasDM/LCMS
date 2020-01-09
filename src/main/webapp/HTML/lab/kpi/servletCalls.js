@@ -77,7 +77,6 @@ function kpi_loadSettings(_parent, page, getAction, editAction, kpiAction) {
     }
 }
 
-
 function getConfig() {
     var config = $("#output").data("pivotUIOptions");
     var config_copy = JSON.parse(JSON.stringify(config));
@@ -87,12 +86,8 @@ function getConfig() {
     return JSON.stringify(config_copy);
 }
 
-
-
 function kpi_doLoad(kpiAction, _settings) {
-
     console.log("kpi_doLoad()");
-
     let loading = new LCMSloading(false);
     loading.loading();
     LCMSRequest("./lab", {action: kpiAction}, onDone);

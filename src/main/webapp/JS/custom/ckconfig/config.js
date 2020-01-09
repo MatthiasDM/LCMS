@@ -6,7 +6,7 @@ function config3() {
 function config2(publicPage) { //for inline editing
     console.log("function config2");
     let imageController = new LCMSImageController(publicPage);
-
+    loadTemplates();
 
     if (typeof CKEDITOR.stylesSet.registered["mdmConfig2"] === "undefined") {
         CKEDITOR.stylesSet.add('mdmConfig2', [
@@ -40,6 +40,8 @@ function config2(publicPage) { //for inline editing
             {name: 'others', groups: ['others']},
             {name: 'about', groups: ['about']}
         ];
+
+
         config.templates_files = ['./JS/ckeditor/plugins/templates/templates/defaultLCMS.js'];
         config.templates_replaceContent = false;
         config.extraPlugins = 'mdmUploadFiles,codesnippet,pre,codemirror,sourcedialog,widget,dialog,mdmjexcel,templates,plantuml';
@@ -61,7 +63,7 @@ function config2(publicPage) { //for inline editing
         config.protectedSource.push(/<([\S]+)[^>]*class="preserve"[^>]*>.*<\/\1>/g);
 
         config.codemirror = {
-          //  theme: 'abcdef'
+            //  theme: 'abcdef'
         };
     };
     CKEDITOR.config.contentsCss = ['./JS/dependencies/bootstrap/bootstrap_themes/flatly/bootstrap.min.css', "./CSS/style.css"];
@@ -136,9 +138,9 @@ function ckOnInstanceReady(e, imageController) {
         $("#cke_" + $(this).attr('id')).css("max-height", "700px");
 
     });
-    if(typeof _afterShowFormFunction === "function"){
-         _afterShowFormFunction();
-    }   
+    if (typeof _afterShowFormFunction === "function") {
+        _afterShowFormFunction();
+    }
 
 }
 

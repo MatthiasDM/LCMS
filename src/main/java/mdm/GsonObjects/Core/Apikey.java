@@ -22,31 +22,46 @@ public class Apikey {
     public String name;
     @MdmAnnotations(
             type = "string",
-            editRole = "ADMIN, ICTMANAGER",
+            editRole = "ICTMANAGER",
             viewRole = "ICTMANAGER"
     )
     public String keyprefix;
     @MdmAnnotations(
-            type = "string",
-            editRole = "ADMIN, ICTMANAGER"
+            type = "encrypted",
+            editRole = "ICTMANAGER",
+            viewRole = "ICTMANAGER"
     )
-    public String hashedkey;
+    public String apiKey;
+    @MdmAnnotations(
+            type = "boolean",
+            editRole = "ICTMANAGER",
+            viewRole = "ICTMANAGER"
+    )
+    public String apiKeyLock;
     @MdmAnnotations(
             type = "string",
-            editRole = "ADMIN, ICTMANAGER"
+            editRole = "ICTMANAGER"
     )
     public String url;
     @MdmAnnotations(
-            type = "string",
-            editRole = "ADMIN, ICTMANAGER"
+            type = "select",
+            editRole = "ICTMANAGER",
+            choices = {"Incoming", "Outgoing"}
     )
+    public String connection;
+
+    @MdmAnnotations(
+            type = "string",
+            editRole = "ICTMANAGER"
+    )
+
     public String port;
     @MdmAnnotations(
             type = "select",
             multiple = true,
             reference = {"Mongo", "commands", "commandid", "name"},
             visibleOnTable = true,
-            editRole = "ADMIN, ICTMANAGER")
+            editRole = "ICTMANAGER")
     public String scope;
 
     @MdmAnnotations(
@@ -68,18 +83,18 @@ public class Apikey {
     public Apikey() {
     }
 
-    public Apikey(String apikeyid, String name, String keyprefix, String hashedkey, String url, String port, long created_on, String created_by) {
+    public Apikey(String apikeyid, String name, String keyprefix, String apiKey, String apiKeyLock, String url, String port, String scope, long created_on, String created_by) {
         this.apikeyid = apikeyid;
         this.name = name;
         this.keyprefix = keyprefix;
-        this.hashedkey = hashedkey;
+        this.apiKey = apiKey;
+        this.apiKeyLock = apiKeyLock;
         this.url = url;
         this.port = port;
+        this.scope = scope;
         this.created_on = created_on;
         this.created_by = created_by;
     }
-
-
 
     public String getApikeyid() {
         return apikeyid;
@@ -104,16 +119,6 @@ public class Apikey {
     public void setKeyprefix(String keyprefix) {
         this.keyprefix = keyprefix;
     }
-
-    public String getHashedkey() {
-        return hashedkey;
-    }
-
-    public void setHashedkey(String hashedkey) {
-        this.hashedkey = hashedkey;
-    }
-
-
 
     public String getUrl() {
         return url;
@@ -145,6 +150,30 @@ public class Apikey {
 
     public void setCreated_by(String created_by) {
         this.created_by = created_by;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    public String getApiKeyLock() {
+        return apiKeyLock;
+    }
+
+    public void setApiKeyLock(String apiKeyLock) {
+        this.apiKeyLock = apiKeyLock;
+    }
+
+    public String getScope() {
+        return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
     }
 
 }

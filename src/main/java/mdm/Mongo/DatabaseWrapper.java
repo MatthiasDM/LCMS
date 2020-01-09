@@ -32,7 +32,6 @@ import mdm.Config.MongoConf;
 import mdm.Config.Roles;
 import mdm.Core;
 import static mdm.Core.createDatabaseObject;
-import static mdm.Core.encryptString;
 import static mdm.Core.loadScriptFile;
 import static mdm.Core.loadWebFile;
 import mdm.GsonObjects.Core.MongoConfigurations;
@@ -340,7 +339,8 @@ public class DatabaseWrapper {
     public static Map<String, Object> getObjectHashMapv2(String cookie, MongoConfigurations _mongoConf, Bson bson) throws ClassNotFoundException, JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, bson, null, 0, null);
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, bson, null, 0, null);        
+        
         BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(results.get(0)));
         Map<String, Object> objHashMap = obj.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
         return objHashMap;
@@ -614,12 +614,13 @@ public class DatabaseWrapper {
                 requestParameters.remove("action");
                 requestParameters.remove("LCMS_session");
                 String operation = requestParameters.get("oper")[0];
-                if (requestParameters.get("password") != null) {
-                    requestParameters.get("password")[0] = encryptString(requestParameters.get("password")[0]);
-                }
+
                 Class cls = Class.forName(_mongoConf.getClassName());
 
                 if (requestParameters.get("oper") != null) {
+
+                    requestParameters = Core.checkHashFields(requestParameters, cls);
+
                     if (operation.equals("edit")) {
                         HashMap<String, Object> obj = createDatabaseObject(requestParameters, cls);
                         DatabaseWrapper.editObjectDatav2(obj, _mongoConf, cookie);

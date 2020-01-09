@@ -27,11 +27,17 @@ public class User {
             editRole = "ICTMANAGER")
     public String username;
     @MdmAnnotations(
-            type = "password",
+            type = "encrypted",
             visibleOnTable = false,
             visibleOnForm = true,
             editRole = "ICTMANAGER")
     public String password;
+    @MdmAnnotations(
+            type = "boolean",
+            visibleOnTable = true,
+            visibleOnForm = true,
+            editRole = "ICTMANAGER")
+    public String passwordLock;
     @MdmAnnotations(
             type = "String",
             visibleOnTable = false,
@@ -56,6 +62,7 @@ public class User {
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public String sessionValidity;
+
     public User() {
     }
 
@@ -78,8 +85,6 @@ public class User {
         this.sessionValidity = sessionValidity;
     }
 
-  
-
     public String getINSS() {
         return INSS;
     }
@@ -88,9 +93,6 @@ public class User {
         this.INSS = INSS;
     }
 
-  
-    
-    
     public String getUserid() {
         return userid;
     }

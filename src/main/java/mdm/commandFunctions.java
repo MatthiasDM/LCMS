@@ -7,11 +7,17 @@ package mdm;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.BasicDBObject;
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.gte;
+import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,6 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
@@ -37,6 +44,7 @@ import static mdm.Core.search;
 import mdm.GsonObjects.Core.MongoConfigurations;
 import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
+import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 
 /**
@@ -55,6 +63,12 @@ public class commandFunctions {
         }
         if (name.equals("doSendEmail")) {
             sb.append(command_sendEmail(parameters));
+        }
+        if (name.equals("doGetTableFromDocument")) {
+            sb.append(command_doGetTableFromDocument(parameters));
+        }
+        if (name.equals("doGetKPI")) {
+            sb.append(command_doGetKPI(parameters));
         }
         return sb;
     }
@@ -192,6 +206,72 @@ public class commandFunctions {
 
         return sb;
 
+    }
+
+    public static StringBuilder command_doGetTableFromDocument(Map<String, String[]> parameters) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
+        StringBuilder sb = new StringBuilder();
+        BasicDBObject searchObject = new BasicDBObject();
+        ObjectMapper mapper = new ObjectMapper();
+
+        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("pages");
+        String value = parameters.get("title")[0];
+        String table = parameters.get("table")[0];
+        searchObject.put("title", new BasicDBObject("$eq", value));
+        Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session")[0], mongoConfiguration, searchObject);
+        String result = searchResult.get("contents").toString();
+        //BasicDBObject obj = BasicDBObject.parse(mapper.(result));
+        Map<String, Map> contentMap = mapper.readValue(result, Map.class);
+        Map<String, Map> grids = contentMap.get("grids");
+        Map grid = grids.values().stream().findFirst().filter(m -> m.get("caption").equals(table)).get();
+        sb.append(mapper.writeValueAsString(grid));
+        return sb;
+    }
+
+    private static StringBuilder command_doGetKPI(Map<String, String[]> parameters) throws ClassNotFoundException, NoSuchFieldException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jsonData = mapper.createObjectNode();
+        List<String> lines = new ArrayList<>();
+        List<String> allLines = new ArrayList<>();
+        String type = parameters.get("parameters[type]")[0];
+        String filetype = parameters.get("parameters[filetype]")[0];
+        if (filetype.equals("csv")) {
+            try ( Stream<String> stream = Files.lines(Paths.get(Core.getProp("doGetKPI.folder") + type + "\\data.csv"), Charset.forName("ISO-8859-1"))) {
+                lines = stream
+                        .map(String::toUpperCase)
+                        //.filter(line -> line.contains("{"))
+                        .collect(Collectors.toList());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            jsonData.put("data", StringUtils.join(lines, "\n"));
+        } else {
+            if (filetype.equals("json")) {
+                File folder = new File(Core.getProp("doGetKPI.folder") + type);
+                File[] listOfFiles = folder.listFiles();
+                for (File file : listOfFiles) {
+                    if (file.isFile()) {
+                        System.out.println(file.getName());
+
+                        try ( Stream<String> stream = Files.lines(file.toPath(), Charset.forName("ISO-8859-1"))) {
+                            lines = stream
+                                    .map(String::toUpperCase)
+                                    .filter(line -> line.contains("{"))
+                                    .collect(Collectors.toList());
+                            allLines.addAll(lines);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }
+
+                jsonData.put("data", mapper.writeValueAsString(allLines));
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(jsonData);
+        return sb;
     }
 
 }

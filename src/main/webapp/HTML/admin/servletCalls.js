@@ -6,7 +6,7 @@
 
 
 function admin_doLoad(_parent) {
-    console.log("Loading admin page");
+    console.log("Loading admin page2");
     var _cookie = $.cookie('LCMS_session');
     $.ajax({
         method: "POST",

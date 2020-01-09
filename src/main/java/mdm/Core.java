@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -43,6 +44,8 @@ import mdm.Config.Roles;
 import mdm.GsonObjects.Core.Session;
 import mdm.GsonObjects.Core.User;
 import mdm.Mongo.DatabaseActions;
+import mdm.Mongo.DatabaseWrapper;
+import mdm.lis.lcms.credentials.Cryptography;
 import mdm.pojo.annotations.MdmAnnotations;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 
@@ -61,8 +64,9 @@ public class Core {
 //    public enum MongoConf {
 //
 //    }
-    static String dirName = "LCMS/"; // ""
-    static String baseURL = "http://localhost:8080/"; // "http://localhost:80/";
+    static String dirName = getProp("app.root"); // ""
+    static String baseURL = getProp("base.url");//"http://localhost:8081/"; // "http://localhost:80/";
+    //8081 is for test-enviroment
 
     public enum taskCategories {
         //ICT-TICKET RELATED
@@ -73,6 +77,7 @@ public class Core {
     public static String readFile(String urlName) {
         try {
             String out = new Scanner(new URL(baseURL + urlName).openStream(), "UTF-8").useDelimiter("\\A").next();
+            Logger.getLogger(Core.class.getName()).log(Level.INFO, null, baseURL + urlName);
             return out;
         } catch (IOException ex) {
             Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
@@ -287,7 +292,7 @@ public class Core {
                         parameters.put(key, Boolean.parseBoolean(val));
                     }
                 } catch (NoSuchFieldException ex) {
-                    Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Core.class.getName()).log(Level.INFO, null, ex);
                 } catch (SecurityException ex) {
                     Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -321,14 +326,20 @@ public class Core {
         return parameters;
     }
 
-    public static String getProp(String name) throws IOException {
-        Properties prop = new Properties();
-        String basePath = System.getProperties().getProperty("user.home");
-        String propFileName = "conf.properties";
-        System.out.println("getProp() basepath: " + basePath + "(" + basePath + "/LCMS/" + propFileName + ")");
-        File f = new File(basePath + "/LCMS/" + propFileName);
-        prop.load(new StringReader(readAllLines(Arrays.asList(f)).toString()));
-        return prop.getProperty(name);
+    public static String getProp(String name) {
+
+        try {
+            Properties prop = new Properties();
+            String basePath = System.getProperties().getProperty("user.home");
+            String propFileName = "conf.properties";
+            System.out.println("getProp() basepath: " + basePath + "(" + basePath + "/LCMS/" + propFileName + ")");
+            File f = new File(basePath + "/LCMS/" + propFileName);
+            prop.load(new StringReader(readAllLines(Arrays.asList(f)).toString()));
+            return prop.getProperty(name);
+        } catch (IOException ex) {
+            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
 
     public static boolean checkDir(String _directoryName) {
@@ -357,6 +368,41 @@ public class Core {
 
         return "";
 
+    }
+
+    public static HashMap<String, String[]> updateHash(String hashField, HashMap<String, String[]> requestParameters) {
+        if (requestParameters.get(hashField + "Lock")[0].equals("false")) {
+            requestParameters.get(hashField)[0] = Cryptography.hash(requestParameters.get(hashField)[0]);
+        } else {
+            requestParameters.remove(hashField);
+        }
+        requestParameters.put(hashField + "Lock", new String[]{"true"});
+        return requestParameters;
+    }
+
+    public static List<String> getHashFields(HashMap<String, String[]> requestParameters, Class cls) {
+        List<String> hashFields = requestParameters.keySet().stream().filter((String k) -> {
+            try {
+                return cls.getField(k).getAnnotation(MdmAnnotations.class).type().equals("encrypted");
+            } catch (NoSuchFieldException | SecurityException ex) {
+                Logger.getLogger(Core.class.getName()).log(Level.INFO, null, ex.getMessage());
+            }
+            return false;
+        })
+                .collect(Collectors.toList());
+        return hashFields;
+    }
+
+    public static HashMap<String, String[]> checkHashFields(HashMap<String, String[]> requestParameters, Class cls) {
+        List<String> hashFields = getHashFields(requestParameters, cls);
+        for (String hashField : hashFields) {
+            if (requestParameters.get(hashField + "Lock") == null) {
+                Logger.getLogger(DatabaseWrapper.class.getName()).log(Level.SEVERE, "Hash locking field not found: " + hashField + "Lock", "Hash locking field not found: " + hashField + "Lock");
+            } else {
+                requestParameters = updateHash(hashField, requestParameters);           
+            }
+        }
+        return requestParameters;
     }
 
     public static String encryptString(String pass) {

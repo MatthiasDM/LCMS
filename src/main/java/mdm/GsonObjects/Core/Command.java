@@ -21,6 +21,11 @@ public class Command {
             editRole = "ADMIN"
     )
     public String name;
+        @MdmAnnotations(
+            type = "string",
+            editRole = "ADMIN"
+    )
+    public String command;
     @MdmAnnotations(
             type = "string",
             editRole = "ADMIN",
@@ -28,13 +33,41 @@ public class Command {
     )
     public String description;
 
-    public Command(String commandid, String name, String description) {
+    @MdmAnnotations(
+            type = "string",
+            editRole = "ADMIN",
+            visibleOnTable = false
+    )
+    public String parameters;
+
+    public Command(String commandid, String name, String command, String description, String parameters) {
         this.commandid = commandid;
         this.name = name;
+        this.command = command;
         this.description = description;
+        this.parameters = parameters;
+    }
+
+    
+    
+    public String getCommand() {
+        return command;
+    }
+
+    public void setCommand(String command) {
+        this.command = command;
     }
     
-    
+
+    public String getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(String parameters) {
+        this.parameters = parameters;
+    }
+
+   
 
     public Command() {
     }
@@ -55,7 +88,6 @@ public class Command {
         this.name = name;
     }
 
-
     public String getDescription() {
         return description;
     }
@@ -63,9 +95,5 @@ public class Command {
     public void setDescription(String description) {
         this.description = description;
     }
-
-   
-
-    
 
 }

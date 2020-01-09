@@ -63,7 +63,7 @@ function filterUnique(data, filterBy) {
 
 function scrollTo(target) {
     //var target = editorContents.contents().find(this.getAttribute('anchor'));
-    if (target.length) {
+    if (target.length && typeof event !== "undefined") {
         event.preventDefault();
         $('html, body').stop().animate({
             scrollTop: target.offset().top - 80
@@ -1055,6 +1055,9 @@ class LCMSGrid {
             if (type === "number") {
                 column.template = numberTemplate;
             }
+            if (type === "timespan") {
+                column.template = numberTemplate;
+            }
             if (type === "datetime") {
                 //column.formatoptions = {srcformat: "u1000", newformat: "d-m-y h:i"};
                 column.formatter = me.datetimeformatter;
@@ -1107,7 +1110,7 @@ class LCMSGrid {
                     column.editoptions.size = value.choices.length < 8 ? value.choices.length + 2 : 10;
                 }
             }
-            if (type === "password") {
+            if (type === "password" || type === "encrypted") {
                 column.edittype = "password";
             }
             if (value.key === true) {
@@ -1150,7 +1153,9 @@ class LCMSGrid {
             if (typeof value.summaryType !== "undefined") {
                 column.summaryType = value.summaryType;
             }
-
+            if (typeof value.sorttype !== "undefined") {
+                column.sorttype = value.sorttype;
+            }
 
 
             if (typeof value.width !== 'undefined' && typeof value.lso === "undefined") {
@@ -1483,8 +1488,13 @@ class LCMSGrid {
 
             onclickSubmit: function (params, postdata) {
                 console.log("onclickSubmit()");
+//                $.each($("#FrmGrid_" + this.id).find("[type=checkbox]"), function (a, b) {
+//                    $(b).val(b.checked);
+//                });
                 var postdata = $("#FrmGrid_" + this.id).serializeObject();
-                ;
+                var serialized = $("#FrmGrid_" + this.id).find("[type=checkbox]").map(function () {
+                    postdata[this.name] = this.checked ? this.value : "false";
+                });
                 $("div[title=ckedit]").each(function (index) {
                     var editorname = $(this).attr('id');
                     var editorinstance = CKEDITOR.instances[editorname];
@@ -1693,10 +1703,10 @@ async function LCMSRequest(_url, _data, _onDone, _extraParam) {
             _onDone(data);
         }
         return data;
-
-        bootstrap_alert.warning('Success', 'success', 1000);
+        //bootstrap_alert.warning('Success', 'success', 1000);        
     }).fail(function (jqXHR, textStatus, errorThrown) {
-        bootstrap_alert.warning('Something went wrong + \n ' + errorThrown, 'error', 5000);
+        //bootstrap_alert.warning('Something went wrong + \n ' + errorThrown, 'error', 5000);
+        console.log(errorThrown);
     });
 
 

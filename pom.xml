@@ -14,8 +14,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     
-
-    
     <dependencies>        
         <dependency>
             <groupId>com.googlecode.java-diff-utils</groupId>
@@ -126,6 +124,16 @@
             <artifactId>plantuml</artifactId>
             <version>1.2019.11</version>
         </dependency>
+        <dependency>
+            <groupId>at.favre.lib</groupId>
+            <artifactId>bcrypt</artifactId>
+            <version>0.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.michael-o.tomcat</groupId>
+            <artifactId>tomcat-authnz-spnego-ad</artifactId>
+            <version>3.3</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -185,7 +193,7 @@
                     <path>/LCMS</path>
                 </configuration>
             </plugin>
-             <plugin>
+            <plugin>
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
                 <version>4.0.0</version>
@@ -222,5 +230,7 @@
         </resources>
         
     </build>
+
+  
 
 </project>

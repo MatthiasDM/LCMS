@@ -221,7 +221,7 @@ public class ServletLab extends HttpServlet {
             
             List<String> lines = new ArrayList<>();
             String pth = context.getRealPath(dataURL);
-            try (Stream<String> stream = Files.lines(Paths.get(pth), Charset.forName("ISO-8859-1"))) {
+            try (Stream<String> stream = Files.lines(Paths.get(dataURL), Charset.forName("ISO-8859-1"))) {
                 lines = stream
                         .map(String::toUpperCase)
                         .filter(line -> line.contains("'"))

@@ -64,6 +64,7 @@ public class Servlet extends HttpServlet {
         Map<String, String[]> requestParameters = request.getParameterMap();
         ActionManager aM;
         String host = Core.getClientPCName(request.getRemoteAddr());
+        String user = request.getRemoteUser();
         try {
             if (request.getContentType().contains("multipart")) {
                 aM = new ActionManager(requestParameters, request.getParts(), host);
@@ -179,13 +180,18 @@ public class Servlet extends HttpServlet {
                         if (requestParameters.get("excludes") != null) {
                             excludes.addAll(Arrays.asList(requestParameters.get("excludes")));
                         }
-                        if (requestParameters.get("excludes[]") != null) {       
+                        if (requestParameters.get("excludes[]") != null) {
                             String[] _excludes = requestParameters.get("excludes[]");
                             excludes.addAll(Arrays.asList(_excludes));
                         }
                         excludes.add("contents");
                         if (mongoConfiguration.getCollection().equals("backlog")) {
                             filterObject.put("object_id", new BasicDBObject("$eq", requestParameters.get("object_id")[0]));
+                        }
+                        if (mongoConfiguration.getCollection().equals("document")) {
+                            if (requestParameters.get("prefix") != null) {
+                                filterObject.put("prefix", new BasicDBObject("$eq",requestParameters.get("prefix")[0]));
+                            }
                         }
                         sb.append(DatabaseWrapper.actionLOADOBJECTv2(cookie, mongoConfiguration, filterObject, excludes.toArray(new String[0])));
                     } else {

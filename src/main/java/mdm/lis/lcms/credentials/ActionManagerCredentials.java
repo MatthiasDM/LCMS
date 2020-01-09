@@ -88,13 +88,13 @@ public class ActionManagerCredentials {
         String _pwd = requestParameters.get("password")[0];
         Boolean root = false;
         StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
-        if (_user.equals(getProp("username")) && passwordEncryptor.checkPassword(_pwd, getProp("password"))) {
+        if (_user.equals(getProp("username")) && (passwordEncryptor.checkPassword(_pwd, getProp("password")) || Cryptography.verifyHash(getProp("password"), _pwd))) {
             root = true;
         }
 
         User user = DatabaseActions.getUser(_user);
         if (user != null) {
-            if (passwordEncryptor.checkPassword(_pwd, user.getPassword())) {
+            if (passwordEncryptor.checkPassword(_pwd, user.getPassword()) || Cryptography.verifyHash(getProp("password"), _pwd)) {
                 UUID sessionId = UUID.randomUUID();
                 Cookie loginCookie = new Cookie("LCMS_session", sessionId.toString());
                 mdm.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");

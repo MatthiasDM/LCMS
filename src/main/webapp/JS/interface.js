@@ -653,3 +653,29 @@ function validURL(str) {
     return true;//!!pattern.test(str);
 }
 
+async function loadTemplates() {
+
+    var templates = [];
+    async function onDone(data) {
+        var jsonData = JSON.parse(data);
+        $.each(jsonData.data, function (a, b) {
+            templates.push({title: b.title, description: b.description, image: b.image, html: b.html});
+        });
+        console.log("Adding templates...");
+        CKEDITOR.addTemplates('default',
+                {
+                    imagesPath: CKEDITOR.getUrl(CKEDITOR.plugins.getPath('templates') + 'templates/images/'),
+                    templates: templates
+                });
+        return true;
+    }
+    var requestOptions = {};
+    requestOptions.action = "docommand";
+    requestOptions.k = "doGetTableFromDocument";
+    requestOptions.title = "Configurationtables";
+    requestOptions.table = "Templates";
+    let request = await LCMSRequest("./servlet", requestOptions);
+    await onDone(request);
+
+}
+

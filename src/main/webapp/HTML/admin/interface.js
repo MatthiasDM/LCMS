@@ -5,6 +5,6 @@
  */
 
 $(function () {
-
+//test
     admin_doLoad($("#admin-container"));
 });

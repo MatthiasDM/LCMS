@@ -19,6 +19,8 @@ public class Document {
     public String documentid;
     @MdmAnnotations(type = "string", visibleOnTable = true, visibleOnForm = true)
     public String title;
+    @MdmAnnotations(type = "string", visibleOnTable = true, visibleOnForm = true)
+    public String prefix;
     @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false, DMP = true)
     public String contents;
     @MdmAnnotations(
@@ -31,7 +33,7 @@ public class Document {
     @MdmAnnotations(
             editRole = "ICTMANAGER",
             type = "select",
-            choices = {"Algemeen","Glims", "Nomenclatuur", "Labo", "Software", "Gearchiveerd"}
+            choices = {"Algemeen", "Glims", "Nomenclatuur", "Labo", "Software", "Gearchiveerd"}
     )
     public String category;
     @MdmAnnotations(
@@ -68,9 +70,10 @@ public class Document {
     public Document() {
     }
 
-    public Document(String validationid, String title, String contents, String approver, String category, long approved_on, long created_on, String created_by, long edited_on) {
-        this.documentid = validationid;
+    public Document(String documentid, String title, String prefix, String contents, String approver, String category, long approved_on, long created_on, String created_by, long edited_on) {
+        this.documentid = documentid;
         this.title = title;
+        this.prefix = prefix;
         this.contents = contents;
         this.approver = approver;
         this.category = category;
@@ -78,6 +81,14 @@ public class Document {
         this.created_on = created_on;
         this.created_by = created_by;
         this.edited_on = edited_on;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 
     public String getValidationid() {
@@ -152,5 +163,4 @@ public class Document {
         this.edited_on = edited_on;
     }
 
-  
 }
