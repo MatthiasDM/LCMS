@@ -671,9 +671,9 @@ async function loadTemplates() {
     }
     var requestOptions = {};
     requestOptions.action = "docommand";
-    requestOptions.k = "doGetTableFromDocument";
-    requestOptions.title = "Configurationtables";
-    requestOptions.table = "Templates";
+    requestOptions.k = "getTemplates";
+   // requestOptions.title = "Configurationtables";
+    //requestOptions.table = "Templates";
     let request = await LCMSRequest("./servlet", requestOptions);
     await onDone(request);
 

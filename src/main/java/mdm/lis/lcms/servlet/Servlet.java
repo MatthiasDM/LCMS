@@ -170,11 +170,11 @@ public class Servlet extends HttpServlet {
                     }
                 }
 
-                if (action.name.toUpperCase().contains("EDIT")) {
+                if (action.name.toUpperCase().startsWith("EDIT")) {
                     sb.append(DatabaseWrapper.actionEDITOBJECTv2(requestParameters, cookie, mongoConfiguration));
 
                 } else {
-                    if (action.name.toUpperCase().contains("LOAD")) {
+                    if (action.name.toUpperCase().startsWith("LOAD")) {
                         ArrayList<String> excludes = new ArrayList<>();
                         BasicDBObject filterObject = new BasicDBObject();
                         if (requestParameters.get("excludes") != null) {
@@ -195,12 +195,12 @@ public class Servlet extends HttpServlet {
                         }
                         sb.append(DatabaseWrapper.actionLOADOBJECTv2(cookie, mongoConfiguration, filterObject, excludes.toArray(new String[0])));
                     } else {
-                        if (action.name.toUpperCase().contains("GET")) {
+                        if (action.name.toUpperCase().startsWith("GET")) {
                             String key = requestParameters.get("k")[0];
                             String value = requestParameters.get("v")[0];
                             sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value, publicPage));
                         }
-                        if (action.name.toUpperCase().contains("DO")) {
+                        if (action.name.toUpperCase().startsWith("DO")) {
                             // List<String> parameters = new ArrayList<>();
                             // parameters = Arrays.asList(requestParameters.get("parameters"));
                             String key = requestParameters.get("k")[0];

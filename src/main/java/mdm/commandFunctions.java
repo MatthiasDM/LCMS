@@ -6,6 +6,7 @@
 package mdm;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
@@ -41,6 +42,7 @@ import static mdm.Core.getLatestFile;
 import static mdm.Core.getProp;
 import static mdm.Core.readAllLines;
 import static mdm.Core.search;
+import mdm.GsonObjects.Core.Command;
 import mdm.GsonObjects.Core.MongoConfigurations;
 import mdm.Mongo.DatabaseActions;
 import mdm.Mongo.DatabaseWrapper;
@@ -54,6 +56,12 @@ import org.bson.Document;
 public class commandFunctions {
 
     public static StringBuilder doCommand(String name, Map<String, String[]> parameters) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("commands");
+        ArrayList<Document> commandRaw = DatabaseWrapper.getObjectSpecificRawDatav2(parameters.get("LCMS_session")[0], mongoConfiguration, and(eq("name", name)));
+        Command command = mapper.convertValue(commandRaw.get(0), mdm.GsonObjects.Core.Command.class);
+        name = command.getCommand();
+
         StringBuilder sb = new StringBuilder();
         if (name.equals("dobacklog")) {
             sb.append(command_doBacklog(parameters));
@@ -65,7 +73,7 @@ public class commandFunctions {
             sb.append(command_sendEmail(parameters));
         }
         if (name.equals("doGetTableFromDocument")) {
-            sb.append(command_doGetTableFromDocument(parameters));
+            sb.append(command_doGetTableFromDocument(parameters, command));
         }
         if (name.equals("doGetKPI")) {
             sb.append(command_doGetKPI(parameters));
@@ -208,14 +216,15 @@ public class commandFunctions {
 
     }
 
-    public static StringBuilder command_doGetTableFromDocument(Map<String, String[]> parameters) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
+    public static StringBuilder command_doGetTableFromDocument(Map<String, String[]> parameters, Command command) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
         ObjectMapper mapper = new ObjectMapper();
-
+        Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String,String>>(){});
+        
         MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("pages");
-        String value = parameters.get("title")[0];
-        String table = parameters.get("table")[0];
+        String value = commandParameters.get("document");//parameters.get("title")[0];
+        String table = commandParameters.get("table");//parameters.get("table")[0];
         searchObject.put("title", new BasicDBObject("$eq", value));
         Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session")[0], mongoConfiguration, searchObject);
         String result = searchResult.get("contents").toString();
