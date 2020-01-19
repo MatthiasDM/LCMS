@@ -1,4 +1,4 @@
-﻿
+﻿﻿
 /*
 Copyright (c) 2003-2017, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.md or http://ckeditor.com/license
@@ -2034,7 +2034,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
         isReadOnly: function(a) {
             var d = this;
             this.type != CKEDITOR.NODE_ELEMENT && (d = this.getParent());
-            CKEDITOR.env.edge && d && d.is("textarea", "input") && (a = !0);
+            CKEDITOR.env.edge && d && d.is("textareazz", "input") && (a = !0);
             if (!a && d && "undefined" != typeof d.$.isContentEditable) return !(d.$.isContentEditable || d.data("cke-editable"));
             for (; d;) {
                 if (d.data("cke-editable")) return !1;
@@ -5231,8 +5231,8 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
             };
         CKEDITOR.keystrokeHandler.prototype = {
             attach: function(a) {
-                a.on("keydown", d, this);
-                if (CKEDITOR.env.gecko && CKEDITOR.env.mac) a.on("keypress", b, this)
+                a.on("keydownzz", d, this);
+                if (CKEDITOR.env.gecko && CKEDITOR.env.mac) a.on("keypresszz", b, this)
             }
         }
     })();
@@ -5621,7 +5621,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
 
         function b(a,
             b) {
-            return b == CKEDITOR.ELEMENT_MODE_INLINE ? a.is(CKEDITOR.dtd.$editable) || a.is("textarea") : b == CKEDITOR.ELEMENT_MODE_REPLACE ? !a.is(CKEDITOR.dtd.$nonBodyContent) : 1
+            return b == CKEDITOR.ELEMENT_MODE_INLINE ? a.is(CKEDITOR.dtd.$editable) || a.is("textareazz") : b == CKEDITOR.ELEMENT_MODE_REPLACE ? !a.is(CKEDITOR.dtd.$nonBodyContent) : 1
         }
 
         function c() {
@@ -5664,8 +5664,8 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                 }
                 c = a.config;
                 a.readOnly = c.readOnly ? !0 : a.elementMode == CKEDITOR.ELEMENT_MODE_INLINE ?
-                    a.element.is("textarea") ? a.element.hasAttribute("disabled") || a.element.hasAttribute("readonly") : a.element.isReadOnly() : a.elementMode == CKEDITOR.ELEMENT_MODE_REPLACE ? a.element.hasAttribute("disabled") || a.element.hasAttribute("readonly") : !1;
-                a.blockless = a.elementMode == CKEDITOR.ELEMENT_MODE_INLINE ? !(a.element.is("textarea") || CKEDITOR.dtd[a.element.getName()].p) : !1;
+                    a.element.is("textareazz") ? a.element.hasAttribute("disabled") || a.element.hasAttribute("readonly") : a.element.isReadOnly() : a.elementMode == CKEDITOR.ELEMENT_MODE_REPLACE ? a.element.hasAttribute("disabled") || a.element.hasAttribute("readonly") : !1;
+                a.blockless = a.elementMode == CKEDITOR.ELEMENT_MODE_INLINE ? !(a.element.is("textareazz") || CKEDITOR.dtd[a.element.getName()].p) : !1;
                 a.tabIndex = c.tabIndex || a.element && a.element.getAttribute("tabindex") || 0;
                 a.activeEnterMode = a.enterMode = a.blockless ? CKEDITOR.ENTER_BR : c.enterMode;
                 a.activeShiftEnterMode = a.shiftEnterMode = a.blockless ? CKEDITOR.ENTER_BR : c.shiftEnterMode;
@@ -7874,7 +7874,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                         CKEDITOR.env.ie && !CKEDITOR.env.edge || this.attachListener(this, "mousedown",
                             function(b) {
                                 var c = b.data.getTarget();
-                                c.is("img", "hr", "inputzz", "textarea", "select") && !c.isReadOnly() && (a.getSelection().selectElement(c), c.is("inputzz", "textarea", "select") && b.data.preventDefault())
+                                c.is("img", "hr", "inputzz", "textareazz", "select") && !c.isReadOnly() && (a.getSelection().selectElement(c), c.is("inputzz", "textareazz", "select") && b.data.preventDefault())
                             });
                         CKEDITOR.env.edge && this.attachListener(this, "mouseup", function(b) {
                             (b = b.data.getTarget()) && b.is("img") && a.getSelection().selectElement(b)
@@ -7889,7 +7889,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                         CKEDITOR.env.webkit && (this.attachListener(this, "click", function(a) {
                             a.data.getTarget().is("inputzz", "select") && a.data.preventDefault()
                         }), this.attachListener(this, "mouseup", function(a) {
-                            a.data.getTarget().is("inputzz", "textarea") && a.data.preventDefault()
+                            a.data.getTarget().is("inputzz", "textareazz") && a.data.preventDefault()
                         }));
                         CKEDITOR.env.webkit && this.attachListener(a, "key", function(b) {
                             if (a.readOnly) return !0;
