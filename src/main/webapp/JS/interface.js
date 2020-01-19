@@ -35,6 +35,16 @@ $(function () {
 
     };
 
+    $.fn.toggleAttr = function (attr, val) {
+        var test = $(this).attr(attr);
+        if (test) {
+            // if attrib exists with ANY value, still remove it
+            $(this).removeAttr(attr);
+        } else {
+            $(this).attr(attr, val);
+        }
+        return this;
+    };
 
 });
 
@@ -672,7 +682,7 @@ async function loadTemplates() {
     var requestOptions = {};
     requestOptions.action = "docommand";
     requestOptions.k = "getTemplates";
-   // requestOptions.title = "Configurationtables";
+    // requestOptions.title = "Configurationtables";
     //requestOptions.table = "Templates";
     let request = await LCMSRequest("./servlet", requestOptions);
     await onDone(request);
