@@ -108,7 +108,6 @@ public class Servlet extends HttpServlet {
         public Response() {
         }
 
-        
         public Response(int responseStatus, StringBuilder sb) {
             this.responseStatus = responseStatus;
             this.sb = sb;
@@ -190,7 +189,10 @@ public class Servlet extends HttpServlet {
                 }
 
             }
-
+            if (action.name.toUpperCase().startsWith("DO")) {
+                String key = requestParameters.get("k")[0];
+                sb.append(commandFunctions.doCommand(key, requestParameters));
+            }            
             if ((Core.checkSession(cookie) && !publicPage)) {
 
                 if (parts != null) {
@@ -231,12 +233,10 @@ public class Servlet extends HttpServlet {
                             String value = requestParameters.get("v")[0];
                             sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value, publicPage));
                         }
-                        if (action.name.toUpperCase().startsWith("DO")) {
-                            // List<String> parameters = new ArrayList<>();
-                            // parameters = Arrays.asList(requestParameters.get("parameters"));
-                            String key = requestParameters.get("k")[0];
-                            sb.append(commandFunctions.doCommand(key, requestParameters));
-                        }
+//                        if (action.name.toUpperCase().startsWith("DO")) {
+//                            String key = requestParameters.get("k")[0];
+//                            sb.append(commandFunctions.doCommand(key, requestParameters));
+//                        }
                     }
                 }
             } else {
