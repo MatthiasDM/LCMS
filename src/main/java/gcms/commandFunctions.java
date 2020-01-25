@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.regex;
 import static com.mongodb.client.model.Filters.gte;
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +50,7 @@ import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.database.DatabaseActions;
 import gcms.database.DatabaseWrapper;
 import java.io.ByteArrayOutputStream;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
@@ -60,14 +62,14 @@ import org.bson.internal.Base64;
  */
 public class commandFunctions {
 
-    public static StringBuilder doCommand(String name, Map<String, String[]> parameters) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("commands");
-        ArrayList<Document> commandRaw = DatabaseWrapper.getObjectSpecificRawDatav2(parameters.get("LCMS_session")[0], mongoConfiguration, and(eq("name", name)));
-        Command command = mapper.convertValue(commandRaw.get(0), gcms.GsonObjects.Core.Command.class);
+    public static StringBuilder doCommand(String name, Map<String, String[]> parameters, Command command) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
         name = command.getCommand();
-
         StringBuilder sb = new StringBuilder();
+     
+        Integer executionCount = Integer.parseInt(command.getExecutionCount());
+        Integer executionLimit = Integer.parseInt(command.getExecutionLimit());
+        Integer executionInterval = Integer.parseInt(command.getExecutionLimitInterval());
+        
         if (name.equals("dobacklog")) {
             sb.append(command_doBacklog(parameters, command));
         }
@@ -197,20 +199,27 @@ public class commandFunctions {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
         gcms.GsonObjects.Core.Actions action = DatabaseWrapper.getAction(parameters.get("action")[0]);
-        MongoConfigurations backlogConfiguration = DatabaseActions.getMongoConfiguration(action.mongoconfiguration);
+        MongoConfigurations backlogConfiguration = DatabaseActions.getMongoConfiguration("backlog");
         ArrayList<Document> backlogs = DatabaseWrapper.getObjectSpecificRawDatav2(parameters.get("LCMS_session")[0],
                 backlogConfiguration,
                 and(eq("object_id", parameters.get("parameters[object_id]")[0]), gte("created_on", new Long(parameters.get("parameters[created_on]")[0]))));
         MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("mongoconfigurations");
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(parameters.get("LCMS_session")[0], mongoConfiguration, and(eq("className", parameters.get("parameters[object_type]")[0])), null, 1000, new String[]{});
+        String classNameSuffix = parameters.get("parameters[object_type]")[0];
+        classNameSuffix = classNameSuffix.substring(classNameSuffix.lastIndexOf("."));
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(parameters.get("LCMS_session")[0], mongoConfiguration, and(regex("className", Pattern.compile(".*" + classNameSuffix))), null, 1000, new String[]{});
+        //if no result found, try with other classname by searching for matching one in mongoconfigurations based on last word of object_type
+         
         MongoConfigurations objectConfiguration = mapper.convertValue(results.get(0), gcms.GsonObjects.Core.MongoConfigurations.class);
         Map<String, Object> objectHashMap = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session")[0], objectConfiguration, and(eq(objectConfiguration.getIdName(), parameters.get("parameters[object_id]")[0])));
         DatabaseWrapper.revertChanges(backlogs, objectHashMap, objectConfiguration);
 
-        Class cls = Class.forName(objectConfiguration.getClassName());
-        Object databaseItem = mapper.readValue(mapper.writeValueAsString(objectHashMap), cls);//createNoteObject(requestParameters.get("docid")[0], "create");
-        sb.append(mapper.writeValueAsString(databaseItem));
+        //Class cls = Class.forName(objectConfiguration.getClassName());
+        //Object databaseItem = mapper.readValue(mapper.writeValueAsString(objectHashMap), cls);//createNoteObject(requestParameters.get("docid")[0], "create");
+        //sb.append(mapper.writeValueAsString(databaseItem));
 
+        sb = DatabaseWrapper.actionGETOBJECT_prepareObject(parameters.get("LCMS_session")[0], DatabaseActions.getMongoConfiguration(objectConfiguration.getMongoconfigurationsid()), false, objectHashMap);
+        
+        
         return sb;
 
     }

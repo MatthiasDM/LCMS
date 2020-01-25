@@ -20,7 +20,7 @@ public class Command {
             editRole = "ADMIN"
     )
     public String name;
-        @MdmAnnotations(
+    @MdmAnnotations(
             type = "string",
             editRole = "ADMIN"
     )
@@ -39,16 +39,93 @@ public class Command {
     )
     public String parameters;
 
-    public Command(String commandid, String name, String command, String description, String parameters) {
+    @MdmAnnotations(
+            editRole = "ICTMANAGER",
+            type = "select",
+            choices = {"public", "private"}
+    )
+    public String accessType;
+
+    @MdmAnnotations(
+            editRole = "ICTMANAGER",
+            type = "number"
+    )
+    public String executionLimit;
+
+    @MdmAnnotations(
+            editRole = "ICTMANAGER",
+            type = "number"
+    )
+    public String executionCount;
+
+    @MdmAnnotations(
+            editRole = "ICTMANAGER",
+            type = "number"
+    )
+    public String executionLimitInterval;
+
+    @MdmAnnotations(
+            type = "datetime",
+            visibleOnTable = false,
+            visibleOnForm = false,
+            createRole = "SYSTEM",
+            editRole = "SYSTEM")
+    public long lastExecution;
+
+    public Command(String commandid, String name, String command, String description, String parameters, String accessType, String executionLimit, String executionCount, String executionLimitInterval, long lastExecution) {
         this.commandid = commandid;
         this.name = name;
         this.command = command;
         this.description = description;
         this.parameters = parameters;
+        this.accessType = accessType;
+        this.executionLimit = executionLimit;
+        this.executionCount = executionCount;
+        this.executionLimitInterval = executionLimitInterval;
+        this.lastExecution = lastExecution;
     }
 
-    
-    
+    public String getExecutionCount() {
+        return executionCount != null ? executionCount : "0";
+    }
+
+    public void setExecutionCount(String executionCount) {
+        this.executionCount = executionCount;
+    }
+
+    public String getExecutionLimitInterval() {
+
+        return executionLimitInterval != null ? executionLimitInterval : "0";
+    }
+
+    public void setExecutionLimitInterval(String executionLimitInterval) {
+        this.executionLimitInterval = executionLimitInterval;
+    }
+
+    public String getAccessType() {
+        return accessType;
+    }
+
+    public void setAccessType(String accessType) {
+        this.accessType = accessType;
+    }
+
+    public String getExecutionLimit() {
+        return executionLimit != null ? executionLimit : "0";
+    }
+
+    public void setExecutionLimit(String executionLimit) {
+        this.executionLimit = executionLimit;
+    }
+
+    public long getLastExecution() {
+        return lastExecution;
+    }
+
+    public void setLastExecution(long lastExecution) {
+        this.lastExecution = lastExecution;
+    }
+
     public String getCommand() {
         return command;
     }
@@ -56,7 +133,6 @@ public class Command {
     public void setCommand(String command) {
         this.command = command;
     }
-    
 
     public String getParameters() {
         return parameters;
@@ -65,8 +141,6 @@ public class Command {
     public void setParameters(String parameters) {
         this.parameters = parameters;
     }
-
-   
 
     public Command() {
     }

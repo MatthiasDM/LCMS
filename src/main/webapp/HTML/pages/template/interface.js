@@ -102,8 +102,14 @@ function new_grid(parentID, colModel, extraOptions, importCSV, _gridData, gridId
     if (typeof colModel === 'undefined') {
         new_grid_popup($("#" + parentID));
     } else {
+        
+        var editable = $("div[id^=editable_]");        
+        if (editable.length === 0) {
+            editable = new_editable_field();
+        }
+        var editor = $("<div contenteditable='false'></div>");
+        $("#"+editable.attr('id')).append(editor);
 
-        var editor = $($("div[id^='wrapper']")[0]);
         var uuid = gridId;
         var grid = $("<table id='" + uuid + "'></table>");
         var pager = $("<div id='pager_" + uuid + "'></div>");
@@ -832,6 +838,8 @@ function new_editable_field() {
         var editor = ev.editor;
         editor.setReadOnly(false);
     });
+
+    return editable_field;
 }
 
 function newDrawing() {
@@ -901,9 +909,9 @@ function edit_page() {
 
     }
     $("div[contenteditable]").each(function (a, b) {
-        if(typeof CKEDITOR.instances[b.id] !== "undefined"){
-                  CKEDITOR.instances[b.id].setReadOnly(readonly);
-        }  
+        if (typeof CKEDITOR.instances[b.id] !== "undefined") {
+            CKEDITOR.instances[b.id].setReadOnly(readonly);
+        }
     });
     $("#edit-menu button").each(function (index, btn) {
         if ($(btn).prop('disabled') === true) {

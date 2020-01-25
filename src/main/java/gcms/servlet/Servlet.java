@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import gcms.Core;
 import static gcms.Core.loadWebFile;
+import gcms.GsonObjects.Core.Command;
 import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.database.DatabaseActions;
 import gcms.database.DatabaseWrapper;
@@ -164,6 +165,7 @@ public class Servlet extends HttpServlet {
 
         public Response startAction() throws ClassNotFoundException, IOException, JsonProcessingException, NoSuchFieldException {
             StringBuilder sb = new StringBuilder();
+            ObjectMapper mapper = new ObjectMapper();
             if (action == null) {
                 responseStatus = HttpServletResponse.SC_NOT_FOUND;
                 sb.append("Specifiek action (").append(requestParameters.get("action")[0]).append(") was not found.");
@@ -172,12 +174,9 @@ public class Servlet extends HttpServlet {
             Boolean publicPage = false;
 
             if (mongoConfiguration.getCollection().equals("pages") && requestParameters.get("k") != null && requestParameters.get("v") != null) {
-                Properties test = System.getProperties();
                 String key = requestParameters.get("k")[0];
                 String value = requestParameters.get("v")[0];
                 BasicDBObject searchObject = new BasicDBObject();
-                ObjectMapper mapper = new ObjectMapper();
-                ObjectNode jsonData = mapper.createObjectNode();
                 searchObject.put(key, new BasicDBObject("$eq", value));
                 Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, mongoConfiguration, searchObject);
                 String accesstype = searchResult.get("accessType").toString();
@@ -189,10 +188,25 @@ public class Servlet extends HttpServlet {
                 }
 
             }
+
             if (action.name.toUpperCase().startsWith("DO")) {
-                String key = requestParameters.get("k")[0];
-                sb.append(commandFunctions.doCommand(key, requestParameters));
-            }            
+                if (mongoConfiguration.getCollection().equals("commands")) {
+                    String key = requestParameters.get("k")[0];
+                    BasicDBObject searchObject = new BasicDBObject();
+                    searchObject.put("name", new BasicDBObject("$eq", key));
+                    Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, mongoConfiguration, searchObject);
+                    Command command = mapper.convertValue(searchResult, gcms.GsonObjects.Core.Command.class);
+                    String accesstype = command.getAccessType();
+                    if (accesstype.equals("0")) {
+                        sb.append(commandFunctions.doCommand(key, requestParameters, command));
+                    } else {
+                        if (accesstype.equals("1") && (Core.checkSession(cookie) && !publicPage)) {
+                            sb.append(commandFunctions.doCommand(key, requestParameters, command));
+                        }
+                    }
+                }
+            }
+
             if ((Core.checkSession(cookie) && !publicPage)) {
 
                 if (parts != null) {
@@ -233,10 +247,6 @@ public class Servlet extends HttpServlet {
                             String value = requestParameters.get("v")[0];
                             sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value, publicPage));
                         }
-//                        if (action.name.toUpperCase().startsWith("DO")) {
-//                            String key = requestParameters.get("k")[0];
-//                            sb.append(commandFunctions.doCommand(key, requestParameters));
-//                        }
                     }
                 }
             } else {

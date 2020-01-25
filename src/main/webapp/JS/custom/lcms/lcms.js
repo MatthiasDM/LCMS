@@ -410,7 +410,7 @@ class LCMSEditablePage {
 
     }
 
-    buildPageData(data, _parent) {
+    buildPageData(data, _parent, _originalDocument) {
         _parent.empty();
         console.log("Start loading page");
         var me = this;
@@ -425,8 +425,15 @@ class LCMSEditablePage {
             try {
                 var LCMSEditablePage_content = {};
                 if (jsonData.replaces["LCMSEditablePage-content"] !== "") {
+
                     LCMSEditablePage_content = $.parseJSON(jsonData.replaces["LCMSEditablePage-content"]);
-                    me.originalDocument = JSON.stringify(LCMSEditablePage_content);
+
+                    if (typeof _originalDocument !== "undefined") {
+                        me.originalDocument = _originalDocument;
+                    } else {
+                        me.originalDocument = JSON.stringify(LCMSEditablePage_content);
+                    }
+
                 } else {
                     LCMSEditablePage_content.html = "";
                     LCMSEditablePage_content.grids = {};
@@ -481,8 +488,10 @@ class LCMSEditablePage {
         jsonData.parent.append("<script>" + scripts + "</script>");
 
         var editor = $($("div[id^='wrapper']")[0]);
+        
         $.each(grids, function (key, value) {
-            me.generateGrid(editor, key, value);
+           // me.generateGrid(editor, key, value);
+           me.generateGrid($("div[name*="+key+"]").parent(), key, value);
         });
 
 
@@ -538,12 +547,21 @@ class LCMSEditablePage {
         var extraOptions = {
             onSelectRow: function (rowid) {
                 var modal = create_modal($("#public-menu"), "Geschiedenis bekijken", "");
+                modal.attr("id", "historyModal");
                 modal.find("#btn-save").remove();
                 var btn = dom_button("btn-revert", "history", "Versie herstellen", "primary");
-                btn.on("click", function (e) {
+                btn.on("click", async function (e) {
+                    $("#historyModal").modal('hide');
+                    $("#historyModal").remove();
                     var rowData = $("#history-table").jqGrid('getRowData', rowid);
+                    let request = await LCMSRequest("./servlet", {action: "docommand", k: "dobacklog", parameters: {object_id: rowData["object_id"], object_type: rowData["object_type"], created_on: moment(rowData["created_on"]).valueOf()}});
+                    async function onDone(data) {
+                        buildEditablePage(data, $("#content"), documentPage.originalDocument);
 
-                    LCMSRequest("./servlet", {action: "dobacklog", k: "dobacklog", parameters: {object_id: rowData["object_id"], object_type: rowData["object_type"], created_on: moment(rowData["created_on"]).valueOf()}});
+                    }
+                    let afterRequest = await onDone(request);
+
+
                 });
                 modal.find("div[class='modal-body']").append(btn);
                 modal.modal('show');
@@ -718,6 +736,7 @@ class LCMSEditablePage {
 
     getDataFromPage(me, onDone) {
         //var me = this;
+        console.log("getDataFromPage()");
         var htmlData = $('<output>').append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"), document, true)));
         me.gridController.checkGrids();
         htmlData.find(("div[id^=gbox_grid]")).each(function (a, b) {
@@ -1904,13 +1923,13 @@ function LCMSTemplateGridButton(icon, title, caption, onClickFunction) {
     this.onClickFunction = onClickFunction;
 }
 
-function buildEditablePage(data, _parent) {
+function buildEditablePage(data, _parent, _originalDocument) {
     console.log("buildDocumentPage()");
     var jsonData = JSON.parse(data, _parent);
     var publicPage = typeof jsonData.parameters.public !== "undefined" ? jsonData.parameters.public : false;
     config2(publicPage);
     documentPage = new LCMSEditablePage({loadAction: "getpage", editAction: "editpages", editUrl: "./servlet", pageId: "", idName: "editablepageid"});
-    documentPage.buildPageData(data, _parent);
+    documentPage.buildPageData(data, _parent, _originalDocument);
 
     // documentPage.setPageId($($("div[id^='wrapper']")[0]).attr("id").substring(8));
 }

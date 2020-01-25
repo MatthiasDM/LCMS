@@ -339,8 +339,8 @@ public class DatabaseWrapper {
     public static Map<String, Object> getObjectHashMapv2(String cookie, MongoConfigurations _mongoConf, Bson bson) throws ClassNotFoundException, JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, bson, null, 0, null);        
-        
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, bson, null, 0, null);
+
         BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(results.get(0)));
         Map<String, Object> objHashMap = obj.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
         return objHashMap;
@@ -552,9 +552,9 @@ public class DatabaseWrapper {
         searchObject.put("name", new BasicDBObject("$eq", _action));
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificList("", MongoConf.ACTIONS, searchObject, null, 1000, new String[]{});
         //String jsonObject = mapper.writeValueAsString(results.get(0));
-        if(results.size() > 0){
+        if (results.size() > 0) {
             action = mapper.convertValue(results.get(0), gcms.GsonObjects.Core.Actions.class);
-        }        
+        }
         return action;
     }
 
@@ -665,33 +665,67 @@ public class DatabaseWrapper {
                 ObjectNode jsonParameters = mapper.createObjectNode();
                 searchObject.put(key, new BasicDBObject("$eq", value));
                 Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, _mongoConf, searchObject);
-                List<String> editRights = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
-                if (_mongoConf.collection.equals("pages") || _mongoConf.collection.equals("document")) {
-                    String menu = "";
-                    if (editRights.contains("contents")) {
-                        menu = loadWebFile("pages/template/menu.html");
-                    }
-                    ObjectNode jsonReplaces = mapper.createObjectNode();
-                    jsonReplaces.put("LCMSEditablePage-id", searchResult.get(_mongoConf.getIdName()).toString());
-                    jsonReplaces.put("LCMSEditablePage-content", searchResult.get("contents").toString());
-                    if (_mongoConf.collection.equals("document")) {
-                        menu = menu.replaceAll("documentPage", _mongoConf.collection + "PageObject");
-                    }
-                    jsonReplaces.put("LCMSEditablePage-menu", menu);
-                    searchResult.put("contents", "");
-
-                    jsonParameters.put("public", publicPage);
-                    jsonData.set("parameters", jsonParameters);
-                    jsonData.put("webPage", loadWebFile("pages/template/index.html"));
-                    jsonData.set("replaces", jsonReplaces);
-                    sb.append(jsonData);
-                } else {
-                    ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, searchObject, null, 1000, new String[]{""});
-                    sb.append(mapper.writeValueAsString(results.get(0)));
-                }
+                sb.append(actionGETOBJECT_prepareObject(cookie, _mongoConf, publicPage, searchResult).toString());
+//                List<String> editRights = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
+//                if (_mongoConf.collection.equals("pages") || _mongoConf.collection.equals("document")) {
+//                    String menu = "";
+//                    if (editRights.contains("contents")) {
+//                        menu = loadWebFile("pages/template/menu.html");
+//                    }
+//                    ObjectNode jsonReplaces = mapper.createObjectNode();
+//                    jsonReplaces.put("LCMSEditablePage-id", searchResult.get(_mongoConf.getIdName()).toString());
+//                    jsonReplaces.put("LCMSEditablePage-content", searchResult.get("contents").toString());
+//                    if (_mongoConf.collection.equals("document")) {
+//                        menu = menu.replaceAll("documentPage", _mongoConf.collection + "PageObject");
+//                    }
+//                    jsonReplaces.put("LCMSEditablePage-menu", menu);
+//                    searchResult.put("contents", "");
+//
+//                    jsonParameters.put("public", publicPage);
+//                    jsonData.set("parameters", jsonParameters);
+//                    jsonData.put("webPage", loadWebFile("pages/template/index.html"));
+//                    jsonData.set("replaces", jsonReplaces);
+//                    sb.append(jsonData);
+//                } else {
+//                    ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, searchObject, null, 1000, new String[]{""});
+//                    sb.append(mapper.writeValueAsString(results.get(0)));
+//                }
 
             }
         }
+        return sb;
+    }
+
+    public static StringBuilder actionGETOBJECT_prepareObject(String cookie, MongoConfigurations _mongoConf, Boolean publicPage, Map<String, Object> searchResult) throws ClassNotFoundException, JsonProcessingException {
+        StringBuilder sb = new StringBuilder();
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jsonData = mapper.createObjectNode();
+        ObjectNode jsonParameters = mapper.createObjectNode();
+
+        if (_mongoConf.collection.equals("pages") || _mongoConf.collection.equals("document")) {
+            List<String> editRights = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
+            String menu = "";
+            if (editRights.contains("contents")) {
+                menu = loadWebFile("pages/template/menu.html");
+            }
+            ObjectNode jsonReplaces = mapper.createObjectNode();
+            jsonReplaces.put("LCMSEditablePage-id", searchResult.get(_mongoConf.getIdName()).toString());
+            jsonReplaces.put("LCMSEditablePage-content", searchResult.get("contents").toString());
+            if (_mongoConf.collection.equals("document")) {
+                menu = menu.replaceAll("documentPage", _mongoConf.collection + "PageObject");
+            }
+            jsonReplaces.put("LCMSEditablePage-menu", menu);
+            searchResult.put("contents", "");
+
+            jsonParameters.put("public", publicPage);
+            jsonData.set("parameters", jsonParameters);
+            jsonData.put("webPage", loadWebFile("pages/template/index.html"));
+            jsonData.set("replaces", jsonReplaces);
+            sb.append(jsonData);
+        } else {
+            sb.append(mapper.writeValueAsString(searchResult));
+        }
+
         return sb;
     }
 
