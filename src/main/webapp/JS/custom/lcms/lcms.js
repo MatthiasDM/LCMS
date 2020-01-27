@@ -221,6 +221,21 @@ class LCMSgridController {
         this.references = [];
         this.views = [];
     }
+
+    regenerateGrids() {
+        var me = this;
+        me.references = [];
+        console.log("regenerating grids...");
+        $("div[id^='wrapper']").find(("div[id^=gbox_grid]")).each(function (a, b) {
+            var newWrapper = $("<div name='" + $(b).attr('id').substring(5) + "'></div>");            
+            $(b).after(newWrapper);       
+            $(b).remove();
+            documentPage.generateGrid(newWrapper.parent(),$(b).attr('id').substring(5),me.grids[$(b).attr('id').substring(5)]);
+
+         
+        });
+    }
+
     checkGrids() {
         var me = this;
         me.references = [];
@@ -488,10 +503,10 @@ class LCMSEditablePage {
         jsonData.parent.append("<script>" + scripts + "</script>");
 
         var editor = $($("div[id^='wrapper']")[0]);
-        
+
         $.each(grids, function (key, value) {
-           // me.generateGrid(editor, key, value);
-           me.generateGrid($("div[name*="+key+"]").parent(), key, value);
+            // me.generateGrid(editor, key, value);
+            me.generateGrid($("div[name*=" + key + "]").parent(), key, value);
         });
 
 
@@ -575,6 +590,7 @@ class LCMSEditablePage {
     }
 
     generateGrid(editor, gridId, gridParam) {
+        console.log("generateGrid();");
         var me = this;
         var grid = $("<table id='" + gridId + "'></table>");
         var pager = $("<div id='pager_" + gridId + "'></div>");
@@ -1738,7 +1754,6 @@ function getPatches(oldData, newData) {
     var patches = dmp.patch_make(diff);
     var textPatches = dmp.patch_toText(patches);
     return textPatches;
-
 }
 
 function LCMSTableRequest(loadAction, editAction, editUrl, tableName, pagerName, wrapperName, caption, tableType, jqGridOptions, extraRequestOptions) {

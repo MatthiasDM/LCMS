@@ -107,7 +107,7 @@ function new_grid(parentID, colModel, extraOptions, importCSV, _gridData, gridId
         if (editable.length === 0) {
             editable = new_editable_field();
         }
-        var editor = $("<div contenteditable='false'></div>");
+        var editor = $("<div contenteditable='false' class='no-change' id='"+uuidv4()+"'></div>");
         $("#"+editable.attr('id')).append(editor);
 
         var uuid = gridId;

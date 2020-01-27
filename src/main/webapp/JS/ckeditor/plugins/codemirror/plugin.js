@@ -288,7 +288,7 @@
                             var textArea = this.getContentElement("main", "data").getInputElement().$;
 
                             // Load the content
-                            this.setValueOf("main", "data", oldData = editor.getData());
+                            this.setValueOf("main", "data", oldData = editor.element.getHtml());
 
                             if (config.autoLoadCodeMirror) {
 
@@ -346,6 +346,7 @@
                         onOk: (function () {
 
                             function setData(newData) {
+                                console.log("Codemirror: Setting new data...");
                                 var that = this;
 
                                 editor.setData(newData, function () {

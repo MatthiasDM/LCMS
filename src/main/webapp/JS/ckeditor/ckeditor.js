@@ -7635,9 +7635,25 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                     b.insertNode(a);
                     return !0
                 },
+				
+				
+				
+				
                 setData: function(a, b) {
-                    b || (a = this.editor.dataProcessor.toHtml(a));
-                    this.setHtml(a);
+					//OP DIT MOMENT IS DE CODE NOG NIET GEWIJZIGD	
+					console.log("Setting data");			
+					var original = this.getHtml();					
+                   // b || (a = this.editor.dataProcessor.toHtml(a)); //HIER WORDT DE CODE GEWIJZIGD
+				   if(this.status == "ready"){
+					  documentPage.gridController.checkGrids();
+					  var gridControllerCopy = jQuery.extend(true, {}, documentPage.gridController);
+					  this.setHtml(a); 
+					  documentPage.gridController.grids = documentPage.getTrimmedGridControllerGrids();
+					  documentPage.gridController.regenerateGrids();
+					  
+				   }
+					documentPage.gridController.checkGrids();
+                    			
                     this.fixInitialSelection();
                     "unloaded" == this.status && (this.status = "ready");
                     this.editor.fire("dataReady")
