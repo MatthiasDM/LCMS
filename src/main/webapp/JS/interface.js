@@ -1,3 +1,4 @@
+
 $(function () {
     // sessionCountdown();
 
@@ -44,6 +45,22 @@ $(function () {
             $(this).attr(attr, val);
         }
         return this;
+    };
+
+    $.fn.appendOrReplace = function (object) {
+        if ($("#" + object.attr("id")).length === 1) {
+            $("#" + object.attr("id")).replaceWith(object);
+        } else {
+            $(this).append(object);
+        }
+    };
+
+    $.fn.afterOrReplace = function (object) {
+        if ($("#" + object.attr("id")).length === 1) {
+            $("#" + object.attr("id")).replaceWith(object);
+        } else {
+            $(this).after(object);
+        }
     };
 
 });
@@ -588,29 +605,29 @@ function dom_collapse() {
     return wrapper;
 }
 
-function loadImages(editor, editorObject) {
-    var _editorObject;
-    if (editor !== "") {
-        var images = $("#" + editor).find('[fileid]');
-        if (images.length < 1) {
-            images = $("#cke_" + editor).find("iframe").contents().find('[fileid]');
-        }
-        _editorObject = $("#" + editor);
-    } else {
-        var images = editorObject.find('[fileid]');
-        _editorObject = editorObject;
-    }
-
-
-
-    images.each(function (index) {
-        var newImage = downloadToTemp($(this));
-        _editorObject.find('[fileid]')[index] = newImage;
-    });
-
-    return images;
-
-}
+//function loadImages(editor, editorObject) {
+//    var _editorObject;
+//    if (editor !== "") {
+//        var images = $("#" + editor).find('[fileid]');
+//        if (images.length < 1) {
+//            images = $("#cke_" + editor).find("iframe").contents().find('[fileid]');
+//        }
+//        _editorObject = $("#" + editor);
+//    } else {
+//        var images = editorObject.find('[fileid]');
+//        _editorObject = editorObject;
+//    }
+//
+//
+//
+//    images.each(function (index) {
+//        var newImage = downloadToTemp($(this));
+//        _editorObject.find('[fileid]')[index] = newImage;
+//    });
+//
+//    return images;
+//
+//}
 
 function openFile(filename, text) {
     var blob = new Blob([text], {type: "text/html;charset=utf-8"});

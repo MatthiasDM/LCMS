@@ -189,7 +189,6 @@ public class ActionManagerUpload {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode jsonData = mapper.createObjectNode();
             jsonData.put("filePath", DatabaseActions.downloadFileToTemp(requestParameters.get("filename")[0], cookie, contextPath, publicPage));
-
             sb.append(jsonData);
         }
         return sb;

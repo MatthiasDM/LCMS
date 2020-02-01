@@ -220,7 +220,6 @@ public class Core {
 
     }
 
-   
     public static String getTempDir(String _sessionId, String _contextPath) {
         return _contextPath + "/" + _sessionId + "/";
     }
@@ -337,8 +336,8 @@ public class Core {
             Package p = clazz.getPackage();
             Properties prop = new Properties();
             String basePath = System.getProperties().getProperty("user.home");
-            String propFileName = p.getName() + ".properties";  
-            
+            String propFileName = p.getName() + ".properties";
+
             System.out.println("getProp() basepath: " + basePath + "(" + basePath + "/" + propFileName + ")");
             File f = new File(basePath + "/" + propFileName);
             prop.load(new StringReader(readAllLines(Arrays.asList(f)).toString()));
@@ -347,6 +346,18 @@ public class Core {
             Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
+    }
+
+    public static String getPropFileName() {
+
+        Class<?> clazz = Core.class;
+        Package p = clazz.getPackage();
+        Properties prop = new Properties();
+        String basePath = System.getProperties().getProperty("user.home");
+        String propFileName = p.getName() + ".properties";
+
+        return p.getName();
+
     }
 
     public static boolean checkDir(String _directoryName) {

@@ -417,10 +417,9 @@ public class DatabaseWrapper {
                     if (!mdmAnnotations.DMP()) {
                         filteredObj.put(key, obj.get(key));
                     } else {
-                        String patchedObj = DatabaseActions.patchText(oldDocument.get(key), obj.get(key));
+                        String patchedObj = DatabaseActions.patchText(oldDocument.get(key), obj.get(key));                       
                         filteredObj.put(key, patchedObj);
                     }
-
                     backlogObj.put(key, obj.get(key));
                 }
             }
@@ -455,36 +454,27 @@ public class DatabaseWrapper {
     public static Map<String, Object> revertChanges(ArrayList<Document> docs, Map<String, Object> currentDocument, MongoConfigurations objectConfiguration) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException {
         ObjectMapper mapper = new ObjectMapper();
         Collections.reverse(docs);
-        Map<String, Object> documentHashMap = null;
+        Map<String, Object> documentHashMap = currentDocument;
         Map<String, Object> newHashMap;
         Integer i = 0;
-        for (i = 1; i <= docs.size(); i++) {//Optional.ofNullable(entry.getValue()).orElse(""))
+        for (i = 0; i < docs.size(); i++) {//Optional.ofNullable(entry.getValue()).orElse(""))
 
-            BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(docs.get(docs.size() - i)));
+            BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(docs.get(i)));
             Map<String, Object> backlogHashMap = obj.entrySet().stream()
                     .collect(Collectors.toMap(entry -> entry.getKey(), entry -> Optional.ofNullable(entry.getValue()).orElse("")));
 
             BasicDBObject changes = BasicDBObject.parse(backlogHashMap.get("changes").toString());
             Map<String, Object> changesHashMap = changes.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> Optional.ofNullable(entry.getValue()).orElse("")));
 
-            if (documentHashMap == null) {
-                documentHashMap = currentDocument;
-            } else {
-                ArrayList<String> currentHashMapKeys = new ArrayList<>(documentHashMap.keySet());
-                for (String key : changesHashMap.keySet()) {
-                    if (documentHashMap.containsKey(key)) {
+            for (String key : changesHashMap.keySet()) {
+                if (documentHashMap.containsKey(key)) {
 
-                        MdmAnnotations mdmAnnotations = Class.forName(objectConfiguration.getClassName()).getField(key).getAnnotation(MdmAnnotations.class);
-                        if (!mdmAnnotations.DMP()) {
-                            documentHashMap.put(key, changesHashMap.get(key));
-                            currentHashMapKeys.remove(key);
-                        } else {
-                            documentHashMap.put(key, DatabaseActions.revertDMP(currentDocument.get(key).toString(), changesHashMap.get(key).toString()));
-                        }
+                    MdmAnnotations mdmAnnotations = Class.forName(objectConfiguration.getClassName()).getField(key).getAnnotation(MdmAnnotations.class);
+                    if (!mdmAnnotations.DMP()) {
+                        documentHashMap.put(key, changesHashMap.get(key));
+                    } else {
+                        documentHashMap.put(key, DatabaseActions.revertDMP(documentHashMap.get(key).toString(), changesHashMap.get(key).toString()));
                     }
-//                    for (String leftOverKey : currentHashMapKeys) {
-//                        currentHashMap.remove(leftOverKey);
-//                    }
                 }
             }
 

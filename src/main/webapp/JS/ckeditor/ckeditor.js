@@ -1688,7 +1688,18 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
     CKEDITOR.dom.domObject.prototype = function() {
         var a = function(a, b) {
             return function(c) {
-                "undefined" != typeof CKEDITOR && a.fire(b, new CKEDITOR.dom.event(c))
+			    var relatedTarget = $(c.relatedTarget).parents('div[class=no-change]').length;
+				var toElement = $(c.toElement).parents('div[class=no-change]').length;
+				var target = $(c.target).parents('div[class=no-change]').length;
+				
+				
+				
+				if (!relatedTarget && !toElement && !target) {
+					"undefined" != typeof CKEDITOR && a.fire(b, new CKEDITOR.dom.event(c))
+					//console.log(c);
+				}else{
+					console.log("Event in protected element");
+				}
             }
         };
         return {
@@ -5231,8 +5242,8 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
             };
         CKEDITOR.keystrokeHandler.prototype = {
             attach: function(a) {
-                a.on("keydownzz", d, this);
-                if (CKEDITOR.env.gecko && CKEDITOR.env.mac) a.on("keypresszz", b, this)
+                a.on("keydownzz", d, this);//zz
+                if (CKEDITOR.env.gecko && CKEDITOR.env.mac) a.on("keypresszz", b, this)//zz
             }
         }
     })();
@@ -7641,19 +7652,18 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
 				
                 setData: function(a, b) {
 					//OP DIT MOMENT IS DE CODE NOG NIET GEWIJZIGD	
-					console.log("Setting data");			
-					var original = this.getHtml();					
+					console.log("Setting data");
+					a = a.replace("&#8203;", "");
                    // b || (a = this.editor.dataProcessor.toHtml(a)); //HIER WORDT DE CODE GEWIJZIGD
-				   if(this.status == "ready"){
-					  documentPage.gridController.checkGrids();
-					  var gridControllerCopy = jQuery.extend(true, {}, documentPage.gridController);
-					  this.setHtml(a); 
-					  documentPage.gridController.grids = documentPage.getTrimmedGridControllerGrids();
-					  documentPage.gridController.regenerateGrids();
-					  
-				   }
-					documentPage.gridController.checkGrids();
-                    			
+						
+						if(this.status == "ready"){
+							documentPage.gridController.checkGrids();
+							var gridControllerCopy = jQuery.extend(true, {}, documentPage.gridController);					
+							this.setHtml(a);							
+							documentPage.gridController.grids = documentPage.getTrimmedGridControllerGrids();
+							documentPage.gridController.regenerateGrids();	  
+					   }
+			     	documentPage.gridController.checkGrids(); 			    			
                     this.fixInitialSelection();
                     "unloaded" == this.status && (this.status = "ready");
                     this.editor.fire("dataReady")

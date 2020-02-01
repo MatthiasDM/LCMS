@@ -284,9 +284,11 @@ public class DatabaseActions {
     public static String downloadFileToTemp(String _fileName, String _cookie, String _contextPath, boolean _publicPage) {
         System.out.println("Calling download..");
         String outputPath = gcms.Core.getTempDir(_cookie, _contextPath) + _fileName;
-        if (_publicPage) {
+        String trimmedOutputPath = "./HTML/other/files/" + _cookie + "/" + _fileName;   
+        if (_publicPage) {            
             if (Core.checkDir(_contextPath + "/public/")) {
                 outputPath = _contextPath + "/public/" + _fileName;
+                trimmedOutputPath = "./HTML/other/files" + "/public/" + _fileName;                
             }
         }
 
@@ -302,7 +304,7 @@ public class DatabaseActions {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return gcms.Core.getTempDirWebUrl(_cookie) + _fileName;
+        return trimmedOutputPath;
     }
 
     //FILEOBJECT METHODS
@@ -652,11 +654,11 @@ public class DatabaseActions {
     }
 
     public static String revertDMP(String currentText, String patch) {
-        Document document = null;
+     
         DiffMatchPatch dmp = new DiffMatchPatch();
-        StringBuilder reversePatch = new StringBuilder();
+      
         //List<DiffMatchPatch.Patch> invertedPatches = dmp.patch_deepCopy((LinkedList<DiffMatchPatch.Patch>) patches);
-        LinkedList<DiffMatchPatch.Patch> originalPatches = (LinkedList) dmp.patch_fromText(patch.toString());
+        LinkedList<DiffMatchPatch.Patch> originalPatches = (LinkedList) dmp.patch_fromText(patch);
 
         for (DiffMatchPatch.Patch p : originalPatches) {
             for (Diff d : p.diffs) {

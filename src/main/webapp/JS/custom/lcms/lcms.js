@@ -217,23 +217,28 @@ var getUrlParameter = function getUrlParameter(sParam) {
 
 class LCMSgridController {
     constructor() {
+        console.log("new gridcontroller");
         this.grids = {};
         this.references = [];
         this.views = [];
+        this.LCMSGrids = {};
+    }
+
+    addLCMSGrid(_gridId, _grid) {
+        this.LCMSGrids[_gridId] = _grid;
     }
 
     regenerateGrids() {
         var me = this;
         me.references = [];
         console.log("regenerating grids...");
-        $("div[id^='wrapper']").find(("div[id^=gbox_grid]")).each(function (a, b) {
-            var newWrapper = $("<div name='" + $(b).attr('id').substring(5) + "'></div>");            
-            $(b).after(newWrapper);       
-            $(b).remove();
-            documentPage.generateGrid(newWrapper.parent(),$(b).attr('id').substring(5),me.grids[$(b).attr('id').substring(5)]);
-
-         
+        documentPage.minimizeGrids(documentPage, $("div[id^='wrapper']"));
+        $.each($("div[class=grid-placeholder]"), function (a, b) {
+            documentPage.generateGrid($(b).parent(), $(b).attr('name').substring(5), me.grids[$(b).attr('name').substring(5)]);
         });
+
+
+
     }
 
     checkGrids() {
@@ -330,79 +335,6 @@ class LCMSgridController {
     }
 }
 
-//class LCMSSidebarPage {
-//    constructor(pageData, gridData) {
-//        console.log("LCMSSidebarPage()");
-//        this.pageData = pageData;
-//        this.gridData = gridData;
-//        this.requestHeader = {};
-//    }
-//    loadFromServer() {
-//        var gridData = this.gridData;
-//        console.log(gridData.editUrl + ": getting data from server...");
-//        function onDone(data) {
-//            var jsonData = JSON.parse(data);
-//            gridData.data = jsonData;
-//            let grid = new LCMSGrid(gridData);
-//            grid.createGrid();
-//            grid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw item", "", function () {
-//                return popupEdit('new', $("#" + gridData.tableObject), $(this), gridData.editAction, {});
-//            }));
-//            grid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
-//                var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
-//                if (rowid !== null) {
-//                    return popupEdit(rowid, $("#" + gridData.tableObject), $(this), gridData.editAction);
-//                } else {
-//                    return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
-//                }
-//            }));
-//
-//            if (typeof gridData.extraButtons !== "undefined") {
-//                $.each(gridData.extraButtons, function (index, btn) {
-//                    grid.addGridButton(btn);
-//                });
-//            }
-//        }
-//
-//
-//        this.requestHeader = gridData.loadAction;
-//        LCMSRequest(gridData.editUrl, this.requestHeader, onDone);
-//    }
-//
-//    addLoadRequestParam() {
-//
-//    }
-//
-//    createPage() {
-//        var _this = this;
-//        var pageData = _this.pageData;
-//        var wrapper = $("<div></div>");
-//        //var sidebarLeft = dom_div("", this.pageData.sidebarLeft);
-//        //var sidebarLeftList = dom_list(this.pageData.sidebarLeftList, []);
-//        var sidebarRight = dom_div("", this.pageData.sidebarRight);
-//        var sidebarRightTable = $("<table id='" + this.pageData.sidebarRightTable + "'></table>");
-//        var sidebarRightTablePager = dom_div("", this.pageData.sidebarRightTablePager);
-//        var mainPageContainer = dom_mainPageContainer(this.pageData.containerID, this.pageData.mainPageContentDivId);
-//
-//        //sidebarLeft.append(sidebarLeftList);
-//        sidebarRight.append(sidebarRightTable);
-//        sidebarRight.append(sidebarRightTablePager);
-//
-//        //wrapper.append(sidebarLeft);
-//        wrapper.append(sidebarRight);
-//        wrapper.append(mainPageContainer);
-//
-//        $(function () {
-//         //   sidebarLeft.BootSideMenu({side: "left"});
-//            sidebarRight.BootSideMenu({side: "right"});
-//            sidebarRight.BootSideMenu.open();
-//            _this.loadFromServer();
-//            pageData.ckConfig();
-//        });
-//        return wrapper;
-//    }
-//
-//}
 
 class LCMSNormalPage {
 
@@ -459,7 +391,8 @@ class LCMSEditablePage {
                 grids = LCMSEditablePage_content.grids;
 
             } catch (e) {
-                bootstrap_alert.warning("Something went wrong", "error", "1000");
+                console.log(e);
+                bootstrap_alert.warning("Something went wrong", "warning", "1000");
             }
             _parent.click();
         }
@@ -571,6 +504,7 @@ class LCMSEditablePage {
                     var rowData = $("#history-table").jqGrid('getRowData', rowid);
                     let request = await LCMSRequest("./servlet", {action: "docommand", k: "dobacklog", parameters: {object_id: rowData["object_id"], object_type: rowData["object_type"], created_on: moment(rowData["created_on"]).valueOf()}});
                     async function onDone(data) {
+                        console.log("Reverting document...");
                         buildEditablePage(data, $("#content"), documentPage.originalDocument);
 
                     }
@@ -646,6 +580,8 @@ class LCMSEditablePage {
             }
         };
         let documentGrid = new LCMSGrid(gridData);
+        console.log("pushing LCMSgrid to gridcontroller");
+        this.gridController.addLCMSGrid(gridId, documentGrid);
         var gridObject = documentGrid.createGrid();
         me.addGridButtons(documentGrid, gridObject, gridData, editor);
         //me.toggle_multiselect(grid.attr('id'));
@@ -750,15 +686,27 @@ class LCMSEditablePage {
         this.pageData.pageId = _pageId;
     }
 
+    minimizeGrids(_me, _htmlData) {
+        _me.gridController.checkGrids();
+        _htmlData.find(("div[id^=gbox_grid]")).each(function (a, b) {
+            $(b).after("<div class='grid-placeholder' name='" + $(b).attr('id') + "'></div>");
+            $(b).remove();
+        });
+        return _htmlData;
+    }
+
     getDataFromPage(me, onDone) {
         //var me = this;
         console.log("getDataFromPage()");
+        // var htmlData = $('<output>').append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"), document, true)));
+//        me.gridController.checkGrids();
+//        htmlData.find(("div[id^=gbox_grid]")).each(function (a, b) {
+//            $(b).after("<div name='" + $(b).attr('id') + "'></div>");
+//            $(b).remove();
+//        });
         var htmlData = $('<output>').append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"), document, true)));
-        me.gridController.checkGrids();
-        htmlData.find(("div[id^=gbox_grid]")).each(function (a, b) {
-            $(b).after("<div name='" + $(b).attr('id') + "'></div>");
-            $(b).remove();
-        });
+        htmlData = me.minimizeGrids(me, htmlData);
+
         var data = {};
         var size = htmlData.find("canvas").length;
 
@@ -784,6 +732,8 @@ class LCMSEditablePage {
                         data['html'] = htmlData.prop("innerHTML");
                         data['grids'] = me.getTrimmedGridControllerGrids();
                         data['html'] = removeElements("nosave", data['html']);
+                        data['html'] = data['html'].replace("&#8203;", "");
+
                         onDone(me, JSON.stringify(data));
                     }
                 };
@@ -1015,10 +965,10 @@ class LCMSGrid {
             $(b).remove();
         });
 
-        var images = loadImages("", htmlData);
-        var imagesWrapper = $("<div></div>");
+
+
         let imageController = new LCMSImageController();
-        var allImagesLoaded = false;
+        var images = imageController.loadImages("", htmlData);
         var imagesLoadedCounter = 0;
         if (images.length > 0) {
             images.each(function (index) {
@@ -1070,7 +1020,7 @@ class LCMSGrid {
     }
 
     createColModel(_data) {
-        console.log("createColModel()");
+        console.log("createColModel from Data()");
         var cols = new Array();
         var view = [];
         var me = this;
@@ -1118,7 +1068,9 @@ class LCMSGrid {
 
             if (type === "internal_list") {
                 value.type = "select";
-                column.editoptions = {title: "internal_list"};
+                column.edittype = "select";
+                column.formatter = "select";
+                column.editoptions = {title: "internal_list", multiple: true};
                 column.internalListName = value.internalListName;
                 column.internalListAttribute = value.internalListAttribute;
 
@@ -1140,7 +1092,14 @@ class LCMSGrid {
                     column.editoptions = {};
                 }
                 column.editoptions.multiple = value.multiple;
-                column.editoptions.value = (value.choices);
+
+                column.editoptions.value = typeof value.choices !== "undefined" ? value.choices : value.editoptions.value;
+                var choices = {};
+                $.each(column.editoptions.value, function (a, b) {
+                    choices[a] = b;
+                });
+                column.editoptions.value = choices;
+
                 if (value.multiple === true) {
                     column.editoptions.size = value.choices.length < 8 ? value.choices.length + 2 : 10;
                 }
@@ -1318,11 +1277,11 @@ class LCMSGrid {
 //                groupSummary: [false]
 
 
-
+                //hideFirstGroupCol: true,
                 showSummaryOnHide: false,
                 groupColumnShow: [true],
-                groupSummaryPos: ["header"],
-                groupSummary: [true]
+                groupSummaryPos: ["footer"],
+                groupSummary: [false]
 
             };
         } else {
@@ -1628,6 +1587,49 @@ class LCMSImageController {
 
     uploadFile() {}
 
+    loadImages(editor, editorObject) {
+        var me = this;
+        var _editorObject;
+        if (editor !== "") {
+            var images = $("#" + editor).find('[fileid]');
+            if (images.length < 1) {
+                images = $("#cke_" + editor).find("iframe").contents().find('[fileid]');
+            }
+            _editorObject = $("#" + editor);
+        } else {
+            var images = editorObject.find('[fileid]');
+            _editorObject = editorObject;
+        }
+        images.each(function (index) {
+            var newImage = me.downloadToTemp($(this));
+            _editorObject.find('[fileid]')[index] = newImage;
+        });
+        return images;
+
+    }
+
+    downloadToTemp(file) {
+        var formData = new FormData();
+        formData.append('action', 'FILE_DOWNLOADTEMP');
+        formData.append('LCMS_session', $.cookie('LCMS_session'));
+        formData.append('public', this.publicPage);
+        formData.append('filename', file.attr("name"));
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                var jsonData = JSON.parse(request.responseText);
+                var filePath = jsonData.filePath;
+                console.log("Changing filepath from " + file.attr("src") + " to " + filePath);
+                file.attr("src", filePath);
+                file.attr("href", filePath);
+                return file;
+
+            }
+        }
+        request.open('POST', "./upload", /* async = */ false);
+        request.send(formData);
+    }
+
     insertFileInEditor(_fileName, _fileId, _ckeditor) {
         var re = /(?:\.([^.]+))?$/;
         var type = re.exec(_fileName)[0];
@@ -1748,9 +1750,22 @@ async function LCMSRequest(_url, _data, _onDone, _extraParam) {
 }
 
 function getPatches(oldData, newData) {
+    console.log("getPatches()");
     var dmp = new diff_match_patch();
+    // var diff = dmp.diff_main((oldData), (newData));
     var diff = dmp.diff_main((oldData), (newData));
-    dmp.diff_cleanupSemantic(diff);
+    //  dmp.diff_cleanupSemantic(diff);
+    var patches = dmp.patch_make(diff);
+    var textPatches = dmp.patch_toText(patches);
+    return textPatches;
+}
+
+function getPatchesReverse(oldData, newData) {
+    console.log("getPatches()");
+    var dmp = new diff_match_patch();
+    // var diff = dmp.diff_main((oldData), (newData));
+    var diff = dmp.diff_main((newData), (oldData));
+    //  dmp.diff_cleanupSemantic(diff);
     var patches = dmp.patch_make(diff);
     var textPatches = dmp.patch_toText(patches);
     return textPatches;
@@ -1785,6 +1800,37 @@ function LCMSTableRequest(loadAction, editAction, editUrl, tableName, pagerName,
 
     return LCMSRequest(editUrl, requestOptions, onDone);
 }
+
+function LCMSTableFromData(loadAction, editAction, editUrl, tableName, pagerName, wrapperName, caption, tableType, jqGridOptions, extraRequestOptions, data) {
+    console.log("LCMSTableFromData()");
+    var jsonData = JSON.parse(data);
+    console.log(jsonData.webPage);
+    if (typeof jsonData.webPage !== 'undefined') {
+        jsonData.parent = wrapperName;
+        loadParameters(jsonData);
+    } else {
+        if (tableType === 1) {
+            return LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
+        } else if (tableType === 2) {
+            return LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
+        } else if (tableType === 3) {
+            return LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
+        } else {
+            return LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
+        }
+    }
+
+//    var requestOptions = {};
+//    if (typeof extraRequestOptions !== "undefined") {
+//        console.log("extraRequestOptions");
+//        requestOptions = extraRequestOptions;
+//    }
+//    requestOptions.action = loadAction;
+
+
+    // return LCMSRequest(editUrl, requestOptions, onDone);
+}
+
 
 function LCMSGridTemplateSimple(_jqGridOptions, _editAction, _editUrl, _tableName, _wrapperObject) {
     var gridData = {

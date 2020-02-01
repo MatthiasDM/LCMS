@@ -33,6 +33,7 @@ $(function () {
 
 
         })();
+
         hideLoading();
 
     } else {
@@ -46,7 +47,7 @@ $(function () {
 
 
 });
-
+// 
 async function loadEditors() {
     $("div[id^=editable]").each(function (a, b) {
         if (CKEDITOR.instances[$(b).attr('id')]) {
@@ -94,6 +95,7 @@ function afterLoadComplete() {
         loadPageScripts();
     }
 
+
 }
 
 function new_grid(parentID, colModel, extraOptions, importCSV, _gridData, gridId, location) {
@@ -102,15 +104,16 @@ function new_grid(parentID, colModel, extraOptions, importCSV, _gridData, gridId
     if (typeof colModel === 'undefined') {
         new_grid_popup($("#" + parentID));
     } else {
-        
-        var editable = $("div[id^=editable_]");        
+
+        var editable = $("div[id^=editable_]");
         if (editable.length === 0) {
             editable = new_editable_field();
         }
-        var editor = $("<div contenteditable='false' class='no-change' id='"+uuidv4()+"'></div>");
-        $("#"+editable.attr('id')).append(editor);
-
         var uuid = gridId;
+        var editor = $("<div contenteditable='false' class='no-change' id='master_" + uuid + "'></div>");
+        $("#" + editable.attr('id')).appendOrReplace(editor);
+
+        
         var grid = $("<table id='" + uuid + "'></table>");
         var pager = $("<div id='pager_" + uuid + "'></div>");
         if (typeof location !== "undefined") {
@@ -166,7 +169,7 @@ function new_grid(parentID, colModel, extraOptions, importCSV, _gridData, gridId
                     },
                     editParams: {
                         aftersavefunc: function (id) {
-                            documentPage.savePage()();
+                            documentPage.savePage();
                         }
                     }
                 }
@@ -251,6 +254,7 @@ function toggle_multiselect(gridId) {
 }
 
 function createGridBasedOnModel(_gridData, _colModelWrapper, _parent) {
+    console.log("createGridBasedOnModel()")
     var data = [];
     var importCSV = [];
     var gridId;
@@ -284,7 +288,7 @@ function createGridBasedOnImportFile(_parent, importData, caption) {
 }
 
 function createColModel(form, _gridData, parent) {
-    console.log("createColModel()");
+    console.log("createColModel from Form()"); //deze moet in lcms.js komen te staan
     var modalArray = form.serializeArray();
     var options = new Object();
     var colModel = new Object();
@@ -304,7 +308,14 @@ function createColModel(form, _gridData, parent) {
             colModel[c].type = val.value;
         }
         if (val.name === 'choices') {
-            colModel[c].choices = val.value.split(/\r\n/);
+            colModel[c].choices = val.value.split(/\r\n/);            
+            var choices = {};
+            $.each(colModel[c].choices, function (a, b) {
+                if(b !== ""){
+                  choices[b] = b;  
+                }                
+            });
+            colModel[c].choices = choices;
         }
         if (val.name === 'internalListName') {
             colModel[c].internalListName = val.value;
@@ -387,9 +398,9 @@ function createColModel(form, _gridData, parent) {
 //            groupSummaryPos: ["header"],
 //            groupSummary: [false]
 
-
+            hideFirstGroupCol: true,
             showSummaryOnHide: false,
-            groupColumnShow: [true],
+            groupColumnShow: [false],
             groupSummaryPos: ["header"],
             groupSummary: [true]
 
@@ -693,10 +704,10 @@ function exportToHTML() {
         $(b).after("<div name='" + $(b).attr('id') + "' style='overflow-x:auto'>" + htmlTable + "</div>");
         $(b).remove();
     });
-    var images = loadImages("", htmlData);
-    var imagesWrapper = $("<div></div>");
+    // var images = loadImages("", htmlData);
+
     let imageController = new LCMSImageController();
-    var allImagesLoaded = false;
+    var images = imageController.loadImages("", htmlData);
     var imagesLoadedCounter = 0;
     images.each(function (index) {
         //htmlData.find("img[fileid=" + $(images[index]).attr('fileid') + "]").replaceWith($(images[index]));
@@ -784,11 +795,10 @@ function loadSideBarMenu() {
     row1.append(col1);
     sidebarContainer.append(row1);
     //---------------------------------------------------
-//    var row2 = dom_row("sidebar-row-2");
-//    var col2 = dom_col("sidebar-col-contentmenu", 12);
-//   // loadTOC($("div[id^=editable]"), col2);
-//    row2.append(col2); 
-//    sidebarContainer.append(row2);
+    var row2 = dom_row("sidebar-row-2");
+    var col2 = dom_col("sidebar-col-contentmenu", 12);
+    row2.append(col2);
+    sidebarContainer.append(row2);
     //---------------------------------------------------
     var row1 = dom_row("sidebar-row-1");
     var col1 = dom_col("sidebar-col-1", 12);
@@ -796,7 +806,7 @@ function loadSideBarMenu() {
     col1.css("text-align", "center");
     div1.css("margin-right", "0px");
     div1.css("margin-top", "0.5em");
-    div1.append("Structuur");
+    //div1.append("Structuur");
     col1.append(div1);
     col1.append("<hr>");
     row1.append(col1);
@@ -805,10 +815,10 @@ function loadSideBarMenu() {
     var row3 = dom_row("sidebar-row-3");
     var col3 = dom_col("sidebar-col-3", 12);
     var div3 = dom_div("", "structure-container");
-    div3.append(dom_moveUpDownList("page-elements", $("div[id^=gbox_grid], div[id^=editable]")));
+  //  div3.append(dom_moveUpDownList("page-elements", $("div[id^=gbox_grid], div[id^=editable]")));
     col3.append(div3);
     row3.append(col3);
-    sidebarContainer.append(row3);
+    //sidebarContainer.append(row3);
     $("#sidebar").append(sidebarContainer);
     //---------------------------------------------------
     $("#importTableButton").change(function () {
