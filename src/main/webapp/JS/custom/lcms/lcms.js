@@ -39,8 +39,6 @@ function filterUniqueJson(data, filterBy) {
     return result;
 }
 
-
-
 function filterUnique(data, filterBy) {
     var lookup = {};
     var items = data;
@@ -58,8 +56,6 @@ function filterUnique(data, filterBy) {
     }
     return result;
 }
-
-
 
 function scrollTo(target) {
     //var target = editorContents.contents().find(this.getAttribute('anchor'));
@@ -152,7 +148,6 @@ function CSVToArray(strData, strDelimiter) {
     // Return the parsed data.
     return(arrData);
 }
-//mysheet = $('link[href="/css/style.css"]')[0].sheet;
 
 function getCSSOfHref(href) {
     var css = [];
@@ -196,6 +191,25 @@ function getCSS() {
     }
     var cssInline = css.join('\n') + '\n';
     return cssInline;
+}
+
+async function getDocumentByName(_parent, _id) {
+    let request = await LCMSRequest("./servlet", {action: "getdocument", k: "title", v: _id});
+    let afterRequest = await onDone(request);
+    return "done";
+
+    async function onDone(data) {
+        return await buildDocumentPage(data, _parent);
+    }
+}
+
+async function doCommand(_command, _parameters, _ondone) {
+    let request = await LCMSRequest("./servlet", {action: "docommand", k: _command, parameters: _parameters});
+    let afterRequest = await onDone(request);
+    return "done";
+    async function onDone(data) {
+        return await _ondone(data);
+    }
 }
 
 var getUrlParameter = function getUrlParameter(sParam) {
@@ -247,20 +261,25 @@ class LCMSgridController {
         var denominator = $("table[id^=grid]");
         denominator.each(function (a, b) {
             try {
-                me.grids[$(b).attr('id')] = $(b).jqGrid('getGridParam');
-                me.grids[$(b).attr('id')].colModel.forEach(function (column) {
-                    if (typeof column.editoptions !== "undefined") {
-                        if (column.editoptions.title === "internal_list") {
-                            var referenceJson = {
-                                "list": $(b).attr('id'),
-                                "attr": column.name,
-                                "refList": column.internalListName,
-                                "refAttr": column.internalListAttribute
-                            };
-                            me.references.push(referenceJson);
+                if ($(b).jqGrid('getGridParam') !== null) {
+                    me.grids[$(b).attr('id')] = $(b).jqGrid('getGridParam');
+                    me.grids[$(b).attr('id')].colModel.forEach(function (column) {
+                        if (typeof column.editoptions !== "undefined") {
+                            if (column.editoptions.title === "internal_list") {
+                                var referenceJson = {
+                                    "list": $(b).attr('id'),
+                                    "attr": column.name,
+                                    "refList": column.internalListName,
+                                    "refAttr": column.internalListAttribute
+                                };
+                                me.references.push(referenceJson);
+                            }
                         }
-                    }
-                });
+                    });
+                } else {
+                    console.log("Gridparams are null!");
+                }
+
 
 
             } catch (err) {
@@ -354,19 +373,21 @@ class LCMSEditablePage {
         this.originalDocument = "";
         this.gridController = new LCMSgridController();
         this.canvasses = new Object();
-
+        this.readonly = true;
+        this.parent = new Object();
     }
 
     buildPageData(data, _parent, _originalDocument) {
-        _parent.empty();
         console.log("Start loading page");
         var me = this;
-        var jsonData = JSON.parse(data, _parent);
+        me.parent = _parent;
+        me.parent.empty();
+        var jsonData = JSON.parse(data, me.parent);
         var grids = {};
-        jsonData.parent = _parent;
+        jsonData.parent = me.parent;
         if (typeof (jsonData.replaces) !== "undefined") {
             jsonData.webPage = replaceAll(jsonData.webPage, "LCMSEditablePage-id", jsonData.replaces["LCMSEditablePage-id"]);
-            jsonData.webPage = replaceAll(jsonData.webPage, "LCMSEditablePage-menu", jsonData.replaces["LCMSEditablePage-menu"]);
+            //jsonData.webPage = replaceAll(jsonData.webPage, "LCMSEditablePage-menu", jsonData.replaces["LCMSEditablePage-menu"]);
             me.setPageId(jsonData.replaces["LCMSEditablePage-id"]);
             console.log("Regenerating grids...");
             try {
@@ -406,12 +427,9 @@ class LCMSEditablePage {
         var webPage = $($.parseHTML(jsonData.webPage, document, true));
         var scripts = jsonData.scripts;
         var parameters = jsonData.parameters;
-
         $.each(parameters, function (key, value) {
             webPage.find("[LCMS='" + key + "']").append(value);
         });
-
-        //
         webPage.find("input[name^='canvas_']").each(function (a, b) {
             var canvas = $("<canvas style='border:1px solid' id='" + $(b).attr('id') + "'></canvas>");
             var ctx = canvas[0].getContext('2d');
@@ -429,28 +447,46 @@ class LCMSEditablePage {
                 $(b).remove();
             };
         });
-
-
-
         jsonData.parent.append(webPage);
         jsonData.parent.append("<script>" + scripts + "</script>");
-
         var editor = $($("div[id^='wrapper']")[0]);
-
         $.each(grids, function (key, value) {
-            // me.generateGrid(editor, key, value);
             me.generateGrid($("div[name*=" + key + "]").parent(), key, value);
         });
-
-
-        $.each(this.gridController.grids, function (key, value) {
+        me.toggleCtrlClick();
+        me.gridController.checkGrids();
+        $.each(me.gridController.grids, function (key, value) {
             if (typeof value.subgridref !== "undefined") {
                 value = me.option_subgrid(value, value.subgridref);
                 $("#" + key).jqGrid("setGridParam", value);
                 $("#" + key).trigger("reloadGrid");
             }
         });
+        var numEditors = me.parent.find("div[id^=editable]").length;
+        if (numEditors > 0) {
+            showLoading();
+            (async () => {
 
+                let editorsLoaded = await me.loadEditors();
+                try {
+                    me.loadSideBarMenu();
+                    $("#sidebar").BootSideMenu({side: "left"});
+                    me.afterLoadComplete();
+                    hideLoading();
+                } catch (e) {
+                    hideLoading();
+                }
+            })();
+            hideLoading();
+
+        } else {
+            me.loadSideBarMenu();
+            $("#sidebar").BootSideMenu({side: "left"});
+            me.afterLoadComplete();
+
+        }
+        $("#page-elements").remove();
+        me.setReadOnly();
 
 
     }
@@ -573,7 +609,7 @@ class LCMSEditablePage {
                     },
                     editParams: {
                         aftersavefunc: function (id) {
-                            savePage();
+                            me.savePage();
                         }
                     }
                 }
@@ -633,7 +669,7 @@ class LCMSEditablePage {
         }));
 
         documentGrid.addGridButton(new LCMSTemplateGridButton("fa-cogs", "Click here to change columns", "", function () {
-            new_grid_popup(editor, gridObject.jqGrid('getGridParam'));
+            LCMSGridForm.new_grid_form(me, gridObject.jqGrid('getGridParam'));
         }));
 
         documentGrid.addGridButton(new LCMSTemplateGridButton("fa-download", "Download selection as csv", "", function () {
@@ -821,6 +857,860 @@ class LCMSEditablePage {
             });
         };
         return options;
+    }
+
+    toggleCtrlClick() {
+        var me = this;
+        if (me.readonly === false) {
+            me.parent.find("div[id^=editable]").on('click', function (e) {
+                me.parent.find(".cke").css("border", "none");
+                if (typeof e.target.href !== 'undefined' && e.ctrlKey === true) {
+                    window.open(e.target.href, 'new' + e.screenX);
+                }
+            });
+        } else {
+            me.parent.find("div[id^=editable]").on('click', function (e) {
+                me.parent.find(".cke").css("border", "none");
+                if (typeof e.target.href !== 'undefined') {
+                    window.open(e.target.href, "_self");
+                }
+            });
+        }
+
+    }
+
+    async loadEditors() {
+        var me = this;
+        me.parent.find("div[id^=editable]").each(function (a, b) {
+            if (CKEDITOR.instances[$(b).attr('id')]) {
+                CKEDITOR.remove(CKEDITOR.instances[$(b).attr('id')]);
+            }
+            var ck = CKEDITOR.inline($(b).attr('id'));
+            ck.on('instanceReady', function (ev) {
+                console.log("CKEDITOR instance ready");
+                var editor = ev.editor;
+                console.log(editor.filter.allowedContent);
+                editor.setReadOnly(me.readonly);
+                me.toggleCKmenu(editor);
+            });
+            ;
+        });
+        return "done";
+    }
+
+    toggleCKmenu(editor) {
+        if (typeof editor !== "undefined") {
+            var elements = $("#cke_" + editor.name).find(".cke_inner");
+            if (elements.css("display") === "none") {
+                elements.css("display", "flex");
+            } else {
+                elements.css("display", "none");
+            }
+        } else {
+            if ($(".cke_inner").css("display") === "none") {
+                $(".cke_inner").css("display", "flex");
+            } else {
+                $(".cke_inner").css("display", "none");
+            }
+        }
+        console.log("Load completed");
+    }
+
+    loadSideBarMenu() {
+        var me = this;
+
+
+        console.log("loadSideBarMenu()");
+        me.parent.find("#sidebar").empty();
+        var sidebarContainer = dom_div("", "sidebar-container");
+        //---------------------------------------------------
+        var row1 = dom_row("sidebar-row-1");
+        var col1 = dom_col("sidebar-col-1", 12);
+        var div1 = dom_div("navbar-brand", "sidebar-title");
+        col1.css("text-align", "center");
+        div1.css("margin-right", "0px");
+        div1.css("margin-top", "0.5em");
+        div1.append("Menu");
+        col1.append(div1);
+        col1.append("<hr>");
+        row1.append(col1);
+        sidebarContainer.append(row1);
+        //---------------------------------------------------
+        var row2 = dom_row("sidebar-row-2");
+        var col2 = dom_col("sidebar-col-2", 12);
+        me.generate_menu(col2);
+        row2.append(col2);
+        sidebarContainer.append(row2);
+        //---------------------------------------------------
+        var row1 = dom_row("sidebar-row-1");
+        var col1 = dom_col("sidebar-col-1", 12);
+        var div1 = dom_div("navbar-brand", "sidebar-title");
+        col1.css("text-align", "center");
+        div1.css("margin-right", "0px");
+        div1.css("margin-top", "0.5em");
+        div1.append("Inhoudsopgave");
+        col1.append(div1);
+        col1.append("<hr>");
+        row1.append(col1);
+        sidebarContainer.append(row1);
+        //---------------------------------------------------
+        var row2 = dom_row("sidebar-row-2");
+        var col2 = dom_col("sidebar-col-contentmenu", 12);
+        row2.append(col2);
+        sidebarContainer.append(row2);
+        //---------------------------------------------------
+        var row1 = dom_row("sidebar-row-1");
+        var col1 = dom_col("sidebar-col-1", 12);
+        var div1 = dom_div("navbar-brand", "sidebar-title");
+        col1.css("text-align", "center");
+        div1.css("margin-right", "0px");
+        div1.css("margin-top", "0.5em");
+        //div1.append("Structuur");
+        col1.append(div1);
+        col1.append("<hr>");
+        row1.append(col1);
+        sidebarContainer.append(row1);
+        //---------------------------------------------------
+        var row3 = dom_row("sidebar-row-3");
+        var col3 = dom_col("sidebar-col-3", 12);
+        var div3 = dom_div("", "structure-container");
+        //  div3.append(dom_moveUpDownList("page-elements", $("div[id^=gbox_grid], div[id^=editable]")));
+        col3.append(div3);
+        row3.append(col3);
+        //sidebarContainer.append(row3);
+
+
+
+
+
+        me.parent.find("#sidebar").append(sidebarContainer);
+        //---------------------------------------------------
+        me.parent.find("#importTableButton").change(function () {
+            $.each(this.files, function (index, file) {
+                var reader = new FileReader();
+                var name = file.name;
+                reader.onload = function (e) {
+                    var text = reader.result;
+                    console.log(text);
+                    bootstrap_alert.warning(name, "info", 1000);
+                    LCMSGridForm.createGridBasedOnImportFile($(me.parent.find("div[id^='wrapper']")[0]), createDataAndModelFromCSV(text), name);
+                };
+                reader.readAsText(file);
+            });
+        });
+
+    }
+
+    afterLoadComplete() {
+        var me = this;
+        $.each(me.canvasses, function (a, b) {
+            var canvas = $("#" + a);
+            var ctx = canvas[0].getContext('2d');
+            var myImage = new Image();
+            var URI = b;
+            myImage.src = URI;
+            myImage.onload = function ()
+            {
+                console.log(myImage.src);
+                ctx.drawImage(myImage, 0, 0);
+            };
+            startCanvas(a);
+        });
+        if (typeof loadPageScripts !== "undefined") {
+            console.log("Load page scripts");
+            loadPageScripts();
+        }
+
+
+    }
+
+    setCKmenu(state) {
+        $(".cke_inner").css("display", state);
+    }
+
+    setReadOnly() {
+        var me = this;
+        console.log("setReadOnly()");
+        if (me.readonly) {
+            me.toggleCtrlClick();
+            me.setCKmenu("none");
+        }
+    }
+
+    edit_page() {
+        var me = this;
+        console.log("edit_page()");
+        me.toggleCtrlClick();
+        //toggleCKmenu();
+        if (me.readonly) {
+            me.readonly = false;
+            me.setCKmenu("flex");
+            // periodic_save();
+        } else {
+            me.readonly = true;
+            me.setCKmenu("none");
+
+        }
+        me.parent.find("div[contenteditable]").each(function (a, b) {
+            if (typeof CKEDITOR.instances[b.id] !== "undefined") {
+                CKEDITOR.instances[b.id].setReadOnly(me.readonly);
+            }
+        });
+        me.parent.find("#edit-menu button").each(function (index, btn) {
+            if ($(btn).prop('disabled') === true) {
+                $(btn).prop('disabled', false);
+            } else {
+                $(btn).prop('disabled', true);
+            }
+
+        });
+    }
+
+    new_editable_field() {
+        console.log("new_editable_field()");
+        var me = this;
+        var editor = $(me.parent.find("div[id^='wrapper']")[0]);
+        var editable_field = $("<div id='editable_" + uuidv4() + "' contenteditable='true'><p>Nieuw bewerkbaar veld</p></div>");
+        editor.append(editable_field);
+        var ck = CKEDITOR.inline(editable_field.attr('id'));
+
+        ck.on('instanceReady', function (ev) {
+            var editor = ev.editor;
+            editor.setReadOnly(false);
+        });
+
+        return editable_field;
+    }
+
+    generate_menu(_parent) {
+        console.log("generate menu");
+        var me = this;
+        var div_page_menu = $('<div id="div-page-menu"></div>');
+        div_page_menu.appendTo(_parent);
+        var btn_page_edit = $('<button type="button" id="btn-page-edit" class="btn btn-info"><i class="fa fa-lg fa-fw fa-edit"></i><span>Bewerken</span></button>');
+        $(document).on('click', '#btn-page-edit', function (e) {
+            me.edit_page();
+        });
+        btn_page_edit.appendTo(div_page_menu);
+        var edit_menu = $('<div id="edit-menu"></div>');
+        var btn_page_save = $('<button type="button" id="btn-page-save" class="btn btn-primary" disabled><i class="fa fa-lg fa-fw fa-save"></i><span>Opslaan</span></button>');
+        $(document).on('click', '#btn-page-save', function (e) {
+            me.savePage();
+        });
+        var btn_invoegen = $('<button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#collapseInvoegen" role="button" aria-expanded="false" aria-controls="collapseInvoegen" disabled>Invoegen</button>');
+        var div_invoegen = $('<div class="collapse" id="collapseInvoegen"></div>');
+        var div_card_invoegen = $('<div class="card card-body"></div>');
+        var btn_tekstveld = $('<button type="button" id="btn-new-editable-field" class="btn btn-primary" disabled><i class="fa fa-lg fa-fw fa-align-justify"></i><span>Tekstveld</span></button>');
+        $(document).on('click', '#btn-new-editable-field', function (e) {
+            me.new_editable_field();
+        });
+        var btn_jqgrid = $('<button type="button" id="btn-new-jqgrid" class="btn btn-primary" disabled><i class="fa fa-lg fa-fw fa-table"></i><span>Tabel</span></button>');
+        $(document).on('click', '#btn-new-jqgrid', function (e) {
+            LCMSGridForm.new_grid_wizard(me);
+        });
+        var btn_acties = $('<button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#collapseActies" role="button" aria-expanded="false" aria-controls="collapseActies" disabled>Acties</button>');
+        var div_acties = $('<div class="collapse" id="collapseActies"></div>');
+        var div_card_acties = $('<div class="card card-body"></div>');
+        var btn_importeer_tabel = $('<label class="btn btn-primary btn-file"><i class="fa fa-lg fa-fw fa-th"></i><span>Importeer</span> <input id="importTableButton" type="file" style="display: none;"></label>');
+        var btn_exporteer = $('<button type="button" id="btn-export-html" class="btn btn-primary" disabled><i class="fa fa-lg fa-fw fa-download" ></i><span>Download</span></button>');
+        btn_exporteer.on("click", function () {
+            me.exportToHTML();
+        });
+
+        edit_menu.appendTo(div_page_menu);
+        btn_page_save.appendTo(edit_menu);
+        btn_invoegen.appendTo(edit_menu);
+        div_invoegen.appendTo(edit_menu);
+        div_card_invoegen.appendTo(div_invoegen);
+        btn_tekstveld.appendTo(div_card_invoegen);
+        btn_jqgrid.appendTo(div_card_invoegen);
+        btn_acties.appendTo(edit_menu);
+        div_acties.appendTo(edit_menu);
+        div_card_acties.appendTo(div_acties);
+        btn_importeer_tabel.appendTo(div_card_acties);
+        btn_exporteer.appendTo(div_card_acties);
+
+        var div_public_menu = $('<div id="public-menu"></div>');
+        var btn_page_history = $('<button type="button" id="btn-page-history" class="btn btn-primary" onclick="documentPage.getHistory()"><i class="fa fa-lg fa-fw fa-history"></i><span>Versies</span></button>');
+        var history_table = $('<table id="history-table"></table>');
+        var history_pager = $(' <div id="history-pager"></div>');
+        div_public_menu.appendTo(div_page_menu);
+        btn_page_history.appendTo(div_public_menu);
+        history_table.appendTo(div_public_menu);
+        history_pager.appendTo(div_public_menu);
+
+
+    }
+
+//-------------DIT KAN MISCCHIEN IN EEN APPARTE STATISCHE KLASSE STAAN
+
+
+
+}
+
+class LCMSGridForm {
+
+//    constructor(_parent, editablePage) {
+//        this.parent = _parent;
+//        this.editablePage = editablePage;
+//    }
+
+    static new_grid_wizard(_editablePage, colModel, extraOptions, importCSV, _gridData, gridId, location) {
+        console.log("new_grid_form()");
+        var me = this;
+        if (typeof colModel === 'undefined') {
+            me.new_grid_form(_editablePage);
+        } else {
+
+            var editable = $("div[id^=editable_]");
+            if (editable.length === 0) {
+                editable = _editablePage.new_editable_field();
+            }
+            var uuid = gridId;
+            var editor = $("<div contenteditable='false' class='no-change' id='master_" + uuid + "'></div>");
+            $("#" + editable.attr('id')).appendOrReplace(editor);
+
+
+            var grid = $("<table id='" + uuid + "'></table>");
+            var pager = $("<div id='pager_" + uuid + "'></div>");
+            if (typeof location !== "undefined") {
+                location.after(grid);
+                location.after(pager);
+            } else {
+                editor.append(grid);
+                editor.append(pager);
+            }
+            var data = [];
+            importCSV.forEach(function split(a) {
+                var line = a;
+                var lineObject = {};
+                var colNames = filterUnique($.map(colModel, function (el) {
+                    return el;
+                }), 'name');
+                line.forEach(function split(a, b) {
+                    lineObject[colNames[b]] = a;
+                });
+                data.push(lineObject);
+            });
+            _gridData = Object.assign(_gridData, data);
+            var gridData = {
+                data: {table: _gridData, header: colModel},
+                editAction: " ",
+                editUrl: " ",
+                tableObject: gridId,
+                pagerID: pager.attr('id'),
+                wrapperObject: editor,
+                jqGridOptions: {
+                    pager: "#" + pager.attr('id'),
+                    autowidth: true,
+                    autoheight: true,
+                    rownumbers: true,
+                    //colModel: colModel,
+                    caption: extraOptions.caption
+                },
+                jqGridParameters: {
+                    navGridParameters: {
+                        add: true,
+                        save: true,
+                        del: true,
+                        cancel: true,
+                        addParams: {
+                            rowID: function (options) {
+                                return "row_" + uuidv4();
+                            },
+                            position: "last",
+                            addRowParams: {
+                                rowID: function (options) {
+                                    return "row_" + uuidv4();
+                                },
+                                position: "last",
+                                keys: true
+                            }
+                        },
+                        editParams: {
+                            aftersavefunc: function (id) {
+                                me._editablePage.savePage();
+                            }
+                        }
+                    }
+                }
+            };
+            $.each(extraOptions, function (i, n) {
+                gridData.jqGridOptions[i] = n;
+            });
+            let documentGrid = new LCMSGrid(gridData);
+            var gridObject = documentGrid.createGrid();
+            me._editablePage.addGridButtons(documentGrid, gridObject, gridData, editor);
+            return gridObject;
+
+        }
+
+
+
+    }
+
+    static new_grid_form(_editablePage, _gridData) {
+        console.log("new_grid_form()");
+        var me = this;
+        var modal = create_modal(_editablePage.parent, "Tabel invoegen of wijzigen", "");
+
+        var form = me.createForm(modal.find("div[class='modal-body']"), _gridData, modal, _editablePage);
+        modal.modal('show');
+
+        modal.find("button[id=btn-save]").on('click', function (e) {
+            e.preventDefault();
+            modal.modal('hide');
+
+            var colModelWrapper = me.createColModel(form, _gridData, _editablePage); //1. create new colModel
+            var newColumns = filterUniqueJson(colModelWrapper.colModel, "name"); //2. remove unused rows of data
+            if (typeof _gridData !== "undefined") {
+                _gridData.data = removeUnusedDataFromJqGrid(newColumns, _gridData.data, colModelWrapper.options.renames);
+            }
+            var gridId = me.createGridBasedOnModel(_gridData, colModelWrapper, _editablePage); //3. create new grid based on colModel
+
+
+
+
+        });
+
+        modal.on('hidden.bs.modal', function (e) {
+            modal.remove();
+        });
+
+    }
+
+    static createGridBasedOnModel(_gridData, _colModelWrapper, _editablePage) {
+        console.log("createGridBasedOnModel()");
+        var me = this;
+        var data = [];
+        var importCSV = [];
+        if (typeof _colModelWrapper.options.importCSV !== "undefined") {
+            importCSV = _colModelWrapper.options.importCSV;
+        }
+
+        var gridId;
+        if (typeof _gridData !== "undefined") {
+            var gridData = $.extend(true, [], _gridData);//_gridData.clone();
+            gridId = gridData.id;
+            _editablePage.parent.find(("div[id^=gbox_" + gridData.id + "]")).each(function (a, b) {
+                $(b).after("<div name='" + gridData.id + "'></div>");
+                $(b).remove();
+            });
+            _editablePage.parent.find(("div[id^=pager_gbox_" + gridData.id + "]")).each(function (a, b) {
+                $(b).remove();
+            });
+            $('#' + _gridData.id).jqGrid('GridUnload');
+
+
+
+            me.new_grid_wizard(_editablePage, _colModelWrapper.colModel, _colModelWrapper.options, importCSV, gridData.data, gridData.id);//, $("div[name=" + gridData.id + "]"));
+            $("div[name=" + gridData.id + "]").remove();
+        } else {
+            gridId = "grid_" + uuidv4();
+            me.new_grid_wizard(_editablePage.parent.attr('id'), _colModelWrapper.colModel, _colModelWrapper.options, importCSV, data, gridId);
+        }
+
+        return gridId;
+    }
+
+    static createGridBasedOnImportFile(_editablePage, importData, caption) {
+        var me = this;
+        var gridId = "grid_" + uuidv4();
+        return new_grid_wizard(_editablePage, importData.colModel, {caption: caption}, [], importData.table, gridId);
+    }
+
+    static createColModel(form, _gridData, _editablePage) {
+        var me = this;
+        console.log("createColModel from Form()"); //deze moet in lcms.js komen te staan
+        var modalArray = form.serializeArray();
+        var options = new Object();
+        var colModel = new Object();
+        var c = -1;
+        var summaries = [];
+        var groups = [];
+        var subgridref = {};
+        var renames = new Object();
+
+        $.each(modalArray, function (i, val) {
+            if (val.name === 'name') {
+                c++;
+                colModel[c] = new Object();
+                colModel[c].name = val.value;
+            }
+            if (val.name === 'type') {
+                colModel[c].type = val.value;
+            }
+            if (val.name === 'choices') {
+                colModel[c].choices = val.value.split(/\r\n/);
+                var choices = {};
+                $.each(colModel[c].choices, function (a, b) {
+                    if (b !== "") {
+                        choices[b] = b;
+                    }
+                });
+                colModel[c].choices = choices;
+            }
+            if (val.name === 'internalListName') {
+                colModel[c].internalListName = val.value;
+            }
+            if (val.name === 'internalListAttribute') {
+                colModel[c].internalListAttribute = val.value;
+                colModel[c].choices = getValuesOfAttributeInList(colModel[c].internalListName, colModel[c].internalListAttribute);
+            }
+            if (val.name.match("^option")) {
+                var option = val.name.substring(7);
+                if (option === 'hidden') {
+                    if (val.value === "on") {
+                        colModel[c].hidden = true;
+                        colModel[c].visibleOnForm = true;
+                    }
+                }
+                if (option === 'multiple') {
+                    colModel[c].multiple = true;
+                }
+                if (option === 'rename') {
+                    renames[val.value] = colModel[c].name;
+                }
+
+                if (option === 'summary') {
+                    summaries.push(val.value);
+                    Object.keys(colModel).forEach(function (i) {
+                        if (colModel[i].name === val.value) {
+                            colModel[i].summaryTpl = [
+                                "<span style=''>Subtotaal: {0}</span>"
+                            ];
+                            colModel[i].summaryType = ["sum"];
+                            colModel[i].template = "number";
+                        }
+                    });
+                }
+                if (option === 'group') {
+                    groups.push(val.value);
+                }
+                if (option === 'subgridref') {
+                    subgridref.colNames = getJQGridParamByCaption(val.value).colNames;
+                    subgridref.colModel = getJQGridParamByCaption(val.value).colModel;
+                    subgridref.gridId = getJQGridParamByCaption(val.value).id;
+
+                }
+                options[val.name.substring(7)] = val.value;
+            }
+            if (val.name.match("^import")) {
+                if (val.value.length > 0) {
+                    options.importCSV = CSVToArray(val.value, ",");
+                }
+            }
+        });
+
+        if ($.isEmptyObject(renames) === false) {
+            options.renames = renames;
+        }
+        if (summaries.length > 0) {
+            options.summaries = summaries;
+            options.footerrow = true;
+            options.userDataOnFooter = true;
+            options.loadComplete = function () {
+                var sumJson = {};
+                var grid = $(this);
+                summaries.forEach(function (a) {
+                    sumJson[a] = grid.jqGrid("getCol", a, false, "sum");
+                });
+                $(this).jqGrid("footerData", "set", sumJson);
+            };
+        } else {
+            options.footerrow = false;
+        }
+        if (groups.length > 0) {
+            options.groups = groups;
+            options.grouping = true;
+            options.groupingView = {
+                groupField: groups,
+//            groupColumnShow: [true],
+                groupText: ['<b>{0} - {1} Item(s) </b>'],
+//            groupCollapse: false,
+//            groupSummaryPos: ["header"],
+//            groupSummary: [false]
+
+                hideFirstGroupCol: true,
+                showSummaryOnHide: false,
+                groupColumnShow: [false],
+                groupSummaryPos: ["header"],
+                groupSummary: [true]
+
+            };
+
+        } else {
+            options.grouping = false;
+        }
+
+        if (typeof subgridref.colNames !== "undefined") {
+            options.subgridref = subgridref;
+            options = me._editablePage.option_subgrid(options, subgridref);
+
+
+        }
+
+        return {"colModel": colModel, "options": options};
+    }
+
+    static createForm(_parent, _griddata, _modal, _editablepage) {
+        console.log("createForm()");
+        var me = this;
+        if (typeof _griddata === 'undefined') {
+            _griddata = {};
+        }
+        var form = $("<form></form>");
+        var container = $("<div class='container'></div>");
+        var addRowButton = $("<button type='button' class='btn btn-primary'>Add column</button>");
+        form.append(container);
+        form.append(forms_textbox("Titel", "option_caption", "option_caption", _griddata.caption));
+        form.append(forms_checkbox("Geminimaliseerd starten", "option_hiddengrid", "option_hiddengrid", _griddata.hiddengrid));
+        form.append(forms_textarea("Importeer CSV", "import", "import"));
+        form.append(addRowButton);
+        me.addHeader(form);
+
+        if (typeof _griddata.colModel !== 'undefined') {
+            var colModel = _griddata.colModel;
+            for (var key in colModel) {
+                if (typeof colModel[key].name !== 'undefined') {
+                    if (colModel[key].name !== "rn" && colModel[key].name !== "cb" && colModel[key].name !== "subgrid") {
+                        me.addRow(form,
+                                uuidv4(),
+                                colModel[key],
+                                _editablepage,
+                                _griddata);
+                    }
+                }
+            }
+        } else {
+            me.addRow(form, uuidv4(), {}, _editablepage, _griddata);
+        }
+        addRowButton.on('click', function (e) {
+            me.addRow(form, uuidv4(), {}, _editablepage, _griddata);
+        });
+
+        //OPTIE SAMENVATTING START
+        var obj = [];
+        form.find("div[class*=row]").each(function (a, b) {
+            var name = $(b).find("input[name=name]").val();
+            var id = $(b).find("input[name=name]").attr('id');
+            if (typeof id !== "undefined") {
+
+                obj.push({id, name});
+            }
+        });
+        form.append(forms_select("Samenvatting van: ", "option_summary", "option_summary", obj, _griddata.summaries));
+        //OPTIE SAMENVATTING EINDE
+        form.append(forms_select("Groeperen op: ", "option_group", "option_group", obj, _griddata.groups));
+
+        // if (isEmptyObj(Object.filter(documentPage.gridController.references, reference => reference.list === _griddata.id))) {
+        var gridReferences = [];
+        _editablepage.gridController.references.forEach(function (item) {
+            var id = item.list;
+            var name = me._editablepage.gridController.grids[id].caption;
+            gridReferences.push({id, name});
+
+        });
+        form.append(forms_select("Subgrid van: ", "option_subgridref", "option_subgridref", gridReferences, _griddata.subgrid));
+        // }
+
+
+
+        var deleteContentButton = $("<button type='button' style='margin-right: 5px;' class='btn btn-warning'>Verwijder inhoud</button>");
+        form.append(deleteContentButton);
+        deleteContentButton.on('click', function (e) {
+            $("#" + _griddata.id).jqGrid("clearGridData", true);
+        });
+        var deleteTableButton = $("<button type='button' class='btn btn-danger'>Verwijder tabel</button>");
+        form.append(deleteTableButton);
+        deleteTableButton.on('click', function (e) {
+            $("#" + _griddata.id).remove();
+            $("#" + _griddata.id).jqGrid('GridUnload');
+            $("#" + _griddata.id).jqGrid('GridDestroy');
+            $("#gbox_" + _griddata.id).remove();
+            _modal.modal('hide');
+
+        });
+
+
+        _parent.append(form);
+        return form;
+    }
+
+    static addHeader(parent) {
+        var me = this;
+        var row = $("<div class='row'></div>");
+        row = me.addLabel(row, "Naam", 4);
+        row = me.addLabel(row, "Type", 4);
+        row = me.addLabel(row, "Verborgen", 2);
+        row = me.addLabel(row, "", 2);
+        parent.append(row);
+        return parent;
+
+    }
+
+    static addLabel(parent, text, colWidth) {
+        var col = $("<div class='col-sm-" + colWidth + " mx-auto'></div>");
+        var formGroup = $("<div class='form-group'></div>");
+        var label = $("<label><center>" + text + "</center></label>");
+
+        formGroup.append(label);
+        col.append(formGroup);
+
+        parent.append(col);
+
+        return parent;
+
+
+    }
+
+    static addElement(parent, element, colWidth, clazz) {
+        var col = $("<div class='col-sm-" + colWidth + " mx-auto' style='text-align:center;top: 5px;'></div>");
+        var formGroup = $("<div class='" + clazz + "'></div>");
+        formGroup.append(element);
+        col.append(formGroup);
+        parent.append(col);
+        return parent;
+    }
+
+    static addRow(parent, elementID, colModelValue, _editablepage, _griddata) {
+        console.log("addRow()");
+        var me = this;
+        var nameVal = colModelValue.name;
+        var typeVal = colModelValue.edittype || colModelValue.formatter || colModelValue.template;
+        var choiceList = colModelValue.editoptions;
+        var visibleVal = colModelValue.hidden;
+
+
+
+        var row = dom_div("row row-striped");
+
+        var element1 = $("<input type='text' class='form-control' name='name' id='name-" + elementID + "' placeholder='fieldname'>");
+        element1.val(nameVal);
+        row = me.addElement(row, element1, 4, "form-group");
+
+        var element2 = $("<select class='form-control' name='type' id='type-" + elementID + "'><option value='text'>Tekst</option><option value='number'>Getal</option><option value='boolean'>Ja/Nee</option><option value='euro'>Euro</option><option value='cktext_code'>Code</option><option value='date'>Datum</option><option value='cktext'>Tekst met opmaak</option><option value='select'>Keuzelijst</option><option value='internal_list' multiple='true'>Interne lijst</option><option value='external_list'>Externe lijst</option><option value='multiply'>Vermenigvuldiging</option></select>");
+        if (typeVal === "textarea" && colModelValue.editoptions.title === "ckedit") {
+            typeVal = "cktext";
+        }
+        if (typeVal === "textarea" && colModelValue.editoptions.title === "ckedit_code") {
+            typeVal = "cktext_code";
+        }
+        if (typeVal === "select" && colModelValue.editoptions.title === "internal_list") {
+            typeVal = "internal_list";
+        }
+        if (typeVal === "select" && colModelValue.editoptions.title === "external_list") {
+            typeVal = "external_list";
+        }
+        if (typeVal === "checkbox") {
+            typeVal = "booleanCheckbox";
+        }
+
+        if (typeof typeVal !== "undefined") {
+            if (typeVal.sorttype === "number") {
+                typeVal = "number";
+            }
+        }
+
+        element2.val(typeVal);
+        row = me.addElement(row, element2, 4, "form-group");
+
+        var element3 = $("<input type='checkbox' class='form-check-input' name='option_hidden' id='hidden-" + elementID + "' placeholder='fieldname'>");
+        element3.attr("checked", visibleVal);
+        row = me.addElement(row, element3, 2, "form-check");
+
+        var element4 = $("<button type='button' class='btn btn-secondary'>X</button>");
+        row = me.addElement(row, element4, 2, "form-group");
+
+        element1.on('change', function (e) {
+            if ($("#option_rename-name-" + elementID).length < 1 && typeof nameVal !== "undefined") {
+                if (element1.val !== nameVal) {
+                    element1.after(forms_hidden("option_rename-name-" + elementID, "option_rename", nameVal));
+                }
+
+            }
+        });
+
+
+        var currentRows = [];
+
+        $.each(_editablepage.gridController.grids, function (a, b) {
+            var id = a;
+            var name = b.caption;
+            currentRows.push({id, name});
+        });
+
+        element2.on('change', function (e) {
+            var val = this.value;
+            if (this.value === 'select') {
+                element2.after(forms_textarea('Keuzelijst', "choicelist-" + elementID, "choices"));
+            } else {
+                parent.find("div[id='" + "choicelist-" + elementID + "']").remove();
+            }
+            if (this.value === 'internal_list') {
+                me.createInternalList(parent, element2, elementID, _editablepage);
+
+            } else {
+                parent.find("div[id='" + "select-" + elementID + "']").remove();
+                parent.find("div[id='" + "select-attribute-" + elementID + "']").remove();
+            }
+            if (this.value === "multiply") {
+                element2.after(forms_select("Vermenigvuldig velden: ", "option_multiply", "option_multiply", getAttributesOfGrid(_griddata.caption), {}));
+            }
+
+        });
+
+
+
+        if (typeVal === "select") {
+            element2.after(forms_textarea('Keuzelijst', "choicelist-" + elementID, "choices", choiceList.value));
+        }
+        if (typeVal === "internal_list") {
+            element2.after(forms_select("Kies attribuut: ", "select-attribute-" + elementID, "internalListAttribute", getAttributesOfGrid(colModelValue.internalListName), colModelValue.internalListAttribute));
+            element2.after(forms_select("Kies tabel: ", "select-" + elementID, "internalListName", getGridsInDocument(), colModelValue.internalListName));
+            element2.after(forms_hidden("option_multiple", "option_multiple", true));
+        }
+        if (typeVal === "external_list") {
+
+        }
+
+
+
+
+
+
+
+//    if(choiceList.length){
+//                
+//    }
+
+        element4.on('click', function (e) {
+            row.remove();
+        });
+
+
+        parent.append(row);
+        return parent;
+
+    }
+
+    static createInternalList(parent, insetAfterObject, elementID, _editablePage) {
+        var obj = [];
+        $.each(_editablePage.gridController.grids, function (a, b) {
+            var id = a;
+            var name = b.caption;
+            obj.push({id, name});
+        });
+
+        var forms_select_internal_list = forms_select("Kies tabel: ", "select-" + elementID, "internalListName", obj, "");
+        insetAfterObject.after(forms_select_internal_list);
+        $("#select-" + forms_select_internal_list.attr("id")).on('change', function (e) {
+            parent.find("div[id='" + "select-attribute-" + elementID + "']").remove();
+            var obj = getAttributesOfGrid(this.value);
+            var forms_select_attribute = forms_select("Kies attribuut: ", "select-attribute-" + elementID, "internalListAttribute", obj, "");
+            forms_select_internal_list.after(forms_select_attribute);
+        });
+
     }
 
 }
@@ -1024,6 +1914,7 @@ class LCMSGrid {
         var cols = new Array();
         var view = [];
         var me = this;
+        var formatters = loadFormatters();
         $.each(_data, function (index, value) {
             var column = {};
             column.label = value.name;
@@ -1064,6 +1955,11 @@ class LCMSGrid {
             }
             if (type === "boolean") {
                 column.template = "booleanCheckbox";
+            }
+
+            if (type === "multiply") {           
+       
+                column.formatter = formatters["multiply"];
             }
 
             if (type === "internal_list") {
@@ -1346,6 +2242,10 @@ class LCMSGrid {
 //            }
 
         };
+
+        jqgridOptions.colModel = jqgridOptions.colModel.filter(function (el) {
+            return el !== null;
+        });
 
         $("#" + gridData.tableObject).jqGrid(jqgridOptions);
 

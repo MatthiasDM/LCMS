@@ -47,6 +47,7 @@ import static gcms.Core.readAllLines;
 import static gcms.Core.search;
 import gcms.GsonObjects.Core.Command;
 import gcms.GsonObjects.Core.MongoConfigurations;
+import gcms.credentials.Cryptography;
 import gcms.database.DatabaseActions;
 import gcms.database.DatabaseWrapper;
 import java.io.ByteArrayOutputStream;
@@ -65,11 +66,11 @@ public class commandFunctions {
     public static StringBuilder doCommand(String name, Map<String, String[]> parameters, Command command) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
         name = command.getCommand();
         StringBuilder sb = new StringBuilder();
-     
+
         Integer executionCount = Integer.parseInt(command.getExecutionCount());
         Integer executionLimit = Integer.parseInt(command.getExecutionLimit());
         Integer executionInterval = Integer.parseInt(command.getExecutionLimitInterval());
-        
+
         if (name.equals("dobacklog")) {
             sb.append(command_doBacklog(parameters, command));
         }
@@ -84,6 +85,12 @@ public class commandFunctions {
         }
         if (name.equals("doGetKPI")) {
             sb.append(command_doGetKPI(parameters));
+        }
+        if (name.equals("doGetFiles")) {
+            sb.append(command_doGetFiles(parameters, command));
+        }
+        if (name.equals("doGenerateHash")) {
+            sb.append(command_doGenerateHash(parameters, command));
         }
         return sb;
     }
@@ -130,7 +137,7 @@ public class commandFunctions {
         });
 
         try {
-            String receiverList = String.join(",", receivers.toArray(new String[receivers.size()]));      
+            String receiverList = String.join(",", receivers.toArray(new String[receivers.size()]));
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(from));
             message.setRecipients(Message.RecipientType.TO,
@@ -208,7 +215,7 @@ public class commandFunctions {
         classNameSuffix = classNameSuffix.substring(classNameSuffix.lastIndexOf("."));
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(parameters.get("LCMS_session")[0], mongoConfiguration, and(regex("className", Pattern.compile(".*" + classNameSuffix))), null, 1000, new String[]{});
         //if no result found, try with other classname by searching for matching one in mongoconfigurations based on last word of object_type
-         
+
         MongoConfigurations objectConfiguration = mapper.convertValue(results.get(0), gcms.GsonObjects.Core.MongoConfigurations.class);
         Map<String, Object> objectHashMap = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session")[0], objectConfiguration, and(eq(objectConfiguration.getIdName(), parameters.get("parameters[object_id]")[0])));
         DatabaseWrapper.revertChanges(backlogs, objectHashMap, objectConfiguration);
@@ -216,10 +223,8 @@ public class commandFunctions {
         //Class cls = Class.forName(objectConfiguration.getClassName());
         //Object databaseItem = mapper.readValue(mapper.writeValueAsString(objectHashMap), cls);//createNoteObject(requestParameters.get("docid")[0], "create");
         //sb.append(mapper.writeValueAsString(databaseItem));
-
         sb = DatabaseWrapper.actionGETOBJECT_prepareObject(parameters.get("LCMS_session")[0], DatabaseActions.getMongoConfiguration(objectConfiguration.getMongoconfigurationsid()), false, objectHashMap);
-        
-        
+
         return sb;
 
     }
@@ -240,7 +245,7 @@ public class commandFunctions {
         //BasicDBObject obj = BasicDBObject.parse(mapper.(result));
         Map<String, Map> contentMap = mapper.readValue(result, Map.class);
         Map<String, Map> grids = contentMap.get("grids");
-        Map grid = grids.values().stream().findFirst().filter(m -> m.get("caption").equals(table)).get();
+        Map grid = grids.values().stream().filter(m -> m.get("caption").equals(table)).findFirst().get();
         sb.append(mapper.writeValueAsString(grid));
         return sb;
     }
@@ -292,4 +297,37 @@ public class commandFunctions {
         return sb;
     }
 
+    private static StringBuilder command_doGetFiles(Map<String, String[]> parameters, Command command) throws IOException {
+        StringBuilder sb = new StringBuilder();
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jsonData = mapper.createObjectNode();
+        Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
+        });
+
+        for (Map.Entry<String, String> entry : commandParameters.entrySet()) {
+            List<String> lines = new ArrayList<>();
+            try ( Stream<String> stream = Files.lines(Paths.get(entry.getValue()), Charset.forName("ISO-8859-1"))) {
+                lines = stream
+                        .map(String::toUpperCase)
+                        .filter(line -> line.contains("'"))
+                        .collect(Collectors.toList());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            jsonData.put(entry.getKey(), mapper.writeValueAsString(lines));
+        }
+        sb.append(jsonData);
+        return sb;
+    }
+
+    private static StringBuilder command_doGenerateHash(Map<String, String[]> parameters, Command command) throws IOException {        
+        StringBuilder sb = new StringBuilder();
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jsonData = mapper.createObjectNode();
+        Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
+        });
+        sb.append(Cryptography.hash(parameters.get("parameters[passwordInput]")[0]));
+        return sb;
+    }
 }

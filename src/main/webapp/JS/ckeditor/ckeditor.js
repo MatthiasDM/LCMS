@@ -5242,8 +5242,8 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
             };
         CKEDITOR.keystrokeHandler.prototype = {
             attach: function(a) {
-                a.on("keydownzz", d, this);//zz
-                if (CKEDITOR.env.gecko && CKEDITOR.env.mac) a.on("keypresszz", b, this)//zz
+                a.on("keydown", d, this);//zz
+                if (CKEDITOR.env.gecko && CKEDITOR.env.mac) a.on("keypress", b, this)//zz
             }
         }
     })();

@@ -32,7 +32,7 @@ function config2(publicPage) { //for inline editing
             {name: 'forms', groups: ['forms']},
             {name: 'colors', groups: ['colors']},
             {name: 'basicstyles', groups: ['basicstyles', 'cleanup']},
-            {name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph', 'mdmUploadFiles']},
+            {name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph', 'mdmUploadFiles', 'undo']},
             {name: 'links', groups: ['links']},
             {name: 'insert', groups: ['insert']},
             {name: 'styles', groups: ['styles']},
@@ -46,7 +46,7 @@ function config2(publicPage) { //for inline editing
         config.templates_replaceContent = false;
         config.extraPlugins = 'mdmUploadFiles,codesnippet,pre,codemirror,sourcedialog,widget,dialog,mdmjexcel,templates,plantuml';
         config.format_tags = 'div';
-        config.removeButtons = 'Source,Save,Cut,Undo,Redo,Copy,MenuButton,Preview,Print,PasteText,Paste,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,NewPage,Outdent,Indent,CreateDiv,Blockquote,JustifyLeft,JustifyCenter,JustifyRight,JustifyBlock,Language,BidiRtl,Unlink,BidiLtr,Flash,Table,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Format,Font,Maximize,ShowBlocks,About,RemoveFormat,CopyFormatting,Subscript,Superscript';//Anchor
+        config.removeButtons = 'Source,Save,Undo,Cut,Redo,Copy,MenuButton,Preview,Print,PasteText,Paste,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,NewPage,Outdent,Indent,CreateDiv,Blockquote,JustifyLeft,JustifyCenter,JustifyRight,JustifyBlock,Language,BidiRtl,Unlink,BidiLtr,Flash,Table,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Format,Font,Maximize,ShowBlocks,About,RemoveFormat,CopyFormatting,Subscript,Superscript';//Anchor
         config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';
         config.startupShowBorders = false;
         config.height = 500;
@@ -98,7 +98,7 @@ function ckOnInstanceReady(e, imageController) {
         editor.dropzone.destroy();
     }
 
-    if (Dropzone.instances.length < 1) {
+    if (editor.dropzone.destroy !== "undefined") {
         editor.dropzone({
             url: "./upload",
             clickable: false,
@@ -193,7 +193,7 @@ function loadTOC(editors, appendTo) {
     $.each(editors, function (index, editor) {
         var editorContents = $("#" + editor.name);
         editorContents.find("span[class*=heading]").remove();
-        var editorHeaders = editorContents.find("h1, h2, h3, h4, h5, h6");
+        var editorHeaders = editorContents.find("h1[class=heading], h2[class=heading], h3[class=heading], h4[class=heading], h5[class=heading], h6[class=heading]");
 
         editorHeaders.each(function (index) {
             var currentHeader = this.tagName.substr(1, this.tagName.length);

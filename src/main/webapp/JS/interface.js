@@ -63,7 +63,54 @@ $(function () {
         }
     };
 
+
 });
+
+function getAttributesOfGrid(_gridName) {
+    var obj = [];
+    $("table[id^=grid]").each(function (a, b) {
+        var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
+        if (name === _gridName) {
+            var names = $(b).jqGrid('getGridParam').colNames;
+            names.forEach(function (a) {
+                if (a !== "") {
+                    var name = a;
+                    var id = a;
+                    obj.push({id, name});
+                }
+            });
+        }
+    });
+    return obj;
+}
+
+function removeUnusedDataFromJqGrid(_columns, _data, _renames) {
+    console.log("removeUnusedDataFromJqGrid()");
+    var data = _data;
+    data.forEach(function (object, index) {
+        for (var property in object) {
+            if (property !== "id") { //The rowID may never be deleted!
+                if (object.hasOwnProperty(property)) {
+
+                    if (typeof _renames !== "undefined") {
+                        if (typeof _renames[property] !== "undefined") {
+                            object[_renames[property]] = object[property];
+                            delete object[property];
+                        }
+                    }
+
+                    if (_columns.includes(property) === false) {
+                        delete object[property];
+                    }
+
+                }
+            }
+
+        }
+    });
+    return data;
+}
+
 
 function loadParameters(jsonData) {
     var webPage = $($.parseHTML(jsonData.webPage, document, true));
@@ -705,4 +752,27 @@ async function loadTemplates() {
     await onDone(request);
 
 }
+
+async function loadFormatters() {
+
+    var templates = [];
+    async function onDone(data) {
+        var formatters = {};
+console.log("Adding formatters...");
+        var jsonData = JSON.parse(data);
+        $.each(jsonData.data, function (a, b) {
+            formatters[b.title] = eval(b.function);
+        });
+        return formatters;
+    }
+    var requestOptions = {};
+    requestOptions.action = "docommand";
+    requestOptions.k = "getFormatters";
+    // requestOptions.title = "Configurationtables";
+    //requestOptions.table = "Templates";
+    let request = await LCMSRequest("./servlet", requestOptions);
+    await onDone(request);
+
+}
+
 

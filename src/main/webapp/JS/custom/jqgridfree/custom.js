@@ -231,7 +231,6 @@ function isEmptyObj(obj) {
     return true;
 }
 
-
 function test() {
 
     var btn1 = addBtn('padding:2px;border-style:solid;border-width:1px;width:auto;min-width:60px;margin-right:5px', 'Hulpmiddelen', "btnHulpmiddelen");

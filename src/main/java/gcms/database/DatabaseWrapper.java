@@ -694,17 +694,17 @@ public class DatabaseWrapper {
 
         if (_mongoConf.collection.equals("pages") || _mongoConf.collection.equals("document")) {
             List<String> editRights = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
-            String menu = "";
-            if (editRights.contains("contents")) {
-                menu = loadWebFile("pages/template/menu.html");
-            }
+//            String menu = "";
+//            if (editRights.contains("contents")) {
+//                menu = loadWebFile("pages/template/menu.html");
+//            }
             ObjectNode jsonReplaces = mapper.createObjectNode();
             jsonReplaces.put("LCMSEditablePage-id", searchResult.get(_mongoConf.getIdName()).toString());
             jsonReplaces.put("LCMSEditablePage-content", searchResult.get("contents").toString());
-            if (_mongoConf.collection.equals("document")) {
-                menu = menu.replaceAll("documentPage", _mongoConf.collection + "PageObject");
-            }
-            jsonReplaces.put("LCMSEditablePage-menu", menu);
+//            if (_mongoConf.collection.equals("document")) {
+//                menu = menu.replaceAll("documentPage", _mongoConf.collection + "PageObject");
+//            }
+           // jsonReplaces.put("LCMSEditablePage-menu", menu);
             searchResult.put("contents", "");
 
             jsonParameters.put("public", publicPage);
