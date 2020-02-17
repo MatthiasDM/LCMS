@@ -290,7 +290,11 @@
                             // Load the content
                             console.log("CODEMIRROR: Loading content from ckeditor");
                             var data = editor.element.getHtml() !== "" ? editor.element.getHtml() : editor.getData();
-                            var htmlData = $('<output>').append($($.parseHTML($($(editor.element.$)[0]).prop("innerHTML"), document, true)));
+                            var htmlToParse = $($(editor.element.$)[0]).prop("innerHTML");
+                            if(htmlToParse === ""){
+                            htmlToParse = editor.element.$.value;
+                            }
+                            var htmlData = $('<output>').append($($.parseHTML(htmlToParse, document, true)));
                             data = documentPage.minimizeGrids(documentPage, htmlData).prop("innerHTML");
                             this.setValueOf("main", "data", oldData = data);
 

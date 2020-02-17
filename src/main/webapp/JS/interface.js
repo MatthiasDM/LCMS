@@ -756,9 +756,10 @@ async function loadTemplates() {
 async function loadFormatters() {
 
     var templates = [];
+    var formatters = {};
     async function onDone(data) {
-        var formatters = {};
-console.log("Adding formatters...");
+        
+        console.log("Adding formatters...");
         var jsonData = JSON.parse(data);
         $.each(jsonData.data, function (a, b) {
             formatters[b.title] = eval(b.function);
@@ -771,7 +772,10 @@ console.log("Adding formatters...");
     // requestOptions.title = "Configurationtables";
     //requestOptions.table = "Templates";
     let request = await LCMSRequest("./servlet", requestOptions);
-    await onDone(request);
+    let returnvalue = await onDone(request);
+    return returnvalue;
+    
+    
 
 }
 
