@@ -12,11 +12,9 @@ import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
@@ -29,7 +27,6 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +45,12 @@ import gcms.database.DatabaseActions;
 import gcms.database.DatabaseWrapper;
 import gcms.credentials.Cryptography;
 import gcms.GsonObjects.annotations.MdmAnnotations;
-import java.io.FileInputStream;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.util.Map;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 
@@ -58,23 +60,63 @@ import org.jasypt.util.password.StrongPasswordEncryptor;
  */
 public class Core {
 
-//    public enum Roles {
-//
-//    }       
-//    public enum Actions {
-//
-//    }
-//    public enum MongoConf {
-//
-//    }
-    static String dirName = getProp("app.root"); // ""
-    static String baseURL = getProp("base.url");//"http://localhost:8081/"; // "http://localhost:80/";
-    //8081 is for test-enviroment
+    static String dirName = getProp("app.root");
+    static String baseURL = getProp("base.url");
 
-    public enum taskCategories {
-        //ICT-TICKET RELATED
-        ICT_TICKET;
+    public static String httpRequest(String receiver, Map<String, String> parameters) throws MalformedURLException, IOException {
+        URL url = new URL(receiver);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setDoOutput(true);
+        con.setConnectTimeout(5000);
+        con.setReadTimeout(5000);
+        DataOutputStream out = new DataOutputStream(con.getOutputStream());
+        out.writeBytes(getParamsAsURLString(parameters));
+        out.flush();
+        out.close();
 
+        int status = con.getResponseCode();
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer content = new StringBuffer();
+        while ((inputLine = in.readLine()) != null) {
+            content.append(inputLine);
+        }
+        in.close();
+
+        return content.toString();
+    }
+
+    public static String httpRestfulRequest(String receiver, ArrayList<String> parameters) throws MalformedURLException, IOException {
+        URL url = new URL(receiver);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestMethod("GET");
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setDoOutput(true);
+        DataOutputStream out = new DataOutputStream(con.getOutputStream());
+        out.writeBytes(parameters.stream().collect(Collectors.joining("/")));
+        out.flush();
+        out.close();
+        return "";
+    }
+
+    public static String getParamsAsURLString(Map<String, String> params)
+            throws UnsupportedEncodingException {
+        StringBuilder result = new StringBuilder();
+
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            result.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+            result.append("=");
+            result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+            result.append("&");
+        }
+
+        String resultString = result.toString();
+        return resultString.length() > 0
+                ? resultString.substring(0, resultString.length() - 1)
+                : resultString;
     }
 
     public static String readFile(String urlName) {

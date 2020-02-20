@@ -19,9 +19,10 @@ public class EditablePage {
     public String title;
     @MdmAnnotations(
             editRole = "ICTMANAGER",
+            viewRole = "ICTMANAGER",
             type = "string",
             visibleOnTable = false,
-            visibleOnForm = false,
+            visibleOnForm = true,
             DMP = true
     )
     public String contents;

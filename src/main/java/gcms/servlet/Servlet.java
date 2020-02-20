@@ -231,7 +231,7 @@ public class Servlet extends HttpServlet {
                             String[] _excludes = requestParameters.get("excludes[]");
                             excludes.addAll(Arrays.asList(_excludes));
                         }
-                        excludes.add("contents");
+                        //excludes.add("contents");
                         if (mongoConfiguration.getCollection().equals("backlog")) {
                             filterObject.put("object_id", new BasicDBObject("$eq", requestParameters.get("object_id")[0]));
                         }

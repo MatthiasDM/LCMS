@@ -2711,24 +2711,25 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
         });
     }
     let lcmsGrid = new LCMSGrid(gridData);
-    lcmsGrid.createGrid();
-    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw item", "", function () {
-        return lcmsGrid.popupEdit("new", function () {
-            return null;
-        });
-        //return popupEdit('new', $("#" + gridData.tableObject), $(this), gridData.editAction, {});
-    }));
-    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
-        var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
-        if (rowid !== null) {
-            return lcmsGrid.popupEdit(rowid, function () {
-                return null;
-            });
-            // return popupEdit(rowid, $("#" + gridData.tableObject), $(this), gridData.editAction);
-        } else {
-            return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
-        }
-    }));
+    lcmsGrid.createGrid().then(
+            function (result) {
+                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw item", "", function () {
+                    return lcmsGrid.popupEdit("new", function () {
+                        return null;
+                    });
+                }));
+                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
+                    var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
+                    if (rowid !== null) {
+                        return lcmsGrid.popupEdit(rowid, function () {
+                            return null;
+                        });
+                    } else {
+                        return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
+                    }
+                }));
+            }
+    );
     return lcmsGrid;
 }
 
@@ -2751,34 +2752,35 @@ function LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName,
         gridData.jqGridOptions[i] = n;
     });
     let lcmsGrid = new LCMSGrid(gridData);
-    lcmsGrid.createGrid();
-    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw item", "", function () {
-        //  return popupEdit('new', $("#" + gridData.tableObject), $(this), gridData.editAction, {});
-        return lcmsGrid.popupEdit("new", function () {
-            return null;
-        });
-    }));
-    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
-        var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
-        if (rowid !== null) {
-            return lcmsGrid.popupEdit(rowid, function () {
-                return null;
-            });
-            //return popupEdit(rowid, $("#" + gridData.tableObject), $(this), gridData.editAction);
-        } else {
-            return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
-        }
-    }));
-    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-download", "Export", "", function () {
-        return lcmsGrid.export_as_html();
-    }));
-    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-arrow-down", "Download as CSV", "", function () {
-        return lcmsGrid.download_grid();
-    }));
-    //
-    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-list-ul", "Click here to change columns", "", function () {
-        return lcmsGrid.toggle_multiselect($("#" + gridData.tableObject).jqGrid('getGridParam', 'id'));
-    }));
+    lcmsGrid.createGrid().then(
+            function (result) {
+                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw item", "", function () {
+                    return lcmsGrid.popupEdit("new", function () {
+                        return null;
+                    });
+                }));
+                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
+                    var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
+                    if (rowid !== null) {
+                        return lcmsGrid.popupEdit(rowid, function () {
+                            return null;
+                        });
+                    } else {
+                        return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
+                    }
+                }));
+                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-download", "Export", "", function () {
+                    return lcmsGrid.export_as_html();
+                }));
+                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-arrow-down", "Download as CSV", "", function () {
+                    return lcmsGrid.download_grid();
+                }));
+                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-list-ul", "Click here to change columns", "", function () {
+                    return lcmsGrid.toggle_multiselect($("#" + gridData.tableObject).jqGrid('getGridParam', 'id'));
+                }));
+            }
+    );
+
     return lcmsGrid;
 }
 

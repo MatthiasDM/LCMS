@@ -45,6 +45,7 @@ import static gcms.Core.getLatestFile;
 import static gcms.Core.getProp;
 import static gcms.Core.readAllLines;
 import static gcms.Core.search;
+import gcms.GsonObjects.Core.Apikey;
 import gcms.GsonObjects.Core.Command;
 import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.credentials.Cryptography;
@@ -91,6 +92,9 @@ public class commandFunctions {
         }
         if (name.equals("doGenerateHash")) {
             sb.append(command_doGenerateHash(parameters, command));
+        }
+        if (name.equals("doAPICall")) {
+            sb.append(command_doAPICall(parameters, command));
         }
         return sb;
     }
@@ -321,13 +325,37 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doGenerateHash(Map<String, String[]> parameters, Command command) throws IOException {        
+    private static StringBuilder command_doGenerateHash(Map<String, String[]> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
         Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
         });
         sb.append(Cryptography.hash(parameters.get("parameters[passwordInput]")[0]));
+        return sb;
+    }
+
+    private static StringBuilder command_doAPICall(Map<String, String[]> parameters, Command command) throws IOException, ClassNotFoundException {
+        StringBuilder sb = new StringBuilder();
+        BasicDBObject searchObject = new BasicDBObject();
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jsonData = mapper.createObjectNode();
+        Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
+        });
+        String apikey = (parameters.get("parameters[apikey]")[0]);
+        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("apikeys");
+        searchObject.put("name", new BasicDBObject("$eq", apikey));
+        Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session")[0], mongoConfiguration, searchObject);
+        Apikey key = mapper.convertValue(searchResult, gcms.GsonObjects.Core.Apikey.class);
+        
+        String receiver;
+        receiver = key.getUrl();
+        if (!key.getPort().equals("")) {
+            receiver += key.getPort();
+        }
+        Map<String, String> getParameters = new HashMap<>();
+        sb.append(Core.httpRequest(receiver, getParameters));
+
         return sb;
     }
 }
