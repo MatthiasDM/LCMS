@@ -51,6 +51,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
+import java.util.Iterator;
 import java.util.Map;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 
@@ -63,19 +64,21 @@ public class Core {
     static String dirName = getProp("app.root");
     static String baseURL = getProp("base.url");
 
-    public static String httpRequest(String receiver, Map<String, String> parameters) throws MalformedURLException, IOException {
+    public static String httpRequest(String receiver) throws MalformedURLException, IOException {
         URL url = new URL(receiver);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
-        con.setRequestProperty("Content-Type", "application/json");
-        con.setDoOutput(true);
+        // con.setDoOutput(true);
         con.setConnectTimeout(5000);
         con.setReadTimeout(5000);
-        DataOutputStream out = new DataOutputStream(con.getOutputStream());
-        out.writeBytes(getParamsAsURLString(parameters));
-        out.flush();
-        out.close();
 
+       //con.setRequestProperty(pair.getKey().toString(), pair.getValue().toString());
+
+        //  con.setRequestProperty("Content-Type", "text/html");
+        //  DataOutputStream out = new DataOutputStream(con.getOutputStream());
+        //  out.writeBytes(getParamsAsURLString(parameters));
+        //  out.flush();
+        //  out.close();
         int status = con.getResponseCode();
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(con.getInputStream()));

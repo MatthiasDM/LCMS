@@ -342,7 +342,9 @@ public class commandFunctions {
         ObjectNode jsonData = mapper.createObjectNode();
         Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
         });
-        String apikey = (parameters.get("parameters[apikey]")[0]);
+        String apikey = commandParameters.get("apikey");
+        String entrypoint = commandParameters.get("entrypoint");
+        String call = commandParameters.get("call");
         MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("apikeys");
         searchObject.put("name", new BasicDBObject("$eq", apikey));
         Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session")[0], mongoConfiguration, searchObject);
@@ -350,12 +352,10 @@ public class commandFunctions {
         
         String receiver;
         receiver = key.getUrl();
-        if (!key.getPort().equals("")) {
-            receiver += key.getPort();
-        }
-        Map<String, String> getParameters = new HashMap<>();
-        sb.append(Core.httpRequest(receiver, getParameters));
-
+        receiver += "/" + entrypoint + "/" + call;
+        receiver += "?key=" + key.getApiKey();
+        sb.append(Core.httpRequest(receiver));
+        
         return sb;
     }
 }

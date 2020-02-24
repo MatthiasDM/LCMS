@@ -343,7 +343,7 @@ class LCMSEditablePage {
         this.pageData = pageData;
         this.originalDocument = "";
         this.gridController = new LCMSgridController();
-        this.gridForm = new LCMSGridForm();
+        this.gridForm = new LCMSGridForm(this);
         this.canvasses = new Object();
         this.readonly = true;
         this.parent = new Object();
@@ -1097,9 +1097,10 @@ class LCMSEditablePage {
 
 class LCMSGridForm {
 
-    constructor() {
+    constructor(_editablePage) {
         console.log("loading LCMSGridForm");
         var me = this;
+        me.editablePage = _editablePage;
         loadFormatters().then(
                 function (result) {
                     me.formatters = result;
@@ -1110,6 +1111,8 @@ class LCMSGridForm {
     new_grid_wizard(_editablePage, colModel, extraOptions, importCSV, _gridData, gridId, location) {
         console.log("new_grid_form()");
         var me = this;
+
+
         if (typeof colModel === 'undefined') {
             me.new_grid_form(_editablePage);
         } else {
@@ -1397,7 +1400,7 @@ class LCMSGridForm {
 
         if (typeof subgridref.colNames !== "undefined") {
             options.subgridref = subgridref;
-            options = me._editablePage.option_subgrid(options, subgridref);
+            options = me.editablePage.option_subgrid(options, subgridref);
         }
 
         return {"colModel": colModel, "options": options};
@@ -1454,7 +1457,7 @@ class LCMSGridForm {
         var gridReferences = [];
         _editablepage.gridController.references.forEach(function (item) {
             var id = item.list;
-            var name = me._editablepage.gridController.grids[id].caption;
+            var name = me.editablePage.gridController.grids[id].caption;
             gridReferences.push({id, name});
         });
         form.append(forms_select("Subgrid van: ", "option_subgridref", "option_subgridref", gridReferences, _griddata.subgrid));
@@ -1537,6 +1540,12 @@ class LCMSGridForm {
         if (typeVal === "checkbox") {
             typeVal = "booleanCheckbox";
         }
+        if (colModelValue.sorttype === "number") {
+            typeVal = "number";
+        }
+        if (colModelValue.sorttype === "date") {
+            typeVal = "date";
+        }
         if (typeof colModelValue.formatterName !== "undefined") {
             typeVal = "customformatter";
         }
@@ -1592,7 +1601,7 @@ class LCMSGridForm {
         }
         if (typeVal === "internal_list") {
             element2.after(forms_select("Kies attribuut: ", "select-attribute-" + elementID, "internalListAttribute", getAttributesOfGrid(colModelValue.internalListName), colModelValue.internalListAttribute));
-            element2.after(forms_select("Kies tabel: ", "select-" + elementID, "internalListName", getGridsInDocument(), colModelValue.internalListName));
+            element2.after(forms_select("Kies tabel: ", "select-" + elementID, "internalListName", me.getGridsInDocument(), colModelValue.internalListName));
             element2.after(forms_hidden("option_multiple", "option_multiple", true));
         }
         if (typeVal === "customformatter") {
@@ -1636,6 +1645,18 @@ class LCMSGridForm {
             var forms_select_attribute = forms_select("Kies attribuut: ", "select-attribute-" + elementID, "internalListAttribute", obj, "");
             forms_select_internal_list.after(forms_select_attribute);
         });
+    }
+
+    getGridsInDocument() {
+        var obj = [];
+        $("table[id^=grid]").each(function (a, b) {
+            var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
+            var id = $(b).attr('id');
+            if (typeof id !== "undefined") {
+                obj.push({id, name});
+            }
+        });
+        return obj;
     }
 
 }
@@ -1894,19 +1915,7 @@ class LCMSGrid {
 
             }
 
-            if (type === "internal_list") {
-                value.type = "select";
-                column.edittype = "select";
-                column.formatter = "select";
-                column.editoptions = {title: "internal_list", multiple: true};
-                column.internalListName = value.internalListName;
-                column.internalListAttribute = value.internalListAttribute;
-            }
-            if (type === "external_list") {
-                value.type = "select";
-                column.editoptions = {title: "external_list"};
-            }
-            if (type === "select") {
+            if (type === "select" && typeof value.editoptions === "undefined") {
                 column.edittype = "select";
                 column.formatter = "select";
                 column.width = "200";
@@ -1928,10 +1937,27 @@ class LCMSGrid {
                 if (value.multiple === true) {
                     column.editoptions.size = value.choices.length < 8 ? value.choices.length + 2 : 10;
                 }
+
+
             }
+
+            if (value.editoptions.title === "internal_list" || type === "internal_list") {
+                value.type = "select";
+                column.edittype = "select";
+                column.formatter = "select";
+                column.editoptions = {title: "internal_list", multiple: true};
+                column.internalListName = value.internalListName;
+                column.internalListAttribute = value.internalListAttribute;
+            }
+            if (value.editoptions.title === "external_list" || type === "internal_list") {
+                value.type = "select";
+                column.editoptions = {title: "external_list"};
+            }
+
             if (type === "password" || type === "encrypted") {
                 column.edittype = "password";
             }
+
             if (value.key === true) {
                 column.key = true;
             }

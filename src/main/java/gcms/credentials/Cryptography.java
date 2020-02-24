@@ -9,7 +9,6 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 import org.slf4j.Logger;
-
 import org.slf4j.LoggerFactory;
 
 /**
@@ -20,7 +19,6 @@ public class Cryptography {
 
     private static final Logger log = LoggerFactory.getLogger(Cryptography.class);
     private final int logRounds;
-
     public Cryptography(int logRounds) {
         this.logRounds = logRounds;
     }
