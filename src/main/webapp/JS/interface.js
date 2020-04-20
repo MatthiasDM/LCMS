@@ -111,6 +111,13 @@ function removeUnusedDataFromJqGrid(_columns, _data, _renames) {
     return data;
 }
 
+function ifKnownString(value) {
+    if (typeof value !== 'undefined' && value) {
+        return value;
+    } else {
+        return "";
+    }
+}
 
 function loadParameters(jsonData) {
     var webPage = $($.parseHTML(jsonData.webPage, document, true));
@@ -406,6 +413,9 @@ function forms_jqgrid(id, data) {
     return form_group;
 }
 
+function dom_link(id, color, href, txt){
+        return $('<a href="'+href+'" id="'+id+'" class="badge badge-'+color+'">'+txt+'</a>');
+}
 function dom_progressbar(bars, id) {
     var progress = $("<div class='progress' id='" + id + "'></div>");
     Object.keys(bars).forEach(function (index) {
@@ -578,7 +588,6 @@ function dom_oneColContainer(containerID) {
 
     return container;
 }
-
 function dom_twoColContainer(containerID) {
     var container = dom_div("", containerID);
     var row1 = dom_row();
@@ -650,6 +659,15 @@ function dom_collapse() {
     wrapper.append(btn);
     wrapper.append(collapse);
     return wrapper;
+}
+
+function not_undefined(test, value) {
+    try {
+        return test === value;
+    } catch (e) {
+        return false;
+    }
+
 }
 
 //function loadImages(editor, editorObject) {
@@ -758,7 +776,7 @@ async function loadFormatters() {
     var templates = [];
     var formatters = {};
     async function onDone(data) {
-        
+
         console.log("Adding formatters...");
         var jsonData = JSON.parse(data);
         $.each(jsonData.data, function (a, b) {
@@ -774,8 +792,8 @@ async function loadFormatters() {
     let request = await LCMSRequest("./servlet", requestOptions);
     let returnvalue = await onDone(request);
     return returnvalue;
-    
-    
+
+
 
 }
 

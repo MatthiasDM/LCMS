@@ -236,7 +236,9 @@ class LCMSgridController {
         var me = this;
         me.references = [];
         var denominator = $("table[id^=grid]");
-        denominator.each(function (a, b) {
+        var gridsOnPage = {};
+        //me.grids = new Array();
+        denominator.each(function (a, b) { //remove grids that are not in the denominator array
             try {
                 if ($(b).jqGrid('getGridParam') !== null) {
                     me.grids[$(b).attr('id')] = $(b).jqGrid('getGridParam');
@@ -253,16 +255,20 @@ class LCMSgridController {
                             }
                         }
                     });
+                    gridsOnPage[$(b).attr('id')] = me.grids[$(b).attr('id')];
                 } else {
                     console.log("Gridparams are null!");
                 }
-
-
-
             } catch (err) {
                 console.log(err);
             }
         });
+        me.grids = gridsOnPage;
+
+        $.each(me.grids, function (a, b) {
+
+        });
+
         $.each(Object.filter(me.grids, grid => typeof grid.subgridref !== "undefined"), function (a, b) {
             me.checkSubGridValidity(b.id);
         });
@@ -542,7 +548,8 @@ class LCMSEditablePage {
                 summaries: gridParam.summaries,
                 subGrid: typeof gridParam.subgridref !== "undefined",
                 subgridref: gridParam.subgridref,
-                subGridHasSubGridValidation: me.checkHasSubGrid
+                subGridHasSubGridValidation: me.checkHasSubGrid,
+                loadCompleteFunction: gridParam.loadCompleteFunction
             },
             jqGridParameters: {
                 navGridParameters: {
@@ -1329,6 +1336,9 @@ class LCMSGridForm {
                 if (option === 'rename') {
                     renames[val.value] = colModel[c].name;
                 }
+//                if (option === 'loadComplete'){
+//                    val.value = eval(val.value);                    
+//                }
 
                 if (option === 'summary') {
                     summaries.push(val.value);
@@ -1357,6 +1367,7 @@ class LCMSGridForm {
                     options.importCSV = CSVToArray(val.value, ",");
                 }
             }
+
         });
         if ($.isEmptyObject(renames) === false) {
             options.renames = renames;
@@ -1414,6 +1425,7 @@ class LCMSGridForm {
         }
         var form = $("<form></form>");
         var container = $("<div class='container'></div>");
+        var rowParent = dom_div("", "rowParent");
         var addRowButton = $("<button type='button' class='btn btn-primary'>Add column</button>");
         form.append(container);
         form.append(forms_textbox("Titel", "option_caption", "option_caption", _griddata.caption));
@@ -1421,6 +1433,7 @@ class LCMSGridForm {
         form.append(forms_textarea("Importeer CSV", "import", "import"));
         form.append(addRowButton);
         me.addHeader(form);
+        form.append(rowParent);
         if (typeof _griddata.colModel !== 'undefined') {
             var colModel = _griddata.colModel;
             for (var key in colModel) {
@@ -1430,15 +1443,15 @@ class LCMSGridForm {
                                 uuidv4(),
                                 colModel[key],
                                 _editablepage,
-                                _griddata);
+                                _griddata, rowParent);
                     }
                 }
             }
         } else {
-            me.addRow(form, uuidv4(), {}, _editablepage, _griddata);
+            me.addRow(form, uuidv4(), {}, _editablepage, _griddata, rowParent);
         }
         addRowButton.on('click', function (e) {
-            me.addRow(form, uuidv4(), {}, _editablepage, _griddata);
+            me.addRow(form, uuidv4(), {}, _editablepage, _griddata, rowParent);
         });
         //OPTIE SAMENVATTING START
         var obj = [];
@@ -1462,8 +1475,8 @@ class LCMSGridForm {
         });
         form.append(forms_select("Subgrid van: ", "option_subgridref", "option_subgridref", gridReferences, _griddata.subgrid));
         // }
-
-
+        var loadCompleteFunction = typeof _griddata.loadCompleteFunction !== "undefined" ? _griddata.loadCompleteFunction : "";
+        form.append(forms_textbox("Load complete function", "option_loadCompleteFunction", "option_loadCompleteFunction", loadCompleteFunction));
 
         var deleteContentButton = $("<button type='button' style='margin-right: 5px;' class='btn btn-warning'>Verwijder inhoud</button>");
         form.append(deleteContentButton);
@@ -1513,7 +1526,7 @@ class LCMSGridForm {
         return parent;
     }
 
-    addRow(parent, elementID, colModelValue, _editablepage, _griddata) {
+    addRow(parent, elementID, colModelValue, _editablepage, _griddata, _rowParent) {
         console.log("addRow()");
         var me = this;
         var nameVal = colModelValue.name;
@@ -1626,7 +1639,7 @@ class LCMSGridForm {
         element4.on('click', function (e) {
             row.remove();
         });
-        parent.append(row);
+        _rowParent.append(row);
         return parent;
     }
 
@@ -1867,6 +1880,14 @@ class LCMSGrid {
             column.label = value.name;
             column.name = value.name;
             var type = value.type || value.edittype;
+
+            if (type === "textarea" && value.editoptions.title === "ckedit") {
+                type = "cktext";
+            }
+            if (type === "textarea" && value.editoptions.title === "ckedit_code") {
+                type = "cktext_code";
+            }
+
             //column.editable = true;
 
             if (type === "date") {
@@ -1941,7 +1962,7 @@ class LCMSGrid {
 
             }
 
-            if (value.editoptions.title === "internal_list" || type === "internal_list") {
+            if ((typeof value.editoptions !== "undefined" && value.editoptions.title === "internal_list") || type === "internal_list") {
                 value.type = "select";
                 column.edittype = "select";
                 column.formatter = "select";
@@ -1949,7 +1970,7 @@ class LCMSGrid {
                 column.internalListName = value.internalListName;
                 column.internalListAttribute = value.internalListAttribute;
             }
-            if (value.editoptions.title === "external_list" || type === "internal_list") {
+            if ((typeof value.editoptions !== "undefined" && value.editoptions.title === "external_list") || type === "internal_list") {
                 value.type = "select";
                 column.editoptions = {title: "external_list"};
             }
@@ -1978,11 +1999,16 @@ class LCMSGrid {
             } else {
                 column.creatable = true;
             }
-            if (value.visibleOnForm === true) {
-                column.editrules = {edithidden: true};
-            } else {
-                column.editrules = {edithidden: false};
+            column.editrules = value.editrules;
+            if (value.visibleOnForm !== undefined) {
+                if (value.visibleOnForm === true) {
+                    column.editrules = {edithidden: true};
+                } else {
+                    column.editrules = {edithidden: false};
+                }
             }
+
+
             if (typeof value.searchoptions !== "undefined") {
                 column.searchoptions = value.searchoptions;
             }
@@ -2192,6 +2218,9 @@ class LCMSGrid {
                             });
                             $(this).jqGrid("footerData", "set", sumJson);
                         }
+                        if (typeof me.gridData.jqGridOptions.loadCompleteFunction !== "undefined") {
+                            eval(me.gridData.jqGridOptions.loadCompleteFunction);
+                        }
 
                     };
                     jqgridOptions.colModel = jqgridOptions.colModel.filter(function (el) {
@@ -2395,7 +2424,10 @@ class LCMSGrid {
                 var rowId = ($($(this).find("td.DataTD").find("div[title='ckedit']")).attr("id"));
                 var headerItem = Object.filter(me.gridData.data.header, obj => obj.name === rowId);
                 var tableName = headerItem[Object.keys(headerItem)[0]].tablename;
-                pills.push(lang[tableName][rowId]);
+                var tableAttr = lang[tableName] !== "undefined" ? rowId : lang[tableName][rowId];
+                pills.push(tableAttr);
+
+
             }
             ;
         });
@@ -2406,7 +2438,8 @@ class LCMSGrid {
                 var rowId = ($($(this).find("td.DataTD").find("div[title='ckedit']")).attr("id"));
                 var headerItem = Object.filter(me.gridData.data.header, obj => obj.name === rowId);
                 var tableName = headerItem[Object.keys(headerItem)[0]].tablename;
-                var rowIndex = pills.indexOf(lang[tableName][rowId]);
+                var tableAttr = lang[tableName] !== "undefined" ? rowId : lang[tableName][rowId];
+                var rowIndex = pills.indexOf(tableAttr);
                 if (rowIndex > 0) {
                     $("#" + (rowIndex) + "-tab").append((this));
                 }
@@ -2605,7 +2638,7 @@ function getPatchesReverse(oldData, newData) {
     return textPatches;
 }
 
-function LCMSTableRequest(loadAction, editAction, editUrl, tableName, pagerName, wrapperName, caption, tableType, jqGridOptions, extraRequestOptions) {
+function LCMSTableRequest(loadAction, editAction, editUrl, tableName, pagerName, wrapperName, caption, tableType, jqGridOptions, extraRequestOptions, LCMSEditablePageObject) {
     function onDone(data) {
         var jsonData = JSON.parse(data);
         console.log(jsonData.webPage);
@@ -2613,15 +2646,17 @@ function LCMSTableRequest(loadAction, editAction, editUrl, tableName, pagerName,
             jsonData.parent = _parent;
             loadParameters(jsonData);
         } else {
+            var LCMSGrid = {};
             if (tableType === 1) {
-                return LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
+                LCMSGrid = LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
             } else if (tableType === 2) {
-                return LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
+                LCMSGrid = LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
             } else if (tableType === 3) {
-                return LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
+                LCMSGrid = LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
             } else {
-                return LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
+                LCMSGrid = LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions);
             }
+            LCMSEditablePageObject.gridController.addLCMSGrid(LCMSGrid.gridData.tableObject, LCMSGrid);
         }
     }
     var requestOptions = {};

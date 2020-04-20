@@ -24,6 +24,7 @@ public class ICTTicket {
             createRole = "SYSTEM",
             //editRole = "SYSTEM",
             type = "string",
+            key = true,
             visibleOnTable = false,
             visibleOnForm = false)
     public String ticketid;

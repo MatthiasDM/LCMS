@@ -189,8 +189,10 @@ public class DatabaseWrapper {
                 headerEntry.put("editable", editableColumns.contains(column));
                 headerEntry.put("creatable", createableColumns.contains(column));
                 //headerEntry.put("editable", mdmAnnotations.editable()); //editableColumns.contains(column));
+                headerEntry.put("key", mdmAnnotations.key());
                 headerEntry.put("multiple", mdmAnnotations.multiple());
                 headerEntry.put("visibleOnForm", mdmAnnotations.visibleOnForm());
+                headerEntry.put("key", mdmAnnotations.key());
                 headerEntry.put("tablename", tableName);
                 if (!"".equals(mdmAnnotations.reference()[0])) {
                     String refType = mdmAnnotations.reference()[0];
@@ -457,7 +459,7 @@ public class DatabaseWrapper {
         Map<String, Object> documentHashMap = currentDocument;
         Map<String, Object> newHashMap;
         Integer i = 0;
-        for (i = 0; i < docs.size(); i++) {//Optional.ofNullable(entry.getValue()).orElse(""))
+        for (i = 0; i < docs.size() - 1; i++) {//Optional.ofNullable(entry.getValue()).orElse(""))
 
             BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(docs.get(i)));
             Map<String, Object> backlogHashMap = obj.entrySet().stream()

@@ -6,6 +6,7 @@
 package gcms.GsonObjects.Core;
 
 import gcms.GsonObjects.annotations.MdmAnnotations;
+import java.util.List;
 
 /**
  *
@@ -42,25 +43,29 @@ public class Command {
     @MdmAnnotations(
             editRole = "ICTMANAGER",
             type = "select",
-            choices = {"public", "private"}
+            choices = {"guest", "user", "api"},
+            multiple = true
     )
-    public String accessType;
+    public List<String> accessType;
 
     @MdmAnnotations(
             editRole = "ICTMANAGER",
-            type = "number"
+            type = "number",
+            visibleOnTable = false
     )
     public String executionLimit;
 
     @MdmAnnotations(
             editRole = "ICTMANAGER",
-            type = "number"
+            type = "number",
+            visibleOnTable = false
     )
     public String executionCount;
 
     @MdmAnnotations(
             editRole = "ICTMANAGER",
-            type = "number"
+            type = "number",
+            visibleOnTable = false
     )
     public String executionLimitInterval;
 
@@ -72,7 +77,7 @@ public class Command {
             editRole = "SYSTEM")
     public long lastExecution;
 
-    public Command(String commandid, String name, String command, String description, String parameters, String accessType, String executionLimit, String executionCount, String executionLimitInterval, long lastExecution) {
+    public Command(String commandid, String name, String command, String description, String parameters, List<String> accessType, String executionLimit, String executionCount, String executionLimitInterval, long lastExecution) {
         this.commandid = commandid;
         this.name = name;
         this.command = command;
@@ -84,6 +89,8 @@ public class Command {
         this.executionLimitInterval = executionLimitInterval;
         this.lastExecution = lastExecution;
     }
+
+
 
     public String getExecutionCount() {
         return executionCount != null ? executionCount : "0";
@@ -102,13 +109,14 @@ public class Command {
         this.executionLimitInterval = executionLimitInterval;
     }
 
-    public String getAccessType() {
+    public List<String> getAccessType() {
         return accessType;
     }
 
-    public void setAccessType(String accessType) {
+    public void setAccessType(List<String> accessType) {
         this.accessType = accessType;
     }
+ 
 
     public String getExecutionLimit() {
         return executionLimit != null ? executionLimit : "0";

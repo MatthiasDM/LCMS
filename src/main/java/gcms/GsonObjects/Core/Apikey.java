@@ -64,6 +64,9 @@ public class Apikey {
             editRole = "ICTMANAGER")
     public String scope;
 
+    @MdmAnnotations(type = "boolean", visibleOnTable = true)
+    public boolean valid;
+
     @MdmAnnotations(
             type = "datetime",
             visibleOnTable = true,
@@ -83,18 +86,38 @@ public class Apikey {
     public Apikey() {
     }
 
-    public Apikey(String apikeyid, String name, String keyprefix, String apiKey, String apiKeyLock, String url, String port, String scope, long created_on, String created_by) {
+    public Apikey(String apikeyid, String name, String keyprefix, String apiKey, String apiKeyLock, String url, String connection, String port, String scope, boolean valid, long created_on, String created_by) {
         this.apikeyid = apikeyid;
         this.name = name;
         this.keyprefix = keyprefix;
         this.apiKey = apiKey;
         this.apiKeyLock = apiKeyLock;
         this.url = url;
+        this.connection = connection;
         this.port = port;
         this.scope = scope;
+        this.valid = valid;
         this.created_on = created_on;
         this.created_by = created_by;
     }
+
+    public String getConnection() {
+        return connection;
+    }
+
+    public void setConnection(String connection) {
+        this.connection = connection;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
+    }
+
+  
 
     public String getApikeyid() {
         return apikeyid;

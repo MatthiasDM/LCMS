@@ -7,12 +7,16 @@ package gcms;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.opendevl.JFlat;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClientOptions.Builder;
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.gt;
 import static com.mongodb.client.model.Filters.regex;
 import static com.mongodb.client.model.Filters.gte;
 import java.io.File;
@@ -21,7 +25,6 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,8 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.mail.Message;
@@ -51,12 +52,15 @@ import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.credentials.Cryptography;
 import gcms.database.DatabaseActions;
 import gcms.database.DatabaseWrapper;
-import java.io.ByteArrayOutputStream;
+import java.util.Collection;
+import java.util.UUID;
 import java.util.regex.Pattern;
+import javax.servlet.http.Part;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
-import org.bson.internal.Base64;
 
 /**
  *
@@ -64,7 +68,7 @@ import org.bson.internal.Base64;
  */
 public class commandFunctions {
 
-    public static StringBuilder doCommand(String name, Map<String, String[]> parameters, Command command) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
+    public static StringBuilder doCommand(String name, Map<String, String[]> parameters, Command command, Collection<Part> parts) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException, Exception {
         name = command.getCommand();
         StringBuilder sb = new StringBuilder();
 
@@ -85,7 +89,7 @@ public class commandFunctions {
             sb.append(command_doGetTableFromDocument(parameters, command));
         }
         if (name.equals("doGetKPI")) {
-            sb.append(command_doGetKPI(parameters));
+            sb.append(command_doGetKPI(parameters, command));
         }
         if (name.equals("doGetFiles")) {
             sb.append(command_doGetFiles(parameters, command));
@@ -95,6 +99,12 @@ public class commandFunctions {
         }
         if (name.equals("doAPICall")) {
             sb.append(command_doAPICall(parameters, command));
+        }
+        if (name.equals("doUploadFile")) {
+            sb.append(command_doUploadFile(parameters, command, parts));
+        }
+        if (name.equals("doUploadFileToTemp")) {
+            sb.append(command_doUploadFileToTemp(parameters, command, parts));
         }
         return sb;
     }
@@ -254,13 +264,16 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doGetKPI(Map<String, String[]> parameters) throws ClassNotFoundException, NoSuchFieldException, IOException {
+    private static StringBuilder command_doGetKPI(Map<String, String[]> parameters, Command command) throws ClassNotFoundException, NoSuchFieldException, IOException, Exception {
         ObjectMapper mapper = new ObjectMapper();
+        StringBuilder sb = new StringBuilder();
         ObjectNode jsonData = mapper.createObjectNode();
         List<String> lines = new ArrayList<>();
         List<String> allLines = new ArrayList<>();
-        String type = parameters.get("parameters[type]")[0];
-        String filetype = parameters.get("parameters[filetype]")[0];
+        Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
+        });
+        String type = parameters.get("parameters[type]") != null ? parameters.get("parameters[type]")[0] : commandParameters.get("type");
+        String filetype = parameters.get("parameters[filetype]") != null ? parameters.get("parameters[filetype]")[0] : commandParameters.get("filetype");
         if (filetype.equals("csv")) {
             try ( Stream<String> stream = Files.lines(Paths.get(Core.getProp("doGetKPI.folder") + type + "\\data.csv"), Charset.forName("ISO-8859-1"))) {
                 lines = stream
@@ -288,16 +301,21 @@ public class commandFunctions {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+                                          
 
                     }
                 }
 
                 jsonData.put("data", mapper.writeValueAsString(allLines));
+
             }
         }
+        if (command.getAccessType().contains("2")) {
+            sb.append(mapper.writeValueAsString(allLines));
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(jsonData);
+        } else {
+            sb.append(jsonData);
+        }
         return sb;
     }
 
@@ -349,13 +367,46 @@ public class commandFunctions {
         searchObject.put("name", new BasicDBObject("$eq", apikey));
         Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session")[0], mongoConfiguration, searchObject);
         Apikey key = mapper.convertValue(searchResult, gcms.GsonObjects.Core.Apikey.class);
-        
+
         String receiver;
         receiver = key.getUrl();
         receiver += "/" + entrypoint + "/" + call;
         receiver += "?key=" + key.getApiKey();
         sb.append(Core.httpRequest(receiver));
-        
+
+        return sb;
+    }
+
+    private static StringBuilder command_doUploadFile(Map<String, String[]> parameters, Command command, Collection<Part> parts) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        ObjectMapper mapper = new ObjectMapper();
+        String tempDir = parameters.get("contextPath")[0] + "/" + Core.getProp("temp.folder") + "/";
+        Core.checkDir(tempDir);
+        for (Part part : parts) {
+            String filename = part.getSubmittedFileName();
+            if (filename != null) {
+                UUID id = UUID.randomUUID();
+                String fileName = id + filename;
+                part.write(tempDir + fileName);
+            }
+        }
+        return sb;
+    }
+
+    private static StringBuilder command_doUploadFileToTemp(Map<String, String[]> parameters, Command command, Collection<Part> parts) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        ObjectMapper mapper = new ObjectMapper();
+        String tempDir = parameters.get("contextPath")[0] + "/" + Core.getProp("temp.folder") + "/";
+        Core.checkDir(tempDir);
+        for (Part part : parts) {
+            String filename = part.getSubmittedFileName();
+            if (filename != null) {
+                String fileName = filename;
+                if (!Core.checkFile(tempDir + fileName)) {
+                    part.write(tempDir + fileName);
+                }
+            }
+        }
         return sb;
     }
 }

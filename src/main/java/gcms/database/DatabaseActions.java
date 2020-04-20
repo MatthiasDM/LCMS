@@ -571,7 +571,6 @@ public class DatabaseActions {
             results = ObjectItems.find(bson).sort(sort).limit(limit).projection(
                     fields(include(columns))
             ).into(new ArrayList<Document>());
-
         } catch (Exception e) {
             LOG.severe(e.getMessage());
             return results;

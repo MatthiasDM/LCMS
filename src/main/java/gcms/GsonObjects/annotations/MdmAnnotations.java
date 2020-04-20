@@ -26,6 +26,8 @@ public @interface MdmAnnotations {
 
     String type() default "string";
 
+    boolean key() default false;
+    
     boolean visibleOnTable() default true;
 
     boolean editable() default true;

@@ -16,43 +16,43 @@ public class FileObject {
     @MdmAnnotations(
             visibleOnForm = false,      
             visibleOnTable = false,
-//            createRole = "GOD",
-//            editRole = "GOD",
+//            createRole = "SYSTEM",
+//            editRole = "SYSTEM",
             type = "string")
     public String fileid;
     @MdmAnnotations(
-            createRole = "GOD",
-            editRole = "GOD",
+            createRole = "SYSTEM",
+            editRole = "SYSTEM",
             type = "string")
     public String name;
     @MdmAnnotations(
-            viewRole = "GOD",
-            createRole = "GOD",
-            editRole = "GOD",
+            viewRole = "SYSTEM",
+            createRole = "SYSTEM",
+            editRole = "SYSTEM",
             type = "string")
     public String type;
     @MdmAnnotations(
-            viewRole = "GOD",
-            createRole = "GOD",
-            editRole = "GOD",
+            viewRole = "SYSTEM",
+            createRole = "SYSTEM",
+            editRole = "SYSTEM",
             type = "date")
     public String upload_date;
     @MdmAnnotations(
-            viewRole = "GOD",
-            createRole = "GOD",
-            editRole = "GOD",
+            viewRole = "SYSTEM",
+            createRole = "SYSTEM",
+            editRole = "SYSTEM",
             type = "string")
     public String content_type;
     @MdmAnnotations(
-            viewRole = "GOD",
-            createRole = "GOD",
-            editRole = "GOD",
+            viewRole = "SYSTEM",
+            createRole = "SYSTEM",
+            editRole = "SYSTEM",
             type = "string")
     public String accesstype; //public or private?
     @MdmAnnotations(
-            viewRole = "GOD",
-            createRole = "GOD",
-            editRole = "GOD",
+            viewRole = "SYSTEM",
+            createRole = "SYSTEM",
+            editRole = "SYSTEM",
             type = "string")
     public String accesslevel; //what level must the user be to access the object?
 

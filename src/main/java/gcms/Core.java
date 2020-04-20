@@ -6,10 +6,12 @@
 package gcms;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.mongodb.BasicDBObject;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -39,6 +41,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import gcms.Config.Roles;
+import gcms.GsonObjects.Core.Apikey;
+import gcms.GsonObjects.Core.Command;
+import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.GsonObjects.Core.Session;
 import gcms.GsonObjects.Core.User;
 import gcms.database.DatabaseActions;
@@ -68,17 +73,8 @@ public class Core {
         URL url = new URL(receiver);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
-        // con.setDoOutput(true);
-        con.setConnectTimeout(5000);
-        con.setReadTimeout(5000);
-
-       //con.setRequestProperty(pair.getKey().toString(), pair.getValue().toString());
-
-        //  con.setRequestProperty("Content-Type", "text/html");
-        //  DataOutputStream out = new DataOutputStream(con.getOutputStream());
-        //  out.writeBytes(getParamsAsURLString(parameters));
-        //  out.flush();
-        //  out.close();
+        con.setConnectTimeout(50000);
+        con.setReadTimeout(50000);
         int status = con.getResponseCode();
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(con.getInputStream()));
@@ -88,7 +84,6 @@ public class Core {
             content.append(inputLine);
         }
         in.close();
-
         return content.toString();
     }
 
@@ -103,6 +98,18 @@ public class Core {
         out.flush();
         out.close();
         return "";
+    }
+
+    public static boolean isValidApiKey(String _apiName, String _key) throws IOException, ClassNotFoundException {
+        boolean valid = false;
+        ObjectMapper mapper = new ObjectMapper();
+        BasicDBObject searchObject = new BasicDBObject();
+        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("apikeys");
+        searchObject.put("name", new BasicDBObject("$eq", _apiName));
+        Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(null, mongoConfiguration, searchObject);
+        Apikey apikey = mapper.convertValue(searchResult, gcms.GsonObjects.Core.Apikey.class);
+        return Cryptography.verifyHash(_key, apikey.getApiKey());
+        //return valid;
     }
 
     public static String getParamsAsURLString(Map<String, String> params)
@@ -413,6 +420,11 @@ public class Core {
         } else {
             return true;
         }
+    }
+
+    public static boolean checkFile(String _fileName) {
+        File file = new File(_fileName);
+        return file.exists();
     }
 
     public static String getProperty(String resource, String name) {

@@ -124,6 +124,7 @@ public class ActionManagerUpload {
         return sb;
     }
 
+
     public StringBuilder actionFILE_BROWSE() throws IOException, ClassNotFoundException, NoSuchFieldException {
         StringBuilder sb = new StringBuilder();
         if (Core.checkSession(cookie) && checkUserRoleValue(cookie, 2)) {
