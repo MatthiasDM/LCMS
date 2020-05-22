@@ -106,6 +106,9 @@ public class commandFunctions {
         if (name.equals("doUploadFileToTemp")) {
             sb.append(command_doUploadFileToTemp(parameters, command, parts));
         }
+        if (name.equals("doSendChat")) {
+            sb.append(command_doSendChat(parameters, command, parts));
+        }
         return sb;
     }
 
@@ -301,7 +304,6 @@ public class commandFunctions {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                                          
 
                     }
                 }
@@ -407,6 +409,14 @@ public class commandFunctions {
                 }
             }
         }
+        return sb;
+    }
+
+    private static StringBuilder command_doSendChat(Map<String, String[]> parameters, Command command, Collection<Part> parts) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
+        });
         return sb;
     }
 }

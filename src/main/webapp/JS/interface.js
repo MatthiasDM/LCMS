@@ -66,6 +66,16 @@ $(function () {
 
 });
 
+function __delay__(timer) {
+    return new Promise(resolve => {
+        timer = timer || 2000;
+        setTimeout(function () {
+            resolve();
+        }, timer);
+    });
+}
+;
+
 function getAttributesOfGrid(_gridName) {
     var obj = [];
     $("table[id^=grid]").each(function (a, b) {
@@ -336,6 +346,27 @@ function create_blank_modal(parent, id, html, style) {
 
 }
 
+function create_modal_normal(parent, id, html, style, type) {
+    if ($("#" + id).length < 1) {
+        var modal = $("<div class='modal' id=" + id + " tabindex='-1' role='dialog'></div>");
+        var modal_dialog = $("<div class='modal-dialog modal-" + type + "' style=" + style + " role='document'></div>");
+        var modal_content = $("<div class='modal-content'></div>");
+        var modal_body = $("<div id=" + id + "-body class='modal-body'></div>");
+        modal_body.append(html);
+        modal_content.append(modal_body);
+        modal_dialog.append(modal_content);
+        modal.append(modal_dialog);
+        parent.append(modal);
+        return modal;
+    } else {
+        return $("#" + id);
+    }
+
+
+
+
+}
+
 function forms_textarea(title, id, name, choices) {
     var form_group = $("<div id='" + id + "' class='form-group'></div>");
     var label = $("<label for='" + title + "'>" + title + "</label>");
@@ -413,8 +444,14 @@ function forms_jqgrid(id, data) {
     return form_group;
 }
 
-function dom_link(id, color, href, txt){
-        return $('<a href="'+href+'" id="'+id+'" class="badge badge-'+color+'">'+txt+'</a>');
+function dom_link(id, color, href, txt, _click) {
+    var link = $('<a href="' + href + '" id="' + id + '" class="badge badge-' + color + '" target="_blank">' + txt + '</a>');
+    if (typeof _click !== "undefined") {
+        link.on("click", function () {
+            _click(href);
+        });
+    }
+    return link
 }
 function dom_progressbar(bars, id) {
     var progress = $("<div class='progress' id='" + id + "'></div>");
@@ -749,16 +786,20 @@ async function loadTemplates() {
 
     var templates = [];
     async function onDone(data) {
-        var jsonData = JSON.parse(data);
-        $.each(jsonData.data, function (a, b) {
-            templates.push({title: b.title, description: b.description, image: b.image, html: b.html});
-        });
-        console.log("Adding templates...");
-        CKEDITOR.addTemplates('default',
-                {
-                    imagesPath: CKEDITOR.getUrl(CKEDITOR.plugins.getPath('templates') + 'templates/images/'),
-                    templates: templates
-                });
+        try {
+            var jsonData = JSON.parse(data);
+            $.each(jsonData.data, function (a, b) {
+                templates.push({title: b.title, description: b.description, image: b.image, html: b.html});
+            });
+            console.log("Adding templates...");
+            CKEDITOR.addTemplates('default',
+                    {
+                        imagesPath: CKEDITOR.getUrl(CKEDITOR.plugins.getPath('templates') + 'templates/images/'),
+                        templates: templates
+                    });
+        } catch (e) {
+            console.log(e);
+        }
         return true;
     }
     var requestOptions = {};
@@ -776,13 +817,19 @@ async function loadFormatters() {
     var templates = [];
     var formatters = {};
     async function onDone(data) {
+        try {
+            console.log("Adding formatters...");
+            var jsonData = JSON.parse(data);
+            $.each(jsonData.data, function (a, b) {
+                formatters[b.title] = eval(b.function);
+            });
+            return formatters;
+        } catch (e) {
+            console.log(e);
+            return {};
+        }
 
-        console.log("Adding formatters...");
-        var jsonData = JSON.parse(data);
-        $.each(jsonData.data, function (a, b) {
-            formatters[b.title] = eval(b.function);
-        });
-        return formatters;
+
     }
     var requestOptions = {};
     requestOptions.action = "docommand";
@@ -797,4 +844,6 @@ async function loadFormatters() {
 
 }
 
-
+function get_url_extension(url) {
+    return url.split(/\#|\?/)[0].split('.').pop().trim();
+}

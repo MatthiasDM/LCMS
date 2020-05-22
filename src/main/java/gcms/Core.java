@@ -73,8 +73,8 @@ public class Core {
         URL url = new URL(receiver);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
-        con.setConnectTimeout(50000);
-        con.setReadTimeout(50000);
+        con.setConnectTimeout(300000);
+        con.setReadTimeout(300000);
         int status = con.getResponseCode();
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(con.getInputStream()));

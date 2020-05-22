@@ -204,7 +204,6 @@ public class ActionManagerUpload {
         fileObject.setUpload_date(_type);
         fileObject.setContent_type(_contenttype);
         fileObject.setAccesstype(_accesstype);
-
         return fileObject;
     }
 

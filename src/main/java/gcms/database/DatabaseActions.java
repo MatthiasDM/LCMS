@@ -262,23 +262,15 @@ public class DatabaseActions {
 
     //FILE METHODS
     public static void insertFile(InputStream inputStream, String name, FileObject _fileobject) {
-        //   DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH);
-        long now = Instant.now().toEpochMilli() / 1000;
         ObjectId fileId = null;
-
         try {
             GridFSBucket gridBucket = GridFSBuckets.create(DatabaseActions.getDatabase("files"));
             ObjectMapper mapper = new ObjectMapper();
             Document document = Document.parse(mapper.writeValueAsString(_fileobject));
-
             GridFSUploadOptions uploadOptions = new GridFSUploadOptions().chunkSizeBytes(1024).metadata(document);
             fileId = gridBucket.uploadFromStream(name, inputStream, uploadOptions);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-
+        } catch (JsonProcessingException e) {
         }
-
     }
 
     public static String downloadFileToTemp(String _fileName, String _cookie, String _contextPath, boolean _publicPage) {

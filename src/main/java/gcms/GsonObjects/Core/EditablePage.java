@@ -19,7 +19,7 @@ public class EditablePage {
     public String title;
     @MdmAnnotations(
             editRole = "ICTMANAGER",
-            viewRole = "ICTMANAGER",
+            viewRole = "LABASSISTANT",
             type = "string",
             visibleOnTable = false,
             visibleOnForm = true,
