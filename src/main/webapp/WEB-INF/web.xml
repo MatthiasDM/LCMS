@@ -11,9 +11,10 @@
     </session-config>
     <listener>
         <listener-class>
-             mdm.MainServletContextListener            
+             gcms.MainServletContextListener            
         </listener-class>
-    </listener>
+    </listener>     
+    
 </web-app>
 
 

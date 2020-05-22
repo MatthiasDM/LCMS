@@ -1,3 +1,4 @@
+
 $(function () {
     // sessionCountdown();
 
@@ -35,8 +36,98 @@ $(function () {
 
     };
 
+    $.fn.toggleAttr = function (attr, val) {
+        var test = $(this).attr(attr);
+        if (test) {
+            // if attrib exists with ANY value, still remove it
+            $(this).removeAttr(attr);
+        } else {
+            $(this).attr(attr, val);
+        }
+        return this;
+    };
+
+    $.fn.appendOrReplace = function (object) {
+        if ($("#" + object.attr("id")).length === 1) {
+            $("#" + object.attr("id")).replaceWith(object);
+        } else {
+            $(this).append(object);
+        }
+    };
+
+    $.fn.afterOrReplace = function (object) {
+        if ($("#" + object.attr("id")).length === 1) {
+            $("#" + object.attr("id")).replaceWith(object);
+        } else {
+            $(this).after(object);
+        }
+    };
+
 
 });
+
+function __delay__(timer) {
+    return new Promise(resolve => {
+        timer = timer || 2000;
+        setTimeout(function () {
+            resolve();
+        }, timer);
+    });
+}
+;
+
+function getAttributesOfGrid(_gridName) {
+    var obj = [];
+    $("table[id^=grid]").each(function (a, b) {
+        var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
+        if (name === _gridName) {
+            var names = $(b).jqGrid('getGridParam').colNames;
+            names.forEach(function (a) {
+                if (a !== "") {
+                    var name = a;
+                    var id = a;
+                    obj.push({id, name});
+                }
+            });
+        }
+    });
+    return obj;
+}
+
+function removeUnusedDataFromJqGrid(_columns, _data, _renames) {
+    console.log("removeUnusedDataFromJqGrid()");
+    var data = _data;
+    data.forEach(function (object, index) {
+        for (var property in object) {
+            if (property !== "id") { //The rowID may never be deleted!
+                if (object.hasOwnProperty(property)) {
+
+                    if (typeof _renames !== "undefined") {
+                        if (typeof _renames[property] !== "undefined") {
+                            object[_renames[property]] = object[property];
+                            delete object[property];
+                        }
+                    }
+
+                    if (_columns.includes(property) === false) {
+                        delete object[property];
+                    }
+
+                }
+            }
+
+        }
+    });
+    return data;
+}
+
+function ifKnownString(value) {
+    if (typeof value !== 'undefined' && value) {
+        return value;
+    } else {
+        return "";
+    }
+}
 
 function loadParameters(jsonData) {
     var webPage = $($.parseHTML(jsonData.webPage, document, true));
@@ -58,8 +149,8 @@ function escapeRegExp(str) {
     return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
 }
 
-function setEnviroment(env){
-    $("[LCMS='software-version']").append(env);    
+function setEnviroment(env) {
+    $("[LCMS='software-version']").append(env);
 }
 
 function setJumbo(page) {
@@ -161,6 +252,13 @@ function uuidv4() {
     });
 }
 
+function APIprefix() {
+    return 'xxxxxxx.'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 class LCMSloading {
     constructor(loaded) {
         this.loaded = loaded;
@@ -248,6 +346,27 @@ function create_blank_modal(parent, id, html, style) {
 
 }
 
+function create_modal_normal(parent, id, html, style, type) {
+    if ($("#" + id).length < 1) {
+        var modal = $("<div class='modal' id=" + id + " tabindex='-1' role='dialog'></div>");
+        var modal_dialog = $("<div class='modal-dialog modal-" + type + "' style=" + style + " role='document'></div>");
+        var modal_content = $("<div class='modal-content'></div>");
+        var modal_body = $("<div id=" + id + "-body class='modal-body'></div>");
+        modal_body.append(html);
+        modal_content.append(modal_body);
+        modal_dialog.append(modal_content);
+        modal.append(modal_dialog);
+        parent.append(modal);
+        return modal;
+    } else {
+        return $("#" + id);
+    }
+
+
+
+
+}
+
 function forms_textarea(title, id, name, choices) {
     var form_group = $("<div id='" + id + "' class='form-group'></div>");
     var label = $("<label for='" + title + "'>" + title + "</label>");
@@ -325,6 +444,15 @@ function forms_jqgrid(id, data) {
     return form_group;
 }
 
+function dom_link(id, color, href, txt, _click) {
+    var link = $('<a href="' + href + '" id="' + id + '" class="badge badge-' + color + '" target="_blank">' + txt + '</a>');
+    if (typeof _click !== "undefined") {
+        link.on("click", function () {
+            _click(href);
+        });
+    }
+    return link
+}
 function dom_progressbar(bars, id) {
     var progress = $("<div class='progress' id='" + id + "'></div>");
     Object.keys(bars).forEach(function (index) {
@@ -497,7 +625,6 @@ function dom_oneColContainer(containerID) {
 
     return container;
 }
-
 function dom_twoColContainer(containerID) {
     var container = dom_div("", containerID);
     var row1 = dom_row();
@@ -571,29 +698,38 @@ function dom_collapse() {
     return wrapper;
 }
 
-function loadImages(editor, editorObject) {
-    var _editorObject;
-    if (editor !== "") {
-        var images = $("#" + editor).find('[fileid]');
-        if (images.length < 1) {
-            images = $("#cke_" + editor).find("iframe").contents().find('[fileid]');
-        }
-        _editorObject = $("#" + editor);
-    } else {
-        var images = editorObject.find('[fileid]');
-        _editorObject = editorObject;
+function not_undefined(test, value) {
+    try {
+        return test === value;
+    } catch (e) {
+        return false;
     }
 
-
-
-    images.each(function (index) {
-        var newImage = downloadToTemp($(this));
-        _editorObject.find('[fileid]')[index] = newImage;
-    });
-
-    return images;
-
 }
+
+//function loadImages(editor, editorObject) {
+//    var _editorObject;
+//    if (editor !== "") {
+//        var images = $("#" + editor).find('[fileid]');
+//        if (images.length < 1) {
+//            images = $("#cke_" + editor).find("iframe").contents().find('[fileid]');
+//        }
+//        _editorObject = $("#" + editor);
+//    } else {
+//        var images = editorObject.find('[fileid]');
+//        _editorObject = editorObject;
+//    }
+//
+//
+//
+//    images.each(function (index) {
+//        var newImage = downloadToTemp($(this));
+//        _editorObject.find('[fileid]')[index] = newImage;
+//    });
+//
+//    return images;
+//
+//}
 
 function openFile(filename, text) {
     var blob = new Blob([text], {type: "text/html;charset=utf-8"});
@@ -637,12 +773,77 @@ function convertURIToImageData(URI) {
 }
 
 function validURL(str) {
-  var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
-    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
-    '((\\d{1,3}\\.){3}\\d{1,3}))?'+ // OR ip (v4) address
-    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
-    '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
-    '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
-  return true;//!!pattern.test(str);
+    var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
+            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+            '((\\d{1,3}\\.){3}\\d{1,3}))?' + // OR ip (v4) address
+            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+            '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+            '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+    return true;//!!pattern.test(str);
 }
 
+async function loadTemplates() {
+
+    var templates = [];
+    async function onDone(data) {
+        try {
+            var jsonData = JSON.parse(data);
+            $.each(jsonData.data, function (a, b) {
+                templates.push({title: b.title, description: b.description, image: b.image, html: b.html});
+            });
+            console.log("Adding templates...");
+            CKEDITOR.addTemplates('default',
+                    {
+                        imagesPath: CKEDITOR.getUrl(CKEDITOR.plugins.getPath('templates') + 'templates/images/'),
+                        templates: templates
+                    });
+        } catch (e) {
+            console.log(e);
+        }
+        return true;
+    }
+    var requestOptions = {};
+    requestOptions.action = "docommand";
+    requestOptions.k = "getTemplates";
+    // requestOptions.title = "Configurationtables";
+    //requestOptions.table = "Templates";
+    let request = await LCMSRequest("./servlet", requestOptions);
+    await onDone(request);
+
+}
+
+async function loadFormatters() {
+
+    var templates = [];
+    var formatters = {};
+    async function onDone(data) {
+        try {
+            console.log("Adding formatters...");
+            var jsonData = JSON.parse(data);
+            $.each(jsonData.data, function (a, b) {
+                formatters[b.title] = eval(b.function);
+            });
+            return formatters;
+        } catch (e) {
+            console.log(e);
+            return {};
+        }
+
+
+    }
+    var requestOptions = {};
+    requestOptions.action = "docommand";
+    requestOptions.k = "getFormatters";
+    // requestOptions.title = "Configurationtables";
+    //requestOptions.table = "Templates";
+    let request = await LCMSRequest("./servlet", requestOptions);
+    let returnvalue = await onDone(request);
+    return returnvalue;
+
+
+
+}
+
+function get_url_extension(url) {
+    return url.split(/\#|\?/)[0].split('.').pop().trim();
+}

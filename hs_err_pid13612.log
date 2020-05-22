@@ -1,0 +1,197 @@
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (mmap) failed to map 134217728 bytes for Failed to commit area from 0x0000000081e00000 to 0x0000000089e00000 of length 134217728.
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   The process is running with CompressedOops enabled, and the Java Heap may be blocking the growth of the native heap
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (t:/workspace/open/src/hotspot/os/windows/os_windows.cpp:3264), pid=13612, tid=4232
+#
+# JRE version:  (12.0.2+10) (build )
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (12.0.2+10, mixed mode, aot, sharing, tiered, compressed oops, g1 gc, windows-amd64)
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -Dclassworlds.conf=C:\Program Files\NetBeans-11.1\netbeans\java\maven\bin\m2.conf -Dmaven.home=C:\Program Files\NetBeans-11.1\netbeans\java\maven -Dmaven.multiModuleProjectDirectory=C:\Users\Matthias\Documents\NetBeansProjects\LCMS org.codehaus.plexus.classworlds.launcher.Launcher -Dmaven.ext.class.path=C:\Program Files\NetBeans-11.1\netbeans\java\maven-nblib\netbeans-eventspy.jar -Dfile.encoding=UTF-8 org.apache.tomcat.maven:tomcat7-maven-plugin:2.2:redeploy
+
+Host: Intel(R) Core(TM) i5-6500 CPU @ 3.20GHz, 4 cores, 7G,  Windows 10 , 64 bit Build 16299 (10.0.16299.431)
+Time: Tue Dec 17 18:16:20 2019 Romance (standaardtijd) elapsed time: 0 seconds (0d 0h 0m 0s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0000025bbf76e800):  JavaThread "Unknown thread" [_thread_in_vm, id=4232, stack(0x0000008076c00000,0x0000008076d00000)]
+
+Stack: [0x0000008076c00000,0x0000008076d00000]
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x63aa2a]
+V  [jvm.dll+0x78ce1e]
+V  [jvm.dll+0x78e4c1]
+V  [jvm.dll+0x78eb13]
+V  [jvm.dll+0x2627e8]
+V  [jvm.dll+0x637f5a]
+V  [jvm.dll+0x62c845]
+V  [jvm.dll+0x31e49c]
+V  [jvm.dll+0x31e2cf]
+V  [jvm.dll+0x324006]
+V  [jvm.dll+0x371f56]
+V  [jvm.dll+0x371720]
+V  [jvm.dll+0x2f845a]
+V  [jvm.dll+0x2f96d2]
+V  [jvm.dll+0x767267]
+V  [jvm.dll+0x7689f5]
+V  [jvm.dll+0x380059]
+V  [jvm.dll+0x74b794]
+V  [jvm.dll+0x3ef5cd]
+V  [jvm.dll+0x3f1471]
+C  [jli.dll+0x51cf]
+C  [ucrtbase.dll+0x1dab5]
+C  [KERNEL32.DLL+0x11fe4]
+C  [ntdll.dll+0x6cb81]
+
+
+---------------  P R O C E S S  ---------------
+
+Threads class SMR info:
+_java_thread_list=0x00007ffce9e27928, length=0, elements={
+}
+
+Java Threads: ( => current thread )
+
+Other Threads:
+  0x0000025bbf7ae000 GCTaskThread "GC Thread#0" [stack: 0x0000008076d00000,0x0000008076e00000] [id=10032]
+  0x0000025bbf7bc000 ConcurrentGCThread "G1 Main Marker" [stack: 0x0000008076e00000,0x0000008076f00000] [id=2892]
+  0x0000025bbf7be000 ConcurrentGCThread "G1 Conc#0" [stack: 0x0000008076f00000,0x0000008077000000] [id=1420]
+
+[error occurred during error reporting (printing all threads), id 0xc0000005, EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007ffce96585e7]
+
+VM state:not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0x0000025bbf76a080] Heap_lock - owner thread: 0x0000025bbf76e800
+
+Heap address: 0x0000000081e00000, size: 2018 MB, Compressed Oops mode: Non-zero based: 0x0000000081e00000
+Narrow klass base: 0x0000000000000000, Narrow klass shift: 0
+
+GC Heap History (0 events):
+No events
+
+Deoptimization events (0 events):
+No events
+
+Classes redefined (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+Events (0 events):
+No events
+
+
+Dynamic libraries:
+0x00007ff688ca0000 - 0x00007ff688caf000 	C:\Program Files\Java\jdk-12.0.2\bin\java.exe
+0x00007ffd2b4b0000 - 0x00007ffd2b690000 	C:\WINDOWS\SYSTEM32\ntdll.dll
+0x00007ffd28b40000 - 0x00007ffd28bee000 	C:\WINDOWS\System32\KERNEL32.DLL
+0x00007ffd28610000 - 0x00007ffd28876000 	C:\WINDOWS\System32\KERNELBASE.dll
+0x00007ffd25970000 - 0x00007ffd259f8000 	C:\WINDOWS\SYSTEM32\apphelp.dll
+0x00007ffd28880000 - 0x00007ffd28975000 	C:\WINDOWS\System32\ucrtbase.dll
+0x00007ffd25d00000 - 0x00007ffd25d16000 	C:\Program Files\Java\jdk-12.0.2\bin\VCRUNTIME140.dll
+0x00007ffd1ba80000 - 0x00007ffd1ba98000 	C:\Program Files\Java\jdk-12.0.2\bin\jli.dll
+0x00007ffd2ac10000 - 0x00007ffd2acb1000 	C:\WINDOWS\System32\ADVAPI32.dll
+0x00007ffd28f00000 - 0x00007ffd28f9d000 	C:\WINDOWS\System32\msvcrt.dll
+0x00007ffd28ea0000 - 0x00007ffd28efb000 	C:\WINDOWS\System32\sechost.dll
+0x00007ffd293d0000 - 0x00007ffd294ef000 	C:\WINDOWS\System32\RPCRT4.dll
+0x00007ffd29550000 - 0x00007ffd296df000 	C:\WINDOWS\System32\USER32.dll
+0x00007ffd27cb0000 - 0x00007ffd27cd0000 	C:\WINDOWS\System32\win32u.dll
+0x00007ffd2abe0000 - 0x00007ffd2ac08000 	C:\WINDOWS\System32\GDI32.dll
+0x00007ffd27d20000 - 0x00007ffd27eb3000 	C:\WINDOWS\System32\gdi32full.dll
+0x00007ffd27b30000 - 0x00007ffd27bcb000 	C:\WINDOWS\System32\msvcp_win.dll
+0x00007ffd121d0000 - 0x00007ffd12439000 	C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.16299.967_none_15cddebc93602933\COMCTL32.dll
+0x00007ffd2b170000 - 0x00007ffd2b476000 	C:\WINDOWS\System32\combase.dll
+0x00007ffd27bd0000 - 0x00007ffd27c42000 	C:\WINDOWS\System32\bcryptPrimitives.dll
+0x00007ffd25aa0000 - 0x00007ffd25aaa000 	C:\WINDOWS\SYSTEM32\VERSION.dll
+0x00007ffd2aba0000 - 0x00007ffd2abcd000 	C:\WINDOWS\System32\IMM32.DLL
+0x00007ffd1a170000 - 0x00007ffd1a21a000 	C:\Program Files\Java\jdk-12.0.2\bin\msvcp140.dll
+0x00007ffce9350000 - 0x00007ffce9ec7000 	C:\Program Files\Java\jdk-12.0.2\bin\server\jvm.dll
+0x00007ffd29050000 - 0x00007ffd29058000 	C:\WINDOWS\System32\PSAPI.DLL
+0x00007ffd14aa0000 - 0x00007ffd14aa9000 	C:\WINDOWS\SYSTEM32\WSOCK32.dll
+0x00007ffd25c50000 - 0x00007ffd25c73000 	C:\WINDOWS\SYSTEM32\WINMM.dll
+0x00007ffd28ad0000 - 0x00007ffd28b3c000 	C:\WINDOWS\System32\WS2_32.dll
+0x00007ffd25bf0000 - 0x00007ffd25c1a000 	C:\WINDOWS\SYSTEM32\WINMMBASE.dll
+0x00007ffd27cd0000 - 0x00007ffd27d1a000 	C:\WINDOWS\System32\cfgmgr32.dll
+0x00007ffd27800000 - 0x00007ffd27811000 	C:\WINDOWS\System32\kernel.appcore.dll
+0x00007ffd25a40000 - 0x00007ffd25a51000 	C:\Program Files\Java\jdk-12.0.2\bin\verify.dll
+0x00007ffd1a870000 - 0x00007ffd1aa38000 	C:\WINDOWS\SYSTEM32\DBGHELP.DLL
+0x00007ffd1a2c0000 - 0x00007ffd1a2e9000 	C:\WINDOWS\SYSTEM32\dbgcore.DLL
+0x00007ffd25cd0000 - 0x00007ffd25cf6000 	C:\Program Files\Java\jdk-12.0.2\bin\java.dll
+0x00007ffd258f0000 - 0x00007ffd25907000 	C:\Program Files\Java\jdk-12.0.2\bin\zip.dll
+0x00007ffd25a00000 - 0x00007ffd25a0a000 	C:\Program Files\Java\jdk-12.0.2\bin\jimage.dll
+
+dbghelp: loaded successfully - version: 4.0.5 - missing functions: none
+symbol engine: initialized successfully - sym options: 0x614 - pdb path: .;C:\Program Files\Java\jdk-12.0.2\bin;C:\WINDOWS\SYSTEM32;C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.16299.967_none_15cddebc93602933;C:\Program Files\Java\jdk-12.0.2\bin\server
+
+VM Arguments:
+jvm_args: -Dclassworlds.conf=C:\Program Files\NetBeans-11.1\netbeans\java\maven\bin\m2.conf -Dmaven.home=C:\Program Files\NetBeans-11.1\netbeans\java\maven -Dmaven.multiModuleProjectDirectory=C:\Users\Matthias\Documents\NetBeansProjects\LCMS 
+java_command: org.codehaus.plexus.classworlds.launcher.Launcher -Dmaven.ext.class.path=C:\Program Files\NetBeans-11.1\netbeans\java\maven-nblib\netbeans-eventspy.jar -Dfile.encoding=UTF-8 org.apache.tomcat.maven:tomcat7-maven-plugin:2.2:redeploy
+java_class_path (initial): C:\Program Files\NetBeans-11.1\netbeans\java\maven\boot\plexus-classworlds-2.5.2.jar
+Launcher Type: SUN_STANDARD
+
+[Global flags]
+     intx CICompilerCount                          = 3                                         {product} {ergonomic}
+     uint ConcGCThreads                            = 1                                         {product} {ergonomic}
+     uint G1ConcRefinementThreads                  = 4                                         {product} {ergonomic}
+   size_t G1HeapRegionSize                         = 1048576                                   {product} {ergonomic}
+    uintx GCDrainStackTargetSize                   = 64                                        {product} {ergonomic}
+   size_t InitialHeapSize                          = 134217728                                 {product} {ergonomic}
+   size_t MarkStackSize                            = 4194304                                   {product} {ergonomic}
+   size_t MaxHeapSize                              = 2116026368                                {product} {ergonomic}
+   size_t MinHeapDeltaBytes                        = 1048576                                   {product} {ergonomic}
+    uintx NonNMethodCodeHeapSize                   = 5830732                                {pd product} {ergonomic}
+    uintx NonProfiledCodeHeapSize                  = 122913754                              {pd product} {ergonomic}
+    uintx ProfiledCodeHeapSize                     = 122913754                              {pd product} {ergonomic}
+    uintx ReservedCodeCacheSize                    = 251658240                              {pd product} {ergonomic}
+     bool SegmentedCodeCache                       = true                                      {product} {ergonomic}
+     bool UseCompressedClassPointers               = true                                 {lp64_product} {ergonomic}
+     bool UseCompressedOops                        = true                                 {lp64_product} {ergonomic}
+     bool UseG1GC                                  = true                                      {product} {ergonomic}
+     bool UseLargePagesIndividualAllocation        = false                                  {pd product} {ergonomic}
+
+Logging:
+Log output configuration:
+ #0: stdout all=warning uptime,level,tags
+ #1: stderr all=off uptime,level,tags
+
+Environment Variables:
+JAVA_HOME=C:\Program Files\Java\jdk-12.0.2
+PATH=C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\deploy;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;C:\Users\Matthias\AppData\Roaming\npm;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files\Java\jdk1.8.0_171\bin;C:\Program Files (x86)\Yarn\bin\;C:\Program Files\PuTTY\;C:\Users\Matthias\AppData\Local\Microsoft\WindowsApps;C:\Users\Matthias\AppData\Local\atom\bin;C:\Users\Matthias\AppData\Roaming\npm;C:\Users\Matthias\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Matthias\AppData\Local\Yarn\bin;C:\Users\Matthias\AppData\Local\GitHubDesktop\bin
+USERNAME=Matthias
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 94 Stepping 3, GenuineIntel
+
+
+
+---------------  S Y S T E M  ---------------
+
+OS: Windows 10 , 64 bit Build 16299 (10.0.16299.431)
+
+CPU:total 4 (initial active 4) (4 cores per cpu, 1 threads per core) family 6 model 94 stepping 3, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, avx, avx2, aes, clmul, erms, rtm, 3dnowpref, lzcnt, tsc, tscinvbit, bmi1, bmi2, adx, fma
+
+Memory: 4k page, system-wide physical 8071M (387M free)
+TotalPageFile size 23103M (AvailPageFile size 83M)
+current process WorkingSet (physical memory assigned to process): 10M, peak: 10M
+current process commit charge ("private bytes"): 52M, peak: 180M
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (12.0.2+10) for windows-amd64 JRE (12.0.2+10), built on Jul 16 2019 01:56:17 by "mach5one" with MS VC++ 15.5 (VS2017)
+
+END.

@@ -231,150 +231,56 @@ function isEmptyObj(obj) {
     return true;
 }
 
+function createModelFromJsonArray(jsonArray) {
+    console.log("createModelFromJsonArray()");
+    var colNames = new Array();
+    var colModel = [];
 
-function test() {
+    var data = new Array();
 
-    var btn1 = addBtn('padding:2px;border-style:solid;border-width:1px;width:auto;min-width:60px;margin-right:5px', 'Hulpmiddelen', "btnHulpmiddelen");
-    var parent = $($(".shinytitle")[0]).find("div[class=nowrap]");
-    var popup = $("<div class='dijitDialog dijitDialogFocused dijitFocused' role='dialog' aria-labelledby='showIssuerSearchDialog_title' id='showIssuerSearchDialog' widgetid='showIssuerSearchDialog' style='display: none;position: absolute;opacity: 1;width: 80%;left: 10%;top: 10%;height: 80%;z-index: 1001;'><div data-dojo-attach-point='titleBar' class='dijitDialogTitleBar'>        <span data-dojo-attach-point='titleNode' class='dijitDialogTitle' id='showIssuerSearchDialog_title' role='heading' level='1'>Centraal labo AZ Zeno: hulpmiddelen</span><span data-dojo-attach-point='closeButtonNode' class='dijitDialogCloseIcon' data-dojo-attach-event='ondijitclick: onCancel' onclick='togglePopup()' title='Annuleren' role='button' tabindex='-1'>            <span data-dojo-attach-point='closeText' class='closeText' title='Annuleren'>x</span>        </span>    </div>    <div data-dojo-attach-point='containerNode' id='hulpmiddelenPopupContainer' style='height:100%' class='dijitDialogPaneContent'><table></table></div></div>");
-    var iframe = $("<iframe name='iframe1' id='iframe1' style='width:100%;height:100%;background: #efefef;border-width: 0px;'></iframe>");
-    var hulpmiddelenWrapper = $("<div id='wrapperContent' style='width:100%;margin:5px'></div>");
-
-    $('body').click(function (e) {
-        if (!$(e.target).closest('#hulpmiddelenWrapper').length && !$(e.target).closest('#btnHulpmiddelen').length) {
-            $("#hulpmiddelenWrapper").hide();
-        }
+    var keys = Object.keys(jsonArray[0]);
+    $.each(keys, function (a, b) {
+        var column = {};
+        colNames.push(a);
+        column.label = b;
+        column.name = b;
+        column.type = 'text';
+        colModel.push(column);
     });
-
-    btn1.on('click', function (e) {
-        showLaboPopUp();
-        $("#hulpmiddelenWrapper").toggle();
-        showMainMenu();
-        $("#mainMenu").show();
-        $("#manualMenu").hide();
-        $("#mailMenu").hide();
+    $.each(jsonArray, function (a, line) {
+        data.push(line);
     });
-
-
-    parent.append(btn1);
-    $("body").append(popup);
-
-    function showLaboPopUp() {
-        if ($("#hulpmiddelenWrapper").length < 1) {
-            var wrapper = $("<div id='hulpmiddelenWrapper' style='display:none;position:absolute;width:250px;height:250px;z-index:1000;background: lightgrey;'></div>");
-            var menu = $("<div id='menu'style='width:100%;margin-top: 5px;margin-left: 5px;margin-bottom:5px'></div>");
-            var btnMain = addBtn('padding:2px;border-style:solid;border-width:1px;width:auto;min-width:60px;margin-right:5px', 'Snelkoppelingen');
-            var btnManual = addBtn('padding:2px;border-style:solid;border-width:1px;width:auto;min-width:60px;margin-right:5px', 'Handleiding');
-            var btnContact = addBtn('padding:2px;border-style:solid;border-width:1px;width:auto;min-width:60px;margin-right:5px', 'Contact');
-
-            btnMain.on('click', function (e) {
-                 showMainMenu();
-                $("#manualMenu").hide();
-                $("#mailMenu").hide();
-                $("#mainMenu").toggle();
-            });
-            btnManual.on('click', function (e) {
-                 showManualMenu();
-                $("#mailMenu").hide();
-                $("#mainMenu").hide();
-                $("#manualMenu").toggle();
-            });
-//            btnContact.on('click', function (e) {
-//                 showMailMenu();
-//                $("#mainMenu").hide();
-//                $("#manualMenu").hide();
-//                $("#mailMenu").toggle();
-//
-//            });
-            menu.append(btnMain);
-            menu.append(btnManual);
-//            menu.append(btnContact);
-            wrapper.append(menu);
-            wrapper.append(hulpmiddelenWrapper);
-            parent.append(wrapper);
-        }
-    }
-
-    function addBtn(_style, _value, _id) {
-             var btn = $("<input type='button' class='inputbutton' id=" + _id + " value=" + _value + " style=" + _style + ">");
-             return btn;
-    }
-
-    function togglePopup(link) {
-        if (popup.css("display") === "table" && typeof link === "undefined") {
-            popup.css("display", "none");
-        } else {
-            if (!$("#hulpmiddelenPopupContainer").find(iframe).length) {
-                $("#hulpmiddelenPopupContainer").append(iframe);
-            }
-            popup.css("display", "table");
-            document.getElementById('iframe1').src = link;//"Customer/Order Entry huisartsen.html";
-        }   
-            
-    }
-
-    function showMainMenu() {
-        if (hulpmiddelenWrapper.find("div[id='mainMenu']").length < 1) {
-            var wrapper = $("<div id='mainMenu' style='display:none'></div>");
-            var span = $("<span>Snelkoppelingen:</span>");
-            var ul = $("<ul style='list-style: none;margin-left: 0px;padding: 0;font-size: 1.2em;font-style: normal;'></ul>");
-            var li1 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup(\"https://cyberlab.vzwgo.be/labogids/\")' ><a href='#'>Labogids</a></li>");
-            var li2 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup(\"https://cyberlab.vzwgo.be/Antibiotica/\")'><a href='#'>Antibioticagids</a></li>");
-            var li3 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup(\"https://cyberlab.vzwgo.be/labogids/Contact.aspx\")'><a href='#'>Contactgegevens</a></li>");
-            ul.append(li1);
-            ul.append(li2);//https://cyberlab.vzwgo.be/labogids/Contact.aspx
-            ul.append(li3);
-            wrapper.append(span);
-            wrapper.append("<br/>");
-            wrapper.append(ul);
-            hulpmiddelenWrapper.append(wrapper);
-        }
-    }
-
-    function showManualMenu() {
-        if (hulpmiddelenWrapper.find("div[id='manualMenu']").length < 1) {
-            var wrapper = $("<div id='manualMenu' style='display:none'></div>");
-            var span = $("<span>Handleiding:</span>");
-            var ul = $("<ul style='list-style: none;margin-left: 0px;padding: 0;font-size: 1.2em;font-style: normal;'></ul>");
-            var li2 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup(\"https://cyberlab.vzwgo.be/cyberlab/Customer/Order%20Entry%20huisartsen.html\")'><a href='#'>Order aanmaken</a></li>");
-            var li3 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup(\"https://cyberlab.vzwgo.be/cyberlab/Customer/Order%20Entry%20huisartsen.html#Bijaanvraag\")'><a href='#'>Test(en) bijaanvragen</a></li>");
-            var li4 = $("<li style='margin: 5px;cursor: pointer;' onclick='togglePopup(\"https://cyberlab.vzwgo.be/cyberlab/Customer/Order%20Entry%20huisartsen.html#Panels\")'><a href='#'>Profiel aanmaken</a></li>");
-            ul.append(li2);
-            ul.append(li3);
-            ul.append(li4);
-            wrapper.append(span);
-            wrapper.append("<br/>");
-            wrapper.append(ul);
-            hulpmiddelenWrapper.append(wrapper);
-        }
-
-    }
-
-    function showMailMenu() {
-        if (hulpmiddelenWrapper.find("div[id='mailMenu']").length < 1) {
-            var wrapper = $("<div id='mailMenu' style='display:none'></div>");
-            var mailTitle = $("<span>Stel hier uw vraag</span>");
-            var mailContent = $("<textarea style='width:90%' rows='8'></textarea>");
-            var btnMail = addBtn('padding:2px;border-style:solid;border-width:1px;width:auto;min-width:60px;margin-right:5px', 'Versturen');
-            wrapper.append(mailTitle);
-            wrapper.append("<br/>");
-            wrapper.append(mailContent);
-            wrapper.append("<br/>");
-            wrapper.append(btnMail);
-            hulpmiddelenWrapper.append(wrapper);
-            btnMail.on('click', function (e) {
-                var acc = new account();
-                var message = mailContent.val();
-                var name = acc.loginName;
-                window.location.href = 'mailto:centraal.labo@azzeno.be?subject=Cyberlab - Vraag van ' + name + ' op ' + new Date().toISOString().substring(0, 10) + '&body=' + message;
-            });
-        }
-    }
-
-
-
-
-
-
+    
+    return {header: colModel, table: data};
 }
 
+function createModelFromCSV(val) {
+    console.log("createDataAndModelFromCSV()");
+    var importCSV = CSVToArray(val, ";");
+    var colNames = new Array();
+    var colModel = [];
+
+    var data = new Array();
+    var c = 0;
+    importCSV.forEach(function split(a) {
+        var line = a;
+        var lineObject = {};
+        line.forEach(function split(a, b) {
+            var column = {};
+            if (c < 1) {
+                colNames.push(a);
+                column.label = a;
+                column.name = a;
+                column.type = 'text';
+                colModel.push(column);
+            } else {
+                lineObject[colNames[b]] = a;
+            }
+        });
+        if (c > 0) {
+            data.push(lineObject);
+        }
+        c++;
+    });
+    return {header: colModel, table: data};
+}

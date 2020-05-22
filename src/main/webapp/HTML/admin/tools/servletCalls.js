@@ -5,11 +5,16 @@ function users_doLoad(_parent) {
 
 }
 
+function apikeys_doLoad(_parent) {
+    console.log("Api's load");
+    LCMSTableRequest("loadapikeys", "editapikey", "./servlet", "apikeys-table", "apikeys-pager", "div-grid-apikeys-wrapper", lang["apikeys"]['title'], 1,{hiddengrid: true});
+}
+
 function mongoconfigurations_doLoad(_parent) {
     console.log("Mongoconfigurations load");
     LCMSTableRequest("MONGOCONFIGURATIONS_LOADMONGOCONFIGURATIONS", "MONGOCONFIGURATIONS_EDITMONGOCONFIGURATIONS", "./admin", "mongoconfigurations-table", "mongoconfigurations-pager", "div-grid-user-wrapper", lang["mongoconfigurations"]['title'],1, {hiddengrid: true});
 
-}
+} 
 
 function actions_doLoad(_parent) {
     console.log("Actions load");
@@ -40,3 +45,5 @@ function workflows_doLoad(_parent) {
     console.log("Workflows load");
     LCMSTableRequest("loadworkflows", "editworkflow", "./servlet", "workflows-table", "workflows-pager", "div-grid-workflows-wrapper", lang["workflows"]['title'], 1,{hiddengrid: true});
 }
+
+

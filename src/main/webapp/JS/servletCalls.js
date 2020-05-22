@@ -62,25 +62,25 @@ function getUrlParam(url_string, param) {
 
 }
 
-function downloadToTemp(file) {
-    var formData = new FormData();
-    formData.append('action', 'FILE_DOWNLOADTEMP');
-    formData.append('LCMS_session', $.cookie('LCMS_session'));
-    formData.append('filename', file.attr("name"));
-    var request = new XMLHttpRequest();
-    request.onreadystatechange = function () {
-        if (request.readyState == 4) {
-            var jsonData = JSON.parse(request.responseText);
-            var filePath = jsonData.filePath;
-            console.log("Changing filepath from " + file.attr("src") + " to " + filePath);
-            file.attr("src", filePath);
-            return file;
-
-        }
-    }
-    request.open('POST', "./upload", /* async = */ false);
-    request.send(formData);   
-}
+//function downloadToTemp(file) {
+//    var formData = new FormData();
+//    formData.append('action', 'FILE_DOWNLOADTEMP');
+//    formData.append('LCMS_session', $.cookie('LCMS_session'));
+//    formData.append('filename', file.attr("name"));
+//    var request = new XMLHttpRequest();
+//    request.onreadystatechange = function () {
+//        if (request.readyState == 4) {
+//            var jsonData = JSON.parse(request.responseText);
+//            var filePath = jsonData.filePath;
+//            console.log("Changing filepath from " + file.attr("src") + " to " + filePath);
+//            file.attr("src", filePath);
+//            return file;
+//
+//        }
+//    }
+//    request.open('POST', "./upload", /* async = */ false);
+//    request.send(formData);   
+//}
 
 
 //function doLoginCheck() {

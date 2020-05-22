@@ -17,6 +17,14 @@ var numberTemplate = {
     ignoreCase: true,
     defaultSearch: 'cn'
 
+}, timespanTemplate = {
+    align: 'center',
+    sorttype: function (cellValue, rowObject) {
+        return rowObject.State + "_" + cellValue;
+    },
+    searchoptions: {
+        sopt: ['ge', 'gt', 'eq', 'lt', 'le']
+    }
 };
 
 $(function () {
@@ -238,7 +246,7 @@ function cgenerateView2(data) {
                 column.editoptions.size = value.choices.length < 8 ? value.choices.length + 2 : 10;
             }
         }
-        if (value.type === "password") {
+        if (value.type === "password" || value.type === "encrypted") {
             column.edittype = "password";
         }
         if (value.key === true) {

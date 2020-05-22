@@ -6,25 +6,12 @@
 
 $(function () {
 
-    //check password for admin
-//StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
-//String encryptedPassword = passwordEncryptor.encryptPassword(userPassword);
-    /*  $("#form-new-object").submit(function (event) {
-     event.preventDefault();
-     admin_newObject(JSON.stringify($(this).serializeObject()));
-     });
-     $("#form-new-user").submit(function (event) {
-     event.preventDefault();
-     admin_newUser(JSON.stringify($(this).serializeObject()));
-     });*/
-
-
-    // objects_doLoad($("#admin-container"));
-
     users_doLoad($("#admin-container"));
     mongoconfigurations_doLoad($("#admin-container"));
     actions_doLoad($("#admin-container"));
     pages_doLoad($("#pages-container"));
     commands_doLoad($("#admin-container"));
     workflows_doLoad($("#workflow-container"));
+    apikeys_doLoad($("#apikeys-container"));
+
 });
