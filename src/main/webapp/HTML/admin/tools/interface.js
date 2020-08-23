@@ -12,6 +12,6 @@ $(function () {
     pages_doLoad($("#pages-container"));
     commands_doLoad($("#admin-container"));
     workflows_doLoad($("#workflow-container"));
-    apikeys_doLoad($("#apikeys-container"));
-
+    apikeys_doLoad($("#admin-container"));
+    chronjobs_doLoad($("#chronjobs-container"));
 });

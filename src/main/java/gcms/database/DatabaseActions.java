@@ -6,6 +6,7 @@
 package gcms.database;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
@@ -57,6 +58,10 @@ import gcms.GsonObjects.Core.Backlog;
 import gcms.GsonObjects.Core.FileObject;
 import gcms.GsonObjects.Core.User;
 import gcms.GsonObjects.annotations.MdmAnnotations;
+import gcms.commandFunctions;
+import static gcms.database.DatabaseActions.updateObjectItemv2;
+import java.util.Timer;
+import java.util.TimerTask;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -145,6 +150,16 @@ public class DatabaseActions {
             repos.add(iterator.next().toString());
         }
         return repos;
+    }
+
+    public static void startChronJobs() {
+        Timer t = new Timer();
+        CronTask mTask = new CronTask();
+        // This task is scheduled to run every 60 seconds
+        t.scheduleAtFixedRate(mTask, 0, 60000);
+    }
+
+    public static void stopChronJobs() {
     }
 
     //SESSION METHODS
@@ -276,11 +291,11 @@ public class DatabaseActions {
     public static String downloadFileToTemp(String _fileName, String _cookie, String _contextPath, boolean _publicPage) {
         System.out.println("Calling download..");
         String outputPath = gcms.Core.getTempDir(_cookie, _contextPath) + _fileName;
-        String trimmedOutputPath = "./HTML/other/files/" + _cookie + "/" + _fileName;   
-        if (_publicPage) {            
+        String trimmedOutputPath = "./HTML/other/files/" + _cookie + "/" + _fileName;
+        if (_publicPage) {
             if (Core.checkDir(_contextPath + "/public/")) {
                 outputPath = _contextPath + "/public/" + _fileName;
-                trimmedOutputPath = "./HTML/other/files" + "/public/" + _fileName;                
+                trimmedOutputPath = "./HTML/other/files" + "/public/" + _fileName;
             }
         }
 
@@ -645,9 +660,9 @@ public class DatabaseActions {
     }
 
     public static String revertDMP(String currentText, String patch) {
-     
+
         DiffMatchPatch dmp = new DiffMatchPatch();
-      
+
         //List<DiffMatchPatch.Patch> invertedPatches = dmp.patch_deepCopy((LinkedList<DiffMatchPatch.Patch>) patches);
         LinkedList<DiffMatchPatch.Patch> originalPatches = (LinkedList) dmp.patch_fromText(patch);
 
@@ -748,4 +763,61 @@ public class DatabaseActions {
         mongoConf = mapper.convertValue(results.get(0), MongoConfigurations.class);
         return mongoConf;
     }
+}
+
+class CronTask extends TimerTask {
+
+    public CronTask() {
+        //Some stuffs
+    }
+
+    @Override
+    public void run() {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            gcms.GsonObjects.Core.Actions action = DatabaseWrapper.getAction("loadchronjobs");
+            MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration(action.mongoconfiguration);
+            MongoConfigurations commandConfiguration = DatabaseActions.getMongoConfiguration("commands");
+            ArrayList<Document> jobs = DatabaseActions.getObjectsSpecificListv2(null, mongoConfiguration, new BasicDBObject(), null, 1000, new String[0]);
+
+            for (int i = 0; i < jobs.size(); i++) {
+                boolean execute = false;
+                gcms.GsonObjects.Core.ChronJob chronJob = mapper.convertValue(jobs.get(i), gcms.GsonObjects.Core.ChronJob.class);
+                long currentTime = System.currentTimeMillis();
+                long lastExecution = chronJob.getLast() ;
+                if (currentTime - lastExecution > (Integer.parseInt(chronJob.getInterval()) * 60 * 1000)) {
+                    for (String command : chronJob.getCommmands()) {
+                        BasicDBObject searchObject = new BasicDBObject();
+                        searchObject.put("commandid", new BasicDBObject("$eq", command));
+                        ArrayList<Document> commandDoc = DatabaseActions.getObjectsSpecificListv2(null, commandConfiguration, searchObject, null, 1, new String[0]);
+                        gcms.GsonObjects.Core.Command commandObject = mapper.convertValue(commandDoc.get(0), gcms.GsonObjects.Core.Command.class);
+                        Map<String, String> commandParameters = mapper.readValue(commandObject.getParameters(), new TypeReference<Map<String, String>>() {
+                        });
+                        Map<String, String[]> convertedCommandParameters = commandParameters.entrySet().stream()
+                                .collect(Collectors.toMap(e -> (e.getKey()),
+                                        e -> (new String[]{e.getValue()})));
+                        Map<String, String> chronjobParameters = mapper.readValue(chronJob.getParameters(), new TypeReference<Map<String, String>>() {
+                        });
+                        Map<String, String[]> convertedChronjobParameters = chronjobParameters.entrySet().stream()
+                                .collect(Collectors.toMap(e -> (e.getKey()),
+                                        e -> (new String[]{e.getValue()})));
+                        convertedCommandParameters.putAll(convertedChronjobParameters);
+                        commandFunctions.doCommand(command, convertedCommandParameters, commandObject, null);
+                        chronJob.setLast(Instant.now().toEpochMilli());
+                        BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(chronJob));
+                        updateObjectItemv2(mongoConfiguration, obj);
+                    }
+                }
+
+            }
+
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(CronTask.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(CronTask.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(CronTask.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
 }

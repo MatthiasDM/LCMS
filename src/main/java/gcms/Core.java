@@ -69,12 +69,33 @@ public class Core {
     static String dirName = getProp("app.root");
     static String baseURL = getProp("base.url");
 
-    public static String httpRequest(String receiver) throws MalformedURLException, IOException {
+    public static String httpRequest(String receiver, String method, String postParameters) throws MalformedURLException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        if (method.equals("post") && postParameters != null) {
+            StringBuilder postData = new StringBuilder();
+            Map<String, String> postParameterMap = mapper.readValue(postParameters, new TypeReference<Map<String, String>>() {
+            });
+            for (Map.Entry<String, String> param : postParameterMap.entrySet()) {
+                if (postData.length() != 0) {
+                    postData.append('&');
+                }
+                postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
+                postData.append('=');
+                postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
+            }
+            // byte[] postDataBytes = postData.toString().getBytes("UTF-8");
+            // con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+             //con.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+            receiver = receiver + "&" + postData.toString();
+        }
         URL url = new URL(receiver);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
+
+        con.setRequestMethod(method.toUpperCase());
         con.setConnectTimeout(300000);
         con.setReadTimeout(300000);
+
         int status = con.getResponseCode();
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(con.getInputStream()));
@@ -443,6 +464,26 @@ public class Core {
 
         return "";
 
+    }
+
+    public static String getExtension(String fileName) {
+        char ch;
+        int len;
+        if (fileName == null
+                || (len = fileName.length()) == 0
+                || (ch = fileName.charAt(len - 1)) == '/' || ch == '\\'
+                || //in the case of a directory
+                ch == '.') //in the case of . or ..
+        {
+            return "";
+        }
+        int dotInd = fileName.lastIndexOf('.'),
+                sepInd = Math.max(fileName.lastIndexOf('/'), fileName.lastIndexOf('\\'));
+        if (dotInd <= sepInd) {
+            return "";
+        } else {
+            return "." + fileName.substring(dotInd + 1).toLowerCase();
+        }
     }
 
     public static HashMap<String, String[]> updateHash(String hashField, HashMap<String, String[]> requestParameters) {

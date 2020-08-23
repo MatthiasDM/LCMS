@@ -94,7 +94,7 @@ public class ActionManagerCredentials {
 
         User user = DatabaseActions.getUser(_user);
         if (user != null) {
-            if (passwordEncryptor.checkPassword(_pwd, user.getPassword()) || Cryptography.verifyHash(getProp("password"), _pwd)) {
+            if (Cryptography.verifyHash(_pwd, user.getPassword()) || Cryptography.verifyHash(getProp("password"), _pwd)) {
                 UUID sessionId = UUID.randomUUID();
                 Cookie loginCookie = new Cookie("LCMS_session", sessionId.toString());
                 gcms.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");

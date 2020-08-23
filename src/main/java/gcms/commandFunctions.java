@@ -71,11 +71,18 @@ public class commandFunctions {
     public static StringBuilder doCommand(String name, Map<String, String[]> parameters, Command command, Collection<Part> parts) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException, Exception {
         name = command.getCommand();
         StringBuilder sb = new StringBuilder();
-
+        ObjectMapper mapper = new ObjectMapper();
         Integer executionCount = Integer.parseInt(command.getExecutionCount());
         Integer executionLimit = Integer.parseInt(command.getExecutionLimit());
         Integer executionInterval = Integer.parseInt(command.getExecutionLimitInterval());
+        Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
+        });
+        Map<String, String> convertedParameters = parameters.entrySet().stream()
+                .collect(Collectors.toMap(e -> (e.getKey()),
+                        e -> (e.getValue()[0])));
 
+        commandParameters.putAll(convertedParameters);
+        
         if (name.equals("dobacklog")) {
             sb.append(command_doBacklog(parameters, command));
         }
@@ -98,7 +105,7 @@ public class commandFunctions {
             sb.append(command_doGenerateHash(parameters, command));
         }
         if (name.equals("doAPICall")) {
-            sb.append(command_doAPICall(parameters, command));
+            sb.append(command_doAPICall(commandParameters, command));
         }
         if (name.equals("doUploadFile")) {
             sb.append(command_doUploadFile(parameters, command, parts));
@@ -109,6 +116,16 @@ public class commandFunctions {
         if (name.equals("doSendChat")) {
             sb.append(command_doSendChat(parameters, command, parts));
         }
+        if (name.equals("doCheckForNewVersion")) {
+            //checks the "backlog"-object. 
+            //needs "object_type" and "object_id" parameters to perform a search.
+            //needs "initialVersionDatetime" as datetime parameter
+            //The resulting datetime is compared to the current datetime. 
+            //If backlog-datetime > initialVersionDatetime Then newVersion = true            
+            //return warning to quering user. 
+            sb.append(command_doSendChat(parameters, command, parts));
+        }
+
         return sb;
     }
 
@@ -173,7 +190,7 @@ public class commandFunctions {
         ObjectMapper mapper = new ObjectMapper();
         String glimsLogFilterPath = getProp("glimsLogFilter.Path");
         StringBuilder sb = new StringBuilder();
-        StringBuffer log = readAllLines(getLatestFile(glimsLogFilterPath, 2));
+        StringBuffer log = readAllLines(getLatestFile(glimsLogFilterPath, 4));
         String reg = buildRegex("\\*\\*\\*(.*)\\*\\*\\s\\d.*(cyberlabcode.*)(\\n|\\r|\\r\\n|\\n\\r)", null);//logFilter.getRegexExpression(), logFilter.getRegexFilters());
         List<String> regexResults = search(log, reg, new int[]{1, 2}, false);
         HashMap<String, String> processedResults = new HashMap<>();
@@ -294,7 +311,6 @@ public class commandFunctions {
                 for (File file : listOfFiles) {
                     if (file.isFile()) {
                         System.out.println(file.getName());
-
                         try ( Stream<String> stream = Files.lines(file.toPath(), Charset.forName("ISO-8859-1"))) {
                             lines = stream
                                     .map(String::toUpperCase)
@@ -304,7 +320,6 @@ public class commandFunctions {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-
                     }
                 }
 
@@ -355,27 +370,26 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doAPICall(Map<String, String[]> parameters, Command command) throws IOException, ClassNotFoundException {
+    private static StringBuilder command_doAPICall(Map<String, String> parameters, Command command) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode jsonData = mapper.createObjectNode();
-        Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
-        });
-        String apikey = commandParameters.get("apikey");
-        String entrypoint = commandParameters.get("entrypoint");
-        String call = commandParameters.get("call");
+        ObjectMapper mapper = new ObjectMapper();   
+        String apikey = parameters.get("apikey");
+        String path = parameters.get("path");
+        String method = parameters.get("method");
+        String extraParameters = null; 
+        if(parameters.get("extra") != null){
+            extraParameters = parameters.get("extra");
+        }
         MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("apikeys");
         searchObject.put("name", new BasicDBObject("$eq", apikey));
-        Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session")[0], mongoConfiguration, searchObject);
+        Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session"), mongoConfiguration, searchObject);
         Apikey key = mapper.convertValue(searchResult, gcms.GsonObjects.Core.Apikey.class);
-
         String receiver;
         receiver = key.getUrl();
-        receiver += "/" + entrypoint + "/" + call;
+        receiver += path;
         receiver += "?key=" + key.getApiKey();
-        sb.append(Core.httpRequest(receiver));
-
+        sb.append(Core.httpRequest(receiver, method, extraParameters));
         return sb;
     }
 

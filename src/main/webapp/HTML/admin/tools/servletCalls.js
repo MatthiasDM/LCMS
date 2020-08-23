@@ -10,6 +10,11 @@ function apikeys_doLoad(_parent) {
     LCMSTableRequest("loadapikeys", "editapikey", "./servlet", "apikeys-table", "apikeys-pager", "div-grid-apikeys-wrapper", lang["apikeys"]['title'], 1,{hiddengrid: true});
 }
 
+function chronjobs_doLoad(_parent) {
+    console.log("Chronjobs load");
+    LCMSTableRequest("loadchronjobs", "editchronjob", "./servlet", "chronjobs-table", "chronjobs-pager", "div-grid-chronjobs-wrapper", lang["chronjobs"]['title'], 1,{hiddengrid: true});
+}
+
 function mongoconfigurations_doLoad(_parent) {
     console.log("Mongoconfigurations load");
     LCMSTableRequest("MONGOCONFIGURATIONS_LOADMONGOCONFIGURATIONS", "MONGOCONFIGURATIONS_EDITMONGOCONFIGURATIONS", "./admin", "mongoconfigurations-table", "mongoconfigurations-pager", "div-grid-user-wrapper", lang["mongoconfigurations"]['title'],1, {hiddengrid: true});

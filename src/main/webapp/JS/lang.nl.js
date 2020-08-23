@@ -143,6 +143,10 @@ lang = {
         title: "API-keys",
         name: "Naam"
     },
+    chronjobs: {
+        title: "Terugkerende taken",
+        name: "Naam"
+    },
     document: {},
     labPossessions: {
         title: "Iventaris",

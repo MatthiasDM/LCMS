@@ -21,6 +21,7 @@ public class MainServletContextListener implements javax.servlet.ServletContextL
         // do all the tasks that you need to perform just after the server starts
         DatabaseActions.connect();
         DatabaseActions.createDatabaseMap();
+        DatabaseActions.startChronJobs();
         //Notification that the web application initialization process is starting
     }
 }

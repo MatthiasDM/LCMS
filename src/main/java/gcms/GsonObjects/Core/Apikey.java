@@ -6,6 +6,7 @@
 package gcms.GsonObjects.Core;
 
 import gcms.GsonObjects.annotations.MdmAnnotations;
+import java.util.List;
 
 /**
  *
@@ -35,7 +36,7 @@ public class Apikey {
     @MdmAnnotations(
             type = "boolean",
             editRole = "ICTMANAGER",
-            viewRole = "ICTMANAGER"
+            viewRole = "LABASSISTANT"
     )
     public String apiKeyLock;
     @MdmAnnotations(
@@ -62,7 +63,7 @@ public class Apikey {
             reference = {"Mongo", "commands", "commandid", "name"},
             visibleOnTable = true,
             editRole = "ICTMANAGER")
-    public String scope;
+    public List<String> scope;
 
     @MdmAnnotations(type = "boolean", visibleOnTable = true)
     public boolean valid;
@@ -86,20 +87,7 @@ public class Apikey {
     public Apikey() {
     }
 
-    public Apikey(String apikeyid, String name, String keyprefix, String apiKey, String apiKeyLock, String url, String connection, String port, String scope, boolean valid, long created_on, String created_by) {
-        this.apikeyid = apikeyid;
-        this.name = name;
-        this.keyprefix = keyprefix;
-        this.apiKey = apiKey;
-        this.apiKeyLock = apiKeyLock;
-        this.url = url;
-        this.connection = connection;
-        this.port = port;
-        this.scope = scope;
-        this.valid = valid;
-        this.created_on = created_on;
-        this.created_by = created_by;
-    }
+   
 
     public String getConnection() {
         return connection;
@@ -191,12 +179,28 @@ public class Apikey {
         this.apiKeyLock = apiKeyLock;
     }
 
-    public String getScope() {
+    public List<String> getScope() {
         return scope;
     }
 
-    public void setScope(String scope) {
+    public void setScope(List<String> scope) {
         this.scope = scope;
     }
 
+    public Apikey(String apikeyid, String name, String keyprefix, String apiKey, String apiKeyLock, String url, String connection, String port, List<String> scope, boolean valid, long created_on, String created_by) {
+        this.apikeyid = apikeyid;
+        this.name = name;
+        this.keyprefix = keyprefix;
+        this.apiKey = apiKey;
+        this.apiKeyLock = apiKeyLock;
+        this.url = url;
+        this.connection = connection;
+        this.port = port;
+        this.scope = scope;
+        this.valid = valid;
+        this.created_on = created_on;
+        this.created_by = created_by;
+    }
+
+ 
 }
