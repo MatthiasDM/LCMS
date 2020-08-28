@@ -34,7 +34,7 @@ import org.jasypt.util.password.StrongPasswordEncryptor;
  *
  * @author matmey
  */
-@WebServlet(name = "adminServlet", urlPatterns = {"/admin"})
+@WebServlet(name = "adminServlet", urlPatterns = {"/admin/*"})
 public class ServletAdmin extends HttpServlet {
 
     private ServletContext context;

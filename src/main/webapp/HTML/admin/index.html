@@ -1,4 +1,28 @@
-<script src="./HTML/admin/interface.js"></script>
-<script src="./HTML/admin/servletCalls.js"></script>
+<script>
+    function admin_doLoad(_parent) {
+        console.log("Loading admin page2");
+        var _cookie = $.cookie('LCMS_session');
+        $.ajax({
+            method: "POST",
+            url: "./admin",
+            data: {action: "ADMIN_LOADPAGE", LCMS_session: _cookie},
+            beforeSend: function (xhr) {
+                xhr.overrideMimeType("application/html");
+            }
+        }).done(function (data) {
+            if (typeof data !== 'undefined') {
+                var jsonData = JSON.parse(data, _parent);
+                jsonData.parent = _parent;
+                loadParameters(jsonData);
+            }
+
+        }).fail(function (data) {
+            alert("Sorry. Server unavailable. ");
+        });
+    }
+    $(function () {
+        admin_doLoad($("#admin-container"));
+    });
+</script>
 <div id="admin-container">
 </div>

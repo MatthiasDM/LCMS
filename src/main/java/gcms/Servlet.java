@@ -73,7 +73,7 @@ public class Servlet extends HttpServlet {
              //   sb.append(jsonData);
             }
         } else {
-            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
         }
 
         if (sb.toString().length() > 0) {

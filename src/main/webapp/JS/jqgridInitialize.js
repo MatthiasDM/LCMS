@@ -29,24 +29,25 @@ var numberTemplate = {
 
 $(function () {
 
+//    initDateEdit = function (elem) {
+//        $(elem).datepicker({
+//            dateFormat: "yy-mm-d\THH:MM:SS",
+//            autoSize: true,
+//            changeYear: true,
+//            changeMonth: true,
+//            showButtonPanel: true,
+//            showWeek: true
+//        });
+//    };
     initDateEdit = function (elem) {
-        $(elem).datepicker({
-            dateFormat: "d-m-y",
-            autoSize: true,
-            changeYear: true,
-            changeMonth: true,
-            showButtonPanel: true,
-            showWeek: true
+        $(elem).datetimepicker({
+            format:'Y-m-d H:i'
         });
     };
+
     initDateTimeEdit = function (elem) {
-        $(elem).datepicker({
-            dateFormat: "d-m-y",
-            autoSize: true,
-            changeYear: true,
-            changeMonth: true,
-            showButtonPanel: true,
-            showWeek: true
+        $(elem).datetimepicker({
+            format:'Y-m-d H:i'
         });
     };
     initDateSearch = function (elem) {

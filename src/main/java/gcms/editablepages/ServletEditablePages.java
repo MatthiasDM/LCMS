@@ -27,7 +27,7 @@ import gcms.database.DatabaseWrapper;
  *
  * @author matmey
  */
-@WebServlet(name = "EditablePagesServlet", urlPatterns = {"/editablepages"})
+@WebServlet(name = "EditablePagesServlet", urlPatterns = {"/editablepages/*"})
 public class ServletEditablePages extends HttpServlet {
 
     private ServletContext context;
@@ -107,7 +107,7 @@ public class ServletEditablePages extends HttpServlet {
                 }
 
             } else {
-                sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+                sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
             }
 
             return sb;

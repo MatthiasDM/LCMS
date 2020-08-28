@@ -70,9 +70,9 @@ public class ActionManagerAdmin {
         if (action == gcms.Config.Actions.ADMIN_LOADPAGE) {
             if (checkUserRole(cookie, gcms.Config.Roles.ADMIN)) {
                 //  Object[] possibleValues = gcms.Config.Roles.ADMIN.getDeclaringClass().getEnumConstants();
-                sb.append(DatabaseWrapper.getWebPage("admin/tools/index.html", new String[]{"admin/tools/servletCalls.js", "admin/tools/interface.js"}));
+                sb.append(DatabaseWrapper.getWebPage("admin/tools/index.html", new String[]{}));
             } else {
-                sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+                sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
             }
         } else {
 
@@ -128,7 +128,7 @@ public class ActionManagerAdmin {
                 }
             }
         } else {
-            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
         }
         return sb;
     }
@@ -136,13 +136,13 @@ public class ActionManagerAdmin {
     private StringBuilder actionADMIN_LOADUSERS() throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
         if (cookie == null) {
-            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
         } else {
             if (action == gcms.Config.Actions.ADMIN_LOADUSERS) {
                 if (Core.checkSession(cookie)) {
                     sb.append(DatabaseWrapper.getObjectData(cookie, gcms.Config.MongoConf.USERS, "user_table", new BasicDBObject(), new String[]{}));
                 } else {
-                    sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+                    sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
                 }
             }
 

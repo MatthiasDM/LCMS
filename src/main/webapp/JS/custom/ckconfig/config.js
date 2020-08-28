@@ -32,7 +32,7 @@ function config2(publicPage) { //for inline editing
             {name: 'forms', groups: ['forms']},
             {name: 'colors', groups: ['colors']},
             {name: 'basicstyles', groups: ['basicstyles', 'cleanup']},
-            {name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph', 'mdmUploadFiles', 'undo']},
+            {name: 'paragraph', groups: ['list', 'indent', 'blocks', 'align', 'bidi', 'paragraph', 'undo']},
             {name: 'links', groups: ['links']},
             {name: 'insert', groups: ['insert']},
             {name: 'styles', groups: ['styles']},
@@ -44,7 +44,7 @@ function config2(publicPage) { //for inline editing
 
         config.templates_files = ['./JS/ckeditor/plugins/templates/templates/defaultLCMS.js'];
         config.templates_replaceContent = false;
-        config.extraPlugins = 'mdmUploadFiles,codesnippet,pre,codemirror,sourcedialog,widget,dialog,mdmjexcel,templates,plantuml';
+        config.extraPlugins = 'codesnippet,pre,codemirror,sourcedialog,widget,dialog,mdmjexcel,templates,plantuml';
         config.format_tags = 'div';
         config.removeButtons = 'Source,Save,Undo,Cut,Redo,Copy,MenuButton,Preview,Print,PasteText,Paste,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,NewPage,Outdent,Indent,CreateDiv,Blockquote,JustifyLeft,JustifyCenter,JustifyRight,JustifyBlock,Language,BidiRtl,Unlink,BidiLtr,Flash,Table,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Format,Font,Maximize,ShowBlocks,About,RemoveFormat,CopyFormatting,Subscript,Superscript';//Anchor
         config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';

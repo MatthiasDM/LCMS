@@ -581,7 +581,7 @@ public class DatabaseWrapper {
                 }
             }
         } else {
-            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
         }
         return sb;
     }
@@ -589,13 +589,13 @@ public class DatabaseWrapper {
     public static StringBuilder actionLOADOBJECT(String cookie, MongoConf _mongoConf, Bson filter, String[] excludes) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
         if (cookie == null) {
-            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
         } else {
             if (Core.checkSession(cookie)) {
                 //sb.append(getInstrumentData(cookie));
                 sb.append(DatabaseWrapper.getObjectData(cookie, _mongoConf, _mongoConf.getCollection(), filter, excludes));
             } else {
-                sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+                sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
             };
         }
         return sb;
@@ -640,7 +640,7 @@ public class DatabaseWrapper {
                 }
             }
         } else {
-            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
         }
         return sb;
     }
@@ -648,7 +648,7 @@ public class DatabaseWrapper {
     public static StringBuilder actionGETOBJECTv2(String cookie, MongoConfigurations _mongoConf, String key, String value, Boolean publicPage) throws JsonProcessingException, JsonProcessingException, ClassNotFoundException, JsonProcessingException, JsonProcessingException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
         if (cookie == null && !publicPage) {
-            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
         } else {
             if (!key.equals("")) {
                 BasicDBObject searchObject = new BasicDBObject();
@@ -724,13 +724,13 @@ public class DatabaseWrapper {
     public static StringBuilder actionLOADOBJECTv2(String cookie, MongoConfigurations _mongoConf, Bson filter, String[] excludes) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
         if (cookie == null) {
-            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
         } else {
             if (Core.checkSession(cookie)) {
                 //sb.append(getInstrumentData(cookie));
                 sb.append(DatabaseWrapper.getObjectDatav2(cookie, _mongoConf, _mongoConf.getCollection(), filter, excludes));
             } else {
-                sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{"credentials/servletCalls.js", "credentials/interface.js"}));
+                sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
             };
         }
         return sb;

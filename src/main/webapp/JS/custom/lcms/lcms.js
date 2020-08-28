@@ -210,12 +210,13 @@ var getUrlParameter = function getUrlParameter(sParam) {
 }
 
 class LCMSgridController {
-    constructor() {
+    constructor(parent) {
         console.log("new gridcontroller");
         this.grids = {};
         this.references = [];
         this.views = [];
         this.LCMSGrids = {};
+        this.parent = parent;
     }
 
     addLCMSGrid(_gridId, _grid) {
@@ -350,12 +351,12 @@ class LCMSEditablePage {
 
     constructor(pageData) {
         this.pageData = pageData;
-        this.originalDocument = "";
-        this.gridController = new LCMSgridController();
+        this.originalDocument = "";        
         this.gridForm = new LCMSGridForm(this);
         this.canvasses = new Object();
         this.readonly = true;
         this.parent = new Object();
+        this.gridController = new LCMSgridController(this.parent);
     }
 
     buildPageData(data, _parent, _originalDocument) {
@@ -591,7 +592,7 @@ class LCMSEditablePage {
                     },
                     editParams: {
                         aftersavefunc: function (id) {
-                            me.savePage();
+                            //me.savePage();
                         }
                     }
                 }
@@ -1279,7 +1280,7 @@ class LCMSGridForm {
                         },
                         editParams: {
                             aftersavefunc: function (id) {
-                                me._editablePage.savePage();
+                                //me._editablePage.savePage();
                             }
                         }
                     }
@@ -2080,8 +2081,9 @@ class LCMSGrid {
             //column.editable = true;
 
             if (type === "date" || value.formatter === "date") {
-                column.formatoptions = {srcformat: "u1000", newformat: "Y-m-d\\TH:i:s"};
+                column.formatoptions = {srcformat: "u1000", newformat: "Y-m-d H:i"};
                 column.formatter = "date";
+                
                 column.sorttype = "date";
                 column.editoptions = {dataInit: initDateEdit};
             }
@@ -2768,6 +2770,7 @@ class LCMSGrid {
             },
             onclickSubmit: function (params, postdata) {
                 console.log("onclickSubmit()");
+                
 //                $.each($("#FrmGrid_" + this.id).find("[type=checkbox]"), function (a, b) {
 //                    $(b).val(b.checked);
 //                });
@@ -2785,8 +2788,8 @@ class LCMSGrid {
                 var colModel = $("#" + this.id).jqGrid("getGridParam").colModel;
                 var filteredModel = Object.filter(colModel, function (a) {
                     console.log(a.type);
-                    if (a.type === "datetime") {
-                        return true;
+                    if (a.formatter === "date") {
+                        postdata[a.name] = moment().valueOf();
                     } else {
                         return false;
                     }
