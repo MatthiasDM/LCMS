@@ -45,7 +45,7 @@ import org.apache.commons.io.IOUtils;
  *
  * @author matmey
  */
-@WebServlet(name = "Servlet", urlPatterns = {"/servlet/*"})
+@WebServlet(name = "Servlet", urlPatterns = {"/servlet/*", "/IT/servlet"})
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 20, // 20MB
         maxFileSize = 1024 * 1024 * 20, // 20MB
         maxRequestSize = 1024 * 1024 * 50)   // 50MB

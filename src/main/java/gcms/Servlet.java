@@ -31,7 +31,7 @@ import org.apache.commons.lang.StringEscapeUtils;
  *
  * @author matmey
  */
-@WebServlet(name = "pageServlet", urlPatterns = {"/page"})
+@WebServlet(name = "pageServlet", urlPatterns = {"/page", "/IT/page"})
 public class Servlet extends HttpServlet {
 
     String cookie;

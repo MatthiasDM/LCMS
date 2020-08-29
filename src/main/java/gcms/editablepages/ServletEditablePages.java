@@ -27,7 +27,7 @@ import gcms.database.DatabaseWrapper;
  *
  * @author matmey
  */
-@WebServlet(name = "EditablePagesServlet", urlPatterns = {"/editablepages/*"})
+@WebServlet(name = "EditablePagesServlet", urlPatterns = {"/editablepages/*", "/IT/editablepages"})
 public class ServletEditablePages extends HttpServlet {
 
     private ServletContext context;

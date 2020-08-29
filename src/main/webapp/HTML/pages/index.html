@@ -1,13 +1,81 @@
-<script src="./HTML/pages/interface.js"></script>
-<script src="./HTML/pages/servletCalls.js"></script>
-<script src="./JS/ckeditor/ckeditor.js"></script>
-<!--<script src="./JS/custom/ckconfig/config.js"></script>-->
-<script src="./JS/dependencies/BootSlideMenu/js/BootSideMenu.js"></script>
-
-<link rel="stylesheet" type="text/css" media="screen" href="./JS/dependencies/BootSlideMenu/css/BootSideMenu.css" />
-<link rel="stylesheet" type="text/css" media="screen" href="./HTML/pages/style.css" />
 
 
+<style>
+ 
+.ui-jqgrid-bdiv{
+    max-height:400px;
+}
+
+.row-striped:nth-of-type(odd){
+    background-color: #efefef;
+    margin-top: 5px;
+}
+
+.row-striped:nth-of-type(even){
+    background-color: #ffffff;
+    margin-top: 5px;
+}
+
+
+
+.notespop {
+    background-color:#FFFFFF;
+    border:1px solid #999999;
+    cursor:default;
+    display:none;
+    margin-top: 15px;
+    position:absolute;
+    text-align:left;
+    width:400px;
+    z-index:50;
+    padding: 25px 25px 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 3px;
+    padding-left: 15px;
+    text-indent: -15px;
+}
+
+.notespop p, .notespop.div {
+    border-bottom: 1px solid #EFEFEF;
+    margin: 8px 0;
+    padding-bottom: 8px;
+}
+
+.list-group-item{
+ /*   border: 0px; */
+}
+
+.list-group-item:nth-of-type(even){
+ /*   background-color: #hhhhhh; */
+}
+    
+</style>
+<script>
+    Object.filter = (obj, predicate) =>
+        Object.keys(obj)
+                .filter(key => predicate(obj[key]))
+                .reduce((res, key) => (res[key] = obj[key], res), {});
+
+
+    var lastSelection;
+    var originalDocument = "";
+    let documentPage = {};
+
+    $(function () {
+
+        editablePage_getPage($("#content"));
+        $(document).mouseup(function (e)
+        {
+            var container = $("#div-grid-wrapper");
+            if (!container.is(e.target) && container.has(e.target).length === 0) {
+                container.hide();
+            }
+        });
+    });
+</script>
 <body>
     <div id="dynamic-content"></div>  
     <div id="content"></div>    

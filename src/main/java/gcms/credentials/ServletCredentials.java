@@ -37,7 +37,7 @@ import org.jasypt.util.password.StrongPasswordEncryptor;
  *
  * @author matmey
  */
-@WebServlet(name = "credentialsServlet", urlPatterns = {"/credentials"})
+@WebServlet(name = "credentialsServlet", urlPatterns = {"/credentials", "/IT/credentials"})
 public class ServletCredentials extends HttpServlet {
 
     private ServletContext context;

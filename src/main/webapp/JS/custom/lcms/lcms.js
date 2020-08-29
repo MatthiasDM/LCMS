@@ -349,20 +349,20 @@ class LCMSEditablePage {
 //    };
 
 
-    constructor(pageData) {
+    constructor(pageData, parent) {
         this.pageData = pageData;
         this.originalDocument = "";        
         this.gridForm = new LCMSGridForm(this);
         this.canvasses = new Object();
         this.readonly = true;
-        this.parent = new Object();
+        this.parent = parent;
         this.gridController = new LCMSgridController(this.parent);
     }
 
-    buildPageData(data, _parent, _originalDocument) {
+    buildPageData(data, _originalDocument) {
         console.log("Start loading page");
         var me = this;
-        me.parent = _parent;
+        
         me.parent.empty();
         var jsonData = JSON.parse(data, me.parent);
         var grids = {};
@@ -394,7 +394,7 @@ class LCMSEditablePage {
                 console.log(e);
                 bootstrap_alert.warning("Something went wrong", "warning", "1000");
             }
-            _parent.click();
+             me.parent.click();
         }
         jsonData.parent.empty();
         this.generatePage(jsonData, grids);
@@ -2048,7 +2048,7 @@ class LCMSGrid {
 
     datetimeformatter(cellvalue, options, rowObject) {
         console.log("creating datetimeformat()");
-        return moment(cellvalue).utcOffset(60).toString();
+        return moment(cellvalue).utcOffset(60).format("Y-MM-DD H:mm");
     }
 
     async loadFormatters() {
@@ -2788,8 +2788,9 @@ class LCMSGrid {
                 var colModel = $("#" + this.id).jqGrid("getGridParam").colModel;
                 var filteredModel = Object.filter(colModel, function (a) {
                     console.log(a.type);
-                    if (a.formatter === "date") {
-                        postdata[a.name] = moment().valueOf();
+                    if (a.formatter === "date" || a.type === "datetime" ) {
+                        //postdata[a.name] = moment().valueOf();// return moment(cellvalue).utcOffset(60).format("Y-MM-DD H:mm");
+                        postdata[a.name]  = moment(postdata[a.name]).valueOf();
                     } else {
                         return false;
                     }
@@ -3309,8 +3310,8 @@ function buildEditablePage(data, _parent, _originalDocument, _pageData) {
         pageData = _pageData;
     }
     config2(publicPage);
-    documentPage = new LCMSEditablePage(pageData);
-    documentPage.buildPageData(data, _parent, _originalDocument);
+    documentPage = new LCMSEditablePage(pageData, _parent);
+    documentPage.buildPageData(data, _originalDocument);
     // documentPage.setPageId($($("div[id^='wrapper']")[0]).attr("id").substring(8));
 }
 
