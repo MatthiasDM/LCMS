@@ -15,14 +15,15 @@ public class Document {
 
     @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String documentid;
-    @MdmAnnotations(type = "string", visibleOnTable = true, visibleOnForm = true)
+    @MdmAnnotations(type = "string", visibleOnTable = true, visibleOnForm = true, viewRole="GUEST")
     public String title;
-    @MdmAnnotations(type = "string", visibleOnTable = true, visibleOnForm = true)
+    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String prefix;
     @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false, DMP = true)
     public String contents;
     @MdmAnnotations(
             type = "select",
+            viewRole = "GUEST",
             reference = {"Mongo", "users", "userid", "username"},
             editRole = "ICTMANAGER",
             visibleOnTable = false
@@ -44,8 +45,9 @@ public class Document {
     public long approved_on;
     @MdmAnnotations(
             type = "date",
-            visibleOnTable = false,
+            visibleOnTable = true,
             visibleOnForm = false,
+            viewRole = "GUEST",
             editRole = "ICTMANAGER",
             createRole = "SYSTEM")
     public long created_on;
@@ -60,7 +62,7 @@ public class Document {
     @MdmAnnotations(
             type = "date",
             visibleOnTable = false,
-            visibleOnForm = false,
+            visibleOnForm = false,            
             createRole = "SYSTEM",
             editRole = "SYSTEM")
     public long edited_on;

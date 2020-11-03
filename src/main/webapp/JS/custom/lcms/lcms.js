@@ -335,23 +335,15 @@ class LCMSgridController {
     }
 }
 
-
 class LCMSNormalPage {
 
 }
 
 class LCMSEditablePage {
-//    var pageData = {
-//        loadAction: "VALIDATION_LOADVALIDATIONS",
-//        editUrl: "./validations",
-//        pageId: "",
-//        idName = "",
-//    };
-
 
     constructor(pageData, parent) {
         this.pageData = pageData;
-        this.originalDocument = "";        
+        this.originalDocument = "";
         this.gridForm = new LCMSGridForm(this);
         this.canvasses = new Object();
         this.readonly = true;
@@ -362,7 +354,7 @@ class LCMSEditablePage {
     buildPageData(data, _originalDocument) {
         console.log("Start loading page");
         var me = this;
-        
+
         me.parent.empty();
         var jsonData = JSON.parse(data, me.parent);
         var grids = {};
@@ -394,7 +386,7 @@ class LCMSEditablePage {
                 console.log(e);
                 bootstrap_alert.warning("Something went wrong", "warning", "1000");
             }
-             me.parent.click();
+            me.parent.click();
         }
         jsonData.parent.empty();
         this.generatePage(jsonData, grids);
@@ -517,10 +509,11 @@ class LCMSEditablePage {
                 modal.attr("id", "historyModal");
                 modal.find("#btn-save").remove();
                 var btn = dom_button("btn-revert", "history", "Versie herstellen", "primary");
+                var historyDiv = $("<div></div>");
+                var rowData = $("#history-table").jqGrid('getRowData', rowid);
                 btn.on("click", async function (e) {
                     $("#historyModal").modal('hide');
                     $("#historyModal").remove();
-                    var rowData = $("#history-table").jqGrid('getRowData', rowid);
                     let request = await LCMSRequest("./servlet", {action: "docommand", k: "dobacklog", parameters: {object_id: rowData["object_id"], object_type: rowData["object_type"], created_on: moment(rowData["created_on"]).valueOf()}});
                     async function onDone(data) {
                         console.log("Reverting document...");
@@ -528,6 +521,19 @@ class LCMSEditablePage {
                     }
                     let afterRequest = await onDone(request);
                 });
+
+                var getHistory = (async function () {
+                    let promise = new Promise((res, rej) => {
+                        res(LCMSRequest("./servlet", {action: "getbacklog", k: "backlogid", v: rowData["backlogid"]}));
+                        console.log("getHistory promise");
+                    });
+                    let value = await promise;
+                    var contents = $.parseJSON($.parseJSON(value).changes).contents;
+                    contents = decodeURI(decodeURI(contents));
+                    historyDiv.text(contents);
+                })();
+
+                modal.find("div[class='modal-body']").append(historyDiv);
                 modal.find("div[class='modal-body']").append(btn);
                 modal.modal('show');
                 return true;
@@ -599,14 +605,24 @@ class LCMSEditablePage {
             }
         };
 
+        var jqgridFunctionList = ["beforeRequest", "a", "loadBeforeSend"];
         try {
             $.each(JSON.parse(gridParam.extraOptionsJSON), function (i, n) {
-                gridData.jqGridOptions[i] = n;
+                if (typeof n === "string") {
+                    var re = new RegExp(`\\b${i}\\b`, 'gi');
+                    if (jqgridFunctionList.findIndex(value => re.test(value)) !== -1) {
+                        gridData.jqGridOptions[i] = eval(n);
+                    } else {
+                        gridData.jqGridOptions[i] = n;
+                    }
+                    ;
+                } else {
+                    gridData.jqGridOptions[i] = n;
+                }
             });
         } catch (e) {
 
         }
-
 
         let documentGrid = new LCMSGrid(gridData);
         console.log("pushing LCMSgrid to gridcontroller");
@@ -830,7 +846,7 @@ class LCMSEditablePage {
         var me = this;
         var gridControllerCopy = jQuery.extend(true, {}, me.gridController);
         $.each(gridControllerCopy.grids, function (index, item) {
-      //      item.data = me.gridController.LCMSGrids[item.id].data;
+            //      item.data = me.gridController.LCMSGrids[item.id].data;
             var colModel = item.colModel;
             var colNames = item.colNames;
             var colModelArray = [];
@@ -1177,10 +1193,6 @@ class LCMSEditablePage {
         history_pager.appendTo(div_public_menu);
     }
 
-//-------------DIT KAN MISCCHIEN IN EEN APPARTE STATISCHE KLASSE STAAN
-
-
-
 }
 
 class LCMSGridForm {
@@ -1289,10 +1301,22 @@ class LCMSGridForm {
             $.each(extraOptions, function (i, n) {
                 gridData.jqGridOptions[i] = n;
             });
-            try {
 
+
+            var jqgridFunctionList = ["beforeRequest", "a", "b", "loadBeforeSend"];
+            try {
                 $.each(JSON.parse(extraOptions.extraOptionsJSON), function (i, n) {
-                    gridData.jqGridOptions[i] = n;
+                    if (typeof n === "string") {
+                        var re = new RegExp(`\\b${i}\\b`, 'gi');
+                        if (jqgridFunctionList.findIndex(value => re.test(value)) !== -1) {
+                            gridData.jqGridOptions[i] = eval(n);
+                        } else {
+                            gridData.jqGridOptions[i] = n;
+                        }
+                        ;
+                    } else {
+                        gridData.jqGridOptions[i] = n;
+                    }
                 });
             } catch (e) {
 
@@ -1635,7 +1659,7 @@ class LCMSGridForm {
         Object.keys(_editablepage.gridController.LCMSGrids).forEach(function (item) {
             if (!item.includes("row")) {
                 if (_editablepage.gridController.grids[item] === undefined) {
-                   // delete _editablepage.gridController.LCMSGrids[item];
+                    // delete _editablepage.gridController.LCMSGrids[item];
                 } else {
                     var name = _editablepage.gridController.grids[item].caption;
                     gridsOnPage.push({item, name});
@@ -2083,7 +2107,7 @@ class LCMSGrid {
             if (type === "date" || value.formatter === "date") {
                 column.formatoptions = {srcformat: "u1000", newformat: "Y-m-d H:i"};
                 column.formatter = "date";
-                
+
                 column.sorttype = "date";
                 column.editoptions = {dataInit: initDateEdit};
             }
@@ -2747,6 +2771,7 @@ class LCMSGrid {
                 });
                 $("div[title=ckedit]").each(function (index) {
                     $(this).addClass("border rounded p-3");
+                    //   buildEditablePage("{\"parameters\":{\"public\":false},\"webPage\":\"\", \"grids\": {}}", $(this));
                     CKEDITOR.inline($(this).attr('id'));
                 });
             },
@@ -2770,7 +2795,7 @@ class LCMSGrid {
             },
             onclickSubmit: function (params, postdata) {
                 console.log("onclickSubmit()");
-                
+
 //                $.each($("#FrmGrid_" + this.id).find("[type=checkbox]"), function (a, b) {
 //                    $(b).val(b.checked);
 //                });
@@ -2788,9 +2813,9 @@ class LCMSGrid {
                 var colModel = $("#" + this.id).jqGrid("getGridParam").colModel;
                 var filteredModel = Object.filter(colModel, function (a) {
                     console.log(a.type);
-                    if (a.formatter === "date" || a.type === "datetime" ) {
+                    if (a.formatter === "date" || a.type === "datetime") {
                         //postdata[a.name] = moment().valueOf();// return moment(cellvalue).utcOffset(60).format("Y-MM-DD H:mm");
-                        postdata[a.name]  = moment(postdata[a.name]).valueOf();
+                        postdata[a.name] = moment(postdata[a.name]).valueOf();
                     } else {
                         return false;
                     }
@@ -2837,7 +2862,7 @@ class LCMSGrid {
                 var rowId = ($($(this).find("td.DataTD").find("div[title='ckedit']")).attr("id"));
                 var headerItem = Object.filter(me.gridData.data.header, obj => obj.name === rowId);
                 var tableName = headerItem[Object.keys(headerItem)[0]].tablename;
-                var tableAttr = lang[tableName] === "undefined" ? rowId : lang[tableName][rowId];
+                var tableAttr = lang[tableName] === undefined ? rowId : lang[tableName][rowId];
                 pills.push(tableAttr);
 
 
@@ -2851,7 +2876,7 @@ class LCMSGrid {
                 var rowId = ($($(this).find("td.DataTD").find("div[title='ckedit']")).attr("id"));
                 var headerItem = Object.filter(me.gridData.data.header, obj => obj.name === rowId);
                 var tableName = headerItem[Object.keys(headerItem)[0]].tablename;
-                var tableAttr = lang[tableName] === "undefined" ? rowId : lang[tableName][rowId];
+                var tableAttr = lang[tableName] === undefined ? rowId : lang[tableName][rowId];
                 var rowIndex = pills.indexOf(tableAttr);
                 if (rowIndex > 0) {
                     $("#" + (rowIndex) + "-tab").append((this));
@@ -3031,6 +3056,8 @@ async function LCMSRequest(_url, _data, _onDone, _extraParam) {
 
 function getPatches(oldData, newData) {
     console.log("getPatches()");
+    //oldData = btoa(oldData);
+    //newData = btoa(newData);
     var dmp = new diff_match_patch();
     // var diff = dmp.diff_main((oldData), (newData));
     var diff = dmp.diff_main((oldData), (newData));
@@ -3048,7 +3075,7 @@ function getPatchesReverse(oldData, newData) {
     //  dmp.diff_cleanupSemantic(diff);
     var patches = dmp.patch_make(diff);
     var textPatches = dmp.patch_toText(patches);
-    return textPatches;
+    return (textPatches);
 }
 
 async function LCMSTableRequest(loadAction, editAction, editUrl, tableName, pagerName, wrapperName, caption, tableType, jqGridOptions, extraRequestOptions, LCMSEditablePageObject) {
@@ -3341,6 +3368,5 @@ function LCMSgetEditablePage(_parent, _k, _v) {
     } else {
         LCMSRequest("./servlet", {action: "getpage", k: _k, v: _v}, onDone);
     }
-
-
 }
+

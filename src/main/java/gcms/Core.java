@@ -410,13 +410,12 @@ public class Core {
             Properties prop = new Properties();
             String basePath = System.getProperties().getProperty("user.home");
             String propFileName = p.getName() + ".properties";
-
-            System.out.println("getProp() basepath: " + basePath + "(" + basePath + "/" + propFileName + ")");
+            Logger.getLogger(Core.class.getName()).log(Level.INFO, "getProp() basepath: " + basePath + "(" + basePath + "/" + propFileName + ")", "getProp() basepath: " + basePath + "(" + basePath + "/" + propFileName + ")");
             File f = new File(basePath + "/" + propFileName);
             prop.load(new StringReader(readAllLines(Arrays.asList(f)).toString()));
             return prop.getProperty(name);
         } catch (IOException ex) {
-            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
             return null;
         }
     }

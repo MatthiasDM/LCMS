@@ -62,7 +62,7 @@ public class EditablePage {
             type = "datetime",
             visibleOnTable = false,
             visibleOnForm = false,
-            editRole = "ICTMANAGER",
+            editRole = "SYSTEM",
             createRole = "SYSTEM")
     public long created_on;
     @MdmAnnotations(

@@ -50,10 +50,8 @@ public class Session {
 
     public void setValid(boolean valid) {
         this.valid = valid;
-    }
+    }  
     
-    
-
     public String getUsername() {
         return username;
     }

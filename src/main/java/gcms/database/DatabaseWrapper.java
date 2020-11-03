@@ -60,16 +60,7 @@ public class DatabaseWrapper {
         long now = Instant.now().toEpochMilli() / 1000;
 
         jsonParameters.put("userName", session.getUsername());
-        jsonParameters.put("timeout", session.getValidity() - now);
-        try {
-            jsonParameters.put("numTasks", getObjectCount(MongoConf.TASKS, new BasicDBObject()));
-            BasicDBObject countNotes = new BasicDBObject();
-            countNotes.put("author", new BasicDBObject("$eq", session.getUserid()));
-            countNotes.put("archived", new BasicDBObject("$eq", false));
-            jsonParameters.put("numNotes", getObjectCount(MongoConf.NOTES, countNotes));
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(DatabaseWrapper.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        jsonParameters.put("timeout", session.getValidity() - now);    
         jsonData.put("webPage", loadWebFile("credentials/userinfo/index.html"));
         jsonData.set("parameters", jsonParameters);
 

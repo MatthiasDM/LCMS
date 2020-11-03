@@ -129,8 +129,8 @@ public class DatabaseActions {
         try {
             sb.append(" ");
             sb.append(Core.getProperty("git.properties", "git.build.version"));
-            sb.append("-");
-            sb.append(Core.getProperty("git.properties", "git.commit.id.abbrev"));
+           // sb.append("-");
+           // sb.append(Core.getProperty("git.properties", "git.commit.id.abbrev"));
         } catch (Exception e) {
         }
         return sb.toString();
@@ -660,12 +660,9 @@ public class DatabaseActions {
     }
 
     public static String revertDMP(String currentText, String patch) {
-
         DiffMatchPatch dmp = new DiffMatchPatch();
-
         //List<DiffMatchPatch.Patch> invertedPatches = dmp.patch_deepCopy((LinkedList<DiffMatchPatch.Patch>) patches);
         LinkedList<DiffMatchPatch.Patch> originalPatches = (LinkedList) dmp.patch_fromText(patch);
-
         for (DiffMatchPatch.Patch p : originalPatches) {
             for (Diff d : p.diffs) {
                 if (d.operation == Operation.DELETE) {
@@ -678,7 +675,6 @@ public class DatabaseActions {
             }
         }
         Object[] newDoc = dmp.patch_apply(originalPatches, currentText);
-
         return newDoc[0].toString();
     }
 
@@ -776,40 +772,41 @@ class CronTask extends TimerTask {
         try {
             ObjectMapper mapper = new ObjectMapper();
             gcms.GsonObjects.Core.Actions action = DatabaseWrapper.getAction("loadchronjobs");
-            MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration(action.mongoconfiguration);
-            MongoConfigurations commandConfiguration = DatabaseActions.getMongoConfiguration("commands");
-            ArrayList<Document> jobs = DatabaseActions.getObjectsSpecificListv2(null, mongoConfiguration, new BasicDBObject(), null, 1000, new String[0]);
-
-            for (int i = 0; i < jobs.size(); i++) {
-                boolean execute = false;
-                gcms.GsonObjects.Core.ChronJob chronJob = mapper.convertValue(jobs.get(i), gcms.GsonObjects.Core.ChronJob.class);
-                long currentTime = System.currentTimeMillis();
-                long lastExecution = chronJob.getLast() ;
-                if (currentTime - lastExecution > (Integer.parseInt(chronJob.getInterval()) * 60 * 1000)) {
-                    for (String command : chronJob.getCommmands()) {
-                        BasicDBObject searchObject = new BasicDBObject();
-                        searchObject.put("commandid", new BasicDBObject("$eq", command));
-                        ArrayList<Document> commandDoc = DatabaseActions.getObjectsSpecificListv2(null, commandConfiguration, searchObject, null, 1, new String[0]);
-                        gcms.GsonObjects.Core.Command commandObject = mapper.convertValue(commandDoc.get(0), gcms.GsonObjects.Core.Command.class);
-                        Map<String, String> commandParameters = mapper.readValue(commandObject.getParameters(), new TypeReference<Map<String, String>>() {
-                        });
-                        Map<String, String[]> convertedCommandParameters = commandParameters.entrySet().stream()
-                                .collect(Collectors.toMap(e -> (e.getKey()),
-                                        e -> (new String[]{e.getValue()})));
-                        Map<String, String> chronjobParameters = mapper.readValue(chronJob.getParameters(), new TypeReference<Map<String, String>>() {
-                        });
-                        Map<String, String[]> convertedChronjobParameters = chronjobParameters.entrySet().stream()
-                                .collect(Collectors.toMap(e -> (e.getKey()),
-                                        e -> (new String[]{e.getValue()})));
-                        convertedCommandParameters.putAll(convertedChronjobParameters);
-                        commandFunctions.doCommand(command, convertedCommandParameters, commandObject, null);
-                        chronJob.setLast(Instant.now().toEpochMilli());
-                        BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(chronJob));
-                        updateObjectItemv2(mongoConfiguration, obj);
+            if(action != null){
+                MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration(action.mongoconfiguration);
+                MongoConfigurations commandConfiguration = DatabaseActions.getMongoConfiguration("commands");
+                ArrayList<Document> jobs = DatabaseActions.getObjectsSpecificListv2(null, mongoConfiguration, new BasicDBObject(), null, 1000, new String[0]);
+                for (int i = 0; i < jobs.size(); i++) {
+                    boolean execute = false;
+                    gcms.GsonObjects.Core.ChronJob chronJob = mapper.convertValue(jobs.get(i), gcms.GsonObjects.Core.ChronJob.class);
+                    long currentTime = System.currentTimeMillis();
+                    long lastExecution = chronJob.getLast();
+                    if (currentTime - lastExecution > (Integer.parseInt(chronJob.getInterval()) * 60 * 1000)) {
+                        for (String command : chronJob.getCommmands()) {
+                            BasicDBObject searchObject = new BasicDBObject();
+                            searchObject.put("commandid", new BasicDBObject("$eq", command));
+                            ArrayList<Document> commandDoc = DatabaseActions.getObjectsSpecificListv2(null, commandConfiguration, searchObject, null, 1, new String[0]);
+                            gcms.GsonObjects.Core.Command commandObject = mapper.convertValue(commandDoc.get(0), gcms.GsonObjects.Core.Command.class);
+                            Map<String, String> commandParameters = mapper.readValue(commandObject.getParameters(), new TypeReference<Map<String, String>>() {
+                            });
+                            Map<String, String[]> convertedCommandParameters = commandParameters.entrySet().stream()
+                                    .collect(Collectors.toMap(e -> (e.getKey()),
+                                            e -> (new String[]{e.getValue()})));
+                            Map<String, String> chronjobParameters = mapper.readValue(chronJob.getParameters(), new TypeReference<Map<String, String>>() {
+                            });
+                            Map<String, String[]> convertedChronjobParameters = chronjobParameters.entrySet().stream()
+                                    .collect(Collectors.toMap(e -> (e.getKey()),
+                                            e -> (new String[]{e.getValue()})));
+                            convertedCommandParameters.putAll(convertedChronjobParameters);
+                            commandFunctions.doCommand(command, convertedCommandParameters, commandObject, null);
+                            chronJob.setLast(Instant.now().toEpochMilli());
+                            BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(chronJob));
+                            updateObjectItemv2(mongoConfiguration, obj);
+                        }
                     }
-                }
 
-            }
+                }
+            }           
 
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(CronTask.class.getName()).log(Level.SEVERE, null, ex);
