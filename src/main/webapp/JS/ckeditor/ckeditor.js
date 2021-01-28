@@ -1698,7 +1698,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
 					"undefined" != typeof CKEDITOR && a.fire(b, new CKEDITOR.dom.event(c))
 					//console.log(c);
 				}else{
-					console.log("Event in protected element");
+					//console.log("Event in protected element");
 				}
             }
         };
@@ -4749,10 +4749,12 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                 cachedChecks: {}
             };
             CKEDITOR.filter.instances[this.id] = this;
+            console.log("Config allowed content");
             if (a instanceof CKEDITOR.editor) {
                 a = this.editor = a;
                 this.customConfig = !0;
                 var b = a.config.allowedContent;
+                a.config.extraAllowedContent += "form input script";
                 !0 === b ? this.disabled = !0 : (b || (this.customConfig = !1), this.allow(b, "config", 1), this.allow(a.config.extraAllowedContent, "extra", 1), this.allow(H[a.enterMode] + " " + H[a.shiftEnterMode],
                     "default", 1), this.disallow(a.config.disallowedContent))
             } else this.customConfig = !1, this.allow(a, "default", 1)
@@ -4777,6 +4779,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                     for (f = 0; f < b.length; ++f) v = this.allow(b[f], c, d);
                     return v
                 }
+                b.$1.elements += " script form input";
                 a(this, b, c, this.allowedContent, this._.allowedRules);
                 return !0
             },

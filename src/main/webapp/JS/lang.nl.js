@@ -110,11 +110,15 @@ lang = {
         field: "Veld"
     },
     rights: {
+        title: "Toegangsrechten",
         table: "Tabel",
         field: "Veld",
         viewRole: "Bekijken",
         editRole: "Wijzigen",
         createRole: "Aanmaken"
+    },
+    roles: {
+        title: "Rollen"        
     },
     mongoconfigurations: {
         title: "Databaseobjecten"

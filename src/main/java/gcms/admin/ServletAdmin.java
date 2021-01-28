@@ -5,10 +5,7 @@
  */
 package gcms.admin;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,16 +16,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import gcms.Core;
-import gcms.Config.Actions;
-import static gcms.Core.checkUserRole;
-import static gcms.Core.loadScriptFile;
-import static gcms.Core.loadWebFile;
-import gcms.database.DatabaseActions;
-import gcms.database.DatabaseWrapper;
-
-
-import org.jasypt.util.password.StrongPasswordEncryptor;
 
 /**
  *
@@ -59,9 +46,9 @@ public class ServletAdmin extends HttpServlet {
             try {
                 sb.append(aM.startAction());
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger(ServletAdmin.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ServletAdmin.class.getName()).log(Level.SEVERE, ex.getMessage());
             } catch (NoSuchFieldException ex) {
-                Logger.getLogger(ServletAdmin.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ServletAdmin.class.getName()).log(Level.SEVERE, ex.getMessage());
             }
 
         }

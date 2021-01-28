@@ -75,7 +75,7 @@ public class Servlet extends HttpServlet {
             apiAuthorized = Core.isValidApiKey(apiName, apiKey);
 
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
         Response actionResponse = new Response();
         String host = Core.getClientPCName(request.getRemoteAddr());
@@ -87,16 +87,16 @@ public class Servlet extends HttpServlet {
                     actionResponse = aM.startAction();
                     sb.append(actionResponse.getSb());
                 } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
                 } catch (NoSuchFieldException ex) {
-                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
                 } catch (Exception ex) {
-                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
                 }
 
             }
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
         if (sb.toString().length() > 0) {
             response.setContentType("text/xml");
@@ -139,7 +139,7 @@ public class Servlet extends HttpServlet {
                     apiAuthorized = Core.isValidApiKey(apiName, apiKey);
                     requestParameters.put("contextPath", new String[]{context.getRealPath("/HTML/other/files")});
                 } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
                 }
 
             }
@@ -158,17 +158,17 @@ public class Servlet extends HttpServlet {
                     actionResponse = aM.startAction();
                     sb.append(actionResponse.getSb());
                 } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
                 } catch (NoSuchFieldException ex) {
-                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
                 } catch (Exception ex) {
-                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
                 }
 
             }
 
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
 
         if (sb.toString().length() > 0) {

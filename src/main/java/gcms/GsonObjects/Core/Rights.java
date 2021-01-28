@@ -25,35 +25,33 @@ public class Rights {
     @MdmAnnotations(
             type = "select",
             multiple = false,
-            reference = {"Enum", "MongoConf"},
+            reference = {"Mongo", "mongoconfigurations", "name", "name"},
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public String table;
-
     @MdmAnnotations(
             type = "string",
             editRole = "ICTMANAGER",
             visibleOnTable = true
     )
     public String field;
-
     @MdmAnnotations(
             type = "select",
-            reference = {"Enum", "Roles"},
+            reference = {"Mongo", "roles", "roleid", "role"},
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public List<String> viewRole;
 
     @MdmAnnotations(
             type = "select",
-            reference = {"Enum", "Roles"},
+            reference = {"Mongo", "roles", "roleid", "role"},
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public List<String> editRole;
 
     @MdmAnnotations(
             type = "select",
-            reference = {"Enum", "Roles"},
+            reference = {"Mongo", "roles", "roleid", "role"},
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public List<String> createRole;

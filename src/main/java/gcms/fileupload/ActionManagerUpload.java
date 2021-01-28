@@ -97,9 +97,6 @@ public class ActionManagerUpload {
         if (action == gcms.Config.Actions.FILE_UPLOAD) {
             sb.append(actionFILE_UPLOAD());
         }
-        if (action == gcms.Config.Actions.FILE_BROWSE) {
-            sb.append(actionFILE_BROWSE());
-        }
         if (action == gcms.Config.Actions.FILE_DOWNLOADTEMP) {
             sb.append(actionFILE_DOWNLOADTEMP());
         }
@@ -120,66 +117,6 @@ public class ActionManagerUpload {
                 DatabaseActions.insertFile(part.getInputStream(), fileName, fileobject);
                 DatabaseActions.insertFileObject(fileobject);
             }
-        }
-        return sb;
-    }
-
-
-    public StringBuilder actionFILE_BROWSE() throws IOException, ClassNotFoundException, NoSuchFieldException {
-        StringBuilder sb = new StringBuilder();
-        if (Core.checkSession(cookie) && checkUserRoleValue(cookie, 2)) {
-            ObjectMapper mapper = new ObjectMapper();
-            ObjectNode jsonData = mapper.createObjectNode();
-            ArrayList<FileObject> results = DatabaseActions.getFileObjectList(cookie);//MongoMain.getFilesList(0, 100, new HashMap<String, String>());
-            List<String> columns = getDocumentPriveleges("view", cookie, "gcms.GsonObjects.Other.FileObject");
-            ArrayList<HashMap> header = new ArrayList<>();
-            ArrayList<HashMap> table = new ArrayList<>();
-            HashMap tableEntry = new HashMap();
-            for (String column : columns) {
-                Class cls = Class.forName("gcms.GsonObjects.Other.FileObject");
-                Field field = cls.getField(column);
-                MdmAnnotations mdmAnnotations = field.getAnnotation(MdmAnnotations.class);
-                HashMap headerEntry = new HashMap();
-                headerEntry.put("name", field.getName());
-                if (mdmAnnotations != null) {
-                    headerEntry.put("type", mdmAnnotations.type());
-                    headerEntry.put("visibleOnTable", mdmAnnotations.visibleOnTable());
-                    headerEntry.put("editable", mdmAnnotations.editable());
-                    headerEntry.put("multiple", mdmAnnotations.multiple());
-                    headerEntry.put("visibleOnForm", mdmAnnotations.visibleOnForm());
-                    headerEntry.put("tablename", "file_table");
-                    if (!"".equals(mdmAnnotations.reference()[0])) {
-                        ArrayList<Document> users = DatabaseActions.getObjectsSpecificFields(cookie, MongoConf.USERS, null, null, 100, Arrays.asList(new String[]{"userid", "username"}));
-//                        ArrayList<User> users = mapper.readValue(DatabaseActions.getListAsString("User", cookie), new TypeReference<List<User>>() {
-//                        });
-//                        Map<String, String> map = users
-//                                .stream()
-//                                .collect(
-//                                        Collectors.toMap(p -> p.getUserid(), p -> p.getUsername())
-//                                );
-
-                        headerEntry.put("choices", mapper.writeValueAsString(users));
-
-                    } else {
-                        headerEntry.put("choices", mdmAnnotations.choices());
-
-                    }
-
-                }
-                header.add(headerEntry);
-                tableEntry.put(field.getName(), "");
-            }
-            if (results != null) {
-                if (!results.isEmpty()) {
-                    jsonData.put("table", mapper.writeValueAsString(results));
-                } else {
-                    jsonData.put("table", mapper.writeValueAsString(table));
-                }
-            }
-
-            jsonData.put("header", mapper.writeValueAsString(header));
-
-            sb.append(jsonData);
         }
         return sb;
     }

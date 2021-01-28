@@ -38,7 +38,7 @@ public class Actions {
 
     @MdmAnnotations(
             type = "select",
-            reference = {"Mongo", "MONGOCONFIGURATIONS", "mongoconfigurationsid", "collection"},
+            reference = {"Mongo", "MONGOCONFIGURATIONS", "mongoconfigurationsid", "name"},
             editRole = "ICTMANAGER"
     )
     public String mongoconfiguration;

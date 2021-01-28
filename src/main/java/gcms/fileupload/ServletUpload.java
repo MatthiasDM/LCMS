@@ -60,9 +60,9 @@ public class ServletUpload extends HttpServlet {
             try {
                 sb.append(aM.startAction());
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger(ServletUpload.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ServletUpload.class.getName()).log(Level.SEVERE, ex.getMessage());
             } catch (NoSuchFieldException ex) {
-                Logger.getLogger(ServletUpload.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ServletUpload.class.getName()).log(Level.SEVERE, ex.getMessage());
             }
 
         }

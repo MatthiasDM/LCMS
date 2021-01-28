@@ -85,10 +85,7 @@ public class commandFunctions {
         
         if (name.equals("dobacklog")) {
             sb.append(command_doBacklog(parameters, command));
-        }
-        if (name.equals("doCheckCyberlabLogsForNewOrders")) {
-            sb.append(command_checkCyberlabLogsForIncompleteOrders(parameters, command));
-        }
+        }     
         if (name.equals("doSendEmail")) {
             sb.append(command_sendEmail(parameters, command));
         }
@@ -185,52 +182,7 @@ public class commandFunctions {
         }
         return sb;
     }
-
-    public static StringBuilder command_checkCyberlabLogsForIncompleteOrders(Map<String, String[]> parameters, Command command) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        String glimsLogFilterPath = getProp("glimsLogFilter.Path");
-        StringBuilder sb = new StringBuilder();
-        StringBuffer log = readAllLines(getLatestFile(glimsLogFilterPath, 4));
-        String reg = buildRegex("\\*\\*\\*(.*)\\*\\*\\s\\d.*(cyberlabcode.*)(\\n|\\r|\\r\\n|\\n\\r)", null);//logFilter.getRegexExpression(), logFilter.getRegexFilters());
-        List<String> regexResults = search(log, reg, new int[]{1, 2}, false);
-        HashMap<String, String> processedResults = new HashMap<>();
-
-        for (int i = 0; i < regexResults.size() - 2; i += 2) {
-            String[] info = regexResults.get(i + 1).split("tests=");
-            String info2 = "";
-            if (info.length > 1) {
-                info[0] = info[0].replace("=%22", "");
-                info[0] = info[0].replace(",%20", " ");
-                info[0] = URLDecoder.decode(info[0]);
-                info[0] = info[0].replaceAll("\\<[^>]*>", "");
-                info[0] = info[0].replaceAll("/[!@#$%^&*:,]/g", "");
-
-                info[1] = info[1].replaceAll("/[!@#$%^&*:]/g", "");
-                info[1] = info[1].replace("=on", "");
-                info[1] = info[1].replace("&", ";");
-                info2 = info[0] + "tests=" + info[1];
-            } else {
-                info[0] = URLDecoder.decode(info[0]);
-                info[0] = info[0].replaceAll("/[!@#$%^&*:]/g", "");
-                info2 = info[0] + "tests=0";
-            }
-            if (info[0].length() > 30) {
-                processedResults.put(info[0].substring(0, 30), "\"issuer=" + regexResults.get(i).replace(" ", "") + "&" + info2);
-            }
-        }
-
-        ArrayList<String> output = new ArrayList<>();
-        Iterator it = processedResults.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
-            output.add(Core.paramJson(pair.getValue().toString()));
-            it.remove(); // avoids a ConcurrentModificationException
-        }
-
-        sb.append(mapper.writeValueAsString(output));
-        return sb;
-    }
-
+   
     public static StringBuilder command_eHealthConnect() {
         StringBuilder sb = new StringBuilder();
         return sb;
@@ -247,7 +199,7 @@ public class commandFunctions {
         MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("mongoconfigurations");
         String classNameSuffix = parameters.get("parameters[object_type]")[0];
         classNameSuffix = classNameSuffix.substring(classNameSuffix.lastIndexOf("."));
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(parameters.get("LCMS_session")[0], mongoConfiguration, and(regex("className", Pattern.compile(".*" + classNameSuffix))), null, 1000, new String[]{});
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(parameters.get("LCMS_session")[0], mongoConfiguration, and(regex("className", Pattern.compile(".*" + classNameSuffix))), null, 1000, new String[]{}, true);
         //if no result found, try with other classname by searching for matching one in mongoconfigurations based on last word of object_type
 
         MongoConfigurations objectConfiguration = mapper.convertValue(results.get(0), gcms.GsonObjects.Core.MongoConfigurations.class);
@@ -374,6 +326,7 @@ public class commandFunctions {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
         ObjectMapper mapper = new ObjectMapper();   
+
         String apikey = parameters.get("apikey");
         String path = parameters.get("path");
         String method = parameters.get("method");

@@ -136,6 +136,7 @@ function loadParameters(jsonData) {
 
     $.each(parameters, function (key, value) {
         webPage.find("[LCMS='" + key + "']").append(value);
+        webPage.find("[gcms='" + key + "']").append(value);
     });
     jsonData.parent.append(webPage);
     jsonData.parent.append("<script>" + scripts + "</script>");
@@ -226,6 +227,10 @@ bootstrap_alert.warning = function (message, alert, timeout) {
         $("#floating_alert_" + id).alert('close');
     }, timeout);
 };
+bootstrap_alert.clear = function(){
+   $("div[id^=floating_alert]").remove();
+};
+
 (function ($, undefined) {
     '$:nomunge'; // Used by YUI compressor.
 
@@ -245,6 +250,7 @@ bootstrap_alert.warning = function (message, alert, timeout) {
     };
 
 })(jQuery);
+
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -846,4 +852,27 @@ async function loadFormatters() {
 
 function get_url_extension(url) {
     return url.split(/\#|\?/)[0].split('.').pop().trim();
+}
+
+
+
+function bytesToHex(bytes) {
+  return Array.from(
+    bytes,
+    byte => byte.toString(16).padStart(2, "0")
+  ).join("");
+}
+
+// You almost certainly want UTF-8, which is
+// now natively supported:
+function stringToUTF8Bytes(string) {
+  return new TextEncoder().encode(string);
+}
+
+function hexToBytes(hex) {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i !== bytes.length; i++) {
+        bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+    }
+    return bytes;
 }

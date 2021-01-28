@@ -44,7 +44,7 @@ public class EditablePage {
 
     @MdmAnnotations(
             editRole = "ICTMANAGER",
-            //viewRole = "ICTMANAGER",
+            viewRole = "LABASSISTANT",
             type = "select",
             choices = {"public", "private", "partial"}
     )

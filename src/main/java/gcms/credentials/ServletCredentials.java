@@ -67,14 +67,14 @@ public class ServletCredentials extends HttpServlet {
                     response.addCookie(cookie);
                 }
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger(ServletCredentials.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ServletCredentials.class.getName()).log(Level.SEVERE, ex.getMessage());
             }
         } else {
             if (aM.getAction() != null) {
                 try {
                     sb.append(aM.startAction());
                 } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(ServletCredentials.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(ServletCredentials.class.getName()).log(Level.SEVERE, ex.getMessage());
                 }
 
             }

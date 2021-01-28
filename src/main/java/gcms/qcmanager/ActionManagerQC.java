@@ -65,7 +65,7 @@ package gcms.qcmanager;
 //                try {
 //                    sb.append(actionQC_GETLOTINFO());
 //                } catch (IOException ex) {
-//                    Logger.getLogger(ActionManagerQC.class.getName()).log(Level.SEVERE, null, ex);
+//                    Logger.getLogger(ActionManagerQC.class.getName()).log(Level.SEVERE, ex.getMessage());
 //                }
 //            }
 //            if (action == Core.Actions.QC_CHANGETESTINFO) {
@@ -75,7 +75,7 @@ package gcms.qcmanager;
 //                try {
 //                    sb.append(actionQC_GETTESTINFO());
 //                } catch (IOException ex) {
-//                    Logger.getLogger(ActionManagerQC.class.getName()).log(Level.SEVERE, null, ex);
+//                    Logger.getLogger(ActionManagerQC.class.getName()).log(Level.SEVERE, ex.getMessage());
 //                }
 //            }
 //        } else {
@@ -155,7 +155,7 @@ package gcms.qcmanager;
 //
 //                    //sb.append(lotinfo);
 //                } catch (ClassNotFoundException ex) {
-//                    Logger.getLogger(ServletQC.class.getName()).log(Level.SEVERE, null, ex);
+//                    Logger.getLogger(ServletQC.class.getName()).log(Level.SEVERE, ex.getMessage());
 //                }
 //            } else {
 //                sb.append(PageLoader.getCredentialPage());
@@ -219,7 +219,7 @@ package gcms.qcmanager;
 //                    jsonData.put("header", mapper.writeValueAsString(header));
 //                    sb.append(jsonData);
 //                } catch (ClassNotFoundException ex) {
-//                    Logger.getLogger(ServletQC.class.getName()).log(Level.SEVERE, null, ex);
+//                    Logger.getLogger(ServletQC.class.getName()).log(Level.SEVERE, ex.getMessage());
 //                }
 //            } else {
 //                sb.append(PageLoader.getCredentialPage());

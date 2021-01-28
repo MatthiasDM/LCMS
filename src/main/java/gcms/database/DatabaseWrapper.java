@@ -77,6 +77,7 @@ public class DatabaseWrapper {
             scriptBuilder.append(loadScriptFile(script));
         }
         jsonParameters.put("software-version", getEnviromentInfo());
+        //jsonParameters.put("logo", getEnviromentInfo());
         jsonData.put("webPage", loadWebFile(page));
         jsonData.put("scripts", scriptBuilder.toString());
         jsonData.set("parameters", jsonParameters);
@@ -87,9 +88,9 @@ public class DatabaseWrapper {
     public static ObjectNode getObjectData(String cookie, gcms.Config.MongoConf _mongoConf, String tableName, Bson filter, String[] excludes) throws ClassNotFoundException, NoSuchFieldException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, filter, null, 1000, excludes);
-        List<String> columns = getDocumentPriveleges("view", cookie, _mongoConf.getClassName());
-        List<String> editableColumns = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, filter, null, 1000, excludes, true);
+        List<String> columns = getDocumentPriveleges("view", cookie, _mongoConf, true);
+        List<String> editableColumns = getDocumentPriveleges("edit", cookie, _mongoConf, true);
         ArrayList<HashMap> header = new ArrayList<>();
         ArrayList<HashMap> table = new ArrayList<>();
         HashMap tableEntry = new HashMap();
@@ -161,10 +162,10 @@ public class DatabaseWrapper {
     public static ObjectNode getObjectDatav2(String cookie, MongoConfigurations _mongoConf, String tableName, Bson filter, String[] excludes) throws ClassNotFoundException, NoSuchFieldException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, filter, null, 1000, excludes);
-        List<String> columns = getDocumentPriveleges("view", cookie, _mongoConf.getClassName());
-        List<String> editableColumns = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
-        List<String> createableColumns = getDocumentPriveleges("create", cookie, _mongoConf.getClassName());
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, filter, null, 1000, excludes, true);
+        List<String> columns = getDocumentPriveleges("view", cookie, _mongoConf, true);
+        List<String> editableColumns = getDocumentPriveleges("edit", cookie, _mongoConf, true);
+        List<String> createableColumns = getDocumentPriveleges("create", cookie, _mongoConf, true);
         ArrayList<HashMap> header = new ArrayList<>();
         ArrayList<HashMap> table = new ArrayList<>();
         HashMap tableEntry = new HashMap();
@@ -240,9 +241,9 @@ public class DatabaseWrapper {
     public static ObjectNode getObjectDatav3(String cookie, MongoConfigurations _mongoConf, String tableName, Bson filter, String[] excludes) throws ClassNotFoundException, NoSuchFieldException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, filter, null, 1000, excludes);
-        List<String> columns = getDocumentPriveleges("view", cookie, _mongoConf.getClassName());
-        List<String> editableColumns = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, filter, null, 1000, excludes, true);
+        List<String> columns = getDocumentPriveleges("view", cookie, _mongoConf, true);
+        List<String> editableColumns = getDocumentPriveleges("edit", cookie, _mongoConf, true);
         ArrayList<HashMap> header = new ArrayList<>();
         ArrayList<HashMap> table = new ArrayList<>();
         HashMap tableEntry = new HashMap();
@@ -264,8 +265,8 @@ public class DatabaseWrapper {
                     if (refType.equals("Mongo")) {
                         ArrayList<String> fields = new ArrayList<>();
                         fields.add(mdmAnnotations.reference()[2]);
-                        fields.add(mdmAnnotations.reference()[3]);
-                        ArrayList<Document> objectList = DatabaseActions.getObjectsList(cookie, gcms.Config.MongoConf.valueOf(mdmAnnotations.reference()[1]), fields);
+                        fields.add(mdmAnnotations.reference()[3]);                       
+                        ArrayList<Document> objectList = DatabaseActions.getObjectsListv2(cookie,DatabaseActions.getMongoConfiguration(mdmAnnotations.reference()[1]), fields);
                         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
                         HashMap<String, String> map = new HashMap<>();
                         for (Object doc : objectList) {
@@ -311,19 +312,19 @@ public class DatabaseWrapper {
     }
 
     public static ArrayList<Document> getObjectSpecificRawData(String cookie, gcms.Config.MongoConf _mongoConf, Bson bson) throws ClassNotFoundException, NoSuchFieldException, IOException {
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, bson, null, 0, null);
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, bson, null, 0, null, false);
         return results;
     }
 
     public static ArrayList<Document> getObjectSpecificRawDatav2(String cookie, MongoConfigurations _mongoConf, Bson bson) throws ClassNotFoundException, NoSuchFieldException, IOException {
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, bson, null, 0, null);
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, bson, null, 0, null, false);
         return results;
     }
 
     public static Map<String, Object> getObjectHashMap(String cookie, gcms.Config.MongoConf _mongoConf, Bson bson) throws ClassNotFoundException, JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, bson, null, 0, null);
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList(cookie, _mongoConf, bson, null, 0, null, false);
         BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(results.get(0)));
         Map<String, Object> objHashMap = obj.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
         return objHashMap;
@@ -332,7 +333,7 @@ public class DatabaseWrapper {
     public static Map<String, Object> getObjectHashMapv2(String cookie, MongoConfigurations _mongoConf, Bson bson) throws ClassNotFoundException, JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, bson, null, 0, null);
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, bson, null, 0, null, false);
 
         BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(results.get(0)));
         Map<String, Object> objHashMap = obj.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
@@ -341,7 +342,7 @@ public class DatabaseWrapper {
 
     public static void editObjectData(HashMap<String, Object> mongoObject, MongoConf _mongoConf, String cookie) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException {
         ObjectMapper mapper = new ObjectMapper();
-        List<String> columns = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
+        List<String> columns = getDocumentPriveleges("edit", cookie, _mongoConf, true);
         List<Field> systemFields = gcms.Core.getSystemFields(_mongoConf.getClassName(), "edit");
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(mongoObject));
@@ -394,7 +395,7 @@ public class DatabaseWrapper {
 
     public static void editObjectDatav2(HashMap<String, Object> mongoObject, MongoConfigurations _mongoConf, String cookie) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException {
         ObjectMapper mapper = new ObjectMapper();
-        List<String> columns = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
+        List<String> columns = getDocumentPriveleges("edit", cookie, _mongoConf, true);
         List<Field> systemFields = gcms.Core.getSystemFields(_mongoConf.getClassName(), "edit");
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(mongoObject));
@@ -478,7 +479,7 @@ public class DatabaseWrapper {
 
     public static void addObjectv2(Document doc, MongoConfigurations _mongoConf, String cookie) throws ClassNotFoundException {
         ObjectMapper mapper = new ObjectMapper();
-        List<String> columns = getDocumentPriveleges("create", cookie, _mongoConf.getClassName());
+        List<String> columns = getDocumentPriveleges("create", cookie, _mongoConf, true);
         List<Field> systemFields = gcms.Core.getSystemFields(_mongoConf.getClassName(), "create");
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         Document filteredDoc = new Document();
@@ -504,7 +505,7 @@ public class DatabaseWrapper {
 
     public static void addObject(Document doc, MongoConf _mongoConf, String cookie) throws ClassNotFoundException {
         ObjectMapper mapper = new ObjectMapper();
-        List<String> columns = getDocumentPriveleges("create", cookie, _mongoConf.getClassName());
+        List<String> columns = getDocumentPriveleges("create", cookie, _mongoConf, true);
         List<Field> systemFields = gcms.Core.getSystemFields(_mongoConf.getClassName(), "create");
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         Document filteredDoc = new Document();
@@ -533,7 +534,7 @@ public class DatabaseWrapper {
         gcms.GsonObjects.Core.Actions action = null;
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("name", new BasicDBObject("$eq", _action));
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList("", MongoConf.ACTIONS, searchObject, null, 1000, new String[]{});
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificList("", MongoConf.ACTIONS, searchObject, null, 1000, new String[]{}, false);
         //String jsonObject = mapper.writeValueAsString(results.get(0));
         if (results.size() > 0) {
             action = mapper.convertValue(results.get(0), gcms.GsonObjects.Core.Actions.class);
@@ -649,7 +650,7 @@ public class DatabaseWrapper {
                 searchObject.put(key, new BasicDBObject("$eq", value));
                 Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, _mongoConf, searchObject);
                 sb.append(actionGETOBJECT_prepareObject(cookie, _mongoConf, publicPage, searchResult).toString());
-//                List<String> editRights = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
+//                List<String> editRights = getDocumentPriveleges("edit", cookie, _mongoConf);
 //                if (_mongoConf.collection.equals("pages") || _mongoConf.collection.equals("document")) {
 //                    String menu = "";
 //                    if (editRights.contains("contents")) {
@@ -686,7 +687,7 @@ public class DatabaseWrapper {
         ObjectNode jsonParameters = mapper.createObjectNode();
 
         if (_mongoConf.collection.equals("pages") || _mongoConf.collection.equals("document")) {
-            List<String> editRights = getDocumentPriveleges("edit", cookie, _mongoConf.getClassName());
+            List<String> editRights = getDocumentPriveleges("edit", cookie, _mongoConf, true);
 //            String menu = "";
 //            if (editRights.contains("contents")) {
 //                menu = loadWebFile("pages/template/menu.html");

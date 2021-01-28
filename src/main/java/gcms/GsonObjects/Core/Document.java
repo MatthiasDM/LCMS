@@ -15,7 +15,7 @@ public class Document {
 
     @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String documentid;
-    @MdmAnnotations(type = "string", visibleOnTable = true, visibleOnForm = true, viewRole="GUEST")
+    @MdmAnnotations(type = "string", visibleOnTable = true, visibleOnForm = true)
     public String title;
     @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String prefix;

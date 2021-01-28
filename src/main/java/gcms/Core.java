@@ -5,10 +5,12 @@
  */
 package gcms;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.mongodb.BasicDBObject;
@@ -68,6 +70,17 @@ public class Core {
 
     static String dirName = getProp("app.root");
     static String baseURL = getProp("base.url");
+    public static ObjectMapper universalObjectMapper = startObjectMapper();
+
+    public static ObjectMapper startObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        //mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+
+        return mapper;
+    }
 
     public static String httpRequest(String receiver, String method, String postParameters) throws MalformedURLException, IOException {
         ObjectMapper mapper = new ObjectMapper();
@@ -86,7 +99,7 @@ public class Core {
             }
             // byte[] postDataBytes = postData.toString().getBytes("UTF-8");
             // con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-             //con.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+            //con.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
             receiver = receiver + "&" + postData.toString();
         }
         URL url = new URL(receiver);
@@ -156,7 +169,7 @@ public class Core {
             Logger.getLogger(Core.class.getName()).log(Level.INFO, null, baseURL + urlName);
             return out;
         } catch (IOException ex) {
-            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, ex.getMessage());
             return null;
         }
 
@@ -189,8 +202,10 @@ public class Core {
             return checkSession(_cookie);
         } else {
             User user = DatabaseActions.getUser(session.getUsername());
-            if (user.getRoles().contains(_role.toString())) {
-                return checkSession(_cookie);
+            if (user != null) {
+                if (user.getRoles().contains(_role.toString())) {
+                    return checkSession(_cookie);
+                }
             }
         }
         return false;
@@ -219,6 +234,22 @@ public class Core {
     }
 
     public static List<String> getUserRoles(String _cookie) {
+        Session session = DatabaseActions.getSession(_cookie);
+        List<String> roles = new ArrayList<>();
+        if (!Core.checkSession(_cookie)) {
+            return roles;
+        }
+        if (session.getUsername().equals("root")) {
+            roles.add(Roles.ADMIN.toString());
+            roles.add(Roles.ICTMANAGER.toString());
+            return roles;
+        } else {
+            User user = DatabaseActions.getUser(session.getUsername());
+            return user.getRoles();
+        }
+    }
+
+    public static List<String> getUserRolesV2(String _cookie) {
         Session session = DatabaseActions.getSession(_cookie);
         List<String> roles = new ArrayList<>();
         if (!Core.checkSession(_cookie)) {
@@ -339,9 +370,6 @@ public class Core {
     public static HashMap<String, Object> createDatabaseObject(HashMap<String, String[]> requestParameters, Class cls) {
         HashMap<String, Object> databaseObject = null;
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.setSerializationInclusion(Include.NON_NULL);
-            mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
             requestParameters.remove("oper");
             requestParameters.remove("id");
             HashMap<String, Object> parameters = new HashMap<>();
@@ -350,36 +378,37 @@ public class Core {
                 try {
                     System.out.println(cls.getField(key).getType().toString());
                     String val = value[0];
-                    Class fT = cls.getField(key).getType();
-                    if (cls.getField(key).getType().equals(long.class) && !val.equals("") && val != null) {
-                        parameters.put(key, Long.parseLong(val));
-                    }
-                    if (cls.getField(key).getType().equals(List.class) && !val.equals("") && val != null) {
-                        if (val.split(",").length < 2) {
-                            parameters.put(key, new ArrayList<>(Arrays.asList(value)));
-                        } else {
-                            parameters.put(key, new ArrayList<>(Arrays.asList(val.split(","))));
+                    Field f = cls.getField(key);
+                    if (f != null) {
+                        Class fT = f.getType();
+                        if (f.getType().equals(long.class) && !val.equals("") && val != null) {
+                            parameters.put(key, Long.parseLong(val));
+                        }
+                        if (f.getType().equals(List.class) && !val.equals("") && val != null) {
+                            if (val.split(",").length < 2) {
+                                parameters.put(key, new ArrayList<>(Arrays.asList(value)));
+                            } else {
+                                parameters.put(key, new ArrayList<>(Arrays.asList(val.split(","))));
+                            }
+                        }
+                        if (f.getType().equals(String.class) && !val.equals("") && val != null) {
+                            parameters.put(key, (val));
+                        }
+                        if (fT.equals(boolean.class)) {
+                            parameters.put(key, Boolean.parseBoolean(val));
                         }
                     }
-                    if (cls.getField(key).getType().equals(String.class) && !val.equals("") && val != null) {
-                        parameters.put(key, (val));
-                    }
-                    if (fT.equals(boolean.class)) {
-                        parameters.put(key, Boolean.parseBoolean(val));
-                    }
+
                 } catch (NoSuchFieldException ex) {
-                    Logger.getLogger(Core.class.getName()).log(Level.INFO, null, ex);
+                    Logger.getLogger(Core.class.getName()).log(Level.INFO, ex.getMessage());
                 } catch (SecurityException ex) {
-                    Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(Core.class.getName()).log(Level.SEVERE, ex.getMessage());
                 }
 
             });
-
-            databaseObject = parameters;//mapper.readValue(mapper.writeValueAsString(parameters), HashMap.class);
-            //databaseObject = mapper.readValue(mapper.writeValueAsString(parameters), cls); //gewoon een HashMap object van maken???
-
+            databaseObject = parameters;
         } catch (SecurityException ex) {
-            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
         return databaseObject;
     }
@@ -498,11 +527,12 @@ public class Core {
     public static List<String> getHashFields(HashMap<String, String[]> requestParameters, Class cls) {
         List<String> hashFields = requestParameters.keySet().stream().filter((String k) -> {
             try {
-                return cls.getField(k).getAnnotation(MdmAnnotations.class).type().equals("encrypted");
+                Field f = cls.getField(k);
+                return f.getAnnotation(MdmAnnotations.class).type().equals("encrypted");
             } catch (NoSuchFieldException | SecurityException ex) {
-                Logger.getLogger(Core.class.getName()).log(Level.INFO, null, ex.getMessage());
+                Logger.getLogger(Core.class.getName()).log(Level.INFO, ex.getMessage());
+                return false;
             }
-            return false;
         })
                 .collect(Collectors.toList());
         return hashFields;
@@ -534,7 +564,7 @@ public class Core {
 
         } catch (UnknownHostException ex) {
             Logger.getLogger(Core.class
-                    .getName()).log(Level.SEVERE, null, ex);
+                    .getName()).log(Level.SEVERE, ex.getMessage());
         }
         return host;
     }

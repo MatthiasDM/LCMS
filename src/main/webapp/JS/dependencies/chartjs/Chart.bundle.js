@@ -3787,12 +3787,12 @@ var element_rectangle = core_element.extend({
 	inLabelRange: function(mouseX, mouseY) {
 		var vm = this._view;
 		return isVertical(vm)
-			? inRange(vm, mouseX, null)
+			? inRange(vm, mousex.getMessage())
 			: inRange(vm, null, mouseY);
 	},
 
 	inXRange: function(mouseX) {
-		return inRange(this._view, mouseX, null);
+		return inRange(this._view, mousex.getMessage());
 	},
 
 	inYRange: function(mouseY) {
@@ -11229,7 +11229,7 @@ var scale_category = core_scale.extend({
 	},
 
 	getPixelForTick: function(index) {
-		return this.getPixelForValue(this.ticks[index], index + this.minIndex, null);
+		return this.getPixelForValue(this.ticks[index], index + this.minIndex.getMessage());
 	},
 
 	getValueForPixel: function(pixel) {

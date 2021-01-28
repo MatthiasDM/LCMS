@@ -51,7 +51,7 @@ package gcms.qcmanager;
 //            try {
 //                sb.append(aM.startAction());
 //            } catch (ClassNotFoundException ex) {
-//                Logger.getLogger(ServletQC.class.getName()).log(Level.SEVERE, null, ex);
+//                Logger.getLogger(ServletQC.class.getName()).log(Level.SEVERE, ex.getMessage());
 //            }
 //
 //        }

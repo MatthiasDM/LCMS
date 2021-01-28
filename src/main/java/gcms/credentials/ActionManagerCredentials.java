@@ -127,9 +127,9 @@ public class ActionManagerCredentials {
         try {
             devalidateSession(cookie);
         } catch (IOException ex) {
-            Logger.getLogger(ActionManagerCredentials.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ActionManagerCredentials.class.getName()).log(Level.SEVERE, ex.getMessage());
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ActionManagerCredentials.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ActionManagerCredentials.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
         return null;
     }
@@ -161,7 +161,7 @@ public class ActionManagerCredentials {
                 session = new Session(_user, _sessionId, now + (9999), true, "158");
             }
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ActionManagerCredentials.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ActionManagerCredentials.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
 
         return session;
