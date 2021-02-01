@@ -59,18 +59,13 @@ public class Servlet extends HttpServlet {
             ObjectMapper mapper = new ObjectMapper();
             ObjectNode jsonData = mapper.createObjectNode();
             if (action.equals("")) {
-               // jsonData.put("webPage", Core.loadWebFile(""));
                  sb.append(DatabaseWrapper.getWebPage("", new String[]{}));
-               // sb.append(jsonData);
             } else {
                 if (action.contains(".") || action.contains(";")) {
                     action = "";
                 }
                  action = StringEscapeUtils.escapeHtml(action);
-              //  jsonData.put("webPage", Core.loadWebFile(action));
                 sb.append(DatabaseWrapper.getWebPage(action, new String[]{}));
-
-             //   sb.append(jsonData);
             }
         } else {
             sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));

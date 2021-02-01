@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package gcms;
+package gcms.modules;
 
+import gcms.Core;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -48,26 +49,30 @@ import static gcms.Core.readAllLines;
 import static gcms.Core.search;
 import gcms.GsonObjects.Core.Apikey;
 import gcms.GsonObjects.Core.Command;
+import gcms.GsonObjects.Core.FileObject;
 import gcms.GsonObjects.Core.MongoConfigurations;
+import gcms.GsonObjects.Core.User;
 import gcms.credentials.Cryptography;
 import gcms.database.DatabaseActions;
 import gcms.database.DatabaseWrapper;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.Part;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
+import org.jasypt.util.password.StrongPasswordEncryptor;
 
 /**
  *
  * @author Matthias
  */
 public class commandFunctions {
-
+    
     public static StringBuilder doCommand(String name, Map<String, String[]> parameters, Command command, Collection<Part> parts) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException, Exception {
         name = command.getCommand();
         StringBuilder sb = new StringBuilder();
@@ -80,12 +85,12 @@ public class commandFunctions {
         Map<String, String> convertedParameters = parameters.entrySet().stream()
                 .collect(Collectors.toMap(e -> (e.getKey()),
                         e -> (e.getValue()[0])));
-
+        
         commandParameters.putAll(convertedParameters);
         
         if (name.equals("dobacklog")) {
             sb.append(command_doBacklog(parameters, command));
-        }     
+        }
         if (name.equals("doSendEmail")) {
             sb.append(command_sendEmail(parameters, command));
         }
@@ -105,13 +110,13 @@ public class commandFunctions {
             sb.append(command_doAPICall(commandParameters, command));
         }
         if (name.equals("doUploadFile")) {
-            sb.append(command_doUploadFile(parameters, command, parts));
+            sb.append(command_doUploadFile(commandParameters, command, parts));
         }
         if (name.equals("doUploadFileToTemp")) {
-            sb.append(command_doUploadFileToTemp(parameters, command, parts));
+            sb.append(command_doUploadFileToTemp(commandParameters, command, parts));
         }
-        if (name.equals("doSendChat")) {
-            sb.append(command_doSendChat(parameters, command, parts));
+        if (name.equals("doGetLocalPage")) {
+            sb.append(command_doGetLocalPage(commandParameters, command));
         }
         if (name.equals("doCheckForNewVersion")) {
             //checks the "backlog"-object. 
@@ -120,20 +125,36 @@ public class commandFunctions {
             //The resulting datetime is compared to the current datetime. 
             //If backlog-datetime > initialVersionDatetime Then newVersion = true            
             //return warning to quering user. 
-            sb.append(command_doSendChat(parameters, command, parts));
-        }
 
+        }
+        if (name.equals("doLogin")) {
+            sb.append(command_doLogin(commandParameters, command));
+        }
+        if (name.equals("doLogout")) {
+            sb.append(command_doLogout(commandParameters, command));
+        }
+        if (name.equals("doUserInfo")) {
+            
+            sb.append(command_doUserInfo(commandParameters, command));
+        }
+        if (name.equals("doUploadFile")) {
+            sb.append(command_doUploadFile(commandParameters, command, parts));
+        }
+        if (name.equals("doUploadFileToTemp")) {
+            sb.append(command_doUploadFileToTemp(commandParameters, command, parts));
+        }
+        
         return sb;
     }
-
+    
     public static StringBuilder command1() {
         StringBuilder sb = new StringBuilder();
         return sb;
     }
-
+    
     public static StringBuilder doWorkflow(String type, MongoConfigurations _mongoConf) {
         StringBuilder sb = new StringBuilder();
-
+        
         if (type.equals("add")) {
             //
         } else {
@@ -141,21 +162,21 @@ public class commandFunctions {
                 //
             }
         }
-
+        
         return sb;
     }
-
+    
     public static StringBuilder command_sendEmail(Map<String, String[]> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
         });
-
+        
         String subject = parameters.get("subject")[0];
         String text = parameters.get("text")[0];
         String from = parameters.get("from")[0];
         List<String> receivers = Arrays.asList(parameters.get("receivers"));
-
+        
         Properties props = new Properties();
 //        Map<String, Object> properties = mapper.readValue(commandParameters.get("mail.sessionProperties"), new TypeReference<Map<String, Object>>() {
 //        });
@@ -166,7 +187,7 @@ public class commandFunctions {
                 return new PasswordAuthentication(Core.getProp("mail.username"), Core.getProp("mail.password"));
             }
         });
-
+        
         try {
             String receiverList = String.join(",", receivers.toArray(new String[receivers.size()]));
             Message message = new MimeMessage(session);
@@ -182,12 +203,7 @@ public class commandFunctions {
         }
         return sb;
     }
-   
-    public static StringBuilder command_eHealthConnect() {
-        StringBuilder sb = new StringBuilder();
-        return sb;
-    }
-
+    
     public static StringBuilder command_doBacklog(Map<String, String[]> parameters, Command command) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
@@ -210,18 +226,18 @@ public class commandFunctions {
         //Object databaseItem = mapper.readValue(mapper.writeValueAsString(objectHashMap), cls);//createNoteObject(requestParameters.get("docid")[0], "create");
         //sb.append(mapper.writeValueAsString(databaseItem));
         sb = DatabaseWrapper.actionGETOBJECT_prepareObject(parameters.get("LCMS_session")[0], DatabaseActions.getMongoConfiguration(objectConfiguration.getMongoconfigurationsid()), false, objectHashMap);
-
+        
         return sb;
-
+        
     }
-
+    
     public static StringBuilder command_doGetTableFromDocument(Map<String, String[]> parameters, Command command) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
         });
-
+        
         MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("pages");
         String value = commandParameters.get("document");//parameters.get("title")[0];
         String table = commandParameters.get("table");//parameters.get("table")[0];
@@ -235,7 +251,7 @@ public class commandFunctions {
         sb.append(mapper.writeValueAsString(grid));
         return sb;
     }
-
+    
     private static StringBuilder command_doGetKPI(Map<String, String[]> parameters, Command command) throws ClassNotFoundException, NoSuchFieldException, IOException, Exception {
         ObjectMapper mapper = new ObjectMapper();
         StringBuilder sb = new StringBuilder();
@@ -274,28 +290,28 @@ public class commandFunctions {
                         }
                     }
                 }
-
+                
                 jsonData.put("data", mapper.writeValueAsString(allLines));
-
+                
             }
         }
         if (command.getAccessType().contains("2")) {
             sb.append(mapper.writeValueAsString(allLines));
-
+            
         } else {
             sb.append(jsonData);
         }
         return sb;
     }
-
+    
     private static StringBuilder command_doGetFiles(Map<String, String[]> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
-
+        
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
         Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
         });
-
+        
         for (Map.Entry<String, String> entry : commandParameters.entrySet()) {
             List<String> lines = new ArrayList<>();
             try ( Stream<String> stream = Files.lines(Paths.get(entry.getValue()), Charset.forName("ISO-8859-1"))) {
@@ -311,7 +327,7 @@ public class commandFunctions {
         sb.append(jsonData);
         return sb;
     }
-
+    
     private static StringBuilder command_doGenerateHash(Map<String, String[]> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
@@ -321,17 +337,27 @@ public class commandFunctions {
         sb.append(Cryptography.hash(parameters.get("parameters[passwordInput]")[0]));
         return sb;
     }
-
+    
+    private static StringBuilder command_doGetLocalPage(Map<String, String> parameters, Command command) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jsonData = mapper.createObjectNode();
+        Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
+        });
+        sb.append(DatabaseWrapper.getWebPage(commandParameters.get("url"), new String[]{})); //e.g. "admin/tools/index.html"
+        return sb;
+    }
+    
     private static StringBuilder command_doAPICall(Map<String, String> parameters, Command command) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
-        ObjectMapper mapper = new ObjectMapper();   
-
+        ObjectMapper mapper = new ObjectMapper();
+        
         String apikey = parameters.get("apikey");
         String path = parameters.get("path");
         String method = parameters.get("method");
-        String extraParameters = null; 
-        if(parameters.get("extra") != null){
+        String extraParameters = null;
+        if (parameters.get("extra") != null) {
             extraParameters = parameters.get("extra");
         }
         MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("apikeys");
@@ -345,11 +371,10 @@ public class commandFunctions {
         sb.append(Core.httpRequest(receiver, method, extraParameters));
         return sb;
     }
-
-    private static StringBuilder command_doUploadFile(Map<String, String[]> parameters, Command command, Collection<Part> parts) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        ObjectMapper mapper = new ObjectMapper();
-        String tempDir = parameters.get("contextPath")[0] + "/" + Core.getProp("temp.folder") + "/";
+    
+    private static StringBuilder command_doUploadFile(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
+        StringBuilder sb = new StringBuilder();        
+        String tempDir = parameters.get("contextPath") + "/" + Core.getProp("temp.folder") + "/";
         Core.checkDir(tempDir);
         for (Part part : parts) {
             String filename = part.getSubmittedFileName();
@@ -361,11 +386,10 @@ public class commandFunctions {
         }
         return sb;
     }
-
-    private static StringBuilder command_doUploadFileToTemp(Map<String, String[]> parameters, Command command, Collection<Part> parts) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        ObjectMapper mapper = new ObjectMapper();
-        String tempDir = parameters.get("contextPath")[0] + "/" + Core.getProp("temp.folder") + "/";
+    
+    private static StringBuilder command_doUploadFileToTemp(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
+        StringBuilder sb = new StringBuilder();        
+        String tempDir = parameters.get("contextPath") + "/" + Core.getProp("temp.folder") + "/";
         Core.checkDir(tempDir);
         for (Part part : parts) {
             String filename = part.getSubmittedFileName();
@@ -378,12 +402,62 @@ public class commandFunctions {
         }
         return sb;
     }
-
-    private static StringBuilder command_doSendChat(Map<String, String[]> parameters, Command command, Collection<Part> parts) throws IOException {
+    
+    private static StringBuilder command_doLogin(Map<String, String> parameters, Command command) throws IOException, ClassNotFoundException {
+        StringBuilder sb = new StringBuilder();
+        String _user = parameters.get("username");
+        String _pwd = parameters.get("password");
+        Boolean root = false;
+        StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
+        if (_user.equals(getProp("username")) && (passwordEncryptor.checkPassword(_pwd, getProp("password")) || Cryptography.verifyHash(getProp("password"), _pwd))) {
+            root = true;
+        }
+        
+        User user = DatabaseActions.getUser(_user);
+        if (user != null) {
+            if (Cryptography.verifyHash(_pwd, user.getPassword()) || Cryptography.verifyHash(getProp("password"), _pwd)) {
+                UUID sessionId = UUID.randomUUID();
+                Cookie loginCookie = new Cookie("LCMS_session", sessionId.toString());
+                gcms.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
+                Map<String, Object> usr = DatabaseWrapper.getObjectHashMapv2(null, DatabaseActions.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
+                loginCookie.setMaxAge((Integer.parseInt(usr.get("sessionValidity").toString())));
+                gcms.GsonObjects.Core.Session session = Core.createSession(_user, loginCookie.getValue());
+                DatabaseActions.insertSession(session);
+                Core.createTempDir(session.getSessionID(), parameters.get("contextPath"));
+                return sb.append(Core.universalObjectMapper.writeValueAsString(loginCookie));
+            } else {
+                return null;
+            }
+            
+        } else {
+            if (root == true) {
+                UUID sessionId = UUID.randomUUID();
+                Cookie loginCookie = new Cookie("LCMS_session", sessionId.toString());
+                loginCookie.setMaxAge(9999);
+                gcms.GsonObjects.Core.Session session = Core.createSession(getProp("username"), loginCookie.getValue());
+                DatabaseActions.insertSession(session);
+                Core.createTempDir(session.getSessionID(), parameters.get("contextPath"));
+                return sb.append(Core.universalObjectMapper.writeValueAsString(loginCookie));
+            } else {
+                return null;
+            }
+        }
+    }
+    
+    private static StringBuilder command_doLogout(Map<String, String> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
-        });
+        ObjectNode jsonData = mapper.createObjectNode();
+        sb.append(DatabaseWrapper.getWebPage(parameters.get("url"), new String[]{})); //e.g. "admin/tools/index.html"
         return sb;
     }
+    
+    private static StringBuilder command_doUserInfo(Map<String, String> parameters, Command command) throws IOException {
+        StringBuilder sb = new StringBuilder();        
+        gcms.GsonObjects.Core.Session session = DatabaseActions.getSession(parameters.get("LCMS_session"));
+        sb.append(DatabaseWrapper.getUserInfo(session)); //e.g. "admin/tools/index.html"
+        
+        return sb;
+    }
+    
 }

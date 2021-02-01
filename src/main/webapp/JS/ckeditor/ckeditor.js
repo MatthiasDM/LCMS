@@ -7655,19 +7655,18 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
 				
 				
                 setData: function(a, b) {
-					//OP DIT MOMENT IS DE CODE NOG NIET GEWIJZIGD	
-					console.log("Setting data");
-					a = a.replace("&#8203;", "");
-                   // b || (a = this.editor.dataProcessor.toHtml(a)); //HIER WORDT DE CODE GEWIJZIGD
-						
-						if(this.status == "ready"){
-							documentPage.gridController.checkGrids();
-							var gridControllerCopy = jQuery.extend(true, {}, documentPage.gridController);					
-							this.setHtml(a);							
-							documentPage.gridController.grids = documentPage.getTrimmedGridControllerGrids();
-							documentPage.gridController.regenerateGrids();	  
-					   }
-			     	documentPage.gridController.checkGrids(); 			    			
+                    console.log("Setting data");
+                    a = a.replace("&#8203;", "");
+                    if(this.status == "ready"){
+                        this.setHtml(a);
+                        if(typeof $(this.$).parent().attr("id") !== "undefined"){
+                            if($(this.$).parent().attr("id").includes(documentPage.pageData.pageId)){
+                                var gridControllerCopy = jQuery.extend(true, {}, documentPage.gridController);
+                                documentPage.gridController.grids = documentPage.getTrimmedGridControllerGrids();
+                                documentPage.gridController.regenerateGrids();
+                            }    
+                        }                       
+                    }                   	    			
                     this.fixInitialSelection();
                     "unloaded" == this.status && (this.status = "ready");
                     this.editor.fire("dataReady")

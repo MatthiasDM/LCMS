@@ -15,28 +15,34 @@ function page_doLoadPage(_page, parent) {
     }
     LCMSRequest("./page", {page: _page}, onDone);
 
-
 }
 
-function credentials_doUserInfo(_parent) {
-    var _cookie = $.cookie('LCMS_session');
-    $.ajax({
-        method: "POST",
-        url: "./credentials",
-        data: {action: "CREDENTIALS_USERINFO", LCMS_session: _cookie},
-        beforeSend: function (xhr) {
-            xhr.overrideMimeType("application/html");
-        }
-    }).done(function (data) {
-        var jsonData = JSON.parse(data, _parent);
+async function credentials_doUserInfo(_parent){
+
+    async function onDone(data) {
+        try { 
+            var jsonData = JSON.parse(data, _parent);
         jsonData.parent = _parent;
         loadParameters(jsonData);
         sessionCountdown();
-    }).fail(function (data) {
-        alert("Sorry. Server unavailable. ");
-    });
+        } catch (e) {
+            console.log(e);
+            return {};
+        }
+
+
+    }
+    var requestOptions = {};
+    requestOptions.action = "docommand";
+    requestOptions.k = "doUserInfo";
+    let request = await LCMSRequest("./servlet", requestOptions);
+    let returnvalue = await onDone(request);
+    return returnvalue;
+
+
 
 }
+
 
 function getUrlParam(url_string, param) {
     var isIE = /*@cc_on!@*/false || !!document.documentMode;

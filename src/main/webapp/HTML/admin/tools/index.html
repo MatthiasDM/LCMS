@@ -32,7 +32,7 @@
 
     function mongoconfigurations_doLoad(_parent) {
         console.log("Mongoconfigurations load");
-        LCMSTableRequest("MONGOCONFIGURATIONS_LOADMONGOCONFIGURATIONS", "MONGOCONFIGURATIONS_EDITMONGOCONFIGURATIONS", "./admin", "mongoconfigurations-table", "mongoconfigurations-pager", "div-grid-user-wrapper", lang["mongoconfigurations"]['title'], 1, {hiddengrid: true});
+        LCMSTableRequest("loadmongoconfigurations", "editmongoconfiguration", "./servlet", "mongoconfigurations-table", "mongoconfigurations-pager", "div-grid-user-wrapper", lang["mongoconfigurations"]['title'], 1, {hiddengrid: true});
 
     }
 
@@ -48,7 +48,7 @@
             },
             hiddengrid: true
         };
-        LCMSTableRequest("ACTIONS_LOADACTIONS", "ACTIONS_EDITACTIONS", "./admin", "actions-table", "actions-pager", "div-grid-actions-wrapper", lang["actions"]['title'], 2, extraOptions);
+        LCMSTableRequest("loadactions", "editaction", "./servlet", "actions-table", "actions-pager", "div-grid-actions-wrapper", lang["actions"]['title'], 2, extraOptions);
     }
 
     function pages_doLoad(_parent) {

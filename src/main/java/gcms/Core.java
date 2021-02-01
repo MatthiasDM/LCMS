@@ -6,14 +6,17 @@
 package gcms;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+
 import com.mongodb.BasicDBObject;
+import static com.mongodb.client.model.Filters.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -45,6 +48,7 @@ import java.util.stream.Stream;
 import gcms.Config.Roles;
 import gcms.GsonObjects.Core.Apikey;
 import gcms.GsonObjects.Core.Command;
+import gcms.GsonObjects.Core.FileObject;
 import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.GsonObjects.Core.Session;
 import gcms.GsonObjects.Core.User;
@@ -60,6 +64,8 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.Map;
+import org.apache.commons.io.FileUtils;
+import org.bson.Document;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 
 /**
@@ -192,6 +198,52 @@ public class Core {
 
         return file;
     }
+
+    public static Session createSession(String _user, String _sessionId) throws JsonProcessingException, IOException {
+        long now = Instant.now().toEpochMilli() / 1000;
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayList<Document> results;
+        Session session = null;
+
+        try {
+            if (!_user.equals(getProp("username"))) {
+                gcms.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
+                Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, DatabaseActions.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
+                session = new Session(_user, _sessionId, now + ((Integer.parseInt(user.get("sessionValidity").toString()))), true, user.get("userid").toString());
+            } else {
+                session = new Session(_user, _sessionId, now + (9999), true, "158");
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, ex.getMessage());
+        }
+
+        return session;
+    }
+
+    public static void createTempDir(String _sessionId, String path) {
+        new File(path + "/" + _sessionId).mkdir();
+        System.out.print(path + "/" + _sessionId);
+    }
+
+    public static void deleteTempDir(String _sessionId, String path) throws IOException {
+        try {
+            FileUtils.deleteDirectory(new File(path + "\\" + _sessionId));
+        } catch (Exception e) {
+            System.out.println((e.getMessage()));
+        }
+    }
+
+    private void devalidateSession(String _sessionId, String path) throws IOException, ClassNotFoundException {
+        Session session = DatabaseActions.getSession(_sessionId);
+        if (!session.getUsername().equals(getProp("username"))) {
+            gcms.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
+            Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, DatabaseActions.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", session.getUsername())));
+            DatabaseActions.editSessionValidity(_sessionId, (Integer.parseInt(user.get("sessionValidity").toString()) * -1));
+        } else {
+            DatabaseActions.editSessionValidity(_sessionId, 9999 * -1);
+        }
+        deleteTempDir(_sessionId, path);
+    } 
 
     public static boolean checkUserRole(String _cookie, Roles _role) {
         Session session = DatabaseActions.getSession(_cookie);
@@ -437,9 +489,10 @@ public class Core {
             Class<?> clazz = Core.class;
             Package p = clazz.getPackage();
             Properties prop = new Properties();
-            String basePath = System.getProperties().getProperty("user.home");
+            String basePath = System.getProperties().getProperty("user.home") + "/" + p.getName();
+            checkDir(basePath);
             String propFileName = p.getName() + ".properties";
-            Logger.getLogger(Core.class.getName()).log(Level.INFO, "getProp() basepath: " + basePath + "(" + basePath + "/" + propFileName + ")", "getProp() basepath: " + basePath + "(" + basePath + "/" + propFileName + ")");
+            //Logger.getLogger(Core.class.getName()).log(Level.INFO, "getProp() basepath: " + basePath + "(" + basePath + "/" + propFileName + ")", "getProp() basepath: " + basePath + "(" + basePath + "/" + propFileName + ")");
             File f = new File(basePath + "/" + propFileName);
             prop.load(new StringReader(readAllLines(Arrays.asList(f)).toString()));
             return prop.getProperty(name);
@@ -647,15 +700,11 @@ public class Core {
         StringBuffer allLines = new StringBuffer();
         try {
             for (File f : files) {
-                allLines.append(readAllLines(new StringBuffer(), f.toPath(), "UTF-8"));
-                Logger
-                        .getLogger(Core.class
-                                .getName()).log(Level.INFO, null, "Succesfull read of file (" + (int) (f.length() / 1000) + "kb" + "): " + f.getName());
-
+                allLines.append(readAllLines(new StringBuffer(), f.toPath(), "UTF-8"));              
             }
         } catch (Exception e) {
             Logger.getLogger(Core.class
-                    .getName()).log(Level.INFO, null, "Error while reading file. \n" + e.getMessage());
+                    .getName()).log(Level.INFO, "Error while reading file. \n{0}", e.getMessage());
         }
         return allLines;
     }
@@ -705,6 +754,19 @@ public class Core {
         paramIn = paramIn.replaceAll("&", "\",\"");
         return "{" + paramIn + "\"}";
     }
+
+    private FileObject createFileObject(String _id, String _filename, String _type, String _contenttype, String _accesstype) {
+        long now = Instant.now().toEpochMilli() / 1000;
+        FileObject fileObject = new FileObject();
+        fileObject.setFileid(_id);
+        fileObject.setType(_type);
+        fileObject.setName(_filename);
+        fileObject.setUpload_date(_type);
+        fileObject.setContent_type(_contenttype);
+        fileObject.setAccesstype(_accesstype);
+        return fileObject;
+    }
+
 }
 
 class Regex {

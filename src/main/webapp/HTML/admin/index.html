@@ -1,5 +1,5 @@
 <script>
-    function admin_doLoad(_parent) {
+    function admin_doLoad2(_parent) {
         console.log("Loading admin page2");
         var _cookie = $.cookie('LCMS_session');
         $.ajax({
@@ -20,9 +20,43 @@
             alert("Sorry. Server unavailable. ");
         });
     }
+
+    async function admin_doLoad(_parent) {
+
+        var templates = [];
+        var formatters = {};
+        async function onDone(data) {
+            try {
+                if (typeof data !== 'undefined') {
+                    var jsonData = JSON.parse(data, _parent);
+                    jsonData.parent = _parent;
+                    loadParameters(jsonData);
+                }
+            } catch (e) {
+                console.log(e);
+                return {};
+            }
+
+
+        }
+        var requestOptions = {};
+        requestOptions.action = "docommand";
+        requestOptions.k = "doGetAdminPage";
+        // requestOptions.title = "Configurationtables";
+        //requestOptions.table = "Templates";
+        let request = await LCMSRequest("./servlet", requestOptions);
+        let returnvalue = await onDone(request);
+        return returnvalue;
+
+
+
+    }
+
+
     $(function () {
         admin_doLoad($("#admin-container"));
     });
 </script>
+
 <div id="admin-container">
 </div>

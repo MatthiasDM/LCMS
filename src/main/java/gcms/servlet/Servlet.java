@@ -35,7 +35,7 @@ import gcms.GsonObjects.Core.Command;
 import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.database.DatabaseActions;
 import gcms.database.DatabaseWrapper;
-import gcms.commandFunctions;
+import gcms.modules.commandFunctions;
 import java.util.Enumeration;
 import java.util.List;
 import javax.xml.bind.DatatypeConverter;
@@ -115,7 +115,7 @@ public class Servlet extends HttpServlet {
         StringBuilder sb = new StringBuilder();
         Map<String, String[]> requestParameters = new HashMap<>();
         requestParameters.putAll(request.getParameterMap());
-
+        requestParameters.put("contextPath", new String[]{context.getRealPath("/HTML/other/files")});
         ActionManager aM;
         String host = Core.getClientPCName(request.getRemoteAddr());
         String user = request.getRemoteUser();
@@ -123,6 +123,7 @@ public class Servlet extends HttpServlet {
         Enumeration<String> headerNames = request.getHeaderNames();
         String apiName, apiKey;
         Boolean apiAuthorized = false;
+        
         if (headerNames != null) {
             while (headerNames.hasMoreElements()) {
                 String headerName = headerNames.nextElement();
