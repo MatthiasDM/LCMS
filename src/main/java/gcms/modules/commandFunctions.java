@@ -8,28 +8,21 @@ package gcms.modules;
 import gcms.Core;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.opendevl.JFlat;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClientOptions.Builder;
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.gt;
 import static com.mongodb.client.model.Filters.regex;
 import static com.mongodb.client.model.Filters.gte;
 import java.io.File;
 import java.io.IOException;
-import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -42,14 +35,9 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import static gcms.Core.buildRegex;
-import static gcms.Core.getLatestFile;
 import static gcms.Core.getProp;
-import static gcms.Core.readAllLines;
-import static gcms.Core.search;
 import gcms.GsonObjects.Core.Apikey;
 import gcms.GsonObjects.Core.Command;
-import gcms.GsonObjects.Core.FileObject;
 import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.GsonObjects.Core.User;
 import gcms.credentials.Cryptography;
@@ -60,8 +48,6 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.Part;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
@@ -95,7 +81,7 @@ public class commandFunctions {
             sb.append(command_sendEmail(parameters, command));
         }
         if (name.equals("doGetTableFromDocument")) {
-            sb.append(command_doGetTableFromDocument(parameters, command));
+            sb.append(command_doGetTableFromDocument(commandParameters, command));
         }
         if (name.equals("doGetKPI")) {
             sb.append(command_doGetKPI(parameters, command));
@@ -112,9 +98,9 @@ public class commandFunctions {
         if (name.equals("doUploadFile")) {
             sb.append(command_doUploadFile(commandParameters, command, parts));
         }
-        if (name.equals("doUploadFileToTemp")) {
-            sb.append(command_doUploadFileToTemp(commandParameters, command, parts));
-        }
+//        if (name.equals("doUploadFileToTemp")) {
+//            sb.append(command_doUploadFileToTemp(commandParameters, command, parts));
+//        }
         if (name.equals("doGetLocalPage")) {
             sb.append(command_doGetLocalPage(commandParameters, command));
         }
@@ -140,8 +126,8 @@ public class commandFunctions {
         if (name.equals("doUploadFile")) {
             sb.append(command_doUploadFile(commandParameters, command, parts));
         }
-        if (name.equals("doUploadFileToTemp")) {
-            sb.append(command_doUploadFileToTemp(commandParameters, command, parts));
+        if (name.equals("doDownloadToTemp")) {
+            sb.append(command_doDownloadToTemp(commandParameters, command, parts));
         }
         
         return sb;
@@ -231,20 +217,29 @@ public class commandFunctions {
         
     }
     
-    public static StringBuilder command_doGetTableFromDocument(Map<String, String[]> parameters, Command command) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
+    public static StringBuilder command_doGetTableFromDocument(Map<String, String> parameters, Command command) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
-        });
-        
-        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("pages");
-        String value = commandParameters.get("document");//parameters.get("title")[0];
-        String table = commandParameters.get("table");//parameters.get("table")[0];
-        searchObject.put("title", new BasicDBObject("$eq", value));
-        Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session")[0], mongoConfiguration, searchObject);
-        String result = searchResult.get("contents").toString();
-        //BasicDBObject obj = BasicDBObject.parse(mapper.(result));
+        String mongoConf = "pages";
+        String contentKey = "contents";
+        String searchKey = "title";
+        if(parameters.get("mongoconf") != null){
+            mongoConf = parameters.get("mongoconf");
+        }
+        if(parameters.get("contentkey") != null){
+            contentKey = parameters.get("contentkey");
+        }
+        if(parameters.get("searchkey") != null){
+            searchKey = parameters.get("searchkey");
+        }        
+        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration(mongoConf);
+        String value = parameters.get("document");//parameters.get("title")[0];
+        String table = parameters.get("table");//parameters.get("table")[0];
+        searchObject.put(searchKey, new BasicDBObject("$eq", value));
+        Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session"), mongoConfiguration, searchObject);
+        String result = searchResult.get(contentKey).toString();
+   
         Map<String, Map> contentMap = mapper.readValue(result, Map.class);
         Map<String, Map> grids = contentMap.get("grids");
         Map grid = grids.values().stream().filter(m -> m.get("caption").equals(table)).findFirst().get();
@@ -387,19 +382,11 @@ public class commandFunctions {
         return sb;
     }
     
-    private static StringBuilder command_doUploadFileToTemp(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
-        StringBuilder sb = new StringBuilder();        
-        String tempDir = parameters.get("contextPath") + "/" + Core.getProp("temp.folder") + "/";
-        Core.checkDir(tempDir);
-        for (Part part : parts) {
-            String filename = part.getSubmittedFileName();
-            if (filename != null) {
-                String fileName = filename;
-                if (!Core.checkFile(tempDir + fileName)) {
-                    part.write(tempDir + fileName);
-                }
-            }
-        }
+    private static StringBuilder command_doDownloadToTemp(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        sb.append(
+                DatabaseActions.downloadFileToTemp(parameters.get("filename"), parameters.get("LCMS_session"), parameters.get("contextPath"), Boolean.valueOf(parameters.get("public")))  
+        );
         return sb;
     }
     

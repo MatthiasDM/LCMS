@@ -23,8 +23,6 @@
 
     async function admin_doLoad(_parent) {
 
-        var templates = [];
-        var formatters = {};
         async function onDone(data) {
             try {
                 if (typeof data !== 'undefined') {
@@ -42,8 +40,6 @@
         var requestOptions = {};
         requestOptions.action = "docommand";
         requestOptions.k = "doGetAdminPage";
-        // requestOptions.title = "Configurationtables";
-        //requestOptions.table = "Templates";
         let request = await LCMSRequest("./servlet", requestOptions);
         let returnvalue = await onDone(request);
         return returnvalue;

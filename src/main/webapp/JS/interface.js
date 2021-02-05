@@ -586,12 +586,12 @@ function dom_nav(pills, _id) {
     var nav = $("<ul class='nav nav-pills mb-3' id='' role='tablist'>");
     $.each(pills, function (id, val) {
         //{'home': 'thuis', 'urgent': 'dringend'};
-        nav.append("<li class='nav-item'><a class='nav-link' id='" + id + "-pill' data-toggle='pill' href='#" + id + "-tab' role='tab' aria-controls='" + id + "-tab' aria-selected='true'>" + val + "</a></li>");
+        nav.append("<li class='nav-item'><a class='nav-link' id='pill" + id + " data-toggle='pill' href='#tab" + id + "' role='tab' aria-controls='tab" + id + "' aria-selected='true'>" + val + "</a></li>");
     });
 
     var tab = $("<div class='tab-content' id='pills-tabContent'>");
     $.each(pills, function (id, val) {
-        tab.append("<div class='tab-pane fade' id='" + id + "-tab' role='tabpanel' aria-labelledby='" + id + "-pill'></div>");
+        tab.append("<div class='tab-pane fade' id='tab" + id + "' role='tabpanel' aria-labelledby='pill" + id + "'></div>");
     });
 
     div.append(nav);
@@ -712,30 +712,6 @@ function not_undefined(test, value) {
     }
 
 }
-
-//function loadImages(editor, editorObject) {
-//    var _editorObject;
-//    if (editor !== "") {
-//        var images = $("#" + editor).find('[fileid]');
-//        if (images.length < 1) {
-//            images = $("#cke_" + editor).find("iframe").contents().find('[fileid]');
-//        }
-//        _editorObject = $("#" + editor);
-//    } else {
-//        var images = editorObject.find('[fileid]');
-//        _editorObject = editorObject;
-//    }
-//
-//
-//
-//    images.each(function (index) {
-//        var newImage = downloadToTemp($(this));
-//        _editorObject.find('[fileid]')[index] = newImage;
-//    });
-//
-//    return images;
-//
-//}
 
 function openFile(filename, text) {
     var blob = new Blob([text], {type: "text/html;charset=utf-8"});
