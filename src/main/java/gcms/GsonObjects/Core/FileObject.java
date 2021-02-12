@@ -5,7 +5,7 @@
  */
 package gcms.GsonObjects.Core;
 
-import gcms.GsonObjects.annotations.MdmAnnotations;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -13,43 +13,43 @@ import gcms.GsonObjects.annotations.MdmAnnotations;
  */
 public class FileObject {
 
-    @MdmAnnotations(
+    @gcmsObject(
             visibleOnForm = false,      
             visibleOnTable = false,
 //            createRole = "SYSTEM",
 //            editRole = "SYSTEM",
             type = "string")
     public String fileid;
-    @MdmAnnotations(
+    @gcmsObject(
             createRole = "SYSTEM",
             editRole = "SYSTEM",
             type = "string")
     public String name;
-    @MdmAnnotations(
+    @gcmsObject(
             viewRole = "SYSTEM",
             createRole = "SYSTEM",
             editRole = "SYSTEM",
             type = "string")
     public String type;
-    @MdmAnnotations(
+    @gcmsObject(
             viewRole = "SYSTEM",
             createRole = "SYSTEM",
             editRole = "SYSTEM",
             type = "date")
     public String upload_date;
-    @MdmAnnotations(
+    @gcmsObject(
             viewRole = "SYSTEM",
             createRole = "SYSTEM",
             editRole = "SYSTEM",
             type = "string")
     public String content_type;
-    @MdmAnnotations(
+    @gcmsObject(
             viewRole = "SYSTEM",
             createRole = "SYSTEM",
             editRole = "SYSTEM",
             type = "string")
     public String accesstype; //public or private?
-    @MdmAnnotations(
+    @gcmsObject(
             viewRole = "SYSTEM",
             createRole = "SYSTEM",
             editRole = "SYSTEM",

@@ -5,7 +5,7 @@
  */
 package gcms.GsonObjects.Core;
 
-import gcms.GsonObjects.annotations.MdmAnnotations;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -13,23 +13,23 @@ import gcms.GsonObjects.annotations.MdmAnnotations;
  */
 public class Backlog {
 
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
+    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String backlogid;
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
+    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String object_type;
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
+    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String object_id;
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = true)
+    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = true)
     public String changes;
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "datetime",
             visibleOnTable = true,
             visibleOnForm = false,
             editRole = "ICTMANAGER",
             createRole = "SYSTEM")
     public long created_on;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "ref",
             visibleOnTable = false,
             visibleOnForm = false,

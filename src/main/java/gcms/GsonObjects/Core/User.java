@@ -6,7 +6,7 @@
 package gcms.GsonObjects.Core;
 
 import java.util.List;
-import gcms.GsonObjects.annotations.MdmAnnotations;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -14,50 +14,50 @@ import gcms.GsonObjects.annotations.MdmAnnotations;
  */
 public class User {
 
-    @MdmAnnotations(
+    @gcmsObject(
             createRole = "SYSTEM",
             editRole = "ICTMANAGER",
             type = "string",
             visibleOnTable = false,
             visibleOnForm = false)
     public String userid;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public String username;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "encrypted",
             visibleOnTable = false,
             visibleOnForm = true,
             editRole = "ICTMANAGER")
     public String password;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "boolean",
             visibleOnTable = true,
             visibleOnForm = true,
             editRole = "ICTMANAGER")
     public String passwordLock;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "String",
             visibleOnTable = false,
             visibleOnForm = true,
             editRole = "ICTMANAGER")
     public String INSS;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "email",
             visibleOnTable = true)
     public String email;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "select",
             multiple = true,
             reference = {"Enum", "Roles"},
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public List<String> roles;
-    @MdmAnnotations(type = "boolean", visibleOnTable = true)
+    @gcmsObject(type = "boolean", visibleOnTable = true)
     public boolean ldap;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             visibleOnTable = true,
             editRole = "ICTMANAGER")

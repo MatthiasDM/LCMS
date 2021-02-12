@@ -32,46 +32,46 @@ class LCMSgridController {
     }
 
     checkGrids() {
-//        var me = this;
-//        me.references = [];
-//        var denominator = $("table[id^=grid]");
-//        var gridsOnPage = {};
-//        //me.grids = new Array();
-//        denominator.each(function (a, b) { //remove grids that are not in the denominator array
-//            try {
-//                if ($(b).jqGrid('getGridParam') !== null) {
-//                    me.grids[$(b).attr('id')] = $(b).jqGrid('getGridParam');
-//                    me.grids[$(b).attr('id')].colModel.forEach(function (column) {
-//                        if (typeof column.editoptions !== "undefined") {
-//                            if (column.editoptions.title === "internal_list") {
-//                                var referenceJson = {
-//                                    "list": $(b).attr('id'),
-//                                    "attr": column.name,
-//                                    "refList": column.internalListName,
-//                                    "refAttr": column.internalListAttribute
-//                                };
-//                                me.references.push(referenceJson);
-//                            }
-//                        }
-//                    });
-//                    gridsOnPage[$(b).attr('id')] = me.grids[$(b).attr('id')];
-//                } else {
-//                    console.log("Gridparams are null!");
-//                }
-//            } catch (err) {
-//                console.log(err);
-//            }
-//        });
-//        // me.grids = gridsOnPage;
-//
+        var me = this;
+        me.references = [];
+        var denominator = $("table[id^=grid]");
+        var gridsOnPage = {};
+        //me.grids = new Array();
+        denominator.each(function (a, b) { //remove grids that are not in the denominator array
+            try {
+                if ($(b).jqGrid('getGridParam') !== null) {
+                    me.grids[$(b).attr('id')] = $(b).jqGrid('getGridParam');
+                    me.grids[$(b).attr('id')].colModel.forEach(function (column) {
+                        if (typeof column.editoptions !== "undefined") {
+                            if (column.editoptions.title === "internal_list") {
+                                var referenceJson = {
+                                    "list": $(b).attr('id'),
+                                    "attr": column.name,
+                                    "refList": column.internalListName,
+                                    "refAttr": column.internalListAttribute
+                                };
+                                me.references.push(referenceJson);
+                            }
+                        }
+                    });
+                    gridsOnPage[$(b).attr('id')] = me.grids[$(b).attr('id')];
+                } else {
+                    console.log("Gridparams are null!");
+                }
+            } catch (err) {
+                console.log(err);
+            }
+        });
+        // me.grids = gridsOnPage;
+
 //        $.each(me.grids, function (a, b) {
 //
 //        });
 //        $.each(Object.filter(me.grids, grid => typeof grid.subgridref !== "undefined"), function (a, b) {
 //            me.checkSubGridValidity(b.id);
 //        });
-//        //console.log(this.references);
-//
+        //console.log(this.references);
+
 //
 //        setTimeout(function () {
 //           // me.checkGrids();

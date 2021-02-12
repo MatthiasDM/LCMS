@@ -5,7 +5,7 @@
  */
 package gcms.GsonObjects.Core;
 
-import gcms.GsonObjects.annotations.MdmAnnotations;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -13,15 +13,15 @@ import gcms.GsonObjects.annotations.MdmAnnotations;
  */
 public class Document {
 
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
+    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String documentid;
-    @MdmAnnotations(type = "string", visibleOnTable = true, visibleOnForm = true)
+    @gcmsObject(type = "string", visibleOnTable = true, visibleOnForm = true)
     public String title;
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
+    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String prefix;
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false, DMP = true)
+    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false, DMP = true)
     public String contents;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "select",
             viewRole = "GUEST",
             reference = {"Mongo", "users", "userid", "username"},
@@ -29,13 +29,13 @@ public class Document {
             visibleOnTable = false
     )
     public String approver;
-    @MdmAnnotations(
+    @gcmsObject(
             editRole = "ICTMANAGER",
             type = "select",
             choices = {"Algemeen", "Glims", "Nomenclatuur", "Labo", "Software", "Gearchiveerd"}
     )
     public String category;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "date",
             visibleOnTable = false,
             visibleOnForm = false,
@@ -43,7 +43,7 @@ public class Document {
             createRole = "SYSTEM",
             editRole = "SYSTEM")
     public long approved_on;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "date",
             visibleOnTable = true,
             visibleOnForm = false,
@@ -51,7 +51,7 @@ public class Document {
             editRole = "ICTMANAGER",
             createRole = "SYSTEM")
     public long created_on;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "ref",
             visibleOnTable = false,
             visibleOnForm = false,
@@ -59,7 +59,7 @@ public class Document {
             createRole = "SYSTEM",
             editRole = "ICTMANAGER")
     public String created_by;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "date",
             visibleOnTable = false,
             visibleOnForm = false,            

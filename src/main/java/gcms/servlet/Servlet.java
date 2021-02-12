@@ -40,6 +40,9 @@ import java.util.Enumeration;
 import java.util.List;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.io.IOUtils;
+import static gcms.database.objects.load.LoadObjects.loadObjects;
+import static gcms.database.objects.get.GetObject.getObject;
+import static gcms.database.objects.edit.EditObject.editObject;
 
 /**
  *
@@ -267,7 +270,7 @@ public class Servlet extends HttpServlet {
                 if (accesstype.equals("0")) {
                     publicPage = true;
                     if (publicPage) {
-                        sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value, publicPage));
+                        sb.append(getObject(cookie, mongoConfiguration, key, value, publicPage));
                     }
                 }
 
@@ -304,7 +307,7 @@ public class Servlet extends HttpServlet {
                     }
 
                     if (action.name.toUpperCase().startsWith("EDIT")) {
-                        sb.append(DatabaseWrapper.actionEDITOBJECTv2(requestParameters, cookie, mongoConfiguration));
+                        sb.append(editObject(requestParameters, cookie, mongoConfiguration));
 
                     } else {
                         if (action.name.toUpperCase().startsWith("LOAD")) {
@@ -326,12 +329,12 @@ public class Servlet extends HttpServlet {
                                     filterObject.put("prefix", new BasicDBObject("$eq", requestParameters.get("prefix")[0]));
                                 }
                             }
-                            sb.append(DatabaseWrapper.actionLOADOBJECTv2(cookie, mongoConfiguration, filterObject, excludes.toArray(new String[0])));
+                            sb.append(loadObjects(cookie, mongoConfiguration, filterObject, excludes.toArray(new String[0])));
                         } else {
                             if (action.name.toUpperCase().startsWith("GET")) {
                                 String key = requestParameters.get("k")[0];
                                 String value = requestParameters.get("v")[0];
-                                sb.append(DatabaseWrapper.actionGETOBJECTv2(cookie, mongoConfiguration, key, value, publicPage));
+                                sb.append(getObject(cookie, mongoConfiguration, key, value, publicPage));
                             }
                         }
                     }

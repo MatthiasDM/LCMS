@@ -8,7 +8,6 @@ package gcms.database;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
@@ -56,9 +55,7 @@ import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.GsonObjects.Core.Backlog;
 import gcms.GsonObjects.Core.FileObject;
 import gcms.GsonObjects.Core.Rights;
-import gcms.GsonObjects.Core.Role;
 import gcms.GsonObjects.Core.User;
-import gcms.GsonObjects.annotations.MdmAnnotations;
 import gcms.modules.commandFunctions;
 import static gcms.database.DatabaseActions.updateObjectItemv2;
 import java.util.Timer;
@@ -66,7 +63,7 @@ import java.util.TimerTask;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.apache.commons.codec.binary.Hex;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -379,7 +376,7 @@ public class DatabaseActions {
                     .collect(Collectors.toList());
         } else {
             for (Field field : fields) {
-                MdmAnnotations mdmAnnotations = field.getAnnotation(MdmAnnotations.class
+                gcmsObject mdmAnnotations = field.getAnnotation(gcmsObject.class
                 );
                 if (checkRights) {
                     ArrayList<Document> rights = getRightsFromDatabase(collection, field.getName());
@@ -404,7 +401,7 @@ public class DatabaseActions {
         return columns;
     }
 
-    public static List<String> getColumnsFromAnnotations(String _cookie, MdmAnnotations mdmAnnotations, String _privelegeType, Field field, List<Field> fields) {
+    public static List<String> getColumnsFromAnnotations(String _cookie, gcmsObject mdmAnnotations, String _privelegeType, Field field, List<Field> fields) {
         List<String> columns = new ArrayList<>();
         List<String> userRoles;
 
@@ -452,15 +449,14 @@ public class DatabaseActions {
         return columns;
     }
 
-    public static MongoCollection<Document> getObjectsv2(MongoConfigurations mongoConf) throws ClassNotFoundException {
+    public static MongoCollection<Document> getObjectsFromDatabase(MongoConfigurations mongoConf) throws ClassNotFoundException {
         MongoCollection<Document> results = null;
         Class cls = Class.forName(mongoConf.className);
         results = databases.get(mongoConf.database).getCollection(mongoConf.collection, cls);
-
         return results;
     }
 
-    public static MongoCollection<Document> getObjectsv2(String className, String database, String collection) throws ClassNotFoundException {
+    public static MongoCollection<Document> getObjectsFromDatabase(String className, String database, String collection) throws ClassNotFoundException {
         MongoCollection<Document> results = null;
         Class cls = Class.forName(className);
         results = databases.get(database).getCollection(collection, cls);
@@ -469,19 +465,19 @@ public class DatabaseActions {
     }
 
     public static void insertObjectItemv2(MongoConfigurations mongoConf, Document _doc) throws ClassNotFoundException {
-        getObjectsv2(mongoConf).insertOne(_doc);
+        DatabaseActions.getObjectsFromDatabase(mongoConf).insertOne(_doc);
         LOG.info("One Object inserted");
     }
 
     public static void updateObjectItemv2(MongoConfigurations mongoConf, BasicDBObject _bson) throws ClassNotFoundException {
         Bson newDocument = new Document("$set", _bson);
-        getObjectsv2(mongoConf).findOneAndUpdate(and(eq(mongoConf.getIdName(), _bson.get(mongoConf.getIdName()))), newDocument, (new FindOneAndUpdateOptions()).upsert(true));
+        DatabaseActions.getObjectsFromDatabase(mongoConf).findOneAndUpdate(and(eq(mongoConf.getIdName(), _bson.get(mongoConf.getIdName()))), newDocument, (new FindOneAndUpdateOptions()).upsert(true));
         LOG.info("One Object updated");
     }
 
     public static Document getObject(MongoConfigurations mongoConf, String id) throws ClassNotFoundException, JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        MongoCollection<Document> ObjectItems = getObjectsv2(mongoConf);
+        MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);
         ArrayList<Document> results = null;
         results = ObjectItems.find(and(eq(mongoConf.getIdName(), id))).into(new ArrayList<Document>());
         Document d = Document.parse(mapper.writeValueAsString(results.get(0)));
@@ -490,7 +486,7 @@ public class DatabaseActions {
 
     public static Document getObject(String className, String database, String collection, Bson bson) throws ClassNotFoundException, JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        MongoCollection<Document> ObjectItems = getObjectsv2(className, database, collection);
+        MongoCollection<Document> ObjectItems = getObjectsFromDatabase(className, database, collection);
         ArrayList<Document> results = null;
 
         results = ObjectItems.find(bson).into(new ArrayList<>());
@@ -498,22 +494,7 @@ public class DatabaseActions {
         return d;
     }
 
-    public static ArrayList<Document> getObjectsListv2(String _cookie, MongoConfigurations mongoConf, List<String> columns) throws ClassNotFoundException {
-
-        ArrayList<Document> results = null;
-        try {
-            MongoCollection<Document> ObjectItems = getObjectsv2(mongoConf);
-            //    ObjectItems.deleteMany(exists("userid"));
-
-            results = ObjectItems.find().projection(
-                    fields(include(columns))
-            ).into(new ArrayList<Document>());
-        } catch (Exception e) {
-            LOG.severe(e.getMessage());
-            return results;
-        }
-        return results;
-    }
+ 
 
     public static ArrayList<Document> getObjectsSpecificListv2(String _cookie, MongoConfigurations mongoConf, Bson bson, Bson sort, int limit, String[] excludes, boolean checkRights) throws ClassNotFoundException {
 
@@ -525,7 +506,7 @@ public class DatabaseActions {
         }
         ArrayList<Document> results = null;
         try {
-            MongoCollection<Document> ObjectItems = getObjectsv2(mongoConf);
+            MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);
             results = ObjectItems.find(bson).sort(sort).limit(limit).projection(
                     fields(include(columns))
             ).into(new ArrayList<Document>());
@@ -541,7 +522,7 @@ public class DatabaseActions {
 
         ArrayList<Document> results = null;
         try {
-            MongoCollection<Document> ObjectItems = getObjectsv2(mongoConf);
+            MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);
             results = ObjectItems.find(bson).sort(sort).limit(limit).projection(
                     fields(include(columns))
             ).into(new ArrayList<Document>());
@@ -607,7 +588,7 @@ public class DatabaseActions {
 
             newDocDocument.forEach((k, v) -> {
                 try {
-                    MdmAnnotations mdmAnnotations = Class.forName(_mongoConf.getClassName()).getField(k).getAnnotation(MdmAnnotations.class);
+                    gcmsObject mdmAnnotations = Class.forName(_mongoConf.getClassName()).getField(k).getAnnotation(gcmsObject.class);
                     if (!mdmAnnotations.DMP()) {
                         String originalEntry = "";
                         if (newDocDocument.containsKey(k)) {

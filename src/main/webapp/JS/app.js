@@ -12,6 +12,7 @@ require.config({
         bootstrap: ('bootstrap/bootstrap.bundle.min'),
         moment: ('moment/moment.min'),
         ckeditor: ('ckeditor/ckeditor'),
+        codemirror: ('codemirror/codemirror'),
         gcms_core: ('gcms/core'),
         gcms_grid: ('gcms/grid'),
         gcms_editablepage: "gcms/editablepage",
@@ -28,17 +29,21 @@ require.config({
         chartjs: 'chartjs/Chart.bundle',
         mousewheel: 'jquery-mousewheel',
         datetimepicker: 'datetimepicker/jquery.datetimepicker.full.min',
-        jqueryui:('jquery/jquery-ui'),
-        tether: ('jquery/tether.min')
+        jqueryui: ('jquery/jquery-ui'),
+        tether: ('jquery/tether.min'),
+        dmp: ('diffMatchPatch/diff_match_patch')
+    },
+    map: {
+        'jQuery': {jquery: 'jquery/jquery'}
     },
     shim: {
-        popper : ['jquery'],
-        bootstrap: ['jquery','popper'],
-        gcms_core: ['jquery', 'bootstrap', 'jqgrid'],   
+        popper: ['jquery'],
+        bootside: ['jquery'],
+        bootstrap: ['jquery', 'popper'],
+        gcms_core: ['jquery', 'bootstrap', 'jqgrid'],
         jqgrid: ['jquery'],
-        gcms_editablepage: ['jquery', 'jqgrid','bootstrap']
+        gcms_editablepage: ['jquery', 'jqgrid', 'bootstrap']
     }
-
 });
 require(['moment'], function (mom) {
     window.moment = mom;
@@ -47,14 +52,19 @@ require(['tinycolor'], function (tinycolor) {
     window.tinycolor = tinycolor;
 });
 
+//require(['codemirror'], function (codemirror) {
+//    window.CodeMirror = codemirror;
+//});
 
 require([
     "jquery",
     "jquerycookie",
+    "bootside",
     "tether",
     "popper",
     "chartjs",
     "datetimepicker",
+    "codemirror",
     "gcms_lang_nl",
     "gcms_editablepage",
     "gcms_grid",
@@ -65,10 +75,10 @@ require([
     "gcms_ckconfig",
     "gcms_lang_nl",
     "gcms_core",
-    "bootstrap",        
+    "bootstrap",
     "ckeditor",
-    "bootside",
-    "jqgrid"
+    "jqgrid",
+    "dmp"
 ], function ($) {
     console.log("all sources required");
     credentials_doUserInfo($("#navbar-toggler"));

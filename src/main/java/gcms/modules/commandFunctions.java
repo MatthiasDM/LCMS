@@ -52,6 +52,7 @@ import javax.servlet.http.Part;
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 import org.jasypt.util.password.StrongPasswordEncryptor;
+import static gcms.database.objects.get.GetObject.prepareObject;
 
 /**
  *
@@ -208,10 +209,7 @@ public class commandFunctions {
         Map<String, Object> objectHashMap = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session")[0], objectConfiguration, and(eq(objectConfiguration.getIdName(), parameters.get("parameters[object_id]")[0])));
         DatabaseWrapper.revertChanges(backlogs, objectHashMap, objectConfiguration);
 
-        //Class cls = Class.forName(objectConfiguration.getClassName());
-        //Object databaseItem = mapper.readValue(mapper.writeValueAsString(objectHashMap), cls);//createNoteObject(requestParameters.get("docid")[0], "create");
-        //sb.append(mapper.writeValueAsString(databaseItem));
-        sb = DatabaseWrapper.actionGETOBJECT_prepareObject(parameters.get("LCMS_session")[0], DatabaseActions.getMongoConfiguration(objectConfiguration.getMongoconfigurationsid()), false, objectHashMap);
+        sb = prepareObject(parameters.get("LCMS_session")[0], DatabaseActions.getMongoConfiguration(objectConfiguration.getMongoconfigurationsid()), false, objectHashMap);
         
         return sb;
         

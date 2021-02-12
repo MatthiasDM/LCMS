@@ -6,7 +6,7 @@
 package gcms.GsonObjects.Core;
 
 import java.util.List;
-import gcms.GsonObjects.annotations.MdmAnnotations;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -14,7 +14,7 @@ import gcms.GsonObjects.annotations.MdmAnnotations;
  */
 public class Rights {
 
-    @MdmAnnotations(
+    @gcmsObject(
             viewRole = "ICTMANAGER",
             createRole = "SYSTEM",
             //editRole = "ICTMANAGER",
@@ -22,34 +22,34 @@ public class Rights {
             visibleOnTable = false,
             visibleOnForm = false)
     public String rightsid;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "select",
             multiple = false,
             reference = {"Mongo", "mongoconfigurations", "name", "name"},
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public String table;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ICTMANAGER",
             visibleOnTable = true
     )
     public String field;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "select",
             reference = {"Mongo", "roles", "roleid", "role"},
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public List<String> viewRole;
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "select",
             reference = {"Mongo", "roles", "roleid", "role"},
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public List<String> editRole;
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "select",
             reference = {"Mongo", "roles", "roleid", "role"},
             visibleOnTable = true,

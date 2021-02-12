@@ -5,8 +5,8 @@
  */
 package gcms.GsonObjects.Core;
 
-import gcms.GsonObjects.annotations.MdmAnnotations;
 import java.util.List;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -14,36 +14,36 @@ import java.util.List;
  */
 public class ChronJob {
 
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
+    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String chronjobid;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "select",
             multiple = true,
             reference = {"Mongo", "commands", "commandid", "name"},
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public List<String> commmands;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ADMIN",
             visibleOnTable = false
     )
     public String parameters;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "number",
             editRole = "ICTMANAGER"
     )
     public String interval;
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "datetime",
             editRole = "ICTMANAGER")
     public long start;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "datetime",
             editRole = "ICTMANAGER")
     public long last;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "datetime",
             editRole = "ICTMANAGER")
     public long stop;

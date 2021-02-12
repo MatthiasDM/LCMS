@@ -5,7 +5,7 @@
  */
 package gcms.GsonObjects.Core;
 
-import gcms.GsonObjects.annotations.MdmAnnotations;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -13,7 +13,7 @@ import gcms.GsonObjects.annotations.MdmAnnotations;
  */
 public class MongoConfigurations {
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             createRole = "SYSTEM",
             //editRole = "SYSTEM",
@@ -21,14 +21,14 @@ public class MongoConfigurations {
             visibleOnForm = false
     )
     public String mongoconfigurationsid;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ICTMANAGER",
             createRole = "ICTMANAGER",
             visibleOnTable = true
     )
     public String name;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ICTMANAGER",
             createRole = "ICTMANAGER",
@@ -36,7 +36,7 @@ public class MongoConfigurations {
     )
     public String database;
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ICTMANAGER",
             createRole = "ICTMANAGER",
@@ -44,7 +44,7 @@ public class MongoConfigurations {
     )
     public String collection;
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ICTMANAGER",
             createRole = "ICTMANAGER",
@@ -52,7 +52,7 @@ public class MongoConfigurations {
     )
     public String className;
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ICTMANAGER",
             createRole = "ICTMANAGER",

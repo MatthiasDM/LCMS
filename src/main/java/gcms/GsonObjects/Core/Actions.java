@@ -5,7 +5,7 @@
  */
 package gcms.GsonObjects.Core;
 
-import gcms.GsonObjects.annotations.MdmAnnotations;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -13,7 +13,7 @@ import gcms.GsonObjects.annotations.MdmAnnotations;
  */
 public class Actions {
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             createRole = "SYSTEM",
             //editRole = "SYSTEM",
@@ -21,7 +21,7 @@ public class Actions {
             visibleOnForm = false
     )
     public String actionsid;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ICTMANAGER",
             createRole = "ICTMANAGER",
@@ -29,7 +29,7 @@ public class Actions {
     )
     public String name;
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "select",
             reference = {"Mongo", "mongoconfigurations", "mongoconfigurationsid", "name"},            
             editRole = "ICTMANAGER"

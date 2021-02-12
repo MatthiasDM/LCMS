@@ -5,8 +5,8 @@
  */
 package gcms.GsonObjects.Core;
 
-import gcms.GsonObjects.annotations.MdmAnnotations;
 import java.util.List;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -14,33 +14,33 @@ import java.util.List;
  */
 public class Command {
 
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
+    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String commandid;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ADMIN"
     )
     public String name;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ADMIN"
     )
     public String command;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ADMIN",
             visibleOnTable = false
     )
     public String description;
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ADMIN",
             visibleOnTable = false
     )
     public String parameters;
 
-    @MdmAnnotations(
+    @gcmsObject(
             editRole = "ICTMANAGER",
             type = "select",
             choices = {"guest", "user", "api"},
@@ -48,28 +48,28 @@ public class Command {
     )
     public List<String> accessType;
 
-    @MdmAnnotations(
+    @gcmsObject(
             editRole = "ICTMANAGER",
             type = "number",
             visibleOnTable = false
     )
     public String executionLimit;
 
-    @MdmAnnotations(
+    @gcmsObject(
             editRole = "ICTMANAGER",
             type = "number",
             visibleOnTable = false
     )
     public String executionCount;
 
-    @MdmAnnotations(
+    @gcmsObject(
             editRole = "ICTMANAGER",
             type = "number",
             visibleOnTable = false
     )
     public String executionLimitInterval;
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "datetime",
             visibleOnTable = false,
             visibleOnForm = false,

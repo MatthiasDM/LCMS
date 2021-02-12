@@ -5,7 +5,7 @@
  */
 package gcms.GsonObjects.Core;
 
-import gcms.GsonObjects.annotations.MdmAnnotations;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -13,20 +13,20 @@ import gcms.GsonObjects.annotations.MdmAnnotations;
  */
 public class Workflow {
 
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
+    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String workflowid;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ADMIN"
     )
     public String name;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "select",
             reference = {"Mongo", "mongoconfigurations", "mongoconfigurationsid", "collection"},
             editRole = "ICTMANAGER"
     )
     public String mongoconfiguration;
-        @MdmAnnotations(
+        @gcmsObject(
             editRole = "ICTMANAGER",
             //viewRole = "ICTMANAGER",
             type = "select",

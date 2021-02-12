@@ -10,13 +10,13 @@
     CKEDITOR.plugins.add("codemirror", {
         icons: "searchcode,autoformat,commentselectedrange,uncommentselectedrange,autocomplete", // %REMOVE_LINE_CORE%
         lang: "af,ar,bg,bn,bs,ca,cs,cy,da,de,el,en-au,en-ca,en-gb,en,eo,es,et,eu,fa,fi,fo,fr-ca,fr,gl,gu,he,hi,hr,hu,is,it,ja,ka,km,ko,ku,lt,lv,mk,mn,ms,nb,nl,no,pl,pt-br,pt,ro,ru,sk,sl,sr-latn,sr,sv,th,tr,ug,uk,vi,zh-cn,zh", // %REMOVE_LINE_CORE%
-        version: "1.17.8",
+        version: "1.17.11",
         init: function (editor) {
             var rootPath = this.path,
                     defaultConfig = {
                         autoCloseBrackets: true,
                         autoCloseTags: true,
-                        autoFormatOnStart: false,
+                        autoFormatOnStart: true,
                         autoFormatOnUncomment: false,
                         autoLoadCodeMirror: true,
                         continueComments: true,
@@ -24,9 +24,9 @@
                         enableCodeFormatting: true,
                         enableSearchTools: true,
                         highlightMatches: true,
-                        indentWithTabs: false,
+                        indentWithTabs: true,
                         lineNumbers: true,
-                        lineWrapping: true,
+                        lineWrapping: false,
                         mode: "htmlmixed",
                         matchBrackets: true,
                         maxHighlightLineLength: 1000,
@@ -38,8 +38,8 @@
                         showTrailingSpace: true,
                         showUncommentButton: true,
                         styleActiveLine: true,
-                        theme: "default",
-                        useBeautifyOnStart: true
+                        theme: "rubyblue",
+                        useBeautifyOnStart: false
                     };
 
             // Get Config & Lang
@@ -63,6 +63,7 @@
             if (requirePresent) {
                 var requireContext = config.requireContext || "_";
                 var location = CKEDITOR.getUrl("plugins/codemirror/js");
+                location = location.substring(0, location.indexOf("?"));
                 pluginRequire = require.config({
                     context: requireContext,
                     packages: [{
@@ -128,7 +129,7 @@
                 // Override Source Dialog
                 CKEDITOR.dialog.add("sourcedialog", function (editor) {
                     var sizeDialog = CKEDITOR.document.getWindow().getViewPaneSize(),
-                            minWidth = Math.min(sizeDialog.width - 70, 1600),
+                            minWidth = Math.min(sizeDialog.width - 70, 1500),
                             minHeight = sizeDialog.height / 1.2,
                             oldData;
 
@@ -157,13 +158,15 @@
                             showCursorWhenSelecting: true,
                             styleActiveLine: config.styleActiveLine,
                             viewportMargin: Infinity,
-                            //extraKeys: {"Ctrl-Space": "autocomplete"},
                             extraKeys: {
-                                "Ctrl-Q": function (codeMirror_Editor) {
-                                    if (config.enableCodeFolding) {
-                                        window["foldFunc_" + editor.id](codeMirror_Editor, codeMirror_Editor.getCursor().line);
-                                    }
-                                }
+								"Ctrl-Space": "autocomplete",
+								"Ctrl-Q": function (codeMirror_Editor) {
+									if (config.enableCodeFolding) {
+										window["foldFunc_" + editor.id](codeMirror_Editor, codeMirror_Editor.getCursor().line);
+									}
+								},
+								"Ctrl-Y": cm => CodeMirror.commands.foldAll(cm),
+								"Ctrl-I": cm => CodeMirror.commands.unfoldAll(cm)	
                             },
                             foldGutter: true,
                             gutters: ["CodeMirror-linenumbbers", "CodeMirror-foldgutter"]
@@ -281,22 +284,28 @@
                                     this);
                         },
                         onShow: function (event) {
+
+
+
+
+
                             // Set Elements
                             this.getContentElement("main", "data").focus();
                             this.getContentElement("main", "AutoComplete").setValue(config.autoCloseTags, true);
 
                             var textArea = this.getContentElement("main", "data").getInputElement().$;
-
                             // Load the content
                             console.log("CODEMIRROR: Loading content from ckeditor");
                             var data = editor.element.getHtml() !== "" ? editor.element.getHtml() : editor.getData();
                             var htmlToParse = $($(editor.element.$)[0]).prop("innerHTML");
-                            if(htmlToParse === ""){
-                            htmlToParse = editor.element.$.value;
+                            if (htmlToParse === "") {
+                                htmlToParse = editor.element.$.value;
                             }
                             var htmlData = $('<output>').append($($.parseHTML(htmlToParse, document, true)));
                             data = documentPage.minimizeGrids(documentPage, htmlData).prop("innerHTML");
                             this.setValueOf("main", "data", oldData = data);
+                            // Load the content
+                           // this.setValueOf("main", "data", oldData = editor.getData());
 
                             if (config.autoLoadCodeMirror) {
 
@@ -339,6 +348,7 @@
                                     }
                                 }
                             }
+							
                         },
                         onCancel: function (event) {
                             if (event.data.hide) {
@@ -354,7 +364,6 @@
                         onOk: (function () {
 
                             function setData(newData) {
-                                console.log("Codemirror: Setting new data...");
                                 var that = this;
 
                                 editor.setData(newData, function () {
@@ -539,7 +548,9 @@
 
                 editor.commands.replace.exec = function () {
                     if (editor.mode === "wysiwyg") {
-                        editor.openDialog("replace");
+                        editor.openDialog("find", function () {
+                            this.selectPage("replace");
+                        });
                     } else {
                         CodeMirror.commands.replace(window["codemirror_" + editor.id]);
                     }
@@ -835,9 +846,9 @@
                 var sourceAreaElement = window["editable_" + editor.id],
                         holderElement = sourceAreaElement.getParent();
 
-                /*CodeMirror.commands.autocomplete = function(cm) {
+                CodeMirror.commands.autocomplete = function(cm) {
                  CodeMirror.showHint(cm, CodeMirror.htmlHint);
-                 };*/
+                 };
 
                 // Enable Code Folding (Requires 'lineNumbers' to be set to 'true')
                 if (config.lineNumbers && config.enableCodeFolding) {
@@ -880,11 +891,14 @@
                 }
 
                 var extraKeys = {
+                    "Ctrl-Space": "autocomplete",
                     "Ctrl-Q": function (codeMirror_Editor) {
                         if (config.enableCodeFolding) {
                             window["foldFunc_" + editor.id](codeMirror_Editor, codeMirror_Editor.getCursor().line);
                         }
-                    }
+                    },
+					"Ctrl-Y": cm => CodeMirror.commands.foldAll(cm),
+					"Ctrl-I": cm => CodeMirror.commands.unfoldAll(cm)							
                 };
 
                 addCKEditorKeystrokes(extraKeys);

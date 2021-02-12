@@ -5,8 +5,8 @@
  */
 package gcms.GsonObjects.Core;
 
-import gcms.GsonObjects.annotations.MdmAnnotations;
 import java.util.List;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -14,50 +14,50 @@ import java.util.List;
  */
 public class Apikey {
 
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
+    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String apikeyid;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ADMIN"
     )
     public String name;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ICTMANAGER",
             viewRole = "ICTMANAGER"
     )
     public String keyprefix;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "encrypted",
             editRole = "ICTMANAGER",
             viewRole = "ICTMANAGER"
     )
     public String apiKey;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "boolean",
             editRole = "ICTMANAGER",
             viewRole = "LABASSISTANT"
     )
     public String apiKeyLock;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ICTMANAGER"
     )
     public String url;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "select",
             editRole = "ICTMANAGER",
             choices = {"Incoming", "Outgoing"}
     )
     public String connection;
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ICTMANAGER"
     )
 
     public String port;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "select",
             multiple = true,
             reference = {"Mongo", "commands", "commandid", "name"},
@@ -65,17 +65,17 @@ public class Apikey {
             editRole = "ICTMANAGER")
     public List<String> scope;
 
-    @MdmAnnotations(type = "boolean", visibleOnTable = true)
+    @gcmsObject(type = "boolean", visibleOnTable = true)
     public boolean valid;
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "datetime",
             visibleOnTable = true,
             visibleOnForm = false,
             editRole = "ICTMANAGER",
             createRole = "SYSTEM")
     public long created_on;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "ref",
             visibleOnTable = false,
             visibleOnForm = false,

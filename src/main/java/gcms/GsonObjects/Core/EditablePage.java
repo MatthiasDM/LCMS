@@ -5,7 +5,7 @@
  */
 package gcms.GsonObjects.Core;
 
-import gcms.GsonObjects.annotations.MdmAnnotations;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -13,11 +13,11 @@ import gcms.GsonObjects.annotations.MdmAnnotations;
  */
 public class EditablePage {
 
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
+    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String editablepageid;
-    @MdmAnnotations(type = "string", visibleOnTable = true, visibleOnForm = true)
+    @gcmsObject(type = "string", visibleOnTable = true, visibleOnForm = true)
     public String title;
-    @MdmAnnotations(
+    @gcmsObject(
             editRole = "ICTMANAGER",
             viewRole = "LABASSISTANT",
             type = "string",
@@ -26,23 +26,23 @@ public class EditablePage {
             DMP = true
     )
     public String contents;
-    @MdmAnnotations(type = "string", visibleOnTable = false, visibleOnForm = false)
+    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
     public String template;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "select",
             reference = {"Mongo", "users", "userid", "username"},
             editRole = "ICTMANAGER",
             visibleOnTable = false
     )
     public String approver;
-    @MdmAnnotations(
+    @gcmsObject(
             editRole = "ICTMANAGER",
             type = "select",
             choices = {"Algemeen", "Glims", "Nomenclatuur", "Labo", "Software"}
     )
     public String category;
 
-    @MdmAnnotations(
+    @gcmsObject(
             editRole = "ICTMANAGER",
             viewRole = "LABASSISTANT",
             type = "select",
@@ -50,7 +50,7 @@ public class EditablePage {
     )
     public String accessType;
 
-    @MdmAnnotations(
+    @gcmsObject(
             type = "date",
             visibleOnTable = false,
             visibleOnForm = false,
@@ -58,14 +58,14 @@ public class EditablePage {
             createRole = "SYSTEM",
             editRole = "SYSTEM")
     public long approved_on;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "datetime",
             visibleOnTable = false,
             visibleOnForm = false,
             editRole = "SYSTEM",
             createRole = "SYSTEM")
     public long created_on;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "ref",
             visibleOnTable = false,
             visibleOnForm = false,
@@ -73,7 +73,7 @@ public class EditablePage {
             createRole = "SYSTEM",
             editRole = "ICTMANAGER")
     public String created_by;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "date",
             visibleOnTable = false,
             visibleOnForm = false,

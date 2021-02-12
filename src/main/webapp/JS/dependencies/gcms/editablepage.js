@@ -447,8 +447,8 @@ class LCMSEditablePage {
     }
 
     getDataFromPage(me, onDone) {
-
         console.log("getDataFromPage()");
+        me.gridController.checkGrids();
         var htmlData = $('<output>').append($($.parseHTML($($("div[id^='wrapper']")[0]).prop("innerHTML"), document, true)));
         htmlData = me.minimizeGrids(me, htmlData);
         var data = {};

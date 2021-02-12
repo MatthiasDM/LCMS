@@ -5,7 +5,7 @@
  */
 
 class gcmscore {
-    
+
     filterAttributeJson(data, filterBy) {
         var lookup = {};
         var items = data;
@@ -553,13 +553,13 @@ function page_doLoadPage(_page, parent) {
 
 }
 
-async function credentials_doUserInfo(_parent){
+async function credentials_doUserInfo(_parent) {
     async function onDone(data) {
-        try { 
+        try {
             var jsonData = JSON.parse(data, _parent);
-        jsonData.parent = _parent;
-        loadParameters(jsonData);
-        sessionCountdown();
+            jsonData.parent = _parent;
+            loadParameters(jsonData);
+            sessionCountdown();
         } catch (e) {
             console.log(e);
             return {};
@@ -590,7 +590,7 @@ function getUrlParam(url_string, param) {
     if (p === "undefined") {
         p = "";
     }
-    if(p === null){
+    if (p === null) {
         p = "";
     }
     return p;
@@ -864,8 +864,8 @@ async function LCMSRequest(_url, _data, _onDone, _extraParam) {
 
 function getPatches(oldData, newData) {
     console.log("getPatches()");
-    oldData = bytesToHex(stringToUTF8Bytes(oldData));
-    newData = bytesToHex(stringToUTF8Bytes(newData));
+    //oldData = bytesToHex(stringToUTF8Bytes(oldData));
+    // newData = bytesToHex(stringToUTF8Bytes(newData));
     var dmp = new diff_match_patch();
     // var diff = dmp.diff_main((oldData), (newData));
     var diff = dmp.diff_main((oldData), (newData));
@@ -1406,8 +1406,8 @@ bootstrap_alert.warning = function (message, alert, timeout) {
         $("#floating_alert_" + id).alert('close');
     }, timeout);
 };
-bootstrap_alert.clear = function(){
-   $("div[id^=floating_alert]").remove();
+bootstrap_alert.clear = function () {
+    $("div[id^=floating_alert]").remove();
 };
 
 (function ($, undefined) {
@@ -2010,16 +2010,16 @@ function get_url_extension(url) {
 }
 
 function bytesToHex(bytes) {
-  return Array.from(
-    bytes,
-    byte => byte.toString(16).padStart(2, "0")
-  ).join("");
+    return Array.from(
+            bytes,
+            byte => byte.toString(16).padStart(2, "0")
+    ).join("");
 }
 
 // You almost certainly want UTF-8, which is
 // now natively supported:
 function stringToUTF8Bytes(string) {
-  return new TextEncoder().encode(string);
+    return new TextEncoder().encode(string);
 }
 
 function hexToBytes(hex) {
@@ -2073,13 +2073,13 @@ $(function () {
 //    };
     initDateEdit = function (elem) {
         $(elem).datetimepicker({
-            format:'Y-m-d H:i'
+            format: 'Y-m-d H:i'
         });
     };
 
     initDateTimeEdit = function (elem) {
         $(elem).datetimepicker({
-            format:'Y-m-d H:i'
+            format: 'Y-m-d H:i'
         });
     };
     initDateSearch = function (elem) {

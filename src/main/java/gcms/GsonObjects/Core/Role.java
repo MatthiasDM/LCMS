@@ -6,7 +6,7 @@
 package gcms.GsonObjects.Core;
 
 import java.util.List;
-import gcms.GsonObjects.annotations.MdmAnnotations;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -14,7 +14,7 @@ import gcms.GsonObjects.annotations.MdmAnnotations;
  */
 public class Role {
 
-    @MdmAnnotations(
+    @gcmsObject(
             viewRole = "ICTMANAGER",
             createRole = "SYSTEM",
             //editRole = "ICTMANAGER",
@@ -22,7 +22,7 @@ public class Role {
             visibleOnTable = false,
             visibleOnForm = false)
     public String roleid;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "string",
             editRole = "ICTMANAGER",
             visibleOnTable = true

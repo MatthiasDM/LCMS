@@ -9,78 +9,13 @@
 
         <link rel="stylesheet" href="./JS/dependencies/jquery/jquery-ui.css">
         <link rel="stylesheet" href="./JS/dependencies/bootstrap/bootstrap_themes/4.4.1/flatly/bootstrap.min.css">
+        <link rel="stylesheet" href="./JS/dependencies/codemirror/codemirror.min.css">
         <link rel="stylesheet" href="./JS/dependencies/font-awesome.min.css">
         <link rel="stylesheet" href="./JS/dependencies/jqGridFree/css/ui.jqgrid.min.css">
         <link rel="stylesheet" type="text/css" media="screen" href="./CSS/jquery.jexcel.css" />
         <link rel="stylesheet" href="./JS/dependencies/datetimepicker/jquery.datetimepicker.min.css"/>  
         <link rel="stylesheet" type="text/css" media="screen" href="./JS/dependencies/BootSlideMenu/css/BootSideMenu.css" />
-        <script data-main="./JS/app.js" src="./JS/require.js"></script>
-      <!--  <script>
-            require.config({
-                baseUrl: './JS/dependencies',
-                paths: {
-                    jquery: 'jquery/jquery',
-                    popper: ('jquery/popper.min'),
-                    bootstrap: ('bootstrap/bootstrap.bundle.min'),
-                    ckeditor: ('ckeditor/ckeditor'),
-                    gcms_core: ('gcms/core'),
-                    gcms_grid: ('gcms/grid'),
-                    gcms_editablepage: "gcms/editablepage",
-                    gcms_gridcontroller: ('gcms/gridcontroller'),
-                    gcms_griddata: ('gcms/griddata'),
-                    gcms_gridform: ('gcms/gridform'),
-                    gcms_imagecontroller: ('gcms/imagecontroller'),
-                    gcms_lang_nl: ('gcms/lang.nl'),
-                    gcms_ckconfig: "gcms/ckconfig",
-                    jquerycookie: ('jquery/jquery.cookie'),
-                    //jqueryui = require('jquery/jquery-ui'),
-                    //jquerytether = require('jquery/tether.min'),
-                    moment: ('moment/moment')
-                },
-                shim: {
-                    gcms_core: ['jquery']                    
-                }
-
-            });
-
-        </script>-->
-
-        <!-- <script src="./JS/dependencies/jquery/jquery.js"  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="  crossorigin="anonymous"></script>
-         <script src="./JS/dependencies/jquery/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-         <script src="./JS/dependencies/bootstrap/bootstrap.min.js" crossorigin="anonymous"></script>
-         <script src="./JS/dependencies/jquery/jquery.cookie.js"></script>
-         <script src="./JS/dependencies/jquery/jquery-ui.js"></script>
-         <script src="./JS/dependencies/jquery/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>        
-         <script src="./JS/dependencies/moment/moment.js"></script>
-         <script src="./JS/dependencies/moment/nl.js"></script> 
-         <script src="./JS/dependencies/jqGridFree/js/jquery.jqgrid.min.js"></script>
-         <script src="./JS/dependencies/PapaParse/papaparse.min.js"></script>
-         <script src="./JS/dependencies/iframeresizer/iframeResizer.min.js"></script> 
-         <script src="./JS/dependencies/jexcel/jquery.jexcel.js"></script>
-         <script src="./JS/dependencies/jexcel/underscore-min.js"></script>
-         <script src="./JS/dependencies/jexcel/underscore.string.js"></script>
-         <script src="./JS/dependencies/jexcel/jstat.min.js"></script>
-         <script src="./JS/dependencies/jexcel/numeric.min.js"></script>
-         <script src="./JS/dependencies/jexcel/numeral.min.js"></script>
-         <script src="./JS/dependencies/jexcel/excel-formula.min.js"></script>
-         <script src="./JS/dependencies/diffMatchPatch/diff_match_patch.js"></script>
-         <script src="./JS/dependencies/dropzone/dropzone.min.js"></script>
-         <script src="./JS/dependencies/filesaver/FileSaver.js"></script>
-         <script src="./JS/dependencies/chartjs/Chart.bundle.js"></script>
-         <script src="./JS/dependencies/tinycolor/tinycolor.min.js"></script>
-         <script src="./JS/ckeditor/ckeditor.js"></script>
-         <script src="./JS/dependencies/BootSlideMenu/js/BootSideMenu.js"></script>
- 
-         <script id="zxingscript" src="./JS/dependencies/zxing/zxing.min.js" type="text/javascript"></script>
-         <script src="./JS/dependencies/datetimepicker/jquery.datetimepicker.full.min.js"></script>
-         <script src="./JS/lang.nl.js"></script>
-         <script src="./JS/interface.js"></script>
-         <script src="./JS/servletCalls.js"></script>
-         <script src="./JS/jqgridInitialize.js"></script>
-         <script src="./JS/custom/ckconfig/config.js"></script>
-         <script src="./JS/custom/jqgridfree/custom.js"></script>
-         <script src="./JS/custom/lcms/lcms.js"></script>
-        -->
+        <script data-main="./JS/app.js" src="./JS/require.js"></script>  
         <link rel="stylesheet" href="./CSS/style.css">
         <link rel="stylesheet" href="./CSS/export.css">
     </head>
@@ -102,38 +37,12 @@
             </div>
             <div class="container col-lg-12 flex-row" id="text-jumbo-crumbs" style='padding: .3rem; margin-bottom: 0'></div>
             <div class="container col-lg-12 flex-row" id="navbar-extra"></div>  
-
         </nav> 
-
-
-
 
         <div class="jumbotron" id="jumbotron" style="padding: 3rem 4rem;">            
             <h1 class="display-5" id="text-jumbo-heading"></h1>
             <p class="lead" id="text-jumbo-info"></p>
-        </div>
-
-      <!-- <script>
-            require([
-                "jquery",
-                "jquerycookie",
-                "gcms_lang_nl",
-                "gcms_editablepage",
-                "gcms_grid",
-                "gcms_gridform",
-                "gcms_gridcontroller",
-                "gcms_imagecontroller",
-                "gcms_ckconfig",
-                "gcms_core",
-                "popper",
-                "bootstrap",
-                "ckeditor"
-            ], function (a) {
-                page_doLoadPage(getUrlParam(window.location.href, "p"), $("body"));
-            });
-        </script>
-
-
+        </div>   
 
     </body>
 </html>

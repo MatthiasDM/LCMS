@@ -55,7 +55,6 @@ import gcms.GsonObjects.Core.User;
 import gcms.database.DatabaseActions;
 import gcms.database.DatabaseWrapper;
 import gcms.credentials.Cryptography;
-import gcms.GsonObjects.annotations.MdmAnnotations;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -67,6 +66,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.jasypt.util.password.StrongPasswordEncryptor;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -83,6 +83,8 @@ public class Core {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
         //mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 
         return mapper;
@@ -243,7 +245,7 @@ public class Core {
             DatabaseActions.editSessionValidity(_sessionId, 9999 * -1);
         }
         deleteTempDir(_sessionId, path);
-    } 
+    }
 
     public static boolean checkUserRole(String _cookie, Roles _role) {
         Session session = DatabaseActions.getSession(_cookie);
@@ -395,17 +397,17 @@ public class Core {
         if (fields.size() > 0) {
             if ("view".equals(type)) {
                 systemfields = fields.stream().
-                        filter(p -> p.getAnnotation(MdmAnnotations.class).viewRole().equals("SYSTEM")).
+                        filter(p -> p.getAnnotation(gcmsObject.class).viewRole().equals("SYSTEM")).
                         collect(Collectors.toList());
             }
             if ("edit".equals(type)) {
                 systemfields = fields.stream().
-                        filter(p -> p.getAnnotation(MdmAnnotations.class).editRole().equals("SYSTEM")).
+                        filter(p -> p.getAnnotation(gcmsObject.class).editRole().equals("SYSTEM")).
                         collect(Collectors.toList());
             }
             if ("create".equals(type)) {
                 systemfields = fields.stream().
-                        filter(p -> p.getAnnotation(MdmAnnotations.class).createRole().equals("SYSTEM")).
+                        filter(p -> p.getAnnotation(gcmsObject.class).createRole().equals("SYSTEM")).
                         collect(Collectors.toList());
             }
         } else {
@@ -581,7 +583,7 @@ public class Core {
         List<String> hashFields = requestParameters.keySet().stream().filter((String k) -> {
             try {
                 Field f = cls.getField(k);
-                return f.getAnnotation(MdmAnnotations.class).type().equals("encrypted");
+                return f.getAnnotation(gcmsObject.class).type().equals("encrypted");
             } catch (NoSuchFieldException | SecurityException ex) {
                 Logger.getLogger(Core.class.getName()).log(Level.INFO, ex.getMessage());
                 return false;
@@ -700,7 +702,7 @@ public class Core {
         StringBuffer allLines = new StringBuffer();
         try {
             for (File f : files) {
-                allLines.append(readAllLines(new StringBuffer(), f.toPath(), "UTF-8"));              
+                allLines.append(readAllLines(new StringBuffer(), f.toPath(), "UTF-8"));
             }
         } catch (Exception e) {
             Logger.getLogger(Core.class

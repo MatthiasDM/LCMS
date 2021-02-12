@@ -7,11 +7,11 @@ package gcms.GsonObjects.Other;
 
 import java.util.HashMap;
 import java.util.List;
-import gcms.GsonObjects.annotations.MdmAnnotations;
 import org.apache.commons.lang3.builder.DiffBuilder;
 import org.apache.commons.lang3.builder.DiffResult;
 import org.apache.commons.lang3.builder.Diffable;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
@@ -19,7 +19,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  */
 public class ICTTicket {
 
-    @MdmAnnotations(
+    @gcmsObject(
             //viewRole = "ICTMANAGER",
             createRole = "SYSTEM",
             //editRole = "SYSTEM",
@@ -28,18 +28,18 @@ public class ICTTicket {
             visibleOnTable = false,
             visibleOnForm = false)
     public String ticketid;
-    @MdmAnnotations(
+    @gcmsObject(
             viewRole = "SYSTEM",
             createRole = "SYSTEM",
             editRole = "SYSTEM",
             type = "string")
     public String number;
-    @MdmAnnotations(
+    @gcmsObject(
             editRole = "ICTMANAGER",
             createRole = "LABASSISTANT",
             type = "string")
     public String subject;
-    @MdmAnnotations(
+    @gcmsObject(
             editRole = "ICTMANAGER",
             //viewRole = "ICTMANAGER",
             type = "select",
@@ -47,26 +47,26 @@ public class ICTTicket {
             choices = {"Glims", "Cyberlab", "Sharepoint", "Hardware", ""}
     )
     public String category;
-    @MdmAnnotations(
+    @gcmsObject(
             editRole = "ICTMANAGER",
             //viewRole = "ICTMANAGER",
             type = "string",
             createRole = "ICTMANAGER"
     )
     public String discriminator;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "cktext",
             editRole = "ICTMANAGER",
             createRole = "LABASSISTANT",
             visibleOnTable = false)
     public String overview;
-    @MdmAnnotations(
+    @gcmsObject(
             editRole = "ICTMANAGER",
             createRole = "ICTMANAGER",
             type = "cktext",
             visibleOnTable = false)
     public String followup;
-    @MdmAnnotations(
+    @gcmsObject(
             editRole = "ICTMANAGER",
             createRole = "LABASSISTANT",
             //viewRole = "ICTMANAGER",
@@ -74,7 +74,7 @@ public class ICTTicket {
             choices = {"Gemeld", "Analyse", "Validatie", "Voltooid"}
     )
     public String status;
-    @MdmAnnotations(
+    @gcmsObject(
             editRole = "ICTMANAGER",
             viewRole = "ICTMANAGER",
             createRole = "ICTMANAGER",
@@ -84,7 +84,7 @@ public class ICTTicket {
             visibleOnTable = false
     )
     public List<String> involved_persons;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "select",
             viewRole = "ICTMANAGER",
             reference = {"Mongo", "users", "userid", "username"},
@@ -93,14 +93,14 @@ public class ICTTicket {
             visibleOnTable = false
     )
     public String approver;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "boolean",
             visibleOnTable = false,
             editRole = "@approver",
             viewRole = "@approver"
     )
     public boolean approved;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "datetime",
             visibleOnTable = false,
             visibleOnForm = false,
@@ -108,14 +108,14 @@ public class ICTTicket {
             createRole = "SYSTEM",
             editRole = "SYSTEM")
     public long approved_on;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "datetime",
             visibleOnTable = true,
             visibleOnForm = false,
             editRole = "ICTMANAGER",
             createRole = "SYSTEM")
     public long created_on;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "ref",
             visibleOnTable = false,
             visibleOnForm = false,
@@ -123,14 +123,14 @@ public class ICTTicket {
             createRole = "SYSTEM",
             editRole = "ICTMANAGER")
     public String created_by;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "datetime",
             visibleOnTable = false,
             visibleOnForm = true,
             createRole = "SYSTEM",
             editRole = "SYSTEM")
     public long edited_on;
-    @MdmAnnotations(
+    @gcmsObject(
             type = "json",
             visibleOnTable = false,
             visibleOnForm = true,

@@ -116,7 +116,6 @@ class LCMSGrid {
             var selRows = $("#" + gridData.tableObject).jqGrid("getGridParam", "selarrrow");
             var idColumn = typeof (gridParam.idColumn) !== "undefined" ? gridParam.idColumn : "id";
             var selRowsData = Object.filter(gridParam.data, item => selRows.includes(String(item[idColumn])) === true);
-
             var arr = [];
             async function callFullRowDataRequest(selRowsData) {
                 console.log("start");
@@ -438,6 +437,11 @@ class LCMSGrid {
                         me.popupEdit(rowid);
                     }
                 }
+                if (typeof gridData.jqGridOptions.selectToInlineEdit !== "undefined") {
+                    if (gridData.jqGridOptions.selectToInlineEdit === true) {
+                        editRow(rowid);
+                    }
+                }
             },
             newItem: me.popupEdit,
             colModelData: colModelData,
@@ -447,23 +451,24 @@ class LCMSGrid {
             pginput: false
 
         };
-        var parameters = {
-            navGridParameters: {add: true, edit: false, del: false, save: false, cancel: false,
-                addParams: {
-                    position: "last",
-                    addRowParams: {
-                        keys: true,
-                        extraparam: {oper: 'add', action: me.gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
-                    }
-                },
-                editParams: {
-                    editRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
-                        extraparam: {action: me.gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
-
-                    }//23045
-                }
-            }
-        };
+        var parameters = {};
+//        var parameters = {
+//            navGridParameters: {add: true, edit: false, del: false, save: false, cancel: false,
+//                addParams: {
+//                    position: "last",
+//                    addRowParams: {
+//                        keys: true,
+//                        extraparam: {oper: 'add', action: me.gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
+//                    }
+//                },
+//                editParams: {
+//                    editRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
+//                        //extraparam: {action: me.gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
+//                        extraparam: {test: "test"}
+//                    }//23045
+//                }
+//            }
+//        };
         if (typeof me.gridData.jqGridOptions !== "undefined") {
             if (typeof me.gridData.jqGridOptions.summaries !== "undefined") {
                 jqgridOptions.summaries = me.gridData.jqGridOptions.summaries;
@@ -604,6 +609,7 @@ class LCMSGrid {
                     });
                     var jqgridOptions = {
                         data: tabelData,
+                        //datatype: "local",
                         datatype: "local",
                         colModel: me.colModel,
                         colNames: cols,
@@ -620,7 +626,7 @@ class LCMSGrid {
                         rowNum: 150,
                         mtype: 'POST',
                         altRows: true,
-                        editurl: gridData.editUrl,
+                        editurl: gridData.editUrl, //me.gridData.jqGridOptions.url,
                         loadonce: true,
                         ondblClickRow: editRow,
                         pager: "#" + gridData.pagerID,
@@ -629,6 +635,11 @@ class LCMSGrid {
                             if (typeof gridData.jqGridOptions.selectToEdit !== "undefined") {
                                 if (gridData.jqGridOptions.selectToEdit === true) {
                                     me.popupEdit(rowid);
+                                }
+                            }
+                            if (typeof gridData.jqGridOptions.selectToInlineEdit !== "undefined") {
+                                if (gridData.jqGridOptions.selectToInlineEdit === true) {
+                                    editRow(rowid);
                                 }
                             }
                         },
@@ -640,54 +651,44 @@ class LCMSGrid {
                         pginput: false
 
                     };
-                    var parameters = {
+                    //var parameters = {};
+                    var parameters = {//is replaced with me.griddata.jqgridparameters if available
                         navGridParameters: {add: true, edit: false, del: false, save: false, cancel: false,
-                            addParams: {
-                                position: "last",
-                                addRowParams: {
-                                    keys: true,
-                                    extraparam: {oper: 'add', action: me.gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
-                                }
-                            },
-                            editParams: {
-                                editRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
-                                    extraparam: {action: me.gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
-
-                                }//23045
-                            }
+//                            addParams: {
+////                                position: "last",
+////                                addRowParams: {
+////                                    keys: true,
+////                                    mtype: "PUT",
+////                                    extraparam: {oper: 'add', action: me.gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
+////                                }
+//                            },
+//                            editParams: {
+//                                editRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
+////                                    keys: true,
+////                                    serializeEditData: function (postdata) {console.log("testje hoelijkl")},
+////                                    mtype: "POST",
+////                                    extraparam: {action: me.gridData.editAction, LCMS_session: $.cookie('LCMS_session')},
+////                                    url: me.gridData.editAction
+//                                }
+//                            }
                         }
                     };
+                    replaceProperties(parameters, me.gridData.jqGridParameters);
                     if (typeof me.gridData.jqGridOptions.summaries !== "undefined") {
                         jqgridOptions.summaries = me.gridData.jqGridOptions.summaries;
                         jqgridOptions.footerrow = true;
                         jqgridOptions.userDataOnFooter = true;
-//            jqgridOptions.loadComplete = function () {
-//                var sumJson = {};
-//                var grid = $(this);
-//                gridData.jqGridOptions.summaries.forEach(function (a) {
-//                    sumJson[a] = grid.jqGrid("getCol", a, false, "sum");
-//                });
-//                $(this).jqGrid("footerData", "set", sumJson);
-//            };
                     }
                     if (typeof me.gridData.jqGridOptions.groups !== "undefined") {
 
                         jqgridOptions.grouping = true;
                         jqgridOptions.groupingView = {
                             groupField: me.gridData.jqGridOptions.groups,
-//                groupColumnShow: [true],
                             groupText: ['<b>{0} - {1} Item(s) </b>'],
-//                groupCollapse: false,
-//                groupSummaryPos: ["header"],
-//                groupSummary: [false]
-
-
-                            //hideFirstGroupCol: true,
                             showSummaryOnHide: false,
                             groupColumnShow: [true],
                             groupSummaryPos: ["footer"],
                             groupSummary: [false]
-
                         };
                     } else {
                         jqgridOptions.grouping = false;
@@ -736,6 +737,23 @@ class LCMSGrid {
                         delete jqgridOptions["data"];
                     }
 
+                    if (me.gridData.jqGridOptions.rest === true) {
+                        jqgridOptions.dataType = "json";
+                        jqgridOptions.contentType = "application/json; charset=utf-8";
+                        jqgridOptions.ajaxGridOptions = {contentType: 'application/json; charset=utf-8'};
+                        jqgridOptions.editurl = me.gridData.jqGridOptions.url;
+                        jqgridOptions.serializeRowData = function (data) {
+                            //delete data.id;
+                            console.log("serializeRowData");
+                            return JSON.stringify(data);
+                        };
+                        $.extend($.jgrid.defaults, {
+                            datatype: 'json',
+                            ajaxGridOptions: {contentType: "application/json"},
+                            ajaxRowOptions: {contentType: "application/json", type: "POST"}
+                        });
+                    }
+
                     jqgridOptions.loadComplete = function () {
                         console.log("firing loadComplete");
                         var grid = $(this);
@@ -756,13 +774,39 @@ class LCMSGrid {
                         return el !== null;
                     });
                     $("#" + me.gridData.tableObject).jqGrid(jqgridOptions);
-                    replaceProperties(parameters, me.gridData.jqGridParameters);
+                    //replaceProperties(parameters, me.gridData.jqGridParameters);
+                    $.extend($.jgrid.defaults, {
+                        ajaxRowOptions: {
+                            beforeSend: function () {
+                                alert('Before Row Send');
+                            }
+                        }
+                    });
                     var lastSelection;
                     function editRow(id) {
                         if (id && id !== lastSelection) {
+                            console.log("editRow");
                             var grid = $("#" + me.gridData.tableObject);
                             grid.jqGrid('restoreRow', lastSelection);
-                            grid.jqGrid('editRow', id, parameters.editParameters);
+                            //grid.jqGrid('editRow', id, parameters.navGridParameters.editParams.editRowParams);
+
+                            var editparameters = {
+                                keys: true,
+                                oneditfunc: function () {
+                                    console.log("oneditfunc");
+                                },
+                                successfunc: function () {
+                                    console.log("successfunc");
+                                },
+                                //url: me.gridData.jqGridOptions.url,
+                                url: me.gridData.editurl,
+                                extraparam: {},
+                                aftersavefunc: function () {
+                                    console.log("aftersavefunc");
+                                },
+                                mtype: "POST"
+                            };
+                            grid.jqGrid('editRow', id, editparameters);
                             lastSelection = id;
                         }
                     }
@@ -781,6 +825,15 @@ class LCMSGrid {
 
                     $("#" + me.gridData.tableObject).inlineNav("#" + me.gridData.pagerID, parameters.navGridParameters);
                     $("#" + me.gridData.tableObject).jqGrid("filterToolbar");
+                    if (typeof gridData.jqGridOptions.bindkeys !== "undefined") {
+                        if (gridData.jqGridOptions.bindkeys === true) {
+                            $("#" + me.gridData.tableObject).jqGrid('bindKeys', {
+                                "onEnter": function (rowid) {
+                                    editRow(rowid);
+                                }
+                            });
+                        }
+                    }
                     $(window).bind('resize', function () {
                         if (gridData.wrapperObject.width() > 100) {
                             $("#" + gridData.tableObject).setGridWidth(gridData.wrapperObject.width() - 10);
@@ -866,13 +919,16 @@ class LCMSGrid {
                     $(this).replaceWith("<div contenteditable='true' title=ckedit id='" + $(this).attr("id") + "'>" + $(this).val() + "</div>");
                 });
                 $("textarea[title=ckedit_code]").each(function (index) {
-                    //$(this).replaceWith("<div contenteditable='true' title=ckedit id='" + $(this).attr("id") + "'>" + $(this).val() + "</div>");
-                    CodeMirror.fromTextArea($(this));
+                    $(this).replaceWith("<div contenteditable='true' title=ckedit_code id='" + $(this).attr("id") + "'>" + $(this).val() + "</div>");
                 });
                 $("div[title=ckedit]").each(function (index) {
                     $(this).addClass("border rounded p-3");
-                    //   buildEditablePage("{\"parameters\":{\"public\":false},\"webPage\":\"\", \"grids\": {}}", $(this));
                     CKEDITOR.inline($(this).attr('id'));
+                });
+                $("div[title=ckedit_code]").each(function (index) {
+                    $(this).addClass("border rounded p-3");
+                    CKEDITOR.replace($(this).attr('id')).config.startupMode = 'source';
+
                 });
             },
             afterShowForm: function (formid) {
@@ -884,20 +940,10 @@ class LCMSGrid {
                 $("div[id^=editmod]").css('margin-left', '5%');
                 $("div[id^=editmod]").css('margin-right', '5%');
                 $("div[id^=editmod]").css('left', '');
-//                $("textarea[title=ckedit]").each(function (index) {100
-//                    CKEDITOR.replace($(this).attr('id'), {
-//                        customConfig: ' '
-//                    });  
-//                  //  CKEDITOR.inline($(this).attr('id'));
-//                });
-
                 scrollTo($($("input")[0]));
             },
             onclickSubmit: function (params, postdata) {
                 console.log("onclickSubmit()");
-//                $.each($("#FrmGrid_" + this.id).find("[type=checkbox]"), function (a, b) {
-//                    $(b).val(b.checked);
-//                });
                 var postdata = $("#FrmGrid_" + this.id).serializeObject();
                 var serialized = $("#FrmGrid_" + this.id).find("[type=checkbox]").map(function () {
                     postdata[this.name] = this.checked ? this.value : "false";
@@ -909,16 +955,22 @@ class LCMSGrid {
                     text = removeElements("nosave", text);
                     postdata[editorname] = text;
                 });
+                $("div[title=ckedit_code]").each(function (index) {
+                    console.log("getting data from ckeditor source mode instance...");
+                    var editorname = $(this).attr('id');
+                    var editorinstance = CKEDITOR.instances[editorname];                  
+                    var text = editorinstance.getData();
+                    //text = removeElements("nosave", text);
+                    postdata[editorname] = text;
+                });
                 var colModel = $("#" + this.id).jqGrid("getGridParam").colModel;
                 var filteredModel = Object.filter(colModel, function (a) {
                     console.log(a.type);
                     if (a.formatter === "date" || a.type === "datetime") {
-                        //postdata[a.name] = moment().valueOf();// return moment(cellvalue).utcOffset(60).format("Y-MM-DD H:mm");
                         postdata[a.name] = moment(postdata[a.name]).valueOf();
                     } else {
                         return false;
                     }
-                    ;
                 });
                 $.each(filteredModel, function (a, b) {
                     var value = postdata[b.label];
@@ -943,7 +995,13 @@ class LCMSGrid {
                 }
 
             },
-            editData: {action: gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
+            editData: {
+                // action: gridData.editAction,
+                // LCMS_session: $.cookie('LCMS_session'),
+                // url: me.gridData.editAction
+            },
+            url: me.gridData.editAction,
+            mtype: "POST"
         }
 
         );
@@ -986,10 +1044,7 @@ class LCMSGrid {
             }
         });
         console.log("show first tab");
-                $("#" + tabId + " a[id='pill0']").tab('show');
-
-
-
+        $("#" + tabId + " a[id='pill0']").tab('show');
         return pills;
     }
 
