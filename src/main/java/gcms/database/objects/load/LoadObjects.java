@@ -16,6 +16,8 @@ import static com.mongodb.client.model.Projections.include;
 import gcms.Config.Roles;
 import gcms.Core;
 import gcms.GsonObjects.Core.MongoConfigurations;
+import gcms.GsonObjects.Other.SerializableClass;
+import gcms.GsonObjects.Other.SerializableField;
 import gcms.database.DatabaseActions;
 import static gcms.database.DatabaseActions.getDocumentPriveleges;
 import gcms.database.DatabaseWrapper;
@@ -31,6 +33,9 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import static gcms.database.DatabaseActions.getObjectsFromDatabase;
 import gcms.GsonObjects.annotations.gcmsObject;
+import static gcms.database.DatabaseActions.getPriveleges;
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
 
 /**
  *
@@ -54,6 +59,14 @@ public class LoadObjects {
 
     //OBJECT SPECIFIC   
     public static ObjectNode getObjects(String cookie, MongoConfigurations _mongoConf, String tableName, Bson filter, String[] excludes) throws ClassNotFoundException, NoSuchFieldException, IOException {
+        SerializableClass serializableClass = new SerializableClass();
+        if (_mongoConf.getPluginName() != null) {
+            serializableClass = Core.getFields(_mongoConf, cookie);
+        }else{
+            serializableClass.setClassName(_mongoConf.getClassName());
+            serializableClass.convertFields(Arrays.asList(Class.forName(_mongoConf.getClassName()).getDeclaredFields()));
+        }
+
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, filter, null, 1000, excludes, true);
@@ -63,12 +76,24 @@ public class LoadObjects {
         ArrayList<HashMap> header = new ArrayList<>();
         ArrayList<HashMap> table = new ArrayList<>();
         HashMap tableEntry = new HashMap();
+
         for (String column : columns) {
-            Class cls = Class.forName(_mongoConf.getClassName());
-            Field field = cls.getField(column);
-            gcmsObject mdmAnnotations = field.getAnnotation(gcmsObject.class);
+
+            //get field from plugin            
+            //hier nog aanpassen + annotation meesturen met classjson
+            SerializableField serializableField = serializableClass.getFields().stream().filter(f -> f.getName().equals(column)).findFirst().get();
+            String fieldName = serializableField.getName();
+            Annotation fieldAnnotation = serializableField.getAnnotation();
+            gcmsObject mdmAnnotations = (gcmsObject) fieldAnnotation;
+            
+           
+
+            //Class cls = Class.forName(_mongoConf.getClassName());
+            //Field field = cls.getField(column);
+
+            //gcmsObject mdmAnnotations = field.getAnnotation(gcmsObject.class);
             HashMap headerEntry = new HashMap();
-            headerEntry.put("name", field.getName());
+            headerEntry.put("name", fieldName);
             if (mdmAnnotations != null) {
                 headerEntry.put("type", mdmAnnotations.type());
                 headerEntry.put("visibleOnTable", mdmAnnotations.visibleOnTable());
@@ -110,7 +135,7 @@ public class LoadObjects {
                 }
             }
             header.add(headerEntry);
-            tableEntry.put(field.getName(), "");
+            tableEntry.put(fieldName, "");
         }
         if (!results.isEmpty()) {
             jsonData.put("table", mapper.writeValueAsString(results));
@@ -121,8 +146,8 @@ public class LoadObjects {
         return jsonData;
 
     }
-    
-       public static ArrayList<Document> getObjectsList(String _cookie, MongoConfigurations mongoConf, List<String> columns) throws ClassNotFoundException {
+
+    public static ArrayList<Document> getObjectsList(String _cookie, MongoConfigurations mongoConf, List<String> columns) throws ClassNotFoundException {
 
         ArrayList<Document> results = null;
         try {
@@ -130,11 +155,11 @@ public class LoadObjects {
             results = ObjectItems.find().projection(
                     fields(include(columns))
             ).into(new ArrayList<>());
-        } catch (ClassNotFoundException ex) {            
+        } catch (ClassNotFoundException ex) {
             Logger.getLogger(LoadObjects.class.getName()).log(Level.SEVERE, ex.getMessage());
             return results;
         }
         return results;
     }
-    
+
 }

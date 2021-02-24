@@ -799,7 +799,7 @@ class LCMSGrid {
                                     console.log("successfunc");
                                 },
                                 //url: me.gridData.jqGridOptions.url,
-                                url: me.gridData.editurl,
+                                //url: me.gridData.editurl,
                                 extraparam: {},
                                 aftersavefunc: function () {
                                     console.log("aftersavefunc");
@@ -996,11 +996,11 @@ class LCMSGrid {
 
             },
             editData: {
-                // action: gridData.editAction,
-                // LCMS_session: $.cookie('LCMS_session'),
+                action: gridData.editAction,
+                LCMS_session: $.cookie('LCMS_session'),
                 // url: me.gridData.editAction
             },
-            url: me.gridData.editAction,
+            //url: me.gridData.editAction,
             mtype: "POST"
         }
 

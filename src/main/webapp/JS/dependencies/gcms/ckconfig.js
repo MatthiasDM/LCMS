@@ -39,7 +39,7 @@ function config2(publicPage) { //for inline editing
 
         config.templates_files = ['./JS/ckeditor/plugins/templates/templates/defaultLCMS.js'];
         config.templates_replaceContent = false;
-        config.extraPlugins = 'codesnippet,pre,codemirror,sourcedialog,widget,dialog,mdmjexcel,templates,plantuml';
+        config.extraPlugins = 'codesnippet,pre,codemirror,sourcedialog,widget,dialog,templates,plantuml,luckysheet';
         config.format_tags = 'div';
         config.removeButtons = 'Source,Save,Undo,Cut,Redo,Copy,MenuButton,Preview,Print,PasteText,Paste,PasteFromWord,Find,Replace,SelectAll,Scayt,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,NewPage,Outdent,Indent,CreateDiv,Blockquote,JustifyLeft,JustifyCenter,JustifyRight,JustifyBlock,Language,BidiRtl,Unlink,BidiLtr,Flash,Table,HorizontalRule,Smiley,SpecialChar,PageBreak,Iframe,Format,Font,Maximize,ShowBlocks,About,RemoveFormat,CopyFormatting,Subscript,Superscript';//Anchor
         config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';
@@ -56,7 +56,7 @@ function config2(publicPage) { //for inline editing
         CKEDITOR.dtd.$removeEmpty['i'] = false;
         console.log("pushing protected source");
         config.protectedSource.push(/<([\S]+)[^>]*class="preserve"[^>]*>.*<\/\1>/g);
-
+        config.extraAllowedContent = 'button';
         config.codemirror = {
             //  theme: 'abcdef'
         };

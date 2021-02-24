@@ -118,7 +118,7 @@ lang = {
         createRole: "Aanmaken"
     },
     roles: {
-        title: "Rollen"        
+        title: "Rollen"
     },
     mongoconfigurations: {
         title: "Databaseobjecten"
@@ -159,7 +159,8 @@ lang = {
         category: "Categorie",
         department: "Departement",
         info: "Extra informatie"
-    }
+    },
+    contacts: {}
 
 };
 

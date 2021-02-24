@@ -31,7 +31,8 @@ require.config({
         datetimepicker: 'datetimepicker/jquery.datetimepicker.full.min',
         jqueryui: ('jquery/jquery-ui'),
         tether: ('jquery/tether.min'),
-        dmp: ('diffMatchPatch/diff_match_patch')
+        dmp: ('diffMatchPatch/diff_match_patch'),
+        iframeresizer: ('iframeresizer/iframeResizer.min')
     },
     map: {
         'jQuery': {jquery: 'jquery/jquery'}
@@ -78,6 +79,7 @@ require([
     "bootstrap",
     "ckeditor",
     "jqgrid",
+    "iframeresizer",
     "dmp"
 ], function ($) {
     console.log("all sources required");

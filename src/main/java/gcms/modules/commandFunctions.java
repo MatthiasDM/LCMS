@@ -341,7 +341,7 @@ public class commandFunctions {
         return sb;
     }
     
-    private static StringBuilder command_doAPICall(Map<String, String> parameters, Command command) throws IOException, ClassNotFoundException {
+    public static StringBuilder command_doAPICall(Map<String, String> parameters, Command command) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
         ObjectMapper mapper = new ObjectMapper();

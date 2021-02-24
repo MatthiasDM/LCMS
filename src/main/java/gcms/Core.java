@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.MapType;
@@ -47,11 +48,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import gcms.Config.Roles;
 import gcms.GsonObjects.Core.Apikey;
-import gcms.GsonObjects.Core.Command;
 import gcms.GsonObjects.Core.FileObject;
 import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.GsonObjects.Core.Session;
 import gcms.GsonObjects.Core.User;
+import gcms.GsonObjects.Other.SerializableClass;
+import gcms.GsonObjects.Other.SerializableField;
 import gcms.database.DatabaseActions;
 import gcms.database.DatabaseWrapper;
 import gcms.credentials.Cryptography;
@@ -61,12 +63,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
-import java.util.Iterator;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 import gcms.GsonObjects.annotations.gcmsObject;
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 
 /**
  *
@@ -108,11 +112,17 @@ public class Core {
             // byte[] postDataBytes = postData.toString().getBytes("UTF-8");
             // con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             //con.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-            receiver = receiver + "&" + postData.toString();
+            if (receiver.contains("?")) {
+                receiver = receiver + "&" + postData.toString();
+            } else {
+                receiver = receiver + "?" + postData.toString();
+            }
+
         }
         URL url = new URL(receiver);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestProperty("Content-Type", "text/plain; charset=utf-8");
         con.setRequestMethod(method.toUpperCase());
         con.setConnectTimeout(300000);
         con.setReadTimeout(300000);
@@ -767,6 +777,59 @@ public class Core {
         fileObject.setContent_type(_contenttype);
         fileObject.setAccesstype(_accesstype);
         return fileObject;
+    }
+
+    public static SerializableClass getFields(MongoConfigurations mongoconf, String _cookie) {
+        List<Field> fields = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        HashMap<String, String> parameters = new HashMap<>();
+        HashMap<String, String> extra = new HashMap<>();
+        SerializableClass serializableClass = new SerializableClass();
+        try {
+            extra.put("className", mongoconf.getClassName());
+            parameters.put("LCMS_session", _cookie);
+            parameters.put("action", "docommand");
+            parameters.put("k", mongoconf.getPluginName());
+            parameters.put("extra", Core.universalObjectMapper.writeValueAsString(extra));
+            sb.append(Core.httpRequest("http://localhost:8081/LCMS/servlet/", "post", Core.universalObjectMapper.writeValueAsString(parameters)));
+            JsonNode parentJson = Core.universalObjectMapper.readTree(sb.toString());
+            String requestResult = parentJson.asText();
+            
+            serializableClass = Core.universalObjectMapper.readValue(requestResult, SerializableClass.class);
+        } catch (IOException ex) {
+            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+//        for (String resultEntry : apiResult) {
+//            SerializableField serializableField;
+//            try {
+//                serializableField = Core.universalObjectMapper.readValue(resultEntry, SerializableField.class);
+//                serializableFields.add(serializableField);
+//            } catch (IOException ex) {
+//                Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//
+//        }
+        return serializableClass;
+
+    }
+
+    public Object readBytesIntoFields(byte[] yourBytes) throws IOException, ClassNotFoundException {
+        Object o;
+        ByteArrayInputStream bis = new ByteArrayInputStream(yourBytes);
+        ObjectInput in = null;
+        try {
+            in = new ObjectInputStream(bis);
+            o = in.readObject();
+
+        } finally {
+
+            if (in != null) {
+                in.close();
+            }
+
+        }
+        return o;
     }
 
 }

@@ -56,6 +56,8 @@ import gcms.GsonObjects.Core.Backlog;
 import gcms.GsonObjects.Core.FileObject;
 import gcms.GsonObjects.Core.Rights;
 import gcms.GsonObjects.Core.User;
+import gcms.GsonObjects.Other.SerializableClass;
+import gcms.GsonObjects.Other.SerializableField;
 import gcms.modules.commandFunctions;
 import static gcms.database.DatabaseActions.updateObjectItemv2;
 import java.util.Timer;
@@ -358,11 +360,38 @@ public class DatabaseActions {
     public static List<String> getDocumentPriveleges(String _privelegeType, String _cookie, MongoConfigurations _mongoConf, boolean checkRights) throws ClassNotFoundException {
         List<String> columns = new ArrayList<>();
         try {
-            Class cls = Class.forName(_mongoConf.getClassName());
-            String collection = _mongoConf.name;
-            columns = getPriveleges(_privelegeType, _cookie, checkRights, cls, collection);
+            if (_mongoConf.getPluginName()!= null) {
+                 columns = getPriveleges(_privelegeType, _cookie, false, _mongoConf);
+            } else {
+                Class cls = Class.forName(_mongoConf.getClassName());
+                String collection = _mongoConf.name;
+                columns = getPriveleges(_privelegeType, _cookie, checkRights, cls, collection);
+            }
+
         } catch (JsonProcessingException ex) {
             Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return columns;
+    }
+
+    public static List<String> getPriveleges(String _privelegeType, String _cookie, boolean checkRights, MongoConfigurations _mongoConf) throws ClassNotFoundException, JsonProcessingException {
+        List<String> columns = new ArrayList<>();
+        SerializableClass serializableClass = Core.getFields(_mongoConf, _cookie);
+        if (_mongoConf.getClassName().equals("MongoConfigurations") || _mongoConf.getClassName().equals("Actions")) {
+            columns = serializableClass.getFields().stream()
+                    .map(result -> result.getName())
+                    .collect(Collectors.toList());
+        } else {
+            for (SerializableField field : serializableClass.getFields()) {
+                gcmsObject mdmAnnotations = null;//field.getAnnotation();                
+                if (checkRights) {
+                    ArrayList<Document> rights = getRightsFromDatabase(_mongoConf.getName(), field.getName());
+                    columns.addAll(getColumnsFromAnnotations(_cookie, mdmAnnotations, _privelegeType, field, serializableClass.getFields()));
+
+                } else {
+                    columns.add(field.getName());
+                }
+            }
         }
         return columns;
     }
@@ -449,6 +478,55 @@ public class DatabaseActions {
         return columns;
     }
 
+      public static List<String> getColumnsFromAnnotations(String _cookie, gcmsObject mdmAnnotations, String _privelegeType, SerializableField field, List<SerializableField> fields) {
+        List<String> columns = new ArrayList<>();
+        List<String> userRoles;
+
+        if (mdmAnnotations != null) {
+            String role = "";
+            int roleVal = 2;
+            if (_privelegeType.equals("view")) {
+                role = mdmAnnotations.viewRole();
+                roleVal = mdmAnnotations.minimumViewRoleVal(); //2
+            } else if (_privelegeType.equals("edit")) {
+                role = mdmAnnotations.editRole();
+                roleVal = mdmAnnotations.minimumEditRoleVal(); //2
+            } else if (_privelegeType.equals("create")) {
+                role = mdmAnnotations.createRole();
+                roleVal = mdmAnnotations.minimumCreateRoleVal(); //2
+            }
+            if (_cookie != null) {
+                userRoles = getUserRoles(_cookie);
+                for (String userRole : userRoles) { //Loop over user roles
+                    if (role.equals("")) {
+                        if (gcms.Config.Roles.valueOf(userRole).getLevelCode() >= roleVal) {
+                            columns.add(field.getName());
+                            break;
+                        }
+                    } else {
+                        if (role.startsWith("@")) {
+                            String roleName = role.substring(1);
+                            String referencedField = fields.stream()
+                                    .filter(r -> r.getName().equals(roleName.substring(1)))
+                                    .findFirst()
+                                    .toString();
+                            if (getSession(_cookie).getUsername().equals(referencedField)) {
+                                columns.add(field.getName());
+                            }
+                        }
+
+                        if (userRole.equals(role)) {
+                            columns.add(field.getName());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return columns;
+    }
+
+    
     public static MongoCollection<Document> getObjectsFromDatabase(MongoConfigurations mongoConf) throws ClassNotFoundException {
         MongoCollection<Document> results = null;
         Class cls = Class.forName(mongoConf.className);
@@ -493,8 +571,6 @@ public class DatabaseActions {
         Document d = Document.parse(mapper.writeValueAsString(results.get(0)));
         return d;
     }
-
- 
 
     public static ArrayList<Document> getObjectsSpecificListv2(String _cookie, MongoConfigurations mongoConf, Bson bson, Bson sort, int limit, String[] excludes, boolean checkRights) throws ClassNotFoundException {
 
@@ -549,7 +625,7 @@ public class DatabaseActions {
 
     public static String patchText(Object _old, Object _patches) {
         if (!_old.toString().matches("^[0-9A-Fa-f]+$")) {
-           // _old = Hex.encodeHexString(_old.toString().getBytes());
+            // _old = Hex.encodeHexString(_old.toString().getBytes());
         }
 
         DiffMatchPatch dmp = new DiffMatchPatch();

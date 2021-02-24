@@ -60,19 +60,46 @@ public class MongoConfigurations {
     )
     public String idName;
 
+     @gcmsObject(
+            type = "string",
+            editRole = "ICTMANAGER",
+            createRole = "ICTMANAGER",
+            visibleOnTable = true
+    )
+    public String pluginName;
 
 
     public MongoConfigurations() {
+        
     }
 
-    public MongoConfigurations(String mongoconfigurationsid, String name, String database, String collection, String className, String idName) {
+    public MongoConfigurations(String mongoconfigurationsid, String name, String database, String collection, String className, String idName, String pluginName) {
         this.mongoconfigurationsid = mongoconfigurationsid;
         this.name = name;
         this.database = database;
         this.collection = collection;
         this.className = className;
         this.idName = idName;
+        this.pluginName = pluginName;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPluginName() {
+        return pluginName;
+    }
+
+    public void setPluginName(String pluginName) {
+        this.pluginName = pluginName;
+    }
+
+
 
 
  
