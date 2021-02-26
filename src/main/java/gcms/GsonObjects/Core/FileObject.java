@@ -6,11 +6,12 @@
 package gcms.GsonObjects.Core;
 
 import gcms.GsonObjects.annotations.gcmsObject;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  *
- * @author matmey
+ * @author Matthias
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class FileObject {
 
     @gcmsObject(

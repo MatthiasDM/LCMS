@@ -7,9 +7,11 @@ package gcms.database;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
+import gcms.Core;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -25,6 +27,11 @@ import static gcms.database.DatabaseActions.getEnviromentInfo;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import gcms.GsonObjects.annotations.gcmsObject;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import jdk.jfr.internal.LogLevel;
+import jdk.jfr.internal.LogTag;
+import jdk.jfr.internal.Logger;
 
 /**
  *
@@ -39,7 +46,7 @@ public class DatabaseWrapper {
         long now = Instant.now().toEpochMilli() / 1000;
 
         jsonParameters.put("userName", session.getUsername());
-        jsonParameters.put("timeout", session.getValidity() - now);    
+        jsonParameters.put("timeout", session.getValidity() - now);
         jsonData.put("webPage", loadWebFile("credentials/userinfo/index.html"));
         jsonData.set("parameters", jsonParameters);
 
@@ -62,19 +69,24 @@ public class DatabaseWrapper {
         jsonData.set("parameters", jsonParameters);
         return jsonData;
     }
-    
+
     public static ArrayList<Document> getObjectSpecificRawDatav2(String cookie, MongoConfigurations _mongoConf, Bson bson) throws ClassNotFoundException, NoSuchFieldException, IOException {
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, bson, null, 0, null, false);
         return results;
     }
 
     public static Map<String, Object> getObjectHashMapv2(String cookie, MongoConfigurations _mongoConf, Bson bson) throws ClassNotFoundException, JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, bson, null, 0, null, false);
+        String parseDocumentString = "";
+        try {
+            JsonNode actualObj = Core.universalObjectMapper.readTree(Core.universalObjectMapper.writeValueAsString(results.get(0)));
+            parseDocumentString = actualObj.toString();           
+        } catch (Exception e) {
+            System.out.println("Error Parsing document into String");
+        }
+        BasicDBObject obj = BasicDBObject.parse(parseDocumentString);
+        Map<String, Object> objHashMap = obj.entrySet().stream().collect(HashMap::new, (m, v) -> m.put(v.getKey(), v.getValue()), HashMap::putAll);
 
-        BasicDBObject obj = BasicDBObject.parse(mapper.writeValueAsString(results.get(0)));
-        Map<String, Object> objHashMap = obj.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
         return objHashMap;
     }
 
@@ -115,15 +127,12 @@ public class DatabaseWrapper {
         gcms.GsonObjects.Core.Actions action = null;
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("name", new BasicDBObject("$eq", _action));
-        MongoConfigurations actionsConfiguration = DatabaseActions.getMongoConfiguration("actions");    
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2("", actionsConfiguration, searchObject, null, 1000, new String[]{}, false);    
+        MongoConfigurations actionsConfiguration = DatabaseActions.getMongoConfiguration("actions");
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2("", actionsConfiguration, searchObject, null, 1000, new String[]{}, false);
         if (results.size() > 0) {
             action = mapper.convertValue(results.get(0), gcms.GsonObjects.Core.Actions.class);
         }
         return action;
     }
- 
-   
- 
 
 }

@@ -6,11 +6,12 @@
 package gcms.GsonObjects.Core;
 
 import gcms.GsonObjects.annotations.gcmsObject;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  *
  * @author Matthias
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Workflow {
 
     @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)

@@ -5,7 +5,6 @@
  */
 package gcms.GsonObjects.Other;
 
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import gcms.Core;
 import gcms.GsonObjects.annotations.gcmsObject;
@@ -15,9 +14,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 
 /**
  *
@@ -33,7 +32,7 @@ public class SerializableClass {
 
     public SerializableClass(String className) {
         this.className = className;
-    }   
+    }
 
     public String getClassName() {
         return className;
@@ -42,7 +41,6 @@ public class SerializableClass {
     public void setClassName(String className) {
         this.className = className;
     }
- 
 
     public List<SerializableField> getFields() {
         return fields;
@@ -50,6 +48,15 @@ public class SerializableClass {
 
     public void setFields(List<SerializableField> fields) {
         this.fields = fields;
+    }
+
+    public SerializableField getField(String fieldName) {
+        Optional res = fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst();
+        if (res.isPresent()) {
+            return (SerializableField) res.get();
+        } else {
+            return null;
+        }
     }
 
     public void convertFields(List<Field> fieldList) {

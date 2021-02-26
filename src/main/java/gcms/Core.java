@@ -427,6 +427,32 @@ public class Core {
         return systemfields;
     }
 
+    public static List<SerializableField> getSystemFields(SerializableClass cls, String type) throws ClassNotFoundException {
+        List<SerializableField> fields = cls.getFields();
+        List<SerializableField> systemfields = new ArrayList<>();
+        if (fields.size() > 0) {
+            if ("view".equals(type)) {
+                systemfields = fields.stream().
+                        filter(p -> ((gcmsObject) p.getAnnotation()).viewRole().equals("SYSTEM")).
+                        collect(Collectors.toList());
+            }
+            if ("edit".equals(type)) {
+                systemfields = fields.stream().
+                        filter(p -> ((gcmsObject) p.getAnnotation()).editRole().equals("SYSTEM")).
+                        collect(Collectors.toList());
+            }
+            if ("create".equals(type)) {
+                systemfields = fields.stream().
+                        filter(p -> ((gcmsObject) p.getAnnotation()).createRole().equals("SYSTEM")).
+                        collect(Collectors.toList());
+            }
+        } else {
+
+        }
+
+        return systemfields;
+    }
+
     public static boolean isSystemField(List<Field> systemFields, String field) {
         return systemFields.stream().filter(p -> p.getName().equals(field)).findFirst().orElse(null) != null;
     }
@@ -467,6 +493,59 @@ public class Core {
                     Logger.getLogger(Core.class.getName()).log(Level.INFO, ex.getMessage());
                 } catch (SecurityException ex) {
                     Logger.getLogger(Core.class.getName()).log(Level.SEVERE, ex.getMessage());
+                }
+
+            });
+            databaseObject = parameters;
+        } catch (SecurityException ex) {
+            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, ex.getMessage());
+        }
+        return databaseObject;
+    }
+
+    public static HashMap<String, Object> createDatabaseObject(HashMap<String, String[]> requestParameters, SerializableClass cls) {
+        HashMap<String, Object> databaseObject = null;
+        try {
+            requestParameters.remove("oper");
+            requestParameters.remove("id");
+            HashMap<String, Object> parameters = new HashMap<>();
+            requestParameters.forEach((key, value) -> {
+                key = key.replaceAll("\\[|\\]", "");
+                try {
+                    
+                    String val = value[0];
+                    SerializableField f = cls.getField(key);
+                    if (f != null) {
+                        System.out.println(f.getType());
+                        Class fT;
+                        if (f.getType().equals("long")) {
+                            fT = long.class;
+                        } else {
+                            fT = Class.forName(f.getType());
+                        }
+
+                        if (f.getType().equals("long") && !val.equals("") && val != null) {
+                            parameters.put(key, Long.parseLong(val));
+                        }
+                        if (f.getType().equals(List.class) && !val.equals("") && val != null) {
+                            if (val.split(",").length < 2) {
+                                parameters.put(key, new ArrayList<>(Arrays.asList(value)));
+                            } else {
+                                parameters.put(key, new ArrayList<>(Arrays.asList(val.split(","))));
+                            }
+                        }
+                        if (f.getType().equals("java.lang.String") && !val.equals("") && val != null) {
+                            parameters.put(key, (val));
+                        }
+                        if (fT.equals(boolean.class)) {
+                            parameters.put(key, Boolean.parseBoolean(val));
+                        }
+                    }
+
+                } catch (SecurityException ex) {
+                    Logger.getLogger(Core.class.getName()).log(Level.SEVERE, ex.getMessage());
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
             });
@@ -603,7 +682,32 @@ public class Core {
         return hashFields;
     }
 
+    public static List<String> getHashFields(HashMap<String, String[]> requestParameters, SerializableClass cls) {
+        List<String> hashFields = requestParameters.keySet().stream().filter((String k) -> {
+            SerializableField f = cls.getField(k);
+            if (f != null) {
+                gcmsObject anno = (gcmsObject) f.getAnnotation();
+                return anno.type().equals("encrypted");
+            } else {
+                return false;
+            }
+        }).collect(Collectors.toList());
+        return hashFields;
+    }
+
     public static HashMap<String, String[]> checkHashFields(HashMap<String, String[]> requestParameters, Class cls) {
+        List<String> hashFields = getHashFields(requestParameters, cls);
+        for (String hashField : hashFields) {
+            if (requestParameters.get(hashField + "Lock") == null) {
+                Logger.getLogger(DatabaseWrapper.class.getName()).log(Level.SEVERE, "Hash locking field not found: " + hashField + "Lock", "Hash locking field not found: " + hashField + "Lock");
+            } else {
+                requestParameters = updateHash(hashField, requestParameters);
+            }
+        }
+        return requestParameters;
+    }
+
+    public static HashMap<String, String[]> checkHashFields(HashMap<String, String[]> requestParameters, SerializableClass cls) {
         List<String> hashFields = getHashFields(requestParameters, cls);
         for (String hashField : hashFields) {
             if (requestParameters.get(hashField + "Lock") == null) {
@@ -794,7 +898,7 @@ public class Core {
             sb.append(Core.httpRequest("http://localhost:8081/LCMS/servlet/", "post", Core.universalObjectMapper.writeValueAsString(parameters)));
             JsonNode parentJson = Core.universalObjectMapper.readTree(sb.toString());
             String requestResult = parentJson.asText();
-            
+
             serializableClass = Core.universalObjectMapper.readValue(requestResult, SerializableClass.class);
         } catch (IOException ex) {
             Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);

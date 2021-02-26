@@ -5,6 +5,7 @@
  */
 package gcms.GsonObjects.Core;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 import gcms.GsonObjects.annotations.gcmsObject;
 
@@ -12,6 +13,7 @@ import gcms.GsonObjects.annotations.gcmsObject;
  *
  * @author Matthias
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Apikey {
 
     @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)

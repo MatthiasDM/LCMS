@@ -5,12 +5,14 @@
  */
 package gcms.GsonObjects.Core;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import gcms.GsonObjects.annotations.gcmsObject;
 
 /**
  *
  * @author Matthias
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Actions {
 
     @gcmsObject(

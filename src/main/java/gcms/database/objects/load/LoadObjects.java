@@ -8,9 +8,12 @@ package gcms.database.objects.load;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
+import static com.mongodb.client.model.Projections.exclude;
 import static com.mongodb.client.model.Projections.fields;
 import static com.mongodb.client.model.Projections.include;
 import gcms.Config.Roles;
@@ -62,36 +65,28 @@ public class LoadObjects {
         SerializableClass serializableClass = new SerializableClass();
         if (_mongoConf.getPluginName() != null) {
             serializableClass = Core.getFields(_mongoConf, cookie);
-        }else{
+        } else {
             serializableClass.setClassName(_mongoConf.getClassName());
             serializableClass.convertFields(Arrays.asList(Class.forName(_mongoConf.getClassName()).getDeclaredFields()));
         }
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, filter, null, 1000, excludes, true);
-        List<String> columns = getDocumentPriveleges("view", cookie, _mongoConf, true);
-        List<String> editableColumns = getDocumentPriveleges("edit", cookie, _mongoConf, true);
-        List<String> createableColumns = getDocumentPriveleges("create", cookie, _mongoConf, true);
+        List<String> columns = getDocumentPriveleges("view", cookie, _mongoConf, true, serializableClass);
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(_mongoConf, filter, null, 1000, excludes, columns);
+        List<String> editableColumns = getDocumentPriveleges("edit", cookie, _mongoConf, true, serializableClass);
+        List<String> createableColumns = getDocumentPriveleges("create", cookie, _mongoConf, true, serializableClass);
         ArrayList<HashMap> header = new ArrayList<>();
         ArrayList<HashMap> table = new ArrayList<>();
         HashMap tableEntry = new HashMap();
 
         for (String column : columns) {
 
-            //get field from plugin            
-            //hier nog aanpassen + annotation meesturen met classjson
             SerializableField serializableField = serializableClass.getFields().stream().filter(f -> f.getName().equals(column)).findFirst().get();
             String fieldName = serializableField.getName();
             Annotation fieldAnnotation = serializableField.getAnnotation();
             gcmsObject mdmAnnotations = (gcmsObject) fieldAnnotation;
-            
-           
 
-            //Class cls = Class.forName(_mongoConf.getClassName());
-            //Field field = cls.getField(column);
-
-            //gcmsObject mdmAnnotations = field.getAnnotation(gcmsObject.class);
             HashMap headerEntry = new HashMap();
             headerEntry.put("name", fieldName);
             if (mdmAnnotations != null) {
@@ -110,13 +105,13 @@ public class LoadObjects {
                         fields.add(mdmAnnotations.reference()[2]);
                         fields.add(mdmAnnotations.reference()[3]);
                         ArrayList<Document> objectList = getObjectsList(cookie, DatabaseActions.getMongoConfiguration(mdmAnnotations.reference()[1]), fields);
-                        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                        HashMap<String, String> map = new HashMap<>();
+                        HashMap<String, Object> map = new HashMap<>();
                         for (Object doc : objectList) {
-                            String json = mapper.writeValueAsString(doc);
-                            HashMap<String, String> tempMap2 = mapper.readValue(json, new TypeReference<Map<String, String>>() {
-                            });
-                            map.put(tempMap2.get(fields.get(0)), tempMap2.get(fields.get(1)));
+                            JsonNode actualObj = Core.universalObjectMapper.readTree(mapper.writeValueAsString(doc));
+                            String jsonValue = actualObj.toString();
+                            BasicDBObject obj = BasicDBObject.parse(jsonValue);
+                            Map<String, Object> tempMap2 = obj.entrySet().stream().collect(HashMap::new, (m, v) -> m.put(v.getKey(), v.getValue()), HashMap::putAll);
+                            map.put(tempMap2.get(fields.get(0)).toString(), tempMap2.get(fields.get(1)));
                         }
                         headerEntry.put("choices", map);
                     }
@@ -137,11 +132,18 @@ public class LoadObjects {
             header.add(headerEntry);
             tableEntry.put(fieldName, "");
         }
-        if (!results.isEmpty()) {
-            jsonData.put("table", mapper.writeValueAsString(results));
-        } else {
+        if (results == null) {
             jsonData.put("table", mapper.writeValueAsString(table));
+        } else {
+            if (!results.isEmpty()) {
+                JsonNode actualObj = Core.universalObjectMapper.readTree(mapper.writeValueAsString(results));
+                String jsonValue = actualObj.toString();
+                jsonData.put("table", jsonValue);
+            } else {
+                jsonData.put("table", mapper.writeValueAsString(table));
+            }
         }
+
         jsonData.put("header", mapper.writeValueAsString(header));
         return jsonData;
 
@@ -154,7 +156,7 @@ public class LoadObjects {
             MongoCollection<Document> ObjectItems = getObjectsFromDatabase(mongoConf);
             results = ObjectItems.find().projection(
                     fields(include(columns))
-            ).into(new ArrayList<>());
+            ).projection(fields(exclude("_id"))).into(new ArrayList<>());
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(LoadObjects.class.getName()).log(Level.SEVERE, ex.getMessage());
             return results;

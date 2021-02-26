@@ -7,16 +7,13 @@ package gcms.GsonObjects.Other;
 
 import java.util.HashMap;
 import java.util.List;
-import org.apache.commons.lang3.builder.DiffBuilder;
-import org.apache.commons.lang3.builder.DiffResult;
-import org.apache.commons.lang3.builder.Diffable;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import gcms.GsonObjects.annotations.gcmsObject;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  *
- * @author matmey
+ * @author Matthias
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ICTTicket {
 
     @gcmsObject(

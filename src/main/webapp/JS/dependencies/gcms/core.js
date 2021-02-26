@@ -1035,7 +1035,17 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
             caption: caption //lang["department"]['title']
         },
         jqGridParameters: {
-            navGridParameters: {add: false, cancel: true, save: true, keys: true}
+            navGridParameters: {
+                add: false,
+                cancel: true,
+                save: true,
+                keys: true,
+                editParams: {
+                    extraparam: {action: editAction, LCMS_session: $.cookie('LCMS_session')},
+                    action: editAction,
+                    LCMS_session: $.cookie('LCMS_session')
+                }
+            }
         }
     };
     if (typeof jqGridOptions !== "undefined") {
@@ -2169,7 +2179,7 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
 
     var lastSelection;
     function editRow(id) {
-        if (id && id !== lastSelection) {
+        if (id && id !== -1) {
             var grid = _tableObject;
             grid.jqGrid('restoreRow', lastSelection);
             grid.jqGrid('editRow', id, parameters.editParameters);

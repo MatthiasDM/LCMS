@@ -7,11 +7,12 @@ package gcms.GsonObjects.Core;
 
 import java.util.List;
 import gcms.GsonObjects.annotations.gcmsObject;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  *
  * @author Matthias
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Command {
 
     @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)

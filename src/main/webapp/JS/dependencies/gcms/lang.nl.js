@@ -160,7 +160,12 @@ lang = {
         department: "Departement",
         info: "Extra informatie"
     },
-    contacts: {}
+    contacts: {
+        title: "Contacten"
+    },
+    projects: {
+        title: "Projecten"
+    }
 
 };
 

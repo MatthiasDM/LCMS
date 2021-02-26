@@ -4,11 +4,12 @@
  * and open the template in the editor.
  */
 package gcms.GsonObjects.Core;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  *
- * @author matmey
+ * @author Matthias
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Session {
 
     String username;

@@ -559,7 +559,7 @@ class LCMSGrid {
         });
         var lastSelection;
         function editRow(id) {
-            if (id && id !== lastSelection) {
+            if (id && id !== -1) {
                 var grid = $("#" + me.gridData.tableObject);
                 grid.jqGrid('restoreRow', lastSelection);
                 grid.jqGrid('editRow', id, parameters.editParameters);
@@ -784,7 +784,7 @@ class LCMSGrid {
                     });
                     var lastSelection;
                     function editRow(id) {
-                        if (id && id !== lastSelection) {
+                        if (id && id !== -1) {
                             console.log("editRow");
                             var grid = $("#" + me.gridData.tableObject);
                             grid.jqGrid('restoreRow', lastSelection);
@@ -798,9 +798,12 @@ class LCMSGrid {
                                 successfunc: function () {
                                     console.log("successfunc");
                                 },
+                                action: gridData.editAction,
+                                LCMS_session: $.cookie('LCMS_session'),
                                 //url: me.gridData.jqGridOptions.url,
                                 //url: me.gridData.editurl,
-                                extraparam: {},
+                                extraparam: {action: gridData.editAction,
+                                    LCMS_session: $.cookie('LCMS_session')},
                                 aftersavefunc: function () {
                                     console.log("aftersavefunc");
                                 },
@@ -958,7 +961,7 @@ class LCMSGrid {
                 $("div[title=ckedit_code]").each(function (index) {
                     console.log("getting data from ckeditor source mode instance...");
                     var editorname = $(this).attr('id');
-                    var editorinstance = CKEDITOR.instances[editorname];                  
+                    var editorinstance = CKEDITOR.instances[editorname];
                     var text = editorinstance.getData();
                     //text = removeElements("nosave", text);
                     postdata[editorname] = text;
