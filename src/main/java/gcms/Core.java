@@ -527,7 +527,7 @@ public class Core {
                         if (f.getType().equals("long") && !val.equals("") && val != null) {
                             parameters.put(key, Long.parseLong(val));
                         }
-                        if (f.getType().equals(List.class) && !val.equals("") && val != null) {
+                        if (f.getType().equals("java.util.List") && !val.equals("") && val != null) {
                             if (val.split(",").length < 2) {
                                 parameters.put(key, new ArrayList<>(Arrays.asList(value)));
                             } else {
@@ -537,7 +537,7 @@ public class Core {
                         if (f.getType().equals("java.lang.String") && !val.equals("") && val != null) {
                             parameters.put(key, (val));
                         }
-                        if (fT.equals(boolean.class)) {
+                        if (f.getType().equals("boolean")) {
                             parameters.put(key, Boolean.parseBoolean(val));
                         }
                     }

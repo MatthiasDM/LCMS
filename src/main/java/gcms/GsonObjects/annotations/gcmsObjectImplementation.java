@@ -12,14 +12,20 @@ import java.lang.annotation.Annotation;
  *
  * @author Matthias
  */
-public class gcmsObjectImplementation implements gcmsObject{
+public class gcmsObjectImplementation implements gcmsObject {
 
     public gcmsObjectImplementation() {
     }
-    
+
     @JsonProperty
     String type;
 
+    @JsonProperty
+    String[] externalListParameters;
+    
+    @JsonProperty
+    String formatterName;
+    
     @JsonProperty
     boolean key;
 
@@ -64,8 +70,10 @@ public class gcmsObjectImplementation implements gcmsObject{
     @JsonProperty
     boolean DMP;
 
-    public gcmsObjectImplementation(String type, boolean key, boolean visibleOnTable, boolean editable, boolean multiple, boolean visibleOnForm, String[] choices, String[] reference, String viewRole, String editRole, String createRole, int minimumViewRoleVal, int minimumEditRoleVal, int minimumCreateRoleVal, boolean DMP) {
+    public gcmsObjectImplementation(String type, String[] externalListParameters, String formatterName, boolean key, boolean visibleOnTable, boolean editable, boolean multiple, boolean visibleOnForm, String[] choices, String[] reference, String viewRole, String editRole, String createRole, int minimumViewRoleVal, int minimumEditRoleVal, int minimumCreateRoleVal, boolean DMP) {
         this.type = type;
+        this.externalListParameters = externalListParameters;
+        this.formatterName = formatterName;
         this.key = key;
         this.visibleOnTable = visibleOnTable;
         this.editable = editable;
@@ -82,8 +90,24 @@ public class gcmsObjectImplementation implements gcmsObject{
         this.DMP = DMP;
     }
 
-    
-    
+    public String[] getExternalListParameters() {
+        return externalListParameters;
+    }
+
+    public void setExternalListParameters(String[] externalListParameters) {
+        this.externalListParameters = externalListParameters;
+    }
+  
+ 
+
+    public String getFormatterName() {
+        return formatterName;
+    }
+
+    public void setFormatterName(String formatterName) {
+        this.formatterName = formatterName;
+    }    
+
     public String getType() {
         return type;
     }
@@ -211,7 +235,7 @@ public class gcmsObjectImplementation implements gcmsObject{
 
     @Override
     public boolean key() {
-return key;
+        return key;
     }
 
     @Override
@@ -283,10 +307,15 @@ return key;
     public Class<? extends Annotation> annotationType() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
-    
-    
-    
 
-    
+    @Override
+    public String formatterName() {
+        return formatterName;
+    }
+
+    @Override
+    public String[] externalListParameters() {
+       return externalListParameters;
+    }
+
 }

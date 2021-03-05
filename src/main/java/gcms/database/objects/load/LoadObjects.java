@@ -91,6 +91,8 @@ public class LoadObjects {
             headerEntry.put("name", fieldName);
             if (mdmAnnotations != null) {
                 headerEntry.put("type", mdmAnnotations.type());
+                headerEntry.put("formatterName", mdmAnnotations.formatterName());
+                headerEntry.put("externalListParameters", mdmAnnotations.externalListParameters());
                 headerEntry.put("visibleOnTable", mdmAnnotations.visibleOnTable());
                 headerEntry.put("editable", editableColumns.contains(column));
                 headerEntry.put("creatable", createableColumns.contains(column));

@@ -258,8 +258,8 @@ class LCMSGrid {
             }
 
             if (typeof value.formatterName !== "undefined") {
-
-                column.type = "text";
+                if (value.formatterName !== "string")
+                    column.type = "text";
                 column.formatterName = value.formatterName;
                 column.formatterFunction = Object.filter(me.formatters, f => f.name === value.formatterName);
                 column.formatter = column.formatterFunction[value.formatterName];
@@ -299,9 +299,33 @@ class LCMSGrid {
                 column.internalListName = value.internalListName;
                 column.internalListAttribute = value.internalListAttribute;
             }
-            if ((typeof value.editoptions !== "undefined" && value.editoptions.title === "external_list") || type === "internal_list") {
+            if ((typeof value.editoptions !== "undefined" && value.editoptions.title === "external_list") || type === "external_list") {
                 value.type = "select";
-                column.editoptions = {title: "external_list"};
+                column.type = "select";
+
+                column.editoptions = {
+                    title: "external_list",
+                    multiple: true,
+                    externalListParameters: value.externalListParameters,
+                    custom_value: function (elem, operation, value) {
+                        console.log("setting custom value");
+                        if (typeof elem[0] !== "undefined") {
+                            return elem[0].value;
+                        } else {
+                            return  value;
+                        }
+                    },
+                    custom_element: function (value, options) {
+                        console.log("external_list datainit");
+
+                        return me.loadExternalList($("#" + options.rowId), value, options.externalListParameters);
+                    }};
+                column.edittype = "custom";
+                //column.externalListAction = value.externalListAction;
+                //column.externalListCommand = value.externalListCommand;
+                column.externalListIdColumn = value.externalListParameters[2];
+                column.externalListValueColumn = value.externalListParameters[1];
+                console.log("external_list editoptions");
             }
 
             if (type === "password" || type === "encrypted") {
@@ -367,6 +391,46 @@ class LCMSGrid {
         console.log("Generating view");
         me.colModel = view;
         return view;
+    }
+
+    loadExternalList(parent, _value, externalListParameters) {
+        var me = this;
+        console.log("loading list");        
+        var list = $("<input type='text' aria-expanded='false' data-target='#external-list' data-toggle='collapse' role='textbox' value='" + _value + "' class='editable' style='width: 100%; box-sizing: border-box;'><div class='collapse' id='external-list' style='position: unset;width: 400px;z-index:100;'><div class='card border-secondary mb-6'><div id='external-list-content' class='card-body text-secondary'></div></div></div>");
+        $($(list)[0]).click(function (e) {
+            $($(list)[1]).toggle();
+            me.loadExternalList2($($(list)[1]).find("div[id='external-list-content']"), externalListParameters);
+        });
+        return list;
+
+
+    }
+
+    loadExternalList2(me, externalListParameters) {
+        var content = me;
+        var requestingGrid = this;
+        if (!content.is(':empty')) {
+            content.empty();
+        } else {
+            var extraOptionsJSON = {onSelectRow: function (rowid) {
+                    console.log("setting value");
+                    var gridObject = $('#' + this.id);
+                    var valueArray = new Array();
+                    var valueIdArray = new Array();
+                    $.each(gridObject.jqGrid('getGridParam', 'selarrrow'), function (a, b) {
+                        valueArray.push(gridObject.jqGrid('getRowData', b)[externalListParameters[1]]);
+                        valueIdArray.push(gridObject.jqGrid('getRowData', b)[externalListParameters[2]]);
+                    });
+                    var value = $('#' + this.id).jqGrid('getRowData', rowid)[externalListParameters[1]];
+                    var datatarget = $(me).attr("id").substr(0, $(me).attr("id").indexOf("-content"));
+                    var target = $("input[data-target='#" + datatarget + "']");
+                    target.val(valueArray);                    
+                   // target.attr("external-values", valueIdArray);    
+                },
+                requestingGrid: requestingGrid
+            };
+            gcmscore.loadExternalGrid(externalListParameters[0], content, extraOptionsJSON);
+        }
     }
 
     async createGridOptions(subgridTableId, extraOptions) {
@@ -926,6 +990,9 @@ class LCMSGrid {
                 });
                 $("div[title=ckedit]").each(function (index) {
                     $(this).addClass("border rounded p-3");
+                    if (CKEDITOR.instances[$(this).attr('id')] !== undefined) {
+                        delete CKEDITOR.instances[$(this).attr('id')];
+                    }
                     CKEDITOR.inline($(this).attr('id'));
                 });
                 $("div[title=ckedit_code]").each(function (index) {
@@ -951,6 +1018,12 @@ class LCMSGrid {
                 var serialized = $("#FrmGrid_" + this.id).find("[type=checkbox]").map(function () {
                     postdata[this.name] = this.checked ? this.value : "false";
                 });
+//                $("#FrmGrid_" + this.id).find("input[data-target*=external]").each(function(index){
+//                    var elementName = $(this).attr('id');
+//                    postdata[elementName] = $(this).attr('external-values');
+//                });
+                
+                
                 $("div[title=ckedit]").each(function (index) {
                     var editorname = $(this).attr('id');
                     var editorinstance = CKEDITOR.instances[editorname];

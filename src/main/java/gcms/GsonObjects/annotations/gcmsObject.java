@@ -18,7 +18,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -28,6 +27,15 @@ public @interface gcmsObject {
 
     @JsonProperty
     String type() default "string";
+    //externalListParameters:
+    //0: Name of external table
+    //1: Value field of external table (usually field with unique ID)
+    //2: Display field of external table (what value is to be displayed)
+    @JsonProperty
+    String[] externalListParameters() default "";
+
+    @JsonProperty
+    String formatterName() default "string";
 
     @JsonProperty
     boolean key() default false;

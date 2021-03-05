@@ -538,6 +538,104 @@ class gcmscore {
         }
     }
 
+    static domTextInput(id, name, placeholder, title, val) {
+        var form_group = $("<div id='" + id + "' class='form-group'></div>");
+        var label = $("<label for='" + title + "'>" + title + "</label>");
+        var input = $("<input type='text' value='" + val + "' name='" + name + "' class='form-control' id='input-text-" + id + "' placeholder='" + placeholder + "'>");
+        form_group.append(label);
+        form_group.append(input);
+        return form_group;
+    }
+
+    static domFormSelect(title, id, name, valObjects, val) {
+        console.log("forms_select()");
+        var form_group = $("<div id='" + id + "' class='form-group'></div>");
+        var label = $("<label for='" + title + "'>" + title + "</label>");
+        var select = $("<select class='form-control' multiple name='" + name + "' id='select-" + id + "'></select>");
+        Object.keys(valObjects).forEach(function (key) {
+            select.append($("<option value='" + valObjects[key].name + "'>" + valObjects[key].name + "</option>"));
+        });
+        form_group.append(label);
+        form_group.append(select);
+        if (typeof val !== "undefined") {
+            select.val(val);
+        }
+        return form_group;
+
+    }
+
+    static async loadExternalGrid(name, parent, extraOptions) {
+
+//        async function onDone(data) {
+//            try {
+//                console.log("Loading external grid...");
+//                var data = $.parseJSON(data);
+//                //me.gridData.wrapperObject.parent()
+//                parent.append("<div style='position:absolute;' name='" + data.id + "'></div>");
+//                if (typeof extraOptions !== "undefined") {
+//                    data.extraOptions = extraOptions;
+//
+//                }
+//
+//                documentPage.generateGrid($("div[name*=" + data.id + "]").parent(), data.id, data);
+//            } catch (e) {
+//                console.log(e);
+//                return {};
+//            }
+//
+//
+//        }
+//        var requestOptions = {};
+//        requestOptions.action = action;
+//        requestOptions.k = command;
+//        let request = await LCMSRequest("./servlet", requestOptions);
+//        let returnvalue = await onDone(request);
+//        return returnvalue;
+
+   
+        
+        var title = typeof lang[baseName] !== "undefined" ? lang[baseName]['title'] : name;
+        var baseName = name;
+        var fullName = baseName + uuidv4();
+        var container = dom_jqGridContainerFullWidth(fullName);
+        parent.append(container);
+      
+        LCMSTableRequest("load" + baseName, "edit" + baseName, "./servlet", fullName + "-table", fullName + "-pager", "div-grid-" + fullName + "-wrapper", title, 1, extraOptions);
+
+
+
+    }
+
+    static async loadExternalGrid_old(action, command, parent, extraOptions) {
+
+        async function onDone(data) {
+            try {
+                console.log("Loading external grid...");
+                var data = $.parseJSON(data);
+                //me.gridData.wrapperObject.parent()
+                parent.append("<div style='position:absolute;' name='" + data.id + "'></div>");
+                if (typeof extraOptions !== "undefined") {
+                    data.extraOptions = extraOptions;
+
+                }
+
+                documentPage.generateGrid($("div[name*=" + data.id + "]").parent(), data.id, data);
+            } catch (e) {
+                console.log(e);
+                return {};
+            }
+
+
+        }
+        var requestOptions = {};
+        requestOptions.action = action;
+        requestOptions.k = command;
+        let request = await LCMSRequest("./servlet", requestOptions);
+        let returnvalue = await onDone(request);
+        return returnvalue;
+
+    }
+
 }
 
 
@@ -1873,6 +1971,20 @@ function dom_jqGridContainer(name) {
     row.append(col1);
     row.append(col2);
     row.append(col3);
+    container.append(row);
+    return container;
+
+}
+
+function dom_jqGridContainerFullWidth(name) {
+    var container = $("<div class='container' style='padding:0; margin: 0' id='" + name + "-container'></div>");
+    var row = dom_row(); 
+    var col2 = dom_col(name + "-div-grid-wrapper", "12"); 
+    var table = $("<table id='" + name + "-table'></table>");
+    var div = $("<div id='" + name + "-pager'></div>");
+    col2.append(table);
+    col2.append(div);
+    row.append(col2); 
     container.append(row);
     return container;
 
