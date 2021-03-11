@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
+import gcms.Config.PrivilegeType;
 import gcms.Core;
 import static gcms.Core.createDatabaseObject;
 import gcms.GsonObjects.Core.MongoConfigurations;
@@ -87,7 +88,7 @@ public class EditObject {
     }
 
     public static void editObject(HashMap<String, Object> mongoObject, MongoConfigurations _mongoConf, String cookie,  SerializableClass serializableClass) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException {
-        List<String> columns = getDocumentPriveleges("edit", cookie, _mongoConf, true, serializableClass);
+        List<String> columns = getDocumentPriveleges(PrivilegeType.editRole, cookie, _mongoConf, true, serializableClass);
         List<SerializableField> systemFields = gcms.Core.getSystemFields(serializableClass, "edit");
         BasicDBObject obj = BasicDBObject.parse(Core.universalObjectMapper.writeValueAsString(mongoObject));
         BasicDBObject filteredObj = new BasicDBObject();
@@ -133,7 +134,7 @@ public class EditObject {
     }
 
     public static void addObject(Document doc, MongoConfigurations _mongoConf, String cookie, SerializableClass serializableClass) throws ClassNotFoundException {
-        List<String> columns = getDocumentPriveleges("create", cookie, _mongoConf, true, serializableClass);
+        List<String> columns = getDocumentPriveleges(PrivilegeType.createRole, cookie, _mongoConf, true, serializableClass);
         List<SerializableField> systemFields = gcms.Core.getSystemFields(serializableClass, "create");
         Document filteredDoc = new Document();
         for (String key : doc.keySet()) {

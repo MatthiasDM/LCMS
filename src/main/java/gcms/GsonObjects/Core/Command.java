@@ -48,7 +48,6 @@ public class Command {
             multiple = true
     )
     public List<String> accessType;
-
     @gcmsObject(
             editRole = "ICTMANAGER",
             type = "number",

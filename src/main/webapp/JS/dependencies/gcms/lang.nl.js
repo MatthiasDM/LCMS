@@ -165,6 +165,15 @@ lang = {
     },
     projects: {
         title: "Projecten"
+    },
+    persons: {
+        title: "Personen"
+    },
+    personFunctions: {
+        title: "Functies"
+    },
+    countries: {
+        title: "Landen"
     }
 
 };

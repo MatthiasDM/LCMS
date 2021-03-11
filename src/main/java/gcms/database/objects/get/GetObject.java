@@ -42,10 +42,15 @@ public class GetObject {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
         ObjectNode jsonParameters = mapper.createObjectNode();
+        String contents = "";
+        String id = "";
+        if(searchResult.get("contents") != null){contents = searchResult.get("contents").toString();}
+        if(searchResult.get(_mongoConf.getIdName()) != null){id = searchResult.get(_mongoConf.getIdName()).toString();}
+        
         if (_mongoConf.collection.equals("pages") || _mongoConf.collection.equals("document")) {
             ObjectNode jsonReplaces = mapper.createObjectNode();
-            jsonReplaces.put("LCMSEditablePage-id", searchResult.get(_mongoConf.getIdName()).toString());
-            jsonReplaces.put("LCMSEditablePage-content", searchResult.get("contents").toString());
+            jsonReplaces.put("LCMSEditablePage-id", id);
+            jsonReplaces.put("LCMSEditablePage-content", contents);
             searchResult.put("contents", "");
             jsonParameters.put("public", publicPage);
             jsonData.set("parameters", jsonParameters);

@@ -189,15 +189,28 @@ class LCMSEditablePage {
                     let afterRequest = await onDone(request);
                 });
                 var getHistory = (async function () {
-                    let promise = new Promise((res, rej) => {
-                        res(LCMSRequest("./servlet", {action: "getbacklog", k: "backlogid", v: rowData["backlogid"]}));
-                        console.log("getHistory promise");
-                    });
-                    let value = await promise;
-                    // value = new TextDecoder().decode(hexToBytes(value));
-                    var contents = $.parseJSON($.parseJSON(value).changes).contents;
-                    contents = decodeURI(decodeURI(contents));
-                    historyDiv.text(contents);
+
+                    let request = await LCMSRequest("./servlet", {action: "docommand", k: "dobacklog", parameters: {object_id: rowData["object_id"], object_type: rowData["object_type"], created_on: moment(rowData["created_on"]).valueOf()}});
+                    async function onDone(data) {
+                        //data = new TextDecoder().decode(hexToBytes(data));
+                        console.log("Reverting document...");
+                        var dmp = new diff_match_patch();
+                        var reverted = new TextDecoder().decode(hexToBytes($.parseJSON(data).replaces["LCMSEditablePage-content"]))
+                        var current = documentPage.originalDocument;
+                        var d = dmp.diff_main(current, reverted);
+                        var ds = dmp.diff_prettyHtml(d);  
+                        historyDiv.html(ds);
+                    }
+                    let afterRequest = await onDone(request);
+//                    let promise = new Promise((res, rej) => {
+//                        res(LCMSRequest("./servlet", {action: "getbacklog", k: "backlogid", v: rowData["backlogid"]}));
+//                        console.log("getHistory promise");
+//                    });
+//                    let value = await promise;
+//                    // value = new TextDecoder().decode(hexToBytes(value));
+//                    var contents = $.parseJSON($.parseJSON(value).changes).contents;
+//                    contents = decodeURI(decodeURI(contents));
+//                    historyDiv.text(contents);
                 })();
                 modal.find("div[class='modal-body']").append(historyDiv);
                 modal.find("div[class='modal-body']").append(btn);

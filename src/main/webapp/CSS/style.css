@@ -111,6 +111,9 @@ jqgrid-bootstrap tr.jqgrow>td {
 .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-pager .btn, .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-view .btn {
     font-size: 1em;
 }
+.ui-jqgrid-bdiv {
+    display: contents;    
+}
 
 /*div[id^="editmod"]{
     position: absolute;

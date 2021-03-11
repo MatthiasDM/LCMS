@@ -230,6 +230,7 @@ class LCMSGrid {
                 column.template = numberTemplate;
             }
             if (type === "datetime") {
+
                 //column.formatoptions = {srcformat: "u1000", newformat: "d-m-y h:i"};
                 column.formatter = me.datetimeformatter;
                 column.type = "datetime";
@@ -258,11 +259,12 @@ class LCMSGrid {
             }
 
             if (typeof value.formatterName !== "undefined") {
-                if (value.formatterName !== "string")
+                if (value.formatterName !== "string") {
                     column.type = "text";
-                column.formatterName = value.formatterName;
-                column.formatterFunction = Object.filter(me.formatters, f => f.name === value.formatterName);
-                column.formatter = column.formatterFunction[value.formatterName];
+                    column.formatterName = value.formatterName;
+                    column.formatterFunction = Object.filter(me.formatters, f => f.name === value.formatterName);
+                    column.formatter = column.formatterFunction[value.formatterName];
+                }
             }
 
             if (type === "select") {// && typeof value.editoptions === "undefined") {
@@ -309,16 +311,14 @@ class LCMSGrid {
                     externalListParameters: value.externalListParameters,
                     custom_value: function (elem, operation, value) {
                         console.log("setting custom value");
-                        if (typeof elem[0] !== "undefined") {
-                            return elem[0].value;
-                        } else {
-                            return  value;
-                        }
+                        return gcmscore.valuesFromSelect($(elem).find("select"));
                     },
                     custom_element: function (value, options) {
                         console.log("external_list datainit");
-
-                        return me.loadExternalList($("#" + options.rowId), value, options.externalListParameters);
+                        if (value === "") {
+                            value = gcmscore.domFormSelect("", uuidv4(), options.cm.name, {}, "", false).html();
+                        }
+                        return me.loadExternalList(value, options.externalListParameters, options.mode);
                     }};
                 column.edittype = "custom";
                 //column.externalListAction = value.externalListAction;
@@ -393,17 +393,20 @@ class LCMSGrid {
         return view;
     }
 
-    loadExternalList(parent, _value, externalListParameters) {
+    loadExternalList(_value, externalListParameters, mode) {
         var me = this;
-        console.log("loading list");        
-        var list = $("<input type='text' aria-expanded='false' data-target='#external-list' data-toggle='collapse' role='textbox' value='" + _value + "' class='editable' style='width: 100%; box-sizing: border-box;'><div class='collapse' id='external-list' style='position: unset;width: 400px;z-index:100;'><div class='card border-secondary mb-6'><div id='external-list-content' class='card-body text-secondary'></div></div></div>");
-        $($(list)[0]).click(function (e) {
+        console.log("loading list");
+        var values = $($($.parseHTML(_value))[1]).find("option").map(function () {
+            return $(this).text();
+        }).get();
+        var position = mode === "edit" ? "absolute" : "sticky";
+        var list = $("<div style='' data-target='#external-list'>" + _value + "</div><div class='collapse' id='external-list' style='position: " + position + ";width: 400px;z-index:100;'><div class='card border-secondary mb-6'><div id='external-list-content' style='padding:0' class='card-body text-secondary'></div></div></div>");
+        $(list).find("select").click(function (e) {
+            e.preventDefault();
             $($(list)[1]).toggle();
             me.loadExternalList2($($(list)[1]).find("div[id='external-list-content']"), externalListParameters);
         });
         return list;
-
-
     }
 
     loadExternalList2(me, externalListParameters) {
@@ -418,17 +421,44 @@ class LCMSGrid {
                     var valueArray = new Array();
                     var valueIdArray = new Array();
                     $.each(gridObject.jqGrid('getGridParam', 'selarrrow'), function (a, b) {
-                        valueArray.push(gridObject.jqGrid('getRowData', b)[externalListParameters[1]]);
-                        valueIdArray.push(gridObject.jqGrid('getRowData', b)[externalListParameters[2]]);
+                        var vals = new Object();
+                        vals = {
+                            id: gridObject.jqGrid('getRowData', b)[externalListParameters[2]],
+                            value: gridObject.jqGrid('getRowData', b)[externalListParameters[1]]
+                        };
+                        valueArray.push(vals);
                     });
                     var value = $('#' + this.id).jqGrid('getRowData', rowid)[externalListParameters[1]];
                     var datatarget = $(me).attr("id").substr(0, $(me).attr("id").indexOf("-content"));
-                    var target = $("input[data-target='#" + datatarget + "']");
-                    target.val(valueArray);                    
-                   // target.attr("external-values", valueIdArray);    
+                    var target = $("div[data-target='#" + datatarget + "']");
+                    target.find("select").empty();
+                    $.each(valueArray, function (a, b) {
+                        target.find("select").append($("<option selected />").val(b.id).text(b.value));
+                    });
+                    //target.val(JSON.stringify(valueArray));
+
                 },
-                requestingGrid: requestingGrid
+                requestingGrid: requestingGrid,
+                bindkeys: true,
+                selectToInlineEdit: false,
+                multiselect: false,
+                datatype: "json",
+                rest: true,             
+                repeatitems: false,
+                jsonReader: {"id": 2, "root": "rows"},
+                emptyrecords: "Scroll to bottom to load records",
+                scroll: 1,
+                loadonce: false,
+                rowNum: 50,
+                page: 1,        
+                url: "http://localhost:8081/LCMS/servlet",
+                mtype: "post",
+                postData: {"LCMS_session": $.cookie('LCMS_session'), "action": externalListParameters[0]},
+                loadBeforeSend: function (jqXHR) {
+                    jqXHR.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded; charset=UTF-8');
+                }
             };
+
             gcmscore.loadExternalGrid(externalListParameters[0], content, extraOptionsJSON);
         }
     }
@@ -1018,12 +1048,19 @@ class LCMSGrid {
                 var serialized = $("#FrmGrid_" + this.id).find("[type=checkbox]").map(function () {
                     postdata[this.name] = this.checked ? this.value : "false";
                 });
+
+                $.each($("#FrmGrid_" + this.id).find("select"), function (a, b) {
+                    if ($(b).parent().attr("data-target") === "#external-list") {
+                        postdata[$(b).attr("name")] = gcmscore.valuesFromSelect($(b));
+                    }
+                });
+
 //                $("#FrmGrid_" + this.id).find("input[data-target*=external]").each(function(index){
 //                    var elementName = $(this).attr('id');
 //                    postdata[elementName] = $(this).attr('external-values');
 //                });
-                
-                
+
+
                 $("div[title=ckedit]").each(function (index) {
                     var editorname = $(this).attr('id');
                     var editorinstance = CKEDITOR.instances[editorname];

@@ -547,13 +547,16 @@ class gcmscore {
         return form_group;
     }
 
-    static domFormSelect(title, id, name, valObjects, val) {
+    static domFormSelect(title, id, name, valObjects, val, disabled) {
         console.log("forms_select()");
+        if(typeof valObjects === "string"){
+            valObjects = $.parseJSON(valObjects);            
+        }
         var form_group = $("<div id='" + id + "' class='form-group'></div>");
         var label = $("<label for='" + title + "'>" + title + "</label>");
-        var select = $("<select class='form-control' multiple name='" + name + "' id='select-" + id + "'></select>");
-        Object.keys(valObjects).forEach(function (key) {
-            select.append($("<option value='" + valObjects[key].name + "'>" + valObjects[key].name + "</option>"));
+        var select = $("<select class='form-control' name='" + name + "' id='select-" + id + "'></select>");
+        $.each(valObjects, function (a, b) {
+            select.append($("<option value='" + b.id + "'>" + b.value + "</option>"));
         });
         form_group.append(label);
         form_group.append(select);
@@ -592,14 +595,14 @@ class gcmscore {
 //        let returnvalue = await onDone(request);
 //        return returnvalue;
 
-   
-        
+
+
         var title = typeof lang[baseName] !== "undefined" ? lang[baseName]['title'] : name;
         var baseName = name;
         var fullName = baseName + uuidv4();
         var container = dom_jqGridContainerFullWidth(fullName);
         parent.append(container);
-      
+
         LCMSTableRequest("load" + baseName, "edit" + baseName, "./servlet", fullName + "-table", fullName + "-pager", "div-grid-" + fullName + "-wrapper", title, 1, extraOptions);
 
 
@@ -634,6 +637,25 @@ class gcmscore {
         let returnvalue = await onDone(request);
         return returnvalue;
 
+    }
+
+    static valuesFromSelect(select) {
+        var vals = new Object();
+        var valueArray = new Array();
+        var values = select.find("option").map(function () {
+            return $(this).text();
+        }).get();
+        var ids = select.find("option").map(function () {
+            return $(this).attr("value");
+        }).get();
+        $(ids).each(function (a, b) {
+            vals = {
+                id: b,
+                value: values[a]
+            };
+            valueArray.push(vals);
+        });
+        return JSON.stringify(valueArray);
     }
 
 }
@@ -962,8 +984,8 @@ async function LCMSRequest(_url, _data, _onDone, _extraParam) {
 
 function getPatches(oldData, newData) {
     console.log("getPatches()");
-    //oldData = bytesToHex(stringToUTF8Bytes(oldData));
-    // newData = bytesToHex(stringToUTF8Bytes(newData));
+    oldData = bytesToHex(stringToUTF8Bytes(oldData));
+    newData = bytesToHex(stringToUTF8Bytes(newData));
     var dmp = new diff_match_patch();
     // var diff = dmp.diff_main((oldData), (newData));
     var diff = dmp.diff_main((oldData), (newData));
@@ -1855,6 +1877,17 @@ function dom_list(id, items) {
 
     return ul;
 }
+function dom_list_json(id, items) {
+    var wrapper = $("<div></div>");
+    var ul = $("<ul class='list-group' id='" + id + "'></ul> ");
+    if (typeof items !== "undefined") {
+        $.each(items, function (a, b) {
+            ul.append("<li class='list-group-item' element='" + b.id + "'>" + "<span>" + (a + 1) + "</span>" + ": " + b.value + "</li>");
+        });
+    }
+    wrapper.append(ul);
+    return wrapper;
+}
 function dom_card(header, body) {
     var card = $("<div class='card'></div>");
     var cardHeader = $("<div class='card-header'></header");
@@ -1978,13 +2011,13 @@ function dom_jqGridContainer(name) {
 
 function dom_jqGridContainerFullWidth(name) {
     var container = $("<div class='container' style='padding:0; margin: 0' id='" + name + "-container'></div>");
-    var row = dom_row(); 
-    var col2 = dom_col(name + "-div-grid-wrapper", "12"); 
+    var row = dom_row();
+    var col2 = dom_col(name + "-div-grid-wrapper", "12");
     var table = $("<table id='" + name + "-table'></table>");
     var div = $("<div id='" + name + "-pager'></div>");
     col2.append(table);
     col2.append(div);
-    row.append(col2); 
+    row.append(col2);
     container.append(row);
     return container;
 

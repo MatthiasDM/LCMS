@@ -35,6 +35,7 @@ import gcms.GsonObjects.Core.Command;
 import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.database.DatabaseActions;
 import gcms.database.DatabaseWrapper;
+import gcms.database.GetResponse;
 import gcms.modules.commandFunctions;
 import java.util.Enumeration;
 import java.util.List;
@@ -43,6 +44,7 @@ import org.apache.commons.io.IOUtils;
 import static gcms.database.objects.load.LoadObjects.loadObjects;
 import static gcms.database.objects.get.GetObject.getObject;
 import static gcms.database.objects.edit.EditObject.editObject;
+import static gcms.database.objects.load.LoadObjects.dataload;
 
 /**
  *
@@ -126,7 +128,7 @@ public class Servlet extends HttpServlet {
         Enumeration<String> headerNames = request.getHeaderNames();
         String apiName, apiKey;
         Boolean apiAuthorized = false;
-        
+
         if (headerNames != null) {
             while (headerNames.hasMoreElements()) {
                 String headerName = headerNames.nextElement();
@@ -164,8 +166,6 @@ public class Servlet extends HttpServlet {
                 } catch (ClassNotFoundException ex) {
                     Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
                 } catch (NoSuchFieldException ex) {
-                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
-                } catch (Exception ex) {
                     Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
                 }
 
@@ -250,7 +250,7 @@ public class Servlet extends HttpServlet {
             return action;
         }
 
-        public Response startAction() throws ClassNotFoundException, IOException, JsonProcessingException, NoSuchFieldException, Exception {
+        public Response startAction() throws ClassNotFoundException, IOException, JsonProcessingException, NoSuchFieldException {
             StringBuilder sb = new StringBuilder();
             ObjectMapper mapper = new ObjectMapper();
             if (action == null) {
@@ -335,6 +335,22 @@ public class Servlet extends HttpServlet {
                                 String key = requestParameters.get("k")[0];
                                 String value = requestParameters.get("v")[0];
                                 sb.append(getObject(cookie, mongoConfiguration, key, value, publicPage));
+                            }
+                            if (action.name.toUpperCase().startsWith("DATA")) {
+                                
+                                BasicDBObject filterObject = new BasicDBObject();
+                            
+                                //excludes.add("contents");
+                                if (mongoConfiguration.getCollection().equals("backlog")) {
+                                    filterObject.put("object_id", new BasicDBObject("$eq", requestParameters.get("object_id")[0]));
+                                }
+                                if (mongoConfiguration.getCollection().equals("document")) {
+                                    if (requestParameters.get("prefix") != null) {
+                                        filterObject.put("prefix", new BasicDBObject("$eq", requestParameters.get("prefix")[0]));
+                                    }
+                                }                           
+                                
+                                sb.append(Core.universalObjectMapper.writeValueAsString(dataload(cookie, mongoConfiguration, requestParameters, filterObject)));
                             }
                         }
                     }

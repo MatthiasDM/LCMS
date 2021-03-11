@@ -184,7 +184,7 @@ public class Core {
     public static String readFile(String urlName) {
         try {
             String out = new Scanner(new URL(baseURL + urlName).openStream(), "UTF-8").useDelimiter("\\A").next();
-            Logger.getLogger(Core.class.getName()).log(Level.INFO, null, baseURL + urlName);
+            Logger.getLogger(Core.class.getName()).log(Level.INFO, baseURL + urlName);
             return out;
         } catch (IOException ex) {
             Logger.getLogger(Core.class.getName()).log(Level.SEVERE, ex.getMessage());
@@ -512,7 +512,7 @@ public class Core {
             requestParameters.forEach((key, value) -> {
                 key = key.replaceAll("\\[|\\]", "");
                 try {
-                    
+
                     String val = value[0];
                     SerializableField f = cls.getField(key);
                     if (f != null) {
@@ -528,11 +528,18 @@ public class Core {
                             parameters.put(key, Long.parseLong(val));
                         }
                         if (f.getType().equals("java.util.List") && !val.equals("") && val != null) {
-                            if (val.split(",").length < 2) {
-                                parameters.put(key, new ArrayList<>(Arrays.asList(value)));
-                            } else {
-                                parameters.put(key, new ArrayList<>(Arrays.asList(val.split(","))));
+                            ArrayList vals = new ArrayList<>();
+                            try {
+                                vals = Core.universalObjectMapper.readValue(val, ArrayList.class);
+                                parameters.put(key, vals);
+                            } catch (Exception e) {
+                                if (val.split(",").length < 2) {
+                                    parameters.put(key, new ArrayList<>(Arrays.asList(value)));
+                                } else {
+                                    parameters.put(key, new ArrayList<>(Arrays.asList(val.split(","))));
+                                }
                             }
+
                         }
                         if (f.getType().equals("java.lang.String") && !val.equals("") && val != null) {
                             parameters.put(key, (val));
