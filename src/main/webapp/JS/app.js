@@ -81,8 +81,9 @@ require([
     "jqgrid",
     "iframeresizer",
     "dmp"
-], function ($) {
+], function ($) {    
     console.log("all sources required");
+    $("body").css({"background-image": "url(./images/background.jpg)","background-attachment": "fixed","background-repeat": "no-repeat","background-size": "cover","background-position": "center","-webkit-mask-size": "cover"});
     credentials_doUserInfo($("#navbar-toggler"));
     page_doLoadPage(getUrlParam(window.location.href, "p"), $("body"));
 });

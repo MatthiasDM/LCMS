@@ -8,6 +8,9 @@ package gcms.GsonObjects.Core;
 import java.util.List;
 import gcms.GsonObjects.annotations.gcmsObject;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import gcms.Config.PrivilegeType;
+import java.util.ArrayList;
+
 /**
  *
  * @author Matthias
@@ -38,33 +41,83 @@ public class Rights {
     public String field;
     @gcmsObject(
             type = "select",
-            reference = {"Mongo", "roles", "roleid", "role"},
+            reference = {"Mongo", "roles", "role", "role"},
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public List<String> viewRole;
 
     @gcmsObject(
             type = "select",
-            reference = {"Mongo", "roles", "roleid", "role"},
+            reference = {"Mongo", "roles", "role", "role"},
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public List<String> editRole;
 
     @gcmsObject(
             type = "select",
-            reference = {"Mongo", "roles", "roleid", "role"},
+            reference = {"Mongo", "roles", "role", "role"},
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public List<String> createRole;
 
-    public Rights(String rightsid, String table, String field, List<String> viewRole, List<String> editRole, List<String> createRole) {
+    @gcmsObject(
+            type = "boolean",
+            visibleOnTable = true,
+            editRole = "ICTMANAGER")
+    public boolean visibleOnTable;
+
+    @gcmsObject(
+            type = "boolean",
+            visibleOnTable = true,
+            editRole = "ICTMANAGER")
+    public boolean visibleOnForm;
+
+    @gcmsObject(
+            type = "boolean",
+            visibleOnTable = true,
+            editRole = "ICTMANAGER")
+    public boolean editable;
+
+    public Rights(String rightsid, String table, String field, List<String> viewRole, List<String> editRole, List<String> createRole, boolean visibleOnTable, boolean visibleOnForm, boolean editable) {
         this.rightsid = rightsid;
         this.table = table;
         this.field = field;
         this.viewRole = viewRole;
         this.editRole = editRole;
         this.createRole = createRole;
+        this.visibleOnTable = visibleOnTable;
+        this.visibleOnForm = visibleOnForm;
+        this.editable = editable;
     }
+
+    public boolean isVisibleOnTable() {
+        return visibleOnTable;
+    }
+
+    public void setVisibleOnTable(boolean visibleOnTable) {
+        this.visibleOnTable = visibleOnTable;
+    }
+
+    public boolean isVisibleOnForm() {
+        return visibleOnForm;
+    }
+
+    public void setVisibleOnForm(boolean visibleOnForm) {
+        this.visibleOnForm = visibleOnForm;
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
+    }
+
+  
+  
+
+
 
     public Rights() {
     }
@@ -117,6 +170,17 @@ public class Rights {
         this.createRole = createRole;
     }
 
-    
+    public List<String> getRolesFromPrivilege(PrivilegeType privelegeType) {
+        if (privelegeType.equals(PrivilegeType.viewRole) && viewRole != null) {
+            return viewRole;
+        }
+        if (privelegeType.equals(PrivilegeType.editRole) && editRole != null) {
+            return editRole;
+        }
+        if (privelegeType.equals(PrivilegeType.createRole) && createRole != null) {
+            return createRole;
+        }
+        return new ArrayList<>();
+    }
 
 }

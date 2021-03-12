@@ -5,9 +5,7 @@
  */
 package gcms.database.objects.load;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,14 +18,15 @@ import static com.mongodb.client.model.Projections.include;
 import gcms.Config.PrivilegeType;
 import gcms.Config.Roles;
 import gcms.Core;
+import static gcms.Core.universalObjectMapper;
 import gcms.GsonObjects.Core.MongoConfigurations;
+import gcms.GsonObjects.Core.Rights;
 import gcms.GsonObjects.Other.SerializableClass;
 import gcms.GsonObjects.Other.SerializableField;
 import gcms.database.DatabaseActions;
 import static gcms.database.DatabaseActions.getDocumentPriveleges;
 import gcms.database.DatabaseWrapper;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +37,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import static gcms.database.DatabaseActions.getObjectsFromDatabase;
 import gcms.GsonObjects.annotations.gcmsObject;
-import static gcms.database.DatabaseActions.getPriveleges;
+import static gcms.database.DatabaseActions.getRightsFromDatabaseInCollection;
 import gcms.database.GetResponse;
 import gcms.database.filters.FilterObject;
 import gcms.database.filters.FilterRule;
@@ -175,8 +174,10 @@ public class LoadObjects {
         ArrayList<HashMap> table = new ArrayList<>();
         HashMap tableEntry = new HashMap();
         ArrayList<Document> results = null;
+        ArrayList<Rights> rights = getRightsFromDatabaseInCollection(_mongoConf.name);
 
         for (String column : columns) {
+            Rights databaseRight = rights.stream().filter(r -> r.getField().equals(column)).findFirst().orElse(new Rights());
 
             SerializableField serializableField = serializableClass.getFields().stream().filter(f -> f.getName().equals(column)).findFirst().get();
             String fieldName = serializableField.getName();
@@ -189,11 +190,17 @@ public class LoadObjects {
                 headerEntry.put("type", mdmAnnotations.type());
                 headerEntry.put("formatterName", mdmAnnotations.formatterName());
                 headerEntry.put("externalListParameters", mdmAnnotations.externalListParameters());
-                headerEntry.put("visibleOnTable", mdmAnnotations.visibleOnTable());
-                headerEntry.put("editable", editableColumns.contains(column));
+                if (databaseRight.table != null) {
+                    headerEntry.put("visibleOnForm", databaseRight.isVisibleOnForm());
+                    headerEntry.put("visibleOnTable", databaseRight.isVisibleOnTable());
+                    headerEntry.put("editable", databaseRight.isEditable());
+                } else {
+                    headerEntry.put("visibleOnForm", mdmAnnotations.visibleOnForm());
+                    headerEntry.put("visibleOnTable", mdmAnnotations.visibleOnTable());
+                    headerEntry.put("editable", editableColumns.contains(column));
+                }
                 headerEntry.put("creatable", createableColumns.contains(column));
                 headerEntry.put("multiple", mdmAnnotations.multiple());
-                headerEntry.put("visibleOnForm", mdmAnnotations.visibleOnForm());
                 headerEntry.put("key", mdmAnnotations.key());
                 headerEntry.put("tablename", tableName);
                 if (!"".equals(mdmAnnotations.reference()[0])) {

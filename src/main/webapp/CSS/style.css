@@ -114,6 +114,10 @@ jqgrid-bootstrap tr.jqgrow>td {
 .ui-jqgrid-bdiv {
     display: contents;    
 }
+.ui-jqgrid-btable .ui-state-highlight { background: yellow; }
+.row-selected{
+        background: lightgrey;
+}
 
 /*div[id^="editmod"]{
     position: absolute;

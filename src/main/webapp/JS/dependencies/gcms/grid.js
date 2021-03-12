@@ -231,7 +231,7 @@ class LCMSGrid {
             }
             if (type === "datetime") {
 
-                //column.formatoptions = {srcformat: "u1000", newformat: "d-m-y h:i"};
+                column.formatoptions = {srcformat: "u1000"};
                 column.formatter = me.datetimeformatter;
                 column.type = "datetime";
                 //column.sorttype = "date";
@@ -439,21 +439,21 @@ class LCMSGrid {
 
                 },
                 requestingGrid: requestingGrid,
-                bindkeys: true,
+                bindkeys: false,
                 selectToInlineEdit: false,
-                multiselect: false,
+                multiselect: true,
                 datatype: "json",
-                rest: true,             
+                //rest: true,
                 repeatitems: false,
                 jsonReader: {"id": 2, "root": "rows"},
                 emptyrecords: "Scroll to bottom to load records",
                 scroll: 1,
                 loadonce: false,
                 rowNum: 50,
-                page: 1,        
+                page: 1,
                 url: "http://localhost:8081/LCMS/servlet",
                 mtype: "post",
-                postData: {"LCMS_session": $.cookie('LCMS_session'), "action": externalListParameters[0]},
+                postData: {"LCMS_session": $.cookie('LCMS_session'), "action": "data" + externalListParameters[0]},
                 loadBeforeSend: function (jqXHR) {
                     jqXHR.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded; charset=UTF-8');
                 }
@@ -864,6 +864,19 @@ class LCMSGrid {
 
 
                     };
+                    jqgridOptions.serializeRowData = function (postdata) {
+                        console.log(postdata);
+                        var colModel = $("#" + this.id).jqGrid("getGridParam").colModel;
+                        var filteredModel = Object.filter(colModel, function (a) {
+                            console.log(a.type);
+                            if (a.formatter === "date" || a.type === "datetime") {
+                                postdata[a.name] = moment(postdata[a.name]).valueOf();
+                            } else {
+                                return false;
+                            }
+                        });
+                        return postdata;
+                    };
                     jqgridOptions.colModel = jqgridOptions.colModel.filter(function (el) {
                         return el !== null;
                     });
@@ -871,8 +884,8 @@ class LCMSGrid {
                     //replaceProperties(parameters, me.gridData.jqGridParameters);
                     $.extend($.jgrid.defaults, {
                         ajaxRowOptions: {
-                            beforeSend: function () {
-                                alert('Before Row Send');
+                            beforeSend: function (jqXHR, settings) {
+                               jqXHR.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded; charset=UTF-8');
                             }
                         }
                     });
@@ -898,7 +911,7 @@ class LCMSGrid {
                                 //url: me.gridData.editurl,
                                 extraparam: {action: gridData.editAction,
                                     LCMS_session: $.cookie('LCMS_session')},
-                                aftersavefunc: function () {
+                                aftersavefunc: function (rowid, response, options) {
                                     console.log("aftersavefunc");
                                 },
                                 mtype: "POST"

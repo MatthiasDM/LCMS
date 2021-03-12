@@ -52,7 +52,7 @@ public class User {
     @gcmsObject(
             type = "select",
             multiple = true,
-            reference = {"Enum", "Roles"},
+            reference = {"Mongo", "roles", "role", "role"},
             visibleOnTable = true,
             editRole = "ICTMANAGER")
     public List<String> roles;

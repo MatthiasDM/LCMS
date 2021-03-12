@@ -517,13 +517,7 @@ public class Core {
                     SerializableField f = cls.getField(key);
                     if (f != null) {
                         System.out.println(f.getType());
-                        Class fT;
-                        if (f.getType().equals("long")) {
-                            fT = long.class;
-                        } else {
-                            fT = Class.forName(f.getType());
-                        }
-
+                      
                         if (f.getType().equals("long") && !val.equals("") && val != null) {
                             parameters.put(key, Long.parseLong(val));
                         }
@@ -551,8 +545,6 @@ public class Core {
 
                 } catch (SecurityException ex) {
                     Logger.getLogger(Core.class.getName()).log(Level.SEVERE, ex.getMessage());
-                } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
             });

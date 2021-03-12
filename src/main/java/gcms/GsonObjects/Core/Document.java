@@ -18,7 +18,7 @@ public class Document {
     public String documentid;
     @gcmsObject(type = "string", visibleOnTable = true, visibleOnForm = true)
     public String title;
-    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
+    @gcmsObject(type = "string", visibleOnTable = true, visibleOnForm = false)
     public String prefix;
     @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false, DMP = true)
     public String contents;

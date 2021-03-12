@@ -569,33 +569,6 @@ class gcmscore {
 
     static async loadExternalGrid(name, parent, extraOptions) {
 
-//        async function onDone(data) {
-//            try {
-//                console.log("Loading external grid...");
-//                var data = $.parseJSON(data);
-//                //me.gridData.wrapperObject.parent()
-//                parent.append("<div style='position:absolute;' name='" + data.id + "'></div>");
-//                if (typeof extraOptions !== "undefined") {
-//                    data.extraOptions = extraOptions;
-//
-//                }
-//
-//                documentPage.generateGrid($("div[name*=" + data.id + "]").parent(), data.id, data);
-//            } catch (e) {
-//                console.log(e);
-//                return {};
-//            }
-//
-//
-//        }
-//        var requestOptions = {};
-//        requestOptions.action = action;
-//        requestOptions.k = command;
-//        let request = await LCMSRequest("./servlet", requestOptions);
-//        let returnvalue = await onDone(request);
-//        return returnvalue;
-
-
 
         var title = typeof lang[baseName] !== "undefined" ? lang[baseName]['title'] : name;
         var baseName = name;
