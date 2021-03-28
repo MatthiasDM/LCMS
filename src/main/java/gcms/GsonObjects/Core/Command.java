@@ -48,6 +48,15 @@ public class Command {
             multiple = true
     )
     public List<String> accessType;
+    
+    @gcmsObject(
+            type = "select",
+            reference = {"Mongo", "roles", "role", "role"},
+            visibleOnTable = true,
+            multiple = true,
+            editRole = "ICTMANAGER")
+    public List<String> executionRoles;
+    
     @gcmsObject(
             editRole = "ICTMANAGER",
             type = "number",
@@ -77,19 +86,27 @@ public class Command {
             editRole = "SYSTEM")
     public long lastExecution;
 
-    public Command(String commandid, String name, String command, String description, String parameters, List<String> accessType, String executionLimit, String executionCount, String executionLimitInterval, long lastExecution) {
+    public Command(String commandid, String name, String command, String description, String parameters, List<String> accessType, List<String> executionRoles, String executionLimit, String executionCount, String executionLimitInterval, long lastExecution) {
         this.commandid = commandid;
         this.name = name;
         this.command = command;
         this.description = description;
         this.parameters = parameters;
         this.accessType = accessType;
+        this.executionRoles = executionRoles;
         this.executionLimit = executionLimit;
         this.executionCount = executionCount;
         this.executionLimitInterval = executionLimitInterval;
         this.lastExecution = lastExecution;
     }
 
+    public List<String> getExecutionRoles() {
+        return executionRoles;
+    }
+
+    public void setExecutionRoles(List<String> executionRoles) {
+        this.executionRoles = executionRoles;
+    } 
 
 
     public String getExecutionCount() {

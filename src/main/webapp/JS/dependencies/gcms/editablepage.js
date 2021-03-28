@@ -323,39 +323,39 @@ class LCMSEditablePage {
         return "done";
     }
 
-    subGridRowExpanded(subgridDivId, rowId) {
-        var me = this;
-        var subgridTableId = subgridDivId + "_t";
-        var documentGrid = documentPage.gridController.LCMSGrids[subgridTableId];
-        documentPage.gridController.addLCMSGrid(subgridTableId, documentGrid);
-        $("#" + subgridDivId).html("<table id='" + subgridTableId + "'></table><div id='pager_" + subgridTableId + "'></div>");
-        var createSubGrid = (async function (me) {
-            let value;
-            documentGrid = documentPage.gridController.LCMSGrids[subgridTableId];
-            if (typeof documentGrid === "undefined") {
-                var documentGridToCopy = documentPage.gridController.LCMSGrids[Object.keys(documentPage.gridController.LCMSGrids).find(function (a) {
-                    return a.includes("_row");
-                })];
-                var documentGrid = jQuery.extend(true, {}, documentGridToCopy);
-                //var documentGrid = Object.assign({}, documentGridToCopy);
-                documentGrid.gridData.data.table = [];
-                documentGrid.gridData.pagerID = "pager_" + subgridTableId;
-                documentGrid.gridData.jqGridOptions.pager = "#pager_" + subgridTableId;
-                documentGrid.gridData.tableObject = subgridTableId;
-                documentGrid = new LCMSGrid(documentGrid.gridData);
-                documentPage.gridController.addLCMSGrid(subgridTableId, documentGrid);
-            }
-            let promise = new Promise((res, rej) => {
-                res(documentGrid.createGridOptions(subgridTableId, {pager: "#pager_" + subgridTableId}));
-            });
-            value = await  promise;
-            $("#" + subgridTableId).jqGrid(value);
-            documentGrid.gridData.pagerID = "pager_" + subgridTableId;
-            documentGrid.gridData.jqGridOptions.pager = "#pager_" + subgridTableId;
-            documentGrid.gridData.tableObject = subgridTableId;
-            $("#" + subgridTableId).inlineNav("#" + documentGrid.gridData.pagerID, documentGrid.gridData.jqGridParameters.navGridParameters);
-        })();
-    }
+//    subGridRowExpanded(subgridDivId, rowId) {
+//        var me = this;
+//        var subgridTableId = subgridDivId + "_t";
+//        var documentGrid = documentPage.gridController.LCMSGrids[subgridTableId];
+//        documentPage.gridController.addLCMSGrid(subgridTableId, documentGrid);
+//        $("#" + subgridDivId).html("<table id='" + subgridTableId + "'></table><div id='pager_" + subgridTableId + "'></div>");
+//        var createSubGrid = (async function (me) {
+//            let value;
+//            documentGrid = documentPage.gridController.LCMSGrids[subgridTableId];
+//            if (typeof documentGrid === "undefined") {
+//                var documentGridToCopy = documentPage.gridController.LCMSGrids[Object.keys(documentPage.gridController.LCMSGrids).find(function (a) {
+//                    return a.includes("_row");
+//                })];
+//                var documentGrid = jQuery.extend(true, {}, documentGridToCopy);
+//                //var documentGrid = Object.assign({}, documentGridToCopy);
+//                documentGrid.gridData.data.table = [];
+//                documentGrid.gridData.pagerID = "pager_" + subgridTableId;
+//                documentGrid.gridData.jqGridOptions.pager = "#pager_" + subgridTableId;
+//                documentGrid.gridData.tableObject = subgridTableId;
+//                documentGrid = new LCMSGrid(documentGrid.gridData);
+//                documentPage.gridController.addLCMSGrid(subgridTableId, documentGrid);
+//            }
+//            let promise = new Promise((res, rej) => {
+//                res(documentGrid.createGridOptions(subgridTableId, {pager: "#pager_" + subgridTableId}));
+//            });
+//            value = await  promise;
+//            $("#" + subgridTableId).jqGrid(value);
+//            documentGrid.gridData.pagerID = "pager_" + subgridTableId;
+//            documentGrid.gridData.jqGridOptions.pager = "#pager_" + subgridTableId;
+//            documentGrid.gridData.tableObject = subgridTableId;
+//            $("#" + subgridTableId).inlineNav("#" + documentGrid.gridData.pagerID, documentGrid.gridData.jqGridParameters.navGridParameters);
+//        })();
+//    }
 
     checkHasSubGrid(_rowid, _subgridref, _gridController) {
         console.log("checking hasSubgrid");

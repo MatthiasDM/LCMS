@@ -219,17 +219,23 @@ class gcmscore {
         $.each(_extraParam, function (key, value) {
             ajaxParameters[key] = value;
         });
+        let loading = new LCMSloading(false);
+        loading.loading();
         return await $.ajax(ajaxParameters).done(function (data) {
 
             if (typeof _onDone !== "undefined") {
                 _onDone(data);
             }
+            loading.setLoaded(true);
             return data;
-            //bootstrap_alert.warning('Success', 'success', 1000);        
+
         }).fail(function (jqXHR, textStatus, errorThrown) {
-//bootstrap_alert.warning('Something went wrong + \n ' + errorThrown, 'error', 5000);
+            loading.setLoaded(true);
             console.log(errorThrown);
+        }).always(function () {
+
         });
+
     }
 
     getPatches(oldData, newData) {
@@ -395,7 +401,9 @@ class gcmscore {
                 caption: caption //lang["department"]['title']
             },
             jqGridParameters: {
-                navGridParameters: {add: false, cancel: true, save: true, keys: true}
+                navGridParameters: {add: false, cancel: true, save: true, keys: true, afterrestorefunc: function () {
+                        console.log("afterrestorefunc");
+                    }}
             }
         };
         if (typeof jqGridOptions !== "undefined") {
@@ -447,9 +455,9 @@ class gcmscore {
             jqGridOptions: {
                 caption: caption //lang["department"]['title']
             },
-            jqGridParameters: {
-                navGridParameters: {add: false, cancel: true, save: true, keys: true}
-            }
+            navGridParameters: {add: false, cancel: true, save: true, keys: true, afterrestorefunc: function () {
+                    console.log("afterrestorefunc");
+                }}
         };
         $.each(jqGridOptions, function (i, n) {
             gridData.jqGridOptions[i] = n;
@@ -549,8 +557,8 @@ class gcmscore {
 
     static domFormSelect(title, id, name, valObjects, val, disabled) {
         console.log("forms_select()");
-        if(typeof valObjects === "string"){
-            valObjects = $.parseJSON(valObjects);            
+        if (typeof valObjects === "string") {
+            valObjects = $.parseJSON(valObjects);
         }
         var form_group = $("<div id='" + id + "' class='form-group'></div>");
         var label = $("<label for='" + title + "'>" + title + "</label>");
@@ -567,18 +575,18 @@ class gcmscore {
 
     }
 
-    static async loadExternalGrid(name, parent, extraOptions) {
+    static async loadExternalGrid(name, parent, extraOptions, id) {
 
 
         var title = typeof lang[baseName] !== "undefined" ? lang[baseName]['title'] : name;
         var baseName = name;
-        var fullName = baseName + uuidv4();
+        var fullName = id;//baseName + uuidv4();
         var container = dom_jqGridContainerFullWidth(fullName);
         parent.append(container);
 
-        LCMSTableRequest("load" + baseName, "edit" + baseName, "./servlet", fullName + "-table", fullName + "-pager", "div-grid-" + fullName + "-wrapper", title, 1, extraOptions);
+        let table = await LCMSTableRequest("load" + baseName, "edit" + baseName, "./servlet", fullName + "-table", fullName + "-pager", "div-grid-" + fullName + "-wrapper", title, 1, extraOptions);
 
-
+        return table;
 
     }
 
@@ -629,6 +637,96 @@ class gcmscore {
             valueArray.push(vals);
         });
         return JSON.stringify(valueArray);
+    }
+
+    static jqGridFilter(filtersparam, grid) {
+        grid.setGridParam({
+            postData: {
+                filters: JSON.stringify(filtersparam)
+            },
+            search: true
+        });
+        grid.trigger("reloadGrid");
+    }
+
+    static parseJSONString(jsonString) {
+        try {
+            jsonString = jsonString.replaceAll("'", "\"");
+            return $.parseJSON(jsonString);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    //functions for relationsal funciontality
+
+    static valuesFromInputHidden(wrapper) {
+        var vals = new Object();
+        var valueArray = new Array();
+        var base;
+
+        if (Array.isArray(wrapper)) {
+            return JSON.stringify(wrapper);
+        } else {
+            if (typeof wrapper === 'string') {
+                try {
+                    wrapper = $.parseJSON(wrapper);
+                    return JSON.stringify(wrapper);
+                } catch (e) {
+                    wrapper = $($.parseHTML(wrapper));
+                }
+            }
+            base = wrapper.find("input[type=hidden]");
+            if (base.length === 0) {
+                base = wrapper.filter("input[type=hidden]");
+            }
+            var values = base.map(function () {
+                return $(this).attr("value");
+            }).get();
+            var ids = base.map(function () {
+                return $(this).attr("id");
+            }).get();
+            $(ids).each(function (a, b) {
+                vals = {
+                    id: b,
+                    value: values[a]
+                };
+                valueArray.push(vals);
+            });
+        }
+        return JSON.stringify(valueArray);
+    }
+
+    static domFormInputHidden(title, id, name, valObjects, val) {
+        console.log("forms_select()");
+        if (typeof valObjects === "string") {
+            valObjects = $.parseJSON(valObjects);
+        }
+        var vals = new Array();
+        $.each(valObjects, function (a, b) {
+            vals.push(b.value);
+        });
+        vals.toString();
+        var form_group = $("<div id='" + id + "' class='form-group'></div>");
+        var label = $("<label for='" + title + "'>" + title + "</label>");
+        var select = $("<input type='text' autocomplete='off' class='form-control' name='" + name + "' value='" + vals + "' id='select-" + id + "'/>");
+        form_group.append(label);
+        form_group.append(select);
+        $.each(valObjects, function (a, b) {
+            form_group.append($("<input type='hidden' id='" + b.id + "' value='" + b.value + "'/>"));
+        });
+
+        if (typeof val !== "undefined") {
+            select.val(val);
+        }
+        return form_group;
+
+    }
+
+    static foreignKeyFunction(selRowData, key) {
+        console.log("foreignKeyFunction");        
+        var foreignKey = this.parseJSONString(key);      
+        return selRowData[foreignKey.key];
     }
 
 }
@@ -942,15 +1040,15 @@ async function LCMSRequest(_url, _data, _onDone, _extraParam) {
     $.each(_extraParam, function (key, value) {
         ajaxParameters[key] = value;
     });
+    showLoadingSmall("loading", "info", 2000);
     return await $.ajax(ajaxParameters).done(function (data) {
-
         if (typeof _onDone !== "undefined") {
             _onDone(data);
         }
+        hideLoadingSmall();
         return data;
-        //bootstrap_alert.warning('Success', 'success', 1000);        
     }).fail(function (jqXHR, textStatus, errorThrown) {
-//bootstrap_alert.warning('Something went wrong + \n ' + errorThrown, 'error', 5000);
+        showLoadingSmall("errorThrown", "error", 2000);
         console.log(errorThrown);
     });
 }
@@ -978,6 +1076,18 @@ function getPatchesReverse(oldData, newData) {
     var textPatches = dmp.patch_toText(patches);
     return (textPatches);
 }
+
+async function LazyTableRequest(baseName, editUrl, caption, tableType, extraRequestOptions, LCMSEditablePageObject) {
+
+
+    var lazyOptions = {compact: true, autoresizeOnLoad: true, rowList: [20, 50, 100], recordtext: "View {0} - {1} of {2}", repeatitems: false, pgbuttons: true, reloadAfterSubmit: true, bindkeys: false, selectToInlineEdit: false, multiselect: false, datatype: "json", page: 1, jsonReader: {id: "2", total: "total", records: "records", page: "page", root: "rows", cell: ""}, emptyrecords: "Scroll to bottom to load records", loadonce: false, rowNum: 20, url: "./servlet", mtype: "post", postData: {"LCMS_session": $.cookie('LCMS_session'), action: "data" + baseName, datatype: "json"},
+        loadBeforeSend: function (jqXHR) {
+            jqXHR.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded; charset=UTF-8');
+        }
+    };
+    return LCMSTableRequest("load" + baseName, "edit" + baseName, editUrl, baseName + "-table", baseName + "-pager", "div-grid-" + baseName + "-wrapper", caption, tableType, lazyOptions, extraRequestOptions, LCMSEditablePageObject);
+}
+
 
 async function LCMSTableRequest(loadAction, editAction, editUrl, tableName, pagerName, wrapperName, caption, tableType, jqGridOptions, extraRequestOptions, LCMSEditablePageObject) {
 
@@ -1136,11 +1246,49 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
                 editParams: {
                     extraparam: {action: editAction, LCMS_session: $.cookie('LCMS_session')},
                     action: editAction,
-                    LCMS_session: $.cookie('LCMS_session')
+                    LCMS_session: $.cookie('LCMS_session'),
+                    afterrestorefunc: function () {
+                        console.log("afterrestorefunc");
+                    }
                 }
             }
         }
     };
+
+
+    var editparameters = {
+        keys: true,
+        oneditfunc: function (a, b, c) {
+            console.log("oneditfunc");
+        },
+        successfunc: function (a, b, c) {
+            console.log("successfunc");
+            // $(this).jqGrid("setRowData", b, $(this).jqGrid("getRowData", b));
+            //$(this).trigger("reloadGrid");
+        },
+        afterrestorefunc: function (a, b, c) {
+            console.log("afterrestorefunc");
+            $(this).trigger("reloadGrid");
+        },
+        aftersavefunc: function (a, b, c) {
+            console.log("aftersavefunc");
+            //$(this).trigger("reloadGrid");
+        },
+        beforeCancelRow: function (a, b, c) {
+            console.log("beforeCancelRow");
+        },
+        action: editAction,
+        LCMS_session: $.cookie('LCMS_session'),
+        extraparam: {action: editAction,
+            LCMS_session: $.cookie('LCMS_session')},
+        aftersavefunc: function (rowid, response, options) {
+            console.log("aftersavefunc");
+        },
+        mtype: "POST"
+    };
+
+    gridData.jqGridParameters.navGridParameters.editParams = editparameters;
+
     if (typeof jqGridOptions !== "undefined") {
         $.each(jqGridOptions, function (i, n) {
             gridData.jqGridOptions[i] = n;
@@ -1154,7 +1302,7 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
                         return null;
                     });
                 }));
-                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
+                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil-square", "Eigenschappen wijzigen", "", function () {
                     var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
                     if (rowid !== null) {
                         return lcmsGrid.popupEdit(rowid, function () {
@@ -1163,6 +1311,14 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
                     } else {
                         return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
                     }
+                }));
+                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-list-alt", "Snelle wijzigingen aan/uit", "", function () {
+                    var tableObj = $("#" + gridData.tableObject);
+                    tableObj.jqGrid('bindKeys', {
+                        "onEnter": function (rowid) {
+                            alert("You enter a row with id:" + rowid);
+                        }
+                    });
                 }));
             }
     );
@@ -1191,7 +1347,9 @@ function LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName,
             caption: caption //lang["department"]['title']
         },
         jqGridParameters: {
-            navGridParameters: {add: false, cancel: true, save: true, keys: true}
+            navGridParameters: {add: false, cancel: true, save: true, keys: true, afterrestorefunc: function () {
+                    console.log("afterrestorefunc");
+                }}
         }
     };
     $.each(jqGridOptions, function (i, n) {
@@ -1344,6 +1502,18 @@ $(function () {
             $(this).after(object);
         }
     };
+
+//    $(document).mouseup(function (e) {
+//        var externalListContent = $("div[id='external-list']");
+//        if (!externalListContent.is(e.target) && externalListContent.has(e.target).length === 0){
+//            console.log("close external list");
+//            externalListContent.parent().hide();
+//            externalListContent.empty();
+//            //externalListContent.hide();
+//        }
+//    });
+
+
 
 
 });
@@ -1503,12 +1673,25 @@ function sessionCountdown() {
 }
 bootstrap_alert = function () {};
 bootstrap_alert.warning = function (message, alert, timeout) {
+
+    if ($("div[id^=floating_alert]").length === 0) {
+        bootstrap_alert.show(message, alert, timeout);
+    } else {
+        bootstrap_alert.clear();
+        bootstrap_alert.show(message, alert, timeout);
+
+    }
+};
+
+bootstrap_alert.show = function (message, alert, timeout) {
     var id = uuidv4();
-    $('<div id="floating_alert_' + id + '" class="alert alert-' + alert + ' alert-dismissible fade show" role="alert"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">X</button>' + message + '&nbsp;&nbsp;</div>').appendTo($("#alertWrapper"));
+    var spinner = '<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>';
+    $('<div id="floating_alert_' + id + '" class="alert alert-' + alert + ' alert-dismissible fade show" role="alert" style="padding: 1em"><center>' + spinner + '&nbsp;&nbsp;<br/>' + message + '</center></div>').appendTo($("#alertWrapper"));
     setTimeout(function () {
         $("#floating_alert_" + id).alert('close');
     }, timeout);
 };
+
 bootstrap_alert.clear = function () {
     $("div[id^=floating_alert]").remove();
 };
@@ -1586,7 +1769,7 @@ $.fn.textWidth = function (text, font) {
 function create_modal(parent, title, text) {
 
     var modal = $("<div class='modal' tabindex='-1' role='dialog'></div>");
-    var modal_dialog = $("<div class='modal-dialog modal-lg' role='document'></div>");
+    var modal_dialog = $("<div class='modal-dialog modal-xl' role='document'></div>");
     var modal_content = $("<div class='modal-content'></div>");
     var modal_header = $("<div class='modal-header'></div>");
     var modal_title = $("<h5 class='modal-title'>" + title + "</h5>");
@@ -1616,6 +1799,13 @@ function showLoading() {
 function hideLoading() {
     $("#loadingModal").modal('hide');
     $("#loadingModal").remove();
+}
+
+function showLoadingSmall(text, type, timeout) {
+    return bootstrap_alert.warning(text, type, timeout);
+}
+function hideLoadingSmall() {
+    return bootstrap_alert.clear;
 }
 
 function create_blank_modal(parent, id, html, style) {
@@ -1967,9 +2157,9 @@ function dom_fourColContainer(containerID) {
 function dom_jqGridContainer(name) {
     var container = $("<div class='container' id='" + name + "-container'></div>");
     var row = dom_row();
-    var col1 = dom_col("", "1");
-    var col2 = dom_col(name + "-div-grid-wrapper", "10");
-    var col3 = dom_col("", "1");
+    var col1 = dom_col("", "0");
+    var col2 = dom_col(name + "-div-grid-wrapper", "12");
+    var col3 = dom_col("", "0");
     var table = $("<table id='" + name + "-table'></table>");
     var div = $("<div id='" + name + "-pager'></div>");
     col2.append(table);
@@ -2258,7 +2448,7 @@ function populateTable(_data, _editAction, _editUrl, _tableObject, _pagerName, _
         altRows: true,
         editurl: _editUrl,
         loadonce: true,
-        ondblClickRow: editRow,
+        //ondblClickRow: editRow,
         pager: _pagerName,
         caption: _caption,
         pgbuttons: false,
@@ -2387,9 +2577,9 @@ function cgenerateView2(data) {
             column.internalListAttribute = value.internalListAttribute;
 
         }
-        if (value.type === "external_list") {
+        if (value.type === "relation") {
             value.type = "select";
-            column.editoptions = {title: "external_list"};
+            column.editoptions = {title: "relation"};
         }
         if (value.type === "select") {
             column.edittype = "select";

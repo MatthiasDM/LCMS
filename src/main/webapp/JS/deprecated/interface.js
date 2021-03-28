@@ -674,9 +674,9 @@ function dom_fourColContainer(containerID) {
 function dom_jqGridContainer(name) {
     var container = $("<div class='container' id='" + name + "-container'></div>");
     var row = dom_row();
-    var col1 = dom_col("", "1");
-    var col2 = dom_col(name + "-div-grid-wrapper", "10");
-    var col3 = dom_col("", "1");
+    var col1 = dom_col("", "0");
+    var col2 = dom_col(name + "-div-grid-wrapper", "12");
+    var col3 = dom_col("", "0");
     var table = $("<table id='" + name + "-table'></table>");
     var div = $("<div id='" + name + "-pager'></div>");
     col2.append(table);

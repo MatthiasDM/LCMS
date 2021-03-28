@@ -172,6 +172,15 @@ lang = {
     personFunctions: {
         title: "Functies"
     },
+    personCompetences: {
+        title: "Competenties"
+    },
+    personQualifications: {
+        title: "Qualificaties"
+    },
+    personQualificationReviews: {
+        title: "Reviews"
+    },
     countries: {
         title: "Landen"
     }

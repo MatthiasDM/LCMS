@@ -98,14 +98,17 @@ function ckOnInstanceReady(e, imageController) {
     if (typeof editor.dropzone !== "undefined") {
         if (editor.dropzone.destroy !== "undefined") {
             editor.dropzone({
-                url: "./upload",
+                url: "./servlet",
                 clickable: false,
                 createImageThumbnails: false,
                 previewsContainer: false,
+                method: 'POST',
                 init: function () {
                     this.on("sending", function (file, xhr, formData) {
-                        formData.append('action', 'FILE_UPLOAD');
+                        formData.append('action', 'docommand');
+                        formData.append('k', 'doUploadFile');
                         formData.append('LCMS_session', $.cookie('LCMS_session'));
+                        
                         console.log(formData);
                     });
                     this.on("success", function (file, response) {

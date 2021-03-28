@@ -21,11 +21,14 @@ public class gcmsObjectImplementation implements gcmsObject {
     String type;
 
     @JsonProperty
-    String[] externalListParameters;
-    
+    String relationParameters;
+
+    @JsonProperty
+    String foreignKey;
+
     @JsonProperty
     String formatterName;
-    
+
     @JsonProperty
     boolean key;
 
@@ -70,9 +73,10 @@ public class gcmsObjectImplementation implements gcmsObject {
     @JsonProperty
     boolean DMP;
 
-    public gcmsObjectImplementation(String type, String[] externalListParameters, String formatterName, boolean key, boolean visibleOnTable, boolean editable, boolean multiple, boolean visibleOnForm, String[] choices, String[] reference, String viewRole, String editRole, String createRole, int minimumViewRoleVal, int minimumEditRoleVal, int minimumCreateRoleVal, boolean DMP) {
+    public gcmsObjectImplementation(String type, String relationParameters, String foreignKey, String formatterName, boolean key, boolean visibleOnTable, boolean editable, boolean multiple, boolean visibleOnForm, String[] choices, String[] reference, String viewRole, String editRole, String createRole, int minimumViewRoleVal, int minimumEditRoleVal, int minimumCreateRoleVal, boolean DMP) {
         this.type = type;
-        this.externalListParameters = externalListParameters;
+        this.relationParameters = relationParameters;
+        this.foreignKey = foreignKey;
         this.formatterName = formatterName;
         this.key = key;
         this.visibleOnTable = visibleOnTable;
@@ -90,15 +94,21 @@ public class gcmsObjectImplementation implements gcmsObject {
         this.DMP = DMP;
     }
 
-    public String[] getExternalListParameters() {
-        return externalListParameters;
+    public String getRelationParameters() {
+        return relationParameters;
     }
 
-    public void setExternalListParameters(String[] externalListParameters) {
-        this.externalListParameters = externalListParameters;
+    public void setRelationParameters(String relationParameters) {
+        this.relationParameters = relationParameters;
     }
-  
- 
+
+    public String getForeignKey() {
+        return foreignKey;
+    }
+
+    public void setForeignKey(String foreignKey) {
+        this.foreignKey = foreignKey;
+    }
 
     public String getFormatterName() {
         return formatterName;
@@ -106,7 +116,7 @@ public class gcmsObjectImplementation implements gcmsObject {
 
     public void setFormatterName(String formatterName) {
         this.formatterName = formatterName;
-    }    
+    }
 
     public String getType() {
         return type;
@@ -314,8 +324,13 @@ public class gcmsObjectImplementation implements gcmsObject {
     }
 
     @Override
-    public String[] externalListParameters() {
-       return externalListParameters;
+    public String relationParameters() {
+        return relationParameters;
+    }
+
+    @Override
+    public String foreignKey() {
+        return foreignKey;
     }
 
 }

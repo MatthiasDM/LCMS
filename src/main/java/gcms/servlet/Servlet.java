@@ -45,6 +45,7 @@ import static gcms.database.objects.load.LoadObjects.loadObjects;
 import static gcms.database.objects.get.GetObject.getObject;
 import static gcms.database.objects.edit.EditObject.editObject;
 import static gcms.database.objects.load.LoadObjects.dataload;
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  *
@@ -288,7 +289,15 @@ public class Servlet extends HttpServlet {
                         sb.append(commandFunctions.doCommand(key, requestParameters, command, parts));
                     } else {
                         if (accesstype.contains("1") && !accesstype.contains("2") && (Core.checkSession(cookie) && !publicPage)) {
-                            sb.append(commandFunctions.doCommand(key, requestParameters, command, parts));
+                            List<String> userRoles = Core.getUserRoles(getCookie());
+                            List<String> executionRoles = command.getExecutionRoles();
+                            if (Core.notNullNorEmpty(executionRoles)) {
+                                if (CollectionUtils.containsAny(userRoles, executionRoles)) {
+                                    sb.append(commandFunctions.doCommand(key, requestParameters, command, parts));
+                                }   
+                            } else {
+                                sb.append(commandFunctions.doCommand(key, requestParameters, command, parts));
+                            }
                         } else {
                             if (accesstype.contains("2") && apiAuthorized) {
                                 sb.append(commandFunctions.doCommand(key, requestParameters, command, parts));
@@ -337,9 +346,9 @@ public class Servlet extends HttpServlet {
                                 sb.append(getObject(cookie, mongoConfiguration, key, value, publicPage));
                             }
                             if (action.name.toUpperCase().startsWith("DATA")) {
-                                
+
                                 BasicDBObject filterObject = new BasicDBObject();
-                            
+
                                 //excludes.add("contents");
                                 if (mongoConfiguration.getCollection().equals("backlog")) {
                                     filterObject.put("object_id", new BasicDBObject("$eq", requestParameters.get("object_id")[0]));
@@ -348,8 +357,8 @@ public class Servlet extends HttpServlet {
                                     if (requestParameters.get("prefix") != null) {
                                         filterObject.put("prefix", new BasicDBObject("$eq", requestParameters.get("prefix")[0]));
                                     }
-                                }                           
-                                
+                                }
+
                                 sb.append(Core.universalObjectMapper.writeValueAsString(dataload(cookie, mongoConfiguration, requestParameters, filterObject)));
                             }
                         }

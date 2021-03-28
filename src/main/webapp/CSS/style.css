@@ -25,7 +25,7 @@ and open the template in the editor.
 #alertWrapper{    
     position: fixed;
     z-index: 1000;    
-    top: 20px;
+    bottom: 20px;
     right: 20px;
 }
 
@@ -61,7 +61,9 @@ h4, .h4 {
 h5, .h5 {
     font-size: 1.2rem;    
 }
-
+a {
+    cursor: pointer;    
+}
 
 
 /*BOOTSTRAP*/
@@ -94,6 +96,8 @@ img {
 
 /*JQGRID*/
 
+
+
 .jqgrow{
     cursor:pointer;
 }
@@ -116,7 +120,7 @@ jqgrid-bootstrap tr.jqgrow>td {
 }
 .ui-jqgrid-btable .ui-state-highlight { background: yellow; }
 .row-selected{
-        background: lightgrey;
+        background-color: lightblue !important;
 }
 
 /*div[id^="editmod"]{
@@ -162,7 +166,7 @@ jqgrid-bootstrap tr.jqgrow>td {
     border-radius: 0px; 
 }
 
-.ui-jqgrid tr.jqgrow td { word-wrap: break-word; /* IE 5.5+ and CSS3 */ white-space: pre-wrap; /* CSS3 */ white-space: -moz-pre-wrap; /* Mozilla, since 1999 */ white-space: -pre-wrap; /* Opera 4-6 */ white-space: -o-pre-wrap; /* Opera 7 */ overflow: hidden; height: auto; vertical-align: middle; padding-top: 3px; padding-bottom: 3px; }
+.ui-jqgrid tr.jqgrow td { font-size: 0.8rem;word-wrap: break-word; /* IE 5.5+ and CSS3 */ white-space: no-wrap; /* CSS3 */ white-space: -moz-pre-wrap; /* Mozilla, since 1999 */ white-space: -pre-wrap; /* Opera 4-6 */ white-space: -o-pre-wrap; /* Opera 7 */ overflow: hidden; height: auto; vertical-align: middle; padding-top: 3px; padding-bottom: 3px; }
 
 .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-pager .fa, .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-view .fa {
     font-size: 1.2em;

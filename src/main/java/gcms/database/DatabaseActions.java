@@ -398,7 +398,7 @@ public class DatabaseActions {
         List<String> userRoles = new ArrayList<>();
         List<SerializableField> fields = serialiableClass.getFields();
         ArrayList<Rights> rights = getRightsFromDatabaseInCollection(collection);
-      
+
         if (_cookie != null) {
             userRoles = getUserRoles(_cookie);
         }
@@ -423,10 +423,10 @@ public class DatabaseActions {
                         break;
                     default:
                         break;
-                }
-
+                }          
+             
                 for (String userRole : userRoles) {
-                    if (role.equals("")) {
+                    if (role.equals("")) {                        
                         if (gcms.Config.Roles.valueOf(userRole).getLevelCode() >= roleVal) {
                             columns.add(field.getName());
                             break;
@@ -562,6 +562,27 @@ public class DatabaseActions {
                     fields(include(columns))
             ).projection(fields(and(exclude("_id"), exclude(excludes)))).into(new ArrayList<>());
         } catch (Exception e) {
+            LOG.severe(e.getMessage());
+            return results;
+        }
+
+        return results;
+    }
+
+    public static ArrayList<Document> getObjectsRest(MongoConfigurations mongoConf, Bson bson, Bson sort, int limit, String[] excludes, List<String> columns, int rows, int page) throws ClassNotFoundException {
+
+        if (excludes != null) {
+            for (String exclude : excludes) {
+                columns.remove(exclude);
+            }
+        }
+        ArrayList<Document> results = null;
+        try {
+            MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);       
+            results = ObjectItems.find(bson).sort(sort).skip(rows * (page - 1)).limit(limit).projection(
+                    fields(include(columns))
+            ).projection(fields(and(exclude("_id"), exclude(excludes)))).into(new ArrayList<>());
+        } catch (ClassNotFoundException e) {
             LOG.severe(e.getMessage());
             return results;
         }

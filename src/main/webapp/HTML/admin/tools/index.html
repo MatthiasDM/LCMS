@@ -1,82 +1,23 @@
 <script>
-    $(function () {
 
-        users_doLoad($("#admin-container"));
-        mongoconfigurations_doLoad($("#admin-container"));
-        actions_doLoad($("#admin-container"));
-        pages_doLoad($("#pages-container"));
-        commands_doLoad($("#admin-container"));
-        workflows_doLoad($("#workflow-container"));
-        apikeys_doLoad($("#admin-container"));
-        chronjobs_doLoad($("#chronjobs-container"));
-        rights_doLoad($("#rights-container"));
-        roles_doLoad($("#roles-container"));
-    });
-
-
-    function users_doLoad(_parent) {
-        console.log("Users load");
-        LCMSTableRequest("loadusers", "editusers", "./servlet", "user-table", "user-pager", "div-grid-user-wrapper", lang["users"]['title'], 1, {hiddengrid: true});
-
+    function loadTable(_title, _parent, _baseName) {
+        console.log("Loading " + _title);
+        var title = typeof lang[baseName] !== "undefined" ? lang[baseName]['title'] : _title;
+        var baseName = _baseName;
+        var container = dom_jqGridContainer(baseName);
+        _parent.append(container);
+        LazyTableRequest(baseName, "./servlet", title, 1);
     }
-
-    function apikeys_doLoad(_parent) {
-        console.log("Api's load");
-        LCMSTableRequest("loadapikeys", "editapikey", "./servlet", "apikeys-table", "apikeys-pager", "div-grid-apikeys-wrapper", lang["apikeys"]['title'], 1, {hiddengrid: true});
+    ;
+    function createModalTable(_title, _baseName) {
+        var mod = create_modal($("#admin-container"), _title, "");
+        var modalBody = mod.find("div[class=modal-body]");
+        mod.on('hidden.bs.modal', function () {
+            $(this).remove();
+        })
+        loadTable(_title, modalBody, _baseName);
+        mod.modal();
     }
-
-    function chronjobs_doLoad(_parent) {
-        console.log("Chronjobs load");
-        LCMSTableRequest("loadchronjobs", "editchronjob", "./servlet", "chronjobs-table", "chronjobs-pager", "div-grid-chronjobs-wrapper", lang["chronjobs"]['title'], 1, {hiddengrid: true});
-    }
-
-    function mongoconfigurations_doLoad(_parent) {
-        console.log("Mongoconfigurations load");
-        LCMSTableRequest("loadmongoconfigurations", "editmongoconfiguration", "./servlet", "mongoconfigurations-table", "mongoconfigurations-pager", "div-grid-user-wrapper", lang["mongoconfigurations"]['title'], 1, {hiddengrid: true});
-
-    }
-
-    function actions_doLoad(_parent) {
-        console.log("Actions load");
-        var extraOptions = {
-            grouping: true,
-            groupingView: {
-                groupField: ['mongoconfiguration'],
-                groupColumnShow: [false],
-                groupText: ['<b>{0} - {1} Item(s)</b>'],
-                groupCollapse: true
-            },
-            hiddengrid: true
-        };
-        LCMSTableRequest("loadactions", "editaction", "./servlet", "actions-table", "actions-pager", "div-grid-actions-wrapper", lang["actions"]['title'], 2, extraOptions);
-    }
-
-    function pages_doLoad(_parent) {
-        console.log("Pages load");
-        LCMSTableRequest("loadpages", "editpages", "./servlet", "pages-table", "pages-pager", "div-grid-pages-wrapper", lang["pages"]['title'], 1, {hiddengrid: true});
-    }
-
-    function commands_doLoad(_parent) {
-        console.log("Commands load");
-        LCMSTableRequest("loadcommands", "editcommands", "./servlet", "commands-table", "commands-pager", "div-grid-commands-wrapper", lang["commands"]['title'], 1, {hiddengrid: true});
-    }
-
-    function workflows_doLoad(_parent) {
-        console.log("Workflows load");
-        LCMSTableRequest("loadworkflows", "editworkflow", "./servlet", "workflows-table", "workflows-pager", "div-grid-workflows-wrapper", lang["workflows"]['title'], 1, {hiddengrid: true});
-    }
-
-    function rights_doLoad(_parent) {
-        console.log("Rights load");
-        LCMSTableRequest("loadrights", "editright", "./servlet", "rights-table", "rights-pager", "div-grid-rights-wrapper", lang["rights"]['title'], 1, {hiddengrid: true});
-    }
-
-    function roles_doLoad(_parent) {
-        console.log("Roles load");
-        LCMSTableRequest("loadroles", "editrole", "./servlet", "roles-table", "roles-pager", "div-grid-roles-wrapper", lang["roles"]['title'], 1, {hiddengrid: true});
-    }
-
-
 
 
 </script>
@@ -93,114 +34,25 @@
 
 <div class="container" style="width:100%" id="admin-container">
 
-    <div class="row">
-        <div class="col-sm-1 mx-auto"></div>
-        <!START user-table-->
-        <div class="col-sm-10 mx-auto" id="div-grid-user-wrapper">
-            <table id="user-table"></table>
-            <div id="user-pager"></div>   
+    <div class="card">
+        <div class="card-header">
+            Configuratie
         </div>
-        <div class="col-sm-1 mx-auto"></div>
-    </div>
-    <br/><br/>
-    <div class="row">
-        <div class="col-sm-1 mx-auto"></div>
-        <!START user-table-->
-        <div class="col-sm-10 mx-auto" id="div-grid-mongoconfigurations-wrapper">
-            <table id="mongoconfigurations-table"></table>
-            <div id="mongoconfigurations-pager"></div>   
+        <div class="card-body">
+            <a class="badge badge-secondary" style="margin: 5px;" onclick="createModalTable('Database-objecten', 'mongoconfigurations')">Database-objecten</a>
+            <a class="badge badge-info" onclick="createModalTable('Database-acties', 'actions')" style="margin: 5px;">Database-acties</a>            
+            <a class="badge badge-warning" onclick="createModalTable('Gebruikers', 'users')" style="margin: 5px;">Gebruikers</a>
+            <a class="badge badge-secondary" onclick="createModalTable('Paginas', 'pages')" style="margin: 5px;">Paginas</a>
+            <a class="badge badge-info" onclick="createModalTable('Opdrachten', 'commands')" style="margin: 5px;">Opdrachten</a>
+            <a class="badge badge-warning" onclick="createModalTable('Werkstromen', 'workflows')" style="margin: 5px;">Werkstromen</a>
+            <a class="badge badge-info" onclick="createModalTable('API keys', 'apikeys')" style="margin: 5px;">API keys</a>
+            <a class="badge badge-secondary" onclick="createModalTable('Taken', 'chronjobs')" style="margin: 5px;">Taken</a>
+            <a class="badge badge-info" onclick="createModalTable('Rechten', 'rights')" style="margin: 5px;">Rechten</a>
+            <a class="badge badge-warning" onclick="createModalTable('Rollen', 'roles')" style="margin: 5px;">Rollen</a>
         </div>
-        <div class="col-sm-1 mx-auto"></div>
-
     </div>
-    <br/><br/>
-    <div class="row">
-        <div class="col-sm-1 mx-auto"></div>
-        <!START user-table-->
-        <div class="col-sm-10 mx-auto" id="div-grid-actions-wrapper">
-            <table id="actions-table"></table>
-            <div id="actions-pager"></div>   
-        </div>
-        <div class="col-sm-1 mx-auto"></div>
 
-    </div>
-    <br/><br/>
 
-    <div class="row">
-        <div class="col-sm-1 mx-auto"></div>
-        <!START user-table-->
-        <div class="col-sm-10 mx-auto" id="div-grid-pages-wrapper">
-            <table id="pages-table"></table>
-            <div id="pages-pager"></div>   
-        </div>
-        <div class="col-sm-1 mx-auto"></div>
-
-    </div>
-    <br/><br/>
-    <div class="row">
-        <div class="col-sm-1 mx-auto"></div>
-        <!START user-table-->
-        <div class="col-sm-10 mx-auto" id="div-grid-commands-wrapper">
-            <table id="commands-table"></table>
-            <div id="commands-pager"></div>   
-        </div>
-        <div class="col-sm-1 mx-auto"></div>
-
-    </div>
-    <br/><br/>
-    <div class="row">
-        <div class="col-sm-1 mx-auto"></div>
-        <!START user-table-->
-        <div class="col-sm-10 mx-auto" id="div-grid-workflows-wrapper">
-            <table id="workflows-table"></table>
-            <div id="workflows-pager"></div>   
-        </div>
-        <div class="col-sm-1 mx-auto"></div>
-
-    </div>
-    <br/><br/>
-    <div class="row">
-        <div class="col-sm-1 mx-auto"></div>
-        <!START user-table-->
-        <div class="col-sm-10 mx-auto" id="div-grid-apikeys-wrapper">
-            <table id="apikeys-table"></table>
-            <div id="apikeys-pager"></div>   
-        </div>
-        <div class="col-sm-1 mx-auto"></div>
-
-    </div>
-    <br/><br/>
-    <div class="row">
-        <div class="col-sm-1 mx-auto"></div>
-        <!START user-table-->
-        <div class="col-sm-10 mx-auto" id="div-grid-chronjobs-wrapper">
-            <table id="chronjobs-table"></table>
-            <div id="chronjobs-pager"></div>   
-        </div>
-        <div class="col-sm-1 mx-auto"></div>
-
-    </div>
-    <br/><br/>
-    <div class="row">
-        <div class="col-sm-1 mx-auto"></div>
-        <!START user-table-->
-        <div class="col-sm-10 mx-auto" id="div-grid-rights-wrapper">
-            <table id="rights-table"></table>
-            <div id="rights-pager"></div>   
-        </div>
-        <div class="col-sm-1 mx-auto"></div>
-
-    </div>
-    <br/><br/>
-    <div class="row">
-        <div class="col-sm-1 mx-auto"></div>
-        <!START user-table-->
-        <div class="col-sm-10 mx-auto" id="div-grid-roles-wrapper">
-            <table id="roles-table"></table>
-            <div id="roles-pager"></div>   
-        </div>
-        <div class="col-sm-1 mx-auto"></div>
-
-    </div>
+ 
     <br/><br/>
 </div>

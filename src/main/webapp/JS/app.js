@@ -32,7 +32,8 @@ require.config({
         jqueryui: ('jquery/jquery-ui'),
         tether: ('jquery/tether.min'),
         dmp: ('diffMatchPatch/diff_match_patch'),
-        iframeresizer: ('iframeresizer/iframeResizer.min')
+        iframeresizer: ('iframeresizer/iframeResizer.min'),
+        dropzone: ('dropzone/dropzone.min')
     },
     map: {
         'jQuery': {jquery: 'jquery/jquery'}
@@ -80,7 +81,8 @@ require([
     "ckeditor",
     "jqgrid",
     "iframeresizer",
-    "dmp"
+    "dmp",
+    "dropzone"
 ], function ($) {    
     console.log("all sources required");
     $("body").css({"background-image": "url(./images/background.jpg)","background-attachment": "fixed","background-repeat": "no-repeat","background-size": "cover","background-position": "center","-webkit-mask-size": "cover"});

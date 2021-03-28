@@ -135,44 +135,44 @@ class LCMSGridForm {
                         documentPage.addGridButtons(documentGrid, gridObjectResult, gridData, editor);
                     }
             );
-            if (typeof extraOptions.subgridof !== "undefined") {
-
-                var id = getJQGridParamByCaption(extraOptions.subgridof).id;
-                var params = getJQGridParamByCaption(extraOptions.subgridof);
-                var createSubGrid = (async function () {
-                    let promise = new Promise((res, rej) => {
-                        res(documentGrid.createGridOptions(id + "_subgridTableTemplate", {pager: "#" + id + "_subgridPagerTemplate"}));
-                    });
-                    let subGridTemplate = await promise;
-                    params.subgridTemplate = subGridTemplate;
-                });
-                params.subGridRowExpanded = function (subgridDivId, rowId) {
-                    var subgridTableId = subgridDivId + "_t";
-                    $("#" + subgridDivId).html("<table id='" + subgridTableId + "'></table><div id='pager_" + subgridTableId + "'></div>");
-                    var createSubGrid = (async function () {
-                        let promise = new Promise((res, rej) => {
-                            res(documentGrid.createGridOptions(subgridTableId, {pager: "#pager_" + subgridTableId}));
-                        });
-                        let value = await  promise;
-                        $("#" + subgridTableId).jqGrid(value);
-                        params.subgridTemplate = value;
-                        //documentGrid = new LCMSGrid($("#" + subgridTableId).jqGrid("getGridParam"));
-                        gridData.tableObject = subgridTableId;
-                        gridData.pagerID = "pager_" + subgridTableId;
-                        gridData.jqGridOptions.pager = "#pager_" + subgridTableId;
-                        documentGrid.gridData.pagerID = "pager_" + subgridTableId;
-                        documentGrid.gridData.jqGridOptions.pager = "#pager_" + subgridTableId;
-                        documentGrid.gridData.tableObject = subgridTableId;
-                        documentPage.gridController.addLCMSGrid(subgridTableId, documentGrid);
-                        $("#" + subgridTableId).inlineNav("#" + gridData.pagerID, gridData.jqGridParameters.navGridParameters);
-                    })();
-                };
-                //params.subgridof = extraOptions.subgridof;
-                // params.subgridTemplate = $("#" + id).jqGrid("getGridParam");
-                params.subGridHasSubGridValidation = me.checkHasSubGrid;
-                $("#" + id).jqGrid("setGridParam", params);
-                $("#" + id).trigger("reloadGrid");
-            }
+//            if (typeof extraOptions.subgridof !== "undefined") {
+//
+//                var id = getJQGridParamByCaption(extraOptions.subgridof).id;
+//                var params = getJQGridParamByCaption(extraOptions.subgridof);
+//                var createSubGrid = (async function () {
+//                    let promise = new Promise((res, rej) => {
+//                        res(documentGrid.createGridOptions(id + "_subgridTableTemplate", {pager: "#" + id + "_subgridPagerTemplate"}));
+//                    });
+//                    let subGridTemplate = await promise;
+//                    params.subgridTemplate = subGridTemplate;
+//                });
+//                params.subGridRowExpanded = function (subgridDivId, rowId) {
+//                    var subgridTableId = subgridDivId + "_t";
+//                    $("#" + subgridDivId).html("<table id='" + subgridTableId + "'></table><div id='pager_" + subgridTableId + "'></div>");
+//                    var createSubGrid = (async function () {
+//                        let promise = new Promise((res, rej) => {
+//                            res(documentGrid.createGridOptions(subgridTableId, {pager: "#pager_" + subgridTableId}));
+//                        });
+//                        let value = await  promise;
+//                        $("#" + subgridTableId).jqGrid(value);
+//                        params.subgridTemplate = value;
+//                        //documentGrid = new LCMSGrid($("#" + subgridTableId).jqGrid("getGridParam"));
+//                        gridData.tableObject = subgridTableId;
+//                        gridData.pagerID = "pager_" + subgridTableId;
+//                        gridData.jqGridOptions.pager = "#pager_" + subgridTableId;
+//                        documentGrid.gridData.pagerID = "pager_" + subgridTableId;
+//                        documentGrid.gridData.jqGridOptions.pager = "#pager_" + subgridTableId;
+//                        documentGrid.gridData.tableObject = subgridTableId;
+//                        documentPage.gridController.addLCMSGrid(subgridTableId, documentGrid);
+//                        $("#" + subgridTableId).inlineNav("#" + gridData.pagerID, gridData.jqGridParameters.navGridParameters);
+//                    })();
+//                };
+//                //params.subgridof = extraOptions.subgridof;
+//                // params.subgridTemplate = $("#" + id).jqGrid("getGridParam");
+//                params.subGridHasSubGridValidation = me.checkHasSubGrid;
+//                $("#" + id).jqGrid("setGridParam", params);
+//                $("#" + id).trigger("reloadGrid");
+//            }
 
 
             return gridObject;
@@ -526,7 +526,7 @@ class LCMSGridForm {
         var element1 = $("<input type='text' class='form-control' name='name' id='name-" + elementID + "' placeholder='fieldname'>");
         element1.val(nameVal);
         row = me.addElement(row, element1, 4, "form-group");
-        var element2 = $("<select class='form-control' name='type' id='type-" + elementID + "'><option value='text'>Tekst</option><option value='number'>Getal</option><option value='boolean'>Ja/Nee</option><option value='euro'>Euro</option><option value='cktext_code'>Code</option><option value='date'>Datum</option><option value='cktext'>Tekst met opmaak</option><option value='select'>Keuzelijst</option><option value='internal_list' multiple='true'>Interne lijst</option><option value='external_list'>Externe lijst</option><option value='customformatter'>Aangepast</option></select>");
+        var element2 = $("<select class='form-control' name='type' id='type-" + elementID + "'><option value='text'>Tekst</option><option value='number'>Getal</option><option value='boolean'>Ja/Nee</option><option value='euro'>Euro</option><option value='cktext_code'>Code</option><option value='date'>Datum</option><option value='cktext'>Tekst met opmaak</option><option value='select'>Keuzelijst</option><option value='internal_list' multiple='true'>Interne lijst</option><option value='relation'>Externe lijst</option><option value='customformatter'>Aangepast</option></select>");
         if (typeVal === "textarea") {
             if (typeof colModelValue.editoptions !== "undefined") {
                 if (colModelValue.editoptions.title === "ckedit") {
@@ -542,8 +542,8 @@ class LCMSGridForm {
                 if (colModelValue.editoptions.title === "internal_list") {
                     typeVal = "internal_list";
                 }
-                if (colModelValue.editoptions.title === "external_list") {
-                    typeVal = "external_list";
+                if (colModelValue.editoptions.title === "relation") {
+                    typeVal = "relation";
                 }
             }
         }

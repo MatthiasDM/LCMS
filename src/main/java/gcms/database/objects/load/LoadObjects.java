@@ -129,9 +129,12 @@ public class LoadObjects {
             filter.forEach((k, v) -> prefilter.put(k, v));
             Integer page = Integer.parseInt(requestParameters.get("page")[0]);
             Integer rows = Integer.parseInt(requestParameters.get("rows")[0]);
-            ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(_mongoConf, filter, null, 1000, excludes.toArray(new String[0]), columns);
+            ArrayList<Document> results = DatabaseActions.getObjectsRest(_mongoConf, filter, null, rows, excludes.toArray(new String[0]), columns, rows, page);
+            // response.setTotal(Integer.parseInt(String.valueOf(DatabaseActions.getObjectCount(_mongoConf, filter))));
+            // response.setRecords(results.size());
             response.setRecords(Integer.parseInt(String.valueOf(DatabaseActions.getObjectCount(_mongoConf, filter))));
-            response.setTotal((int) (Math.ceil((float) response.getRecords() / rows)));
+            double totalPage = (response.getRecords().doubleValue() / rows.doubleValue());
+            response.setTotal((int) (Math.ceil((totalPage))));
             response.setPage(page);
             if (!results.isEmpty()) {
                 response.setRows(results);
@@ -189,7 +192,8 @@ public class LoadObjects {
             if (mdmAnnotations != null) {
                 headerEntry.put("type", mdmAnnotations.type());
                 headerEntry.put("formatterName", mdmAnnotations.formatterName());
-                headerEntry.put("externalListParameters", mdmAnnotations.externalListParameters());
+                headerEntry.put("relationParameters", mdmAnnotations.relationParameters());
+                headerEntry.put("foreignKey", mdmAnnotations.foreignKey());
                 if (databaseRight.table != null) {
                     headerEntry.put("visibleOnForm", databaseRight.isVisibleOnForm());
                     headerEntry.put("visibleOnTable", databaseRight.isVisibleOnTable());
@@ -201,7 +205,7 @@ public class LoadObjects {
                 }
                 headerEntry.put("creatable", createableColumns.contains(column));
                 headerEntry.put("multiple", mdmAnnotations.multiple());
-                headerEntry.put("key", mdmAnnotations.key());
+                // headerEntry.put("key", mdmAnnotations.key());
                 headerEntry.put("tablename", tableName);
                 if (!"".equals(mdmAnnotations.reference()[0])) {
                     String refType = mdmAnnotations.reference()[0];

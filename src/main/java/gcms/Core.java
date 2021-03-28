@@ -313,6 +313,14 @@ public class Core {
         }
     }
 
+    public static boolean notNullNorEmpty(List<String> obj) {
+        if (obj != null) {
+            return obj.size() > 0;
+        } else {
+            return false;
+        }
+    }
+
     public static List<String> getUserRolesV2(String _cookie) {
         Session session = DatabaseActions.getSession(_cookie);
         List<String> roles = new ArrayList<>();
@@ -517,7 +525,7 @@ public class Core {
                     SerializableField f = cls.getField(key);
                     if (f != null) {
                         System.out.println(f.getType());
-                      
+
                         if (f.getType().equals("long") && !val.equals("") && val != null) {
                             parameters.put(key, Long.parseLong(val));
                         }
@@ -894,7 +902,7 @@ public class Core {
             parameters.put("action", "docommand");
             parameters.put("k", mongoconf.getPluginName());
             parameters.put("extra", Core.universalObjectMapper.writeValueAsString(extra));
-            sb.append(Core.httpRequest("http://localhost:8081/LCMS/servlet/", "post", Core.universalObjectMapper.writeValueAsString(parameters)));
+            sb.append(Core.httpRequest(baseURL + dirName + "servlet/", "post", Core.universalObjectMapper.writeValueAsString(parameters)));
             JsonNode parentJson = Core.universalObjectMapper.readTree(sb.toString());
             String requestResult = parentJson.asText();
 

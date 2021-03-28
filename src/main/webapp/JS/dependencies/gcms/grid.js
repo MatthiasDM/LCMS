@@ -36,6 +36,8 @@ class LCMSGrid {
     constructor(gridData) {
         this.gridData = gridData;
         this.colModel = [];
+        this.lastSelection = 0;
+        this.selRowData = {};
         var me = this;
         loadFormatters().then(
                 function (result) {
@@ -301,31 +303,31 @@ class LCMSGrid {
                 column.internalListName = value.internalListName;
                 column.internalListAttribute = value.internalListAttribute;
             }
-            if ((typeof value.editoptions !== "undefined" && value.editoptions.title === "external_list") || type === "external_list") {
+            if ((typeof value.editoptions !== "undefined" && value.editoptions.title === "relation") || type === "relation") {
                 value.type = "select";
                 column.type = "select";
-
+                var relationParams = gcmscore.parseJSONString(value.relationParameters);
                 column.editoptions = {
-                    title: "external_list",
+                    title: "relation",
                     multiple: true,
-                    externalListParameters: value.externalListParameters,
+                    relationParameters: relationParams,
                     custom_value: function (elem, operation, value) {
                         console.log("setting custom value");
-                        return gcmscore.valuesFromSelect($(elem).find("select"));
+                        return gcmscore.valuesFromInputHidden($($(elem)[0]));
                     },
-                    custom_element: function (value, options) {
-                        console.log("external_list datainit");
+                    custom_element: function (value, options, row) {
+                        console.log("relation datainit");
                         if (value === "") {
-                            value = gcmscore.domFormSelect("", uuidv4(), options.cm.name, {}, "", false).html();
+                            value = gcmscore.domFormInputHidden("", uuidv4(), options.cm.name, {}, "").html();
                         }
-                        return me.loadExternalList(value, options.externalListParameters, options.mode);
+                        return me.loadExternalList(value, options);
                     }};
                 column.edittype = "custom";
                 //column.externalListAction = value.externalListAction;
                 //column.externalListCommand = value.externalListCommand;
-                column.externalListIdColumn = value.externalListParameters[2];
-                column.externalListValueColumn = value.externalListParameters[1];
-                console.log("external_list editoptions");
+                column.externalListIdColumn = relationParams.key;
+                column.externalListValueColumn = relationParams.value;
+                console.log("relation editoptions");
             }
 
             if (type === "password" || type === "encrypted") {
@@ -341,7 +343,6 @@ class LCMSGrid {
             if (value.hidden === true) {
                 column.hidden = true;
             }
-
             if (value.editable === false) {
                 column.editable = "disabled";
             } else {
@@ -380,12 +381,29 @@ class LCMSGrid {
             if (typeof value.sorttype !== "undefined") {
                 column.sorttype = value.sorttype;
             }
-
+            if (typeof value.sorttype !== "undefined") {
+                column.sorttype = value.sorttype;
+            }
+            if (typeof value.foreignKey !== "undefined") {
+                if (value.foreignKey !== "") {
+                    var foreignKey = value.foreignKey;
+                    if (typeof column.editoptions !== "undefined") {
+                        column.editoptions.defaultValue = function () {
+                            return gcmscore.foreignKeyFunction($(this).jqGrid("getGridParam").requestingGrid.selRowData, foreignKey);
+                        };
+                    } else {
+                        column.editoptions = {defaultValue: function () {
+                                return gcmscore.foreignKeyFunction($(this).jqGrid("getGridParam").requestingGrid.selRowData, foreignKey);
+                            }};
+                    }
+                    column.foreignKey = value.foreignKey;
+                }
+            }
 
             if (typeof value.width !== 'undefined' && typeof value.lso === "undefined") {
                 column.width = value.width;
             }
-
+            column.autoResizable = true;
             view.push(column);
         });
         console.log("Generating view");
@@ -393,28 +411,47 @@ class LCMSGrid {
         return view;
     }
 
-    loadExternalList(_value, externalListParameters, mode) {
+    loadExternalList(_value, options) {
         var me = this;
         console.log("loading list");
-        var values = $($($.parseHTML(_value))[1]).find("option").map(function () {
-            return $(this).text();
-        }).get();
-        var position = mode === "edit" ? "absolute" : "sticky";
-        var list = $("<div style='' data-target='#external-list'>" + _value + "</div><div class='collapse' id='external-list' style='position: " + position + ";width: 400px;z-index:100;'><div class='card border-secondary mb-6'><div id='external-list-content' style='padding:0' class='card-body text-secondary'></div></div></div>");
-        $(list).find("select").click(function (e) {
+        var position = options.mode === "edit" ? "absolute" : "sticky";
+        var datatarget = "external-list-" + options.relationParameters.collection;
+        var datatargetcontent = "external-list-content-" + options.relationParameters.collection;
+        var list = $("<div style='' data-target='#" + datatarget + "'>" + _value + "</div><div class='collapse' id='" + datatarget + "' style='position: " + position + ";width: 100%;z-index:100;'><div class='card border-secondary mb-6'><div id='" + datatargetcontent + "' style='padding:0' class='card-body text-secondary'></div></div></div>");
+        list.find("input[type='text']").attr("style", "");
+        $(list).find("input").click(function (e) {
             e.preventDefault();
-            $($(list)[1]).toggle();
-            me.loadExternalList2($($(list)[1]).find("div[id='external-list-content']"), externalListParameters);
+            $($(list)[1]).show();
+            var tableID = "#" + this.id + "-table";
+            if ($(tableID).jqGrid("getGridParam") === null) {
+                me.loadExternalList2($($(list)[1]).find("div[id='" + datatargetcontent + "']"), options, this.id);
+            }
+        });
+        $(list).find("input").bind("paste keyup", function (e) {
+            var tableID = "#" + this.id + "-table";
+            var valueAttr = options.relationParameters.value;
+            if ($(tableID).jqGrid().length > 0) {
+                var filters = {"groupOp": "AND", "rules": [{"field": valueAttr, "op": "cn", "data": this.value}]};
+                gcmscore.jqGridFilter(filters, $(tableID));
+            }
         });
         return list;
     }
 
-    loadExternalList2(me, externalListParameters) {
+    async loadExternalList2(me, options, inputId) {
         var content = me;
         var requestingGrid = this;
+        var datatarget = "external-list-" + options.relationParameters.collection;
+        var datatargetcontent = "external-list-content-" + options.relationParameters.collection;
+        content.empty();
         if (!content.is(':empty')) {
             content.empty();
         } else {
+            var selectedValues = gcmscore.valuesFromInputHidden($("#" + inputId).parent());
+            var filters = {};
+            if (options.relationParameters.foreignKey !== "" && options.relationParameters.type === "OneToOne") {
+                filters = {"groupOp": "AND", "rules": [{"field": options.relationParameters.foreignKey , "op": "cn", "data": this.selRowData[options.relationParameters.foreignKey]}]};
+            }
             var extraOptionsJSON = {onSelectRow: function (rowid) {
                     console.log("setting value");
                     var gridObject = $('#' + this.id);
@@ -423,18 +460,27 @@ class LCMSGrid {
                     $.each(gridObject.jqGrid('getGridParam', 'selarrrow'), function (a, b) {
                         var vals = new Object();
                         vals = {
-                            id: gridObject.jqGrid('getRowData', b)[externalListParameters[2]],
-                            value: gridObject.jqGrid('getRowData', b)[externalListParameters[1]]
+                            id: gridObject.jqGrid('getRowData', b)[options.relationParameters.key],
+                            value: gridObject.jqGrid('getRowData', b)[options.relationParameters.value]
                         };
                         valueArray.push(vals);
                     });
-                    var value = $('#' + this.id).jqGrid('getRowData', rowid)[externalListParameters[1]];
-                    var datatarget = $(me).attr("id").substr(0, $(me).attr("id").indexOf("-content"));
+                    var value = $('#' + this.id).jqGrid('getRowData', rowid)[options.relationParameters.key];
+
                     var target = $("div[data-target='#" + datatarget + "']");
-                    target.find("select").empty();
+                    target.find("input[type=hidden]").remove();
                     $.each(valueArray, function (a, b) {
-                        target.find("select").append($("<option selected />").val(b.id).text(b.value));
+                        var hiddeninput = $("<input type='hidden'/>");
+                        hiddeninput.attr("id", b.id);
+                        hiddeninput.attr("value", b.value);
+                        target.find("input[type=text]").parent().append(hiddeninput);
                     });
+                    var vals = new Array();
+                    $.each(valueArray, function (a, b) {
+                        vals.push(b.value);
+                    });
+                    target.find("input[type=text]").val(vals);
+                    target.closest("td").attr("title", vals);
                     //target.val(JSON.stringify(valueArray));
 
                 },
@@ -451,218 +497,36 @@ class LCMSGrid {
                 loadonce: false,
                 rowNum: 50,
                 page: 1,
-                url: "http://localhost:8081/LCMS/servlet",
+                url: "./servlet",
                 mtype: "post",
-                postData: {"LCMS_session": $.cookie('LCMS_session'), "action": "data" + externalListParameters[0]},
+                postData: {
+                    "LCMS_session": $.cookie('LCMS_session'),
+                    "action": "data" + options.relationParameters.collection,
+                    "filters": JSON.stringify(filters)                
+                },
                 loadBeforeSend: function (jqXHR) {
                     jqXHR.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded; charset=UTF-8');
+                },
+                preSelectData: function (grid) {
+                    console.log("preSelectData");
+                    grid.jqGrid('setSelection', 1);
+                    try {
+                        selectedValues = JSON.parse(selectedValues);
+                        $.each(selectedValues, function (a, b) {
+
+                            grid.jqGrid('setSelection', 1);
+                        });
+                    } catch (e) {
+
+                    }
+
                 }
             };
 
-            gcmscore.loadExternalGrid(externalListParameters[0], content, extraOptionsJSON);
+
+            gcmscore.loadExternalGrid(options.relationParameters.collection, content, extraOptionsJSON, inputId);
+
         }
-    }
-
-    async createGridOptions(subgridTableId, extraOptions) {
-
-
-        console.log("createGridOptions()");
-        var me = this;
-        let promise = new Promise((res, rej) => {
-            res(me.loadFormatters());
-            //  res("Now it's done!");
-        });
-        let value = await promise;
-        me.formatters = value;
-        var gridData = me.gridData;
-        var colModelData = {};
-        var tabelData = {};
-        if (typeof me.gridData.data.header === "string") {
-            colModelData = JSON.parse(me.gridData.data.header);
-        } else {
-            colModelData = me.gridData.data.header;
-        }
-        if (typeof me.gridData.data.table === "string") {
-            tabelData = JSON.parse(me.gridData.data.table);
-        } else {
-            tabelData = me.gridData.data.table;
-        }
-
-        me.createColModel(colModelData);
-        var cols = new Array();
-        $.each(colModelData, function (index, value) {
-            if (typeof value.tablename !== 'undefined') {
-                var _name = lang[value.tablename][value.name];
-                if (typeof _name !== "undefined") {
-                    cols.push(_name);
-                } else {
-                    cols.push(value.name);
-                }
-            } else {
-                cols.push(value.name);
-            }
-        });
-        var jqgridOptions = {
-            data: tabelData,
-            datatype: "local",
-            colModel: me.colModel,
-            colNames: cols,
-            viewrecords: true, // show the current page, data rang and total records on the toolbar
-            autowidth: true,
-            autoheight: true,
-            rownumbers: true,
-            responsive: true,
-            headertitles: true,
-            guiStyle: "bootstrap4",
-            //iconSet: "glyph",
-            iconSet: "fontAwesome",
-            searching: listGridFilterToolbarOptions,
-            rowNum: 150,
-            mtype: 'POST',
-            altRows: true,
-            editurl: gridData.editUrl,
-            loadonce: true,
-            ondblClickRow: editRow,
-            pager: "#pager_" + subgridTableId,
-            caption: "",
-            onSelectRow: function (rowid) {
-                if (typeof gridData.jqGridOptions.selectToEdit !== "undefined") {
-                    if (gridData.jqGridOptions.selectToEdit === true) {
-                        me.popupEdit(rowid);
-                    }
-                }
-                if (typeof gridData.jqGridOptions.selectToInlineEdit !== "undefined") {
-                    if (gridData.jqGridOptions.selectToInlineEdit === true) {
-                        editRow(rowid);
-                    }
-                }
-            },
-            newItem: me.popupEdit,
-            colModelData: colModelData,
-            pgbuttons: typeof tabelData !== "undefined" ? tabelData.length > 40 : false,
-            pgtext: "",
-            multiselect: true,
-            pginput: false
-
-        };
-        var parameters = {};
-//        var parameters = {
-//            navGridParameters: {add: true, edit: false, del: false, save: false, cancel: false,
-//                addParams: {
-//                    position: "last",
-//                    addRowParams: {
-//                        keys: true,
-//                        extraparam: {oper: 'add', action: me.gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
-//                    }
-//                },
-//                editParams: {
-//                    editRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
-//                        //extraparam: {action: me.gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
-//                        extraparam: {test: "test"}
-//                    }//23045
-//                }
-//            }
-//        };
-        if (typeof me.gridData.jqGridOptions !== "undefined") {
-            if (typeof me.gridData.jqGridOptions.summaries !== "undefined") {
-                jqgridOptions.summaries = me.gridData.jqGridOptions.summaries;
-                jqgridOptions.footerrow = true;
-                jqgridOptions.userDataOnFooter = true;
-            }
-            if (typeof me.gridData.jqGridOptions.groups !== "undefined") {
-
-                jqgridOptions.grouping = true;
-                jqgridOptions.groupingView = {
-                    groupField: me.gridData.jqGridOptions.groups,
-                    groupText: ['<b>{0} - {1} Item(s) </b>'],
-                    showSummaryOnHide: false,
-                    groupColumnShow: [true],
-                    groupSummaryPos: ["footer"],
-                    groupSummary: [false]
-
-                };
-            } else {
-                jqgridOptions.grouping = false;
-            }
-            if (typeof me.gridData.jqGridOptions.subgrid !== "undefined") {
-                jqgridOptions.subGrid = true;
-                if (typeof gridData.jqGridOptions.subGridOptions !== "undefined") {
-                    jqgridOptions.subGridOptions = {
-                        hasSubgrid: function (options) {
-                            return true;
-                        }
-                    };
-                }
-
-                if (typeof gridData.jqGridOptions.subGridRowExpanded !== "undefined") {
-                    jqgridOptions.subGridRowExpanded = function (subgridDivId, rowId) {
-                        var subgridTableId = subgridDivId + "_t";
-                        $("[id='" + subgridDivId + "']").html("<table id='" + subgridTableId + "'></table>");
-                        $("[id='" + subgridTableId + "']").jqGrid({
-                            datatype: 'local',
-                            data: [],
-                            colNames: gridData.jqGridOptions.subgridref.colNames,
-                            colModel: gridData.jqGridOptions.subgridref.colModel,
-                            gridview: true,
-                            rownumbers: true,
-                            autoencode: true,
-                            responsive: true,
-                            headertitles: true,
-                            iconSet: "fontAwesome",
-                            guiStyle: "bootstrap4"
-                        });
-                    };
-                }
-            }
-            $.each(me.gridData.jqGridOptions, function (i, n) {
-                if (i !== "colModel") {
-                    jqgridOptions[i] = n;
-                }
-
-            });
-        }
-
-
-
-
-
-        $.each(extraOptions, function (i, n) {
-            if (i !== "colModel") {
-                jqgridOptions[i] = n;
-            }
-
-        });
-        jqgridOptions.loadComplete = function () {
-            console.log("firing loadComplete");
-            var grid = $(this);
-            grid.jqGrid('hideCol', 'cb');
-            var subGridCells = $("td.sgcollapsed", grid[0]);
-            if (typeof gridData.jqGridOptions !== "undefined") {
-                if (typeof gridData.jqGridOptions.summaries !== "undefined") {
-                    var sumJson = {};
-                    var grid = $(this);
-                    gridData.jqGridOptions.summaries.forEach(function (a) {
-                        sumJson[a] = grid.jqGrid("getCol", a, false, "sum");
-                    });
-                    $(this).jqGrid("footerData", "set", sumJson);
-                }
-            }
-        };
-        jqgridOptions.colModel = jqgridOptions.colModel.filter(function (el) {
-            return el !== null;
-        });
-        var lastSelection;
-        function editRow(id) {
-            if (id && id !== -1) {
-                var grid = $("#" + me.gridData.tableObject);
-                grid.jqGrid('restoreRow', lastSelection);
-                grid.jqGrid('editRow', id, parameters.editParameters);
-                lastSelection = id;
-            }
-        }
-
-
-        return jqgridOptions;
     }
 
     async createGrid() {
@@ -690,7 +554,7 @@ class LCMSGrid {
                     me.createColModel(colModelData);
                     var cols = new Array();
                     $.each(colModelData, function (index, value) {
-                        if (typeof value.tablename !== 'undefined') {
+                        if (typeof value.tablename !== 'undefined' && typeof lang[value.tablename] !== "undefined") {
                             var _name = lang[value.tablename][value.name];
                             if (typeof _name !== "undefined") {
                                 cols.push(_name);
@@ -717,7 +581,7 @@ class LCMSGrid {
                         //iconSet: "glyph",
                         iconSet: "fontAwesome",
                         searching: listGridFilterToolbarOptions,
-                        rowNum: 150,
+                        rowNum: 20,
                         mtype: 'POST',
                         altRows: true,
                         editurl: gridData.editUrl, //me.gridData.jqGridOptions.url,
@@ -745,28 +609,7 @@ class LCMSGrid {
                         pginput: false
 
                     };
-                    //var parameters = {};
-                    var parameters = {//is replaced with me.griddata.jqgridparameters if available
-                        navGridParameters: {add: true, edit: false, del: false, save: false, cancel: false,
-//                            addParams: {
-////                                position: "last",
-////                                addRowParams: {
-////                                    keys: true,
-////                                    mtype: "PUT",
-////                                    extraparam: {oper: 'add', action: me.gridData.editAction, LCMS_session: $.cookie('LCMS_session')}
-////                                }
-//                            },
-//                            editParams: {
-//                                editRowParams: {//DEZE WORDT GEBRUIKT BIJ HET TOEVOEGEN VAN DATA!!!!!!!!!!!!!
-////                                    keys: true,
-////                                    serializeEditData: function (postdata) {console.log("testje hoelijkl")},
-////                                    mtype: "POST",
-////                                    extraparam: {action: me.gridData.editAction, LCMS_session: $.cookie('LCMS_session')},
-////                                    url: me.gridData.editAction
-//                                }
-//                            }
-                        }
-                    };
+                    var parameters = {};
                     replaceProperties(parameters, me.gridData.jqGridParameters);
                     if (typeof me.gridData.jqGridOptions.summaries !== "undefined") {
                         jqgridOptions.summaries = me.gridData.jqGridOptions.summaries;
@@ -829,6 +672,8 @@ class LCMSGrid {
                     if (jqgridOptions["url"] !== undefined) {
                         console.log("Detected url data, removing data-key");
                         delete jqgridOptions["data"];
+                        jqgridOptions["loadonce"] = false;
+                        jqgridOptions["reloadAfterSubmit"] = true;
                     }
 
                     if (me.gridData.jqGridOptions.rest === true) {
@@ -861,6 +706,9 @@ class LCMSGrid {
                             });
                             $(this).jqGrid("footerData", "set", sumJson);
                         }
+                        if (typeof gridData.jqGridOptions.preSelectData !== "undefined") {
+                            gridData.jqGridOptions.preSelectData(grid);
+                        }
 
 
                     };
@@ -885,39 +733,20 @@ class LCMSGrid {
                     $.extend($.jgrid.defaults, {
                         ajaxRowOptions: {
                             beforeSend: function (jqXHR, settings) {
-                               jqXHR.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded; charset=UTF-8');
+                                jqXHR.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded; charset=UTF-8');
                             }
                         }
                     });
-                    var lastSelection;
+                    // var lastSelection;
                     function editRow(id) {
+
                         if (id && id !== -1) {
                             console.log("editRow");
+                            me.selRowData = $(this).jqGrid("getRowData", id);
                             var grid = $("#" + me.gridData.tableObject);
-                            grid.jqGrid('restoreRow', lastSelection);
-                            //grid.jqGrid('editRow', id, parameters.navGridParameters.editParams.editRowParams);
-
-                            var editparameters = {
-                                keys: true,
-                                oneditfunc: function () {
-                                    console.log("oneditfunc");
-                                },
-                                successfunc: function () {
-                                    console.log("successfunc");
-                                },
-                                action: gridData.editAction,
-                                LCMS_session: $.cookie('LCMS_session'),
-                                //url: me.gridData.jqGridOptions.url,
-                                //url: me.gridData.editurl,
-                                extraparam: {action: gridData.editAction,
-                                    LCMS_session: $.cookie('LCMS_session')},
-                                aftersavefunc: function (rowid, response, options) {
-                                    console.log("aftersavefunc");
-                                },
-                                mtype: "POST"
-                            };
-                            grid.jqGrid('editRow', id, editparameters);
-                            lastSelection = id;
+                            grid.jqGrid('restoreRow', me.lastSelection);
+                            grid.jqGrid('editRow', id, me.gridData.jqGridParameters.navGridParameters.editParams);
+                            me.lastSelection = id;
                         }
                     }
 
@@ -966,18 +795,6 @@ class LCMSGrid {
         if ($groupHeader.length > 0) {
             target.jqGrid("groupingToggle", $groupHeader.attr("id"), $groupHeader);
             target.css('cursor', 'pointer');
-//            var index = gridIds.map(function (e) {
-//                return e.gridid;
-//            }).indexOf(target.attr('id'));
-//
-//            var indexofClickItem = gridIds[index].gridexpandedgroups.find(function (a) {
-//                return a === $groupHeader.attr("id")
-//            });
-//            if (typeof indexofClickItem !== "undefined") {
-//                gridIds[index].gridexpandedgroups.splice(indexofClickItem, 1);
-//            } else {
-//                gridIds[index].gridexpandedgroups.push($groupHeader.attr("id"));
-//            }
         }
 
         $groupHeader = $(e.target).closest("span.tree-wrap");
@@ -999,6 +816,7 @@ class LCMSGrid {
     }
 
     async popupEdit(_action, _afterSubmitFunction) {
+        console.log("popupEdit row");
         var me = this;
         var gridData = this.gridData;
         var grid = $("#" + gridData.tableObject);
@@ -1062,11 +880,12 @@ class LCMSGrid {
                     postdata[this.name] = this.checked ? this.value : "false";
                 });
 
-                $.each($("#FrmGrid_" + this.id).find("select"), function (a, b) {
-                    if ($(b).parent().attr("data-target") === "#external-list") {
-                        postdata[$(b).attr("name")] = gcmscore.valuesFromSelect($(b));
-                    }
+
+                $.each($("#FrmGrid_" + this.id).find("div[data-target*=external-list]"), function (a, b) {
+                    postdata[$(b).attr("name")] = gcmscore.valuesFromInputHidden($(b));
                 });
+
+
 
 //                $("#FrmGrid_" + this.id).find("input[data-target*=external]").each(function(index){
 //                    var elementName = $(this).attr('id');
@@ -1148,7 +967,14 @@ class LCMSGrid {
                 var rowId = ($($(this).find("td.DataTD").find("div[title='ckedit']")).attr("id"));
                 var headerItem = Object.filter(me.gridData.data.header, obj => obj.name === rowId);
                 var tableName = headerItem[Object.keys(headerItem)[0]].tablename;
-                var tableAttr = lang[tableName] === undefined ? rowId : lang[tableName][rowId];
+                var tableAttr = lang[tableName] === undefined ? rowId : (lang[tableName][rowId] === undefined ? rowId : lang[tableName][rowId]);
+                pills.push(tableAttr);
+            }
+            if ($(this).find("td.DataTD").find("div[data-target^='#external-list']").length > 0) {
+                var rowId = ($($(this).find("td.DataTD").find("div[data-target^='#external-list']")).attr("id"));
+                var headerItem = Object.filter(me.gridData.data.header, obj => obj.name === rowId);
+                var tableName = headerItem[Object.keys(headerItem)[0]].tablename;
+                var tableAttr = lang[tableName] === undefined ? rowId : (lang[tableName][rowId] === undefined ? rowId : lang[tableName][rowId]);
                 pills.push(tableAttr);
             }
             ;
@@ -1160,13 +986,26 @@ class LCMSGrid {
                 var rowId = ($($(this).find("td.DataTD").find("div[title='ckedit']")).attr("id"));
                 var headerItem = Object.filter(me.gridData.data.header, obj => obj.name === rowId);
                 var tableName = headerItem[Object.keys(headerItem)[0]].tablename;
-                var tableAttr = lang[tableName] === undefined ? rowId : lang[tableName][rowId];
+                var tableAttr = lang[tableName] === undefined ? rowId : (lang[tableName][rowId] === undefined ? rowId : lang[tableName][rowId]);
                 var rowIndex = pills.indexOf(tableAttr);
                 if (rowIndex > 0) {
                     $("#tab" + (rowIndex)).append((this));
                 }
             } else {
-                $("#tab0").append((this));
+                if ($(this).find("td.DataTD").find("div[data-target^='#external-list']").length > 0) {
+                    console.log(header);
+                    var rowId = ($($(this).find("td.DataTD").find("div[data-target^='#external-list']")).attr("id"));
+                    var headerItem = Object.filter(me.gridData.data.header, obj => obj.name === rowId);
+                    var tableName = headerItem[Object.keys(headerItem)[0]].tablename;
+                    var tableAttr = lang[tableName] === undefined ? rowId : (lang[tableName][rowId] === undefined ? rowId : lang[tableName][rowId]);
+                    var rowIndex = pills.indexOf(tableAttr);
+                    if (rowIndex > 0) {
+                        $("#tab" + (rowIndex)).append((this));
+                    }
+                } else {
+                    $("#tab0").append((this));
+                }
+
             }
         });
         console.log("show first tab");
