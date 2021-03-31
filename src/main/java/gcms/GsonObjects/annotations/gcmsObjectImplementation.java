@@ -7,11 +7,6 @@ package gcms.GsonObjects.annotations;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.lang.annotation.Annotation;
-
-/**
- *
- * @author Matthias
- */
 public class gcmsObjectImplementation implements gcmsObject {
 
     public gcmsObjectImplementation() {
@@ -24,7 +19,10 @@ public class gcmsObjectImplementation implements gcmsObject {
     String relationParameters;
 
     @JsonProperty
-    String foreignKey;
+    String fk;
+
+    @JsonProperty
+    String pk;
 
     @JsonProperty
     String formatterName;
@@ -73,10 +71,11 @@ public class gcmsObjectImplementation implements gcmsObject {
     @JsonProperty
     boolean DMP;
 
-    public gcmsObjectImplementation(String type, String relationParameters, String foreignKey, String formatterName, boolean key, boolean visibleOnTable, boolean editable, boolean multiple, boolean visibleOnForm, String[] choices, String[] reference, String viewRole, String editRole, String createRole, int minimumViewRoleVal, int minimumEditRoleVal, int minimumCreateRoleVal, boolean DMP) {
+    public gcmsObjectImplementation(String type, String relationParameters, String fk, String pk, String formatterName, boolean key, boolean visibleOnTable, boolean editable, boolean multiple, boolean visibleOnForm, String[] choices, String[] reference, String viewRole, String editRole, String createRole, int minimumViewRoleVal, int minimumEditRoleVal, int minimumCreateRoleVal, boolean DMP) {
         this.type = type;
         this.relationParameters = relationParameters;
-        this.foreignKey = foreignKey;
+        this.fk = fk;
+        this.pk = pk;
         this.formatterName = formatterName;
         this.key = key;
         this.visibleOnTable = visibleOnTable;
@@ -94,6 +93,14 @@ public class gcmsObjectImplementation implements gcmsObject {
         this.DMP = DMP;
     }
 
+    public String getPk() {
+        return pk;
+    }
+
+    public void setPk(String pk) {
+        this.pk = pk;
+    }
+
     public String getRelationParameters() {
         return relationParameters;
     }
@@ -102,12 +109,12 @@ public class gcmsObjectImplementation implements gcmsObject {
         this.relationParameters = relationParameters;
     }
 
-    public String getForeignKey() {
-        return foreignKey;
+    public String getFk() {
+        return fk;
     }
 
-    public void setForeignKey(String foreignKey) {
-        this.foreignKey = foreignKey;
+    public void setFk(String fk) {
+        this.fk = fk;
     }
 
     public String getFormatterName() {
@@ -329,8 +336,13 @@ public class gcmsObjectImplementation implements gcmsObject {
     }
 
     @Override
-    public String foreignKey() {
-        return foreignKey;
+    public String fk() {
+        return fk;
+    }
+
+    @Override
+    public String pk() {
+        return pk;
     }
 
 }

@@ -7,6 +7,7 @@ package gcms.GsonObjects.Core;
 
 import gcms.GsonObjects.annotations.gcmsObject;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  *
  * @author Matthias
@@ -44,14 +45,7 @@ public class Document {
             createRole = "SYSTEM",
             editRole = "SYSTEM")
     public long approved_on;
-    @gcmsObject(
-            type = "date",
-            visibleOnTable = true,
-            visibleOnForm = false,
-            viewRole = "GUEST",
-            editRole = "ICTMANAGER",
-            createRole = "SYSTEM")
-    public long created_on;
+
     @gcmsObject(
             type = "ref",
             visibleOnTable = false,
@@ -63,10 +57,18 @@ public class Document {
     @gcmsObject(
             type = "date",
             visibleOnTable = false,
-            visibleOnForm = false,            
+            visibleOnForm = false,
             createRole = "SYSTEM",
             editRole = "SYSTEM")
     public long edited_on;
+    @gcmsObject(
+            type = "date",
+            visibleOnTable = true,
+            visibleOnForm = false,
+            viewRole = "GUEST",
+            editRole = "ICTMANAGER",
+            createRole = "SYSTEM")
+    public long created_on;
 
     public Document() {
     }

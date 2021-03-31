@@ -724,9 +724,39 @@ class gcmscore {
     }
 
     static foreignKeyFunction(selRowData, key) {
-        console.log("foreignKeyFunction");        
-        var foreignKey = this.parseJSONString(key);      
+        console.log("foreignKeyFunction");
+        var foreignKey = this.parseJSONString(key);
         return selRowData[foreignKey.key];
+    }
+
+    static lazyOptions(baseName) {
+        var lazy = {baseName: baseName, rowList: [20, 50, 100], recordtext: "View {0} - {1} of {2}", repeatitems: false, pgbuttons: true, reloadAfterSubmit: true, bindkeys: false, selectToInlineEdit: false, multiselect: false, datatype: "json", page: 1, jsonReader: {id: "2", total: "total", records: "records", page: "page", root: "rows", cell: "", subgrid: {id: "2", total: "total", records: "records", page: "page", root: "rows", cell: ""}}, emptyrecords: "Scroll to bottom to load records", loadonce: false, rowNum: 20, url: "./servlet", mtype: "post", postData: {"LCMS_session": $.cookie('LCMS_session'), action: "data" + baseName, datatype: "json"},
+            loadBeforeSend: function (jqXHR) {
+                jqXHR.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded; charset=UTF-8');
+            }
+        };
+        return lazy;
+    } 
+
+    static loadLazyTable(_title, _parent, _baseName, _lazyOptions) {
+        console.log("Loading " + _title);
+        var title = typeof lang[_baseName] !== "undefined" ? lang[_baseName]['title'] : _title;
+        var baseName = _baseName;// + "-" + uuidv4();
+        var containerName = _baseName + "-" + uuidv4();
+        var container = dom_jqGridContainer(containerName);
+        _parent.append(container); 
+        LazyTableRequest(baseName, containerName, "./servlet", title, 1, _lazyOptions);
+    }
+
+    static createTableModal(_title, _baseName, _parent) {
+        var me = this;
+        var mod = create_modal(_parent, _title, _title);
+        var modalBody = mod.find("div[class=modal-body]");
+        mod.on('hidden.bs.modal', function () {
+            $(this).remove();
+        });
+        me.loadLazyTable(_title, modalBody, _baseName);
+        mod.modal();
     }
 
 }
@@ -1077,15 +1107,13 @@ function getPatchesReverse(oldData, newData) {
     return (textPatches);
 }
 
-async function LazyTableRequest(baseName, editUrl, caption, tableType, extraRequestOptions, LCMSEditablePageObject) {
+async function LazyTableRequest(baseName, containerName, editUrl, caption, tableType, lazyOptions, extraRequestOptions, LCMSEditablePageObject) {
 
-
-    var lazyOptions = {compact: true, autoresizeOnLoad: true, rowList: [20, 50, 100], recordtext: "View {0} - {1} of {2}", repeatitems: false, pgbuttons: true, reloadAfterSubmit: true, bindkeys: false, selectToInlineEdit: false, multiselect: false, datatype: "json", page: 1, jsonReader: {id: "2", total: "total", records: "records", page: "page", root: "rows", cell: ""}, emptyrecords: "Scroll to bottom to load records", loadonce: false, rowNum: 20, url: "./servlet", mtype: "post", postData: {"LCMS_session": $.cookie('LCMS_session'), action: "data" + baseName, datatype: "json"},
-        loadBeforeSend: function (jqXHR) {
-            jqXHR.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded; charset=UTF-8');
-        }
-    };
-    return LCMSTableRequest("load" + baseName, "edit" + baseName, editUrl, baseName + "-table", baseName + "-pager", "div-grid-" + baseName + "-wrapper", caption, tableType, lazyOptions, extraRequestOptions, LCMSEditablePageObject);
+    if (!lazyOptions) {
+        lazyOptions = gcmscore.lazyOptions(baseName);
+    }
+    
+    return LCMSTableRequest("load" + baseName, "edit" + baseName, editUrl, containerName + "-table", containerName + "-pager", "div-grid-" + containerName + "-wrapper", caption, tableType, lazyOptions, extraRequestOptions, LCMSEditablePageObject);
 }
 
 

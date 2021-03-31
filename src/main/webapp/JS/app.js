@@ -33,7 +33,8 @@ require.config({
         tether: ('jquery/tether.min'),
         dmp: ('diffMatchPatch/diff_match_patch'),
         iframeresizer: ('iframeresizer/iframeResizer.min'),
-        dropzone: ('dropzone/dropzone.min')
+        dropzone: ('dropzone/dropzone.min'),
+        //querybuilder: 'querybuilder/query-builder.standalone.min'
     },
     map: {
         'jQuery': {jquery: 'jquery/jquery'}
@@ -45,6 +46,7 @@ require.config({
         gcms_core: ['jquery', 'bootstrap', 'jqgrid'],
         jqgrid: ['jquery'],
         gcms_editablepage: ['jquery', 'jqgrid', 'bootstrap']
+       
     }
 });
 require(['moment'], function (mom) {
@@ -83,9 +85,11 @@ require([
     "iframeresizer",
     "dmp",
     "dropzone"
-], function ($) {    
+    
+
+], function ($) {
     console.log("all sources required");
-    $("body").css({"background-image": "url(./images/background.jpg)","background-attachment": "fixed","background-repeat": "no-repeat","background-size": "cover","background-position": "center","-webkit-mask-size": "cover"});
+    $("body").css({"background-image": "url(./images/background.jpg)", "background-attachment": "fixed", "background-repeat": "no-repeat", "background-size": "cover", "background-position": "center", "-webkit-mask-size": "cover"});
     credentials_doUserInfo($("#navbar-toggler"));
     page_doLoadPage(getUrlParam(window.location.href, "p"), $("body"));
 });

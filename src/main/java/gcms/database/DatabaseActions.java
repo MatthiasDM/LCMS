@@ -423,10 +423,10 @@ public class DatabaseActions {
                         break;
                     default:
                         break;
-                }          
-             
+                }
+
                 for (String userRole : userRoles) {
-                    if (role.equals("")) {                        
+                    if (role.equals("")) {
                         if (gcms.Config.Roles.valueOf(userRole).getLevelCode() >= roleVal) {
                             columns.add(field.getName());
                             break;
@@ -558,9 +558,8 @@ public class DatabaseActions {
         ArrayList<Document> results = null;
         try {
             MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);
-            results = ObjectItems.find(bson).sort(sort).limit(limit).projection(
-                    fields(include(columns))
-            ).projection(fields(and(exclude("_id"), exclude(excludes)))).into(new ArrayList<>());
+            results = ObjectItems.find(bson).sort(sort).limit(limit).projection(fields(include(columns), exclude(excludes), exclude("_id"))).into(new ArrayList<>());
+           
         } catch (Exception e) {
             LOG.severe(e.getMessage());
             return results;
@@ -578,7 +577,7 @@ public class DatabaseActions {
         }
         ArrayList<Document> results = null;
         try {
-            MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);       
+            MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);
             results = ObjectItems.find(bson).sort(sort).skip(rows * (page - 1)).limit(limit).projection(
                     fields(include(columns))
             ).projection(fields(and(exclude("_id"), exclude(excludes)))).into(new ArrayList<>());
@@ -740,6 +739,33 @@ public class DatabaseActions {
         searchObject.put("name", new BasicDBObject("$eq", "mongoconfigurations"));
         Document d = DatabaseActions.getObject(Core.getProp("base.classname"), Core.getProp("base.database"), Core.getProp("base.collection"), searchObject);
         mongoConf = mapper.convertValue(d, MongoConfigurations.class);
+        return mongoConf;
+    }
+
+    public static MongoConfigurations getMongoConfigurationByClassName(String _className) {
+        MongoConfigurations mongoConf = null;
+        try {
+            BasicDBObject searchObject = new BasicDBObject();
+            MongoConfigurations mongoConfigurations = getBaseConfiguration();
+            searchObject.put("name", new BasicDBObject("$eq", _className));
+            ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(null, mongoConfigurations, searchObject, null, 1000, new String[]{}, false);
+            if (results != null) {
+                if (results.size() > 0) {
+                    mongoConf = Core.universalObjectMapper.convertValue(results.get(0), MongoConfigurations.class
+                    );
+                } else {
+                    Logger.getLogger(DatabaseActions.class
+                            .getName()).log(Level.SEVERE, "{0}Mongoconf not found!", searchObject.toString());
+                }
+            } else {
+                Logger.getLogger(DatabaseActions.class
+                        .getName()).log(Level.SEVERE, "Mongoconf is null!{0}", searchObject.toString());
+            }
+        } catch (JsonProcessingException | ClassNotFoundException ex) {
+            Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return mongoConf;
     }
 

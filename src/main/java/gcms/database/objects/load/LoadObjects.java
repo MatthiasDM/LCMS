@@ -16,6 +16,7 @@ import static com.mongodb.client.model.Projections.exclude;
 import static com.mongodb.client.model.Projections.fields;
 import static com.mongodb.client.model.Projections.include;
 import gcms.Config.PrivilegeType;
+import gcms.Config.RelationParameter;
 import gcms.Config.Roles;
 import gcms.Core;
 import static gcms.Core.universalObjectMapper;
@@ -43,6 +44,7 @@ import gcms.database.filters.FilterObject;
 import gcms.database.filters.FilterRule;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -130,8 +132,40 @@ public class LoadObjects {
             Integer page = Integer.parseInt(requestParameters.get("page")[0]);
             Integer rows = Integer.parseInt(requestParameters.get("rows")[0]);
             ArrayList<Document> results = DatabaseActions.getObjectsRest(_mongoConf, filter, null, rows, excludes.toArray(new String[0]), columns, rows, page);
-            // response.setTotal(Integer.parseInt(String.valueOf(DatabaseActions.getObjectCount(_mongoConf, filter))));
-            // response.setRecords(results.size());
+
+            columns.removeAll(excludes);
+            for (String column : columns) {
+                HashMap relationships = new HashMap();
+                SerializableField serializableField = serializableClass.getFields().stream().filter(f -> f.getName().equals(column)).findFirst().get();
+                String fieldName = serializableField.getName();
+                Annotation fieldAnnotation = serializableField.getAnnotation();
+                gcmsObject mdmAnnotations = (gcmsObject) fieldAnnotation;
+
+                if (!StringUtils.isEmpty(mdmAnnotations.fk())) {
+
+                    HashMap fk = universalObjectMapper.readValue(mdmAnnotations.fk(), HashMap.class);
+                    String collection = (String) fk.get("collection");
+                    String pk = (String) fk.get("pk");
+                    String display = (String) fk.get("display");
+                    ArrayList<String> fields = new ArrayList<>();
+                    fields.add(pk);
+                    fields.add(display);
+                    MongoConfigurations _fkMongoConf = DatabaseActions.getMongoConfiguration(collection);
+
+                    for (int i = 0; i < results.size(); i++) {
+                        String pkFilter = (String) results.get(i).get(column);
+                        ArrayList<Document> fkResults = DatabaseActions.getObjectsSpecificListv2(_fkMongoConf, new BasicDBObject(column, new BasicDBObject("$eq", pkFilter)), new BasicDBObject(), 1, new String[0], fields);
+                        for (int j = 0; j < fkResults.size(); j++) {
+                            fkResults.get(j).append("id", fkResults.get(j).get(pk));
+                            fkResults.get(j).append("value", fkResults.get(j).get(display));
+                            fkResults.get(j).remove(pk);
+                            fkResults.get(j).remove(display);
+                        }
+                        String jsonValue = universalObjectMapper.writeValueAsString(fkResults);
+                        results.get(i).put(column, jsonValue);
+                    }
+                }
+            }
             response.setRecords(Integer.parseInt(String.valueOf(DatabaseActions.getObjectCount(_mongoConf, filter))));
             double totalPage = (response.getRecords().doubleValue() / rows.doubleValue());
             response.setTotal((int) (Math.ceil((totalPage))));
@@ -144,7 +178,6 @@ public class LoadObjects {
     }
 
     public static BasicDBObject createFilterObject(String[] json) throws IOException {
-
         BasicDBObject filter = new BasicDBObject();
         if (json != null) {
             try {
@@ -159,10 +192,8 @@ public class LoadObjects {
                 }
             } catch (JsonProcessingException ex) {
                 Logger.getLogger(DatabaseActions.class.getName()).log(Level.INFO, ex.getMessage());
-
             }
         }
-
         return filter;
     }
 
@@ -193,7 +224,8 @@ public class LoadObjects {
                 headerEntry.put("type", mdmAnnotations.type());
                 headerEntry.put("formatterName", mdmAnnotations.formatterName());
                 headerEntry.put("relationParameters", mdmAnnotations.relationParameters());
-                headerEntry.put("foreignKey", mdmAnnotations.foreignKey());
+                headerEntry.put("fk", mdmAnnotations.fk());
+                headerEntry.put("pk", mdmAnnotations.pk());
                 if (databaseRight.table != null) {
                     headerEntry.put("visibleOnForm", databaseRight.isVisibleOnForm());
                     headerEntry.put("visibleOnTable", databaseRight.isVisibleOnTable());
@@ -205,8 +237,19 @@ public class LoadObjects {
                 }
                 headerEntry.put("creatable", createableColumns.contains(column));
                 headerEntry.put("multiple", mdmAnnotations.multiple());
-                // headerEntry.put("key", mdmAnnotations.key());
                 headerEntry.put("tablename", tableName);
+
+//                if (!"".equals(mdmAnnotations.relationParameters())) {
+//                    RelationParameter relationParameter = mapper.readValue(mdmAnnotations.relationParameters(), RelationParameter.class);
+//                    //reference = {"Mongo", "mongoconfigurations", "name", "name"},
+//                    ArrayList<String> fields = new ArrayList<>();
+//                    fields.add(relationParameter.getKey());
+//                    fields.add(relationParameter.getValue());
+//                    ArrayList<Document> objectList = getObjectsList(cookie, DatabaseActions.getMongoConfiguration(relationParameter.getCollection()), fields);
+//                    JsonNode actualObj = Core.universalObjectMapper.readTree(mapper.writeValueAsString(objectList));
+//                    String jsonValue = actualObj.toString();
+//                    headerEntry.put("choices", map);
+//                }
                 if (!"".equals(mdmAnnotations.reference()[0])) {
                     String refType = mdmAnnotations.reference()[0];
                     if (refType.equals("Mongo")) {
@@ -214,8 +257,6 @@ public class LoadObjects {
                         fields.add(mdmAnnotations.reference()[2]);
                         fields.add(mdmAnnotations.reference()[3]);
                         ArrayList<Document> objectList = getObjectsList(cookie, DatabaseActions.getMongoConfiguration(mdmAnnotations.reference()[1]), fields);
-
-                        //ArrayList<Document> objectList2 = DatabaseActions.getObjectsSpecificListv2(DatabaseActions.getMongoConfiguration(mdmAnnotations.reference()[1]), filter, filter, 100, excludes, fields);
                         HashMap<String, Object> map = new HashMap<>();
                         for (Object doc : objectList) {
                             JsonNode actualObj = Core.universalObjectMapper.readTree(mapper.writeValueAsString(doc));

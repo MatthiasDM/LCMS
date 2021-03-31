@@ -32,7 +32,10 @@ public @interface gcmsObject {
     String relationParameters() default "";
 
     @JsonProperty
-    String foreignKey() default "";
+    String fk() default "";
+
+    @JsonProperty
+    String pk() default "";
 
     @JsonProperty
     String formatterName() default "string";

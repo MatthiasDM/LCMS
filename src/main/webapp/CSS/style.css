@@ -120,7 +120,7 @@ jqgrid-bootstrap tr.jqgrow>td {
 }
 .ui-jqgrid-btable .ui-state-highlight { background: yellow; }
 .row-selected{
-        background-color: lightblue !important;
+    background-color: lightblue !important;
 }
 
 /*div[id^="editmod"]{
@@ -145,8 +145,9 @@ jqgrid-bootstrap tr.jqgrow>td {
 }
 
 .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-caption {
+    font-size: 0.6rem;
     background-color: #2C3E50;
-    color: #18BC9C;
+    color: #f7a100;
     -ms-border-top-left-radius: 0px;
     -ms-border-top-right-radius: 0px;
 }
