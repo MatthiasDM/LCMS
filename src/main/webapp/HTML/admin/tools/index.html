@@ -1,26 +1,3 @@
-<script>
-
-    function loadTable(_title, _parent, _baseName) {
-        console.log("Loading " + _title);
-        var title = typeof lang[baseName] !== "undefined" ? lang[baseName]['title'] : _title;
-        var baseName = _baseName;
-        var container = dom_jqGridContainer(baseName);
-        _parent.append(container);
-        LazyTableRequest(baseName, "./servlet", title, 1);
-    }
-    ;
-    function createModalTable(_title, _baseName) {
-        var mod = create_modal($("#admin-container"), _title, "");
-        var modalBody = mod.find("div[class=modal-body]");
-        mod.on('hidden.bs.modal', function () {
-            $(this).remove();
-        })
-        loadTable(_title, modalBody, _baseName);
-        mod.modal();
-    }
-
-
-</script>
 
 <style>
     #container .row .col-sm-3{
@@ -39,20 +16,20 @@
             Configuratie
         </div>
         <div class="card-body">
-            <a class="badge badge-secondary" style="margin: 5px;" onclick="createModalTable('Database-objecten', 'mongoconfigurations')">Database-objecten</a>
-            <a class="badge badge-info" onclick="createModalTable('Database-acties', 'actions')" style="margin: 5px;">Database-acties</a>            
-            <a class="badge badge-warning" onclick="createModalTable('Gebruikers', 'users')" style="margin: 5px;">Gebruikers</a>
-            <a class="badge badge-secondary" onclick="createModalTable('Paginas', 'pages')" style="margin: 5px;">Paginas</a>
-            <a class="badge badge-info" onclick="createModalTable('Opdrachten', 'commands')" style="margin: 5px;">Opdrachten</a>
-            <a class="badge badge-warning" onclick="createModalTable('Werkstromen', 'workflows')" style="margin: 5px;">Werkstromen</a>
-            <a class="badge badge-info" onclick="createModalTable('API keys', 'apikeys')" style="margin: 5px;">API keys</a>
-            <a class="badge badge-secondary" onclick="createModalTable('Taken', 'chronjobs')" style="margin: 5px;">Taken</a>
-            <a class="badge badge-info" onclick="createModalTable('Rechten', 'rights')" style="margin: 5px;">Rechten</a>
-            <a class="badge badge-warning" onclick="createModalTable('Rollen', 'roles')" style="margin: 5px;">Rollen</a>
+            <a class="badge badge-secondary" style="margin: 5px;" onclick="gcmscore.createTableModal('Database-objecten', 'mongoconfigurations', $('#admin-container'))">Database-objecten</a>
+            <a class="badge badge-info" onclick="gcmscore.createTableModal('Database-acties', 'actions', $('#admin-container'))" style="margin: 5px;">Database-acties</a>            
+            <a class="badge badge-warning" onclick="gcmscore.createTableModal('Gebruikers', 'users', $('#admin-container'))" style="margin: 5px;">Gebruikers</a>
+            <a class="badge badge-secondary" onclick="gcmscore.createTableModal('Paginas', 'pages', $('#admin-container'))" style="margin: 5px;">Paginas</a>
+            <a class="badge badge-info" onclick="gcmscore.createTableModal('Opdrachten', 'commands', $('#admin-container'))" style="margin: 5px;">Opdrachten</a>
+            <a class="badge badge-warning" onclick="gcmscore.createTableModal('Werkstromen', 'workflows', $('#admin-container'))" style="margin: 5px;">Werkstromen</a>
+            <a class="badge badge-info" onclick="gcmscore.createTableModal('API keys', 'apikeys', $('#admin-container'))" style="margin: 5px;">API keys</a>
+            <a class="badge badge-secondary" onclick="gcmscore.createTableModal('Taken', 'chronjobs', $('#admin-container'))" style="margin: 5px;">Taken</a>
+            <a class="badge badge-info" onclick="gcmscore.createTableModal('Rechten', 'rights', $('#admin-container'))" style="margin: 5px;">Rechten</a>
+            <a class="badge badge-warning" onclick="gcmscore.createTableModal('Rollen', 'roles', $('#admin-container'))" style="margin: 5px;">Rollen</a>
         </div>
     </div>
 
 
- 
+
     <br/><br/>
 </div>

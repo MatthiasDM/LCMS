@@ -697,6 +697,37 @@ class gcmscore {
         return JSON.stringify(valueArray);
     }
 
+
+    static idsFromInputHidden(wrapper) {
+        var vals = new Object();
+        var valueArray = new Array();
+        var base;
+
+        if (Array.isArray(wrapper)) {
+            return JSON.stringify(wrapper);
+        } else {
+            if (typeof wrapper === 'string') {
+                try {
+                    wrapper = $.parseJSON(wrapper);
+                    return JSON.stringify(wrapper);
+                } catch (e) {
+                    wrapper = $($.parseHTML(wrapper));
+                }
+            }
+            base = wrapper.find("input[type=hidden]");
+            if (base.length === 0) {
+                base = wrapper.filter("input[type=hidden]");
+            }          
+            var ids = base.map(function () {
+                return $(this).attr("id");
+            }).get();
+            $(ids).each(function (a, b) {               
+                valueArray.push(b);
+            });
+        }
+        return valueArray;
+    }
+
     static domFormInputHidden(title, id, name, valObjects, val) {
         console.log("forms_select()");
         if (typeof valObjects === "string") {
@@ -725,12 +756,12 @@ class gcmscore {
 
     static foreignKeyFunction(selRowData, key) {
         console.log("foreignKeyFunction");
-        var foreignKey = this.parseJSONString(key);
-        return selRowData[foreignKey.key];
+       
+        return selRowData[key];
     }
 
     static lazyOptions(baseName) {
-        var lazy = {baseName: baseName, rowList: [20, 50, 100], recordtext: "View {0} - {1} of {2}", repeatitems: false, pgbuttons: true, reloadAfterSubmit: true, bindkeys: false, selectToInlineEdit: false, multiselect: false, datatype: "json", page: 1, jsonReader: {id: "2", total: "total", records: "records", page: "page", root: "rows", cell: "", subgrid: {id: "2", total: "total", records: "records", page: "page", root: "rows", cell: ""}}, emptyrecords: "Scroll to bottom to load records", loadonce: false, rowNum: 20, url: "./servlet", mtype: "post", postData: {"LCMS_session": $.cookie('LCMS_session'), action: "data" + baseName, datatype: "json"},
+        var lazy = {baseName: baseName, multiple: false, rowList: [20, 50, 100], recordtext: "View {0} - {1} of {2}", repeatitems: false, pgbuttons: true, reloadAfterSubmit: true, bindkeys: false, selectToInlineEdit: false, multiselect: false, datatype: "json", page: 1, jsonReader: {id: "2", total: "total", records: "records", page: "page", root: "rows", cell: "", subgrid: {id: "2", total: "total", records: "records", page: "page", root: "rows", cell: ""}}, emptyrecords: "Scroll to bottom to load records", loadonce: false, rowNum: 20, url: "./servlet", mtype: "post", postData: {"LCMS_session": $.cookie('LCMS_session'), action: "data" + baseName, datatype: "json"},
             loadBeforeSend: function (jqXHR) {
                 jqXHR.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded; charset=UTF-8');
             }

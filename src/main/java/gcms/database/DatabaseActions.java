@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.client.FindIterable;
@@ -36,6 +37,7 @@ import com.mongodb.client.model.FindOneAndUpdateOptions;
 import static com.mongodb.client.model.Projections.exclude;
 import static com.mongodb.client.model.Projections.fields;
 import static com.mongodb.client.model.Projections.include;
+import com.mongodb.util.JSON;
 import difflib.DiffUtils;
 import difflib.Patch;
 import gcms.Config.PrivilegeType;
@@ -558,8 +560,8 @@ public class DatabaseActions {
         ArrayList<Document> results = null;
         try {
             MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);
-            results = ObjectItems.find(bson).sort(sort).limit(limit).projection(fields(include(columns), exclude(excludes), exclude("_id"))).into(new ArrayList<>());
-           
+            results = ObjectItems.find(bson).sort(sort).limit(limit).projection(fields(include(columns), exclude("_id"))).into(new ArrayList<>());
+
         } catch (Exception e) {
             LOG.severe(e.getMessage());
             return results;
@@ -604,22 +606,6 @@ public class DatabaseActions {
         return count;
     }
 
-//    public static ArrayList<Document> getObjectsSpecificFieldsv2(MongoConfigurations mongoConf, Bson bson, Bson sort, int limit, List<String> columns) throws ClassNotFoundException {
-//
-//        ArrayList<Document> results = null;
-//        try {
-//            MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);
-//            results = ObjectItems.find(bson).sort(sort).limit(limit).projection(
-//                    fields(include(columns))
-//            ).projection(fields(exclude("_id"))).into(new ArrayList<>());
-//
-//        } catch (Exception e) {
-//            LOG.severe(e.getMessage());
-//            return results;
-//        }
-//
-//        return results;
-//    }
     public static Document addBackLogv2(MongoConfigurations _mongoConf, Object _document) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         Document document = Document.parse((mapper.writeValueAsString(_document)));
@@ -802,6 +788,13 @@ public class DatabaseActions {
             Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
         }
         return mongoConf;
+    }
+
+    public static Document doQuery(String database, String query) {
+        Document results = null;
+
+        results = databases.get(database).runCommand(BasicDBObject.parse(query));
+        return results;
     }
 }
 

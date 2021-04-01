@@ -56,7 +56,6 @@ public class EditObject {
                 String operation = requestParameters.get("oper")[0];
 
                 //Class cls = Class.forName(_mongoConf.getClassName());
-
                 if (requestParameters.get("oper") != null) {
 
                     requestParameters = Core.checkHashFields(requestParameters, serializableClass);
@@ -71,6 +70,7 @@ public class EditObject {
                         requestParameters.remove("id");
                         HashMap<String, Object> parameters = new HashMap<>();
                         requestParameters.forEach((key, value) -> {
+                            key = key.replaceAll("\\[|\\]", "");
                             parameters.put(key, value[0]);
                         });
                         //Object obj = Core.universalObjectMapper.readValue(Core.universalObjectMapper.writeValueAsString(parameters), cls);
@@ -87,7 +87,7 @@ public class EditObject {
         return sb;
     }
 
-    public static void editObject(HashMap<String, Object> mongoObject, MongoConfigurations _mongoConf, String cookie,  SerializableClass serializableClass) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException {
+    public static void editObject(HashMap<String, Object> mongoObject, MongoConfigurations _mongoConf, String cookie, SerializableClass serializableClass) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException {
         List<String> columns = getDocumentPriveleges(PrivilegeType.editRole, cookie, _mongoConf, true, serializableClass);
         List<SerializableField> systemFields = gcms.Core.getSystemFields(serializableClass, "edit");
         BasicDBObject obj = BasicDBObject.parse(Core.universalObjectMapper.writeValueAsString(mongoObject));
@@ -148,6 +148,9 @@ public class EditObject {
                 filteredDoc.put(systemField.getName(), DatabaseActions.getSession(cookie).getUserid());
             }
             if (systemField.getName().equals("created_on")) {
+                filteredDoc.put(systemField.getName(), Instant.now().toEpochMilli() / 1);
+            }
+            if (systemField.getName().equals("edited_on")) {
                 filteredDoc.put(systemField.getName(), Instant.now().toEpochMilli() / 1);
             }
         }

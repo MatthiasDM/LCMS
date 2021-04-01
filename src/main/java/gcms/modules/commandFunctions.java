@@ -110,20 +110,8 @@ public class commandFunctions {
         if (name.equals("doUploadFile")) {
             sb.append(command_doUploadFile(commandParameters, command, parts));
         }
-//        if (name.equals("doUploadFileToTemp")) {
-//            sb.append(command_doUploadFileToTemp(commandParameters, command, parts));
-//        }
         if (name.equals("doGetLocalPage")) {
             sb.append(command_doGetLocalPage(commandParameters, command));
-        }
-        if (name.equals("doCheckForNewVersion")) {
-            //checks the "backlog"-object. 
-            //needs "object_type" and "object_id" parameters to perform a search.
-            //needs "initialVersionDatetime" as datetime parameter
-            //The resulting datetime is compared to the current datetime. 
-            //If backlog-datetime > initialVersionDatetime Then newVersion = true            
-            //return warning to quering user. 
-
         }
         if (name.equals("doLogin")) {
             sb.append(command_doLogin(commandParameters, command));
@@ -132,7 +120,6 @@ public class commandFunctions {
             sb.append(command_doLogout(commandParameters, command));
         }
         if (name.equals("doUserInfo")) {
-
             sb.append(command_doUserInfo(commandParameters, command));
         }
         if (name.equals("doUploadFile")) {
@@ -140,6 +127,9 @@ public class commandFunctions {
         }
         if (name.equals("doDownloadToTemp")) {
             sb.append(command_doDownloadToTemp(commandParameters, command, parts));
+        }
+        if (name.equals("doQuery")) {
+            sb.append(command_doQuery(commandParameters));
         }
 
         return sb;
@@ -377,18 +367,17 @@ public class commandFunctions {
         return sb;
     }
 
-       public static StringBuilder command_doGetTableConfig(Map<String, String> parameters, Command command) throws IOException, ClassNotFoundException {
+    public static StringBuilder command_doGetTableConfig(Map<String, String> parameters, Command command) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
         ObjectMapper mapper = new ObjectMapper();
 
         String action = parameters.get("action");
-    
+
         sb.append("");
         return sb;
     }
 
-    
     private static StringBuilder command_doUploadFile(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
         StringBuilder sb = new StringBuilder();
         String tempDir = parameters.get("contextPath") + "/" + Core.getProp("temp.folder") + "/";
@@ -409,6 +398,14 @@ public class commandFunctions {
         sb.append(
                 DatabaseActions.downloadFileToTemp(parameters.get("filename"), parameters.get("LCMS_session"), parameters.get("contextPath"), Boolean.valueOf(parameters.get("public")))
         );
+        return sb;
+    }
+
+    private static StringBuilder command_doQuery(Map<String, String> parameters) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        sb.append(
+                DatabaseActions.doQuery(parameters.get("database"), parameters.get("query")));
+
         return sb;
     }
 
