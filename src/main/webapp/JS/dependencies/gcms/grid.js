@@ -340,7 +340,7 @@ class LCMSGrid {
                         }
                     }
                 };
-                column.hidden = me.gridData.jqGridOptions.requestingRow[column.name] ? true : false;
+                column.hidden = me.gridData.jqGridOptions.requestingRow ? (me.gridData.jqGridOptions.requestingRow[column.name] ? true : false) : false;
                 column.edittype = "custom";
                 column.relation = fk;
                 

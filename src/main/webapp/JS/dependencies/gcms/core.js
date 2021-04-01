@@ -697,7 +697,6 @@ class gcmscore {
         return JSON.stringify(valueArray);
     }
 
-
     static idsFromInputHidden(wrapper) {
         var vals = new Object();
         var valueArray = new Array();
@@ -717,11 +716,11 @@ class gcmscore {
             base = wrapper.find("input[type=hidden]");
             if (base.length === 0) {
                 base = wrapper.filter("input[type=hidden]");
-            }          
+            }
             var ids = base.map(function () {
                 return $(this).attr("id");
             }).get();
-            $(ids).each(function (a, b) {               
+            $(ids).each(function (a, b) {
                 valueArray.push(b);
             });
         }
@@ -756,7 +755,7 @@ class gcmscore {
 
     static foreignKeyFunction(selRowData, key) {
         console.log("foreignKeyFunction");
-       
+
         return selRowData[key];
     }
 
@@ -767,7 +766,7 @@ class gcmscore {
             }
         };
         return lazy;
-    } 
+    }
 
     static loadLazyTable(_title, _parent, _baseName, _lazyOptions) {
         console.log("Loading " + _title);
@@ -775,7 +774,7 @@ class gcmscore {
         var baseName = _baseName;// + "-" + uuidv4();
         var containerName = _baseName + "-" + uuidv4();
         var container = dom_jqGridContainer(containerName);
-        _parent.append(container); 
+        _parent.append(container);
         LazyTableRequest(baseName, containerName, "./servlet", title, 1, _lazyOptions);
     }
 
@@ -1143,7 +1142,7 @@ async function LazyTableRequest(baseName, containerName, editUrl, caption, table
     if (!lazyOptions) {
         lazyOptions = gcmscore.lazyOptions(baseName);
     }
-    
+
     return LCMSTableRequest("load" + baseName, "edit" + baseName, editUrl, containerName + "-table", containerName + "-pager", "div-grid-" + containerName + "-wrapper", caption, tableType, lazyOptions, extraRequestOptions, LCMSEditablePageObject);
 }
 
@@ -1298,7 +1297,7 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
         },
         jqGridParameters: {
             navGridParameters: {
-                add: false,
+                add: true,
                 cancel: true,
                 save: true,
                 keys: true,
@@ -1314,6 +1313,7 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
         }
     };
 
+    
 
     var editparameters = {
         keys: true,
@@ -1322,8 +1322,6 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
         },
         successfunc: function (a, b, c) {
             console.log("successfunc");
-            // $(this).jqGrid("setRowData", b, $(this).jqGrid("getRowData", b));
-            //$(this).trigger("reloadGrid");
         },
         afterrestorefunc: function (a, b, c) {
             console.log("afterrestorefunc");
@@ -1331,7 +1329,6 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
         },
         aftersavefunc: function (a, b, c) {
             console.log("aftersavefunc");
-            //$(this).trigger("reloadGrid");
         },
         beforeCancelRow: function (a, b, c) {
             console.log("beforeCancelRow");
@@ -1347,6 +1344,8 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
     };
 
     gridData.jqGridParameters.navGridParameters.editParams = editparameters;
+    gridData.jqGridParameters.navGridParameters.addParams = {"position": "last", "addRowParams" : editparameters};
+
 
     if (typeof jqGridOptions !== "undefined") {
         $.each(jqGridOptions, function (i, n) {
@@ -1356,7 +1355,7 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
     let lcmsGrid = new LCMSGrid(gridData);
     lcmsGrid.createGrid().then(
             function (result) {
-                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw item", "", function () {
+                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-plus-square", "Nieuw item", "", function () {
                     return lcmsGrid.popupEdit("new", function () {
                         return null;
                     });

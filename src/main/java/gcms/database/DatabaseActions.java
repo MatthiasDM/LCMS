@@ -792,8 +792,8 @@ public class DatabaseActions {
 
     public static Document doQuery(String database, String query) {
         Document results = null;
-
-        results = databases.get(database).runCommand(BasicDBObject.parse(query));
+        BasicDBObject q = BasicDBObject.parse(query);
+        //results = databases.get(database).
         return results;
     }
 }
