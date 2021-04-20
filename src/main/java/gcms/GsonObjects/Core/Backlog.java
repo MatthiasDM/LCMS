@@ -23,6 +23,8 @@ public class Backlog {
     public String object_id;
     @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = true)
     public String changes;
+    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
+    public String checksum;
 
     @gcmsObject(
             type = "datetime",
@@ -39,21 +41,28 @@ public class Backlog {
             createRole = "SYSTEM",
             editRole = "ICTMANAGER")
     public String created_by;
-        
+
     public Backlog() {
     }
 
-    public Backlog(String backlogid, String object_type, String object_id, String changes, long created_on, String created_by) {
+    public Backlog(String backlogid, String object_type, String object_id, String changes, String checksum, long created_on, String created_by) {
         this.backlogid = backlogid;
         this.object_type = object_type;
         this.object_id = object_id;
         this.changes = changes;
+        this.checksum = checksum;
         this.created_on = created_on;
         this.created_by = created_by;
     }
 
-    
-    
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
+    }   
+
     public String getBacklogid() {
         return backlogid;
     }
@@ -102,7 +111,4 @@ public class Backlog {
         this.created_by = created_by;
     }
 
-    
-    
-    
 }

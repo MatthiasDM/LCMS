@@ -13978,7 +13978,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
             if (CKEDITOR.env.gecko && "drop" == b.method && a.toolbox) a.once("afterPaste", function() {
                 a.toolbox.focus()
             });
-            return a.fire("paste", b)
+            return a.fire("pasteyy", b)
         }
 
         function x(a) {
@@ -13986,21 +13986,21 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                 var b = a.editable();
                 if (CKEDITOR.plugins.clipboard.isCustomCopyCutSupported) {
                     var c = function(b) {
-                        a.readOnly && "cut" == b.name || p.initPasteDataTransfer(b, a);
+                        a.readOnly && "cutzz" == b.name || p.initPasteDataTransfer(b, a);
                         b.data.preventDefault()
                     };
-                    b.on("copy",
+                    b.on("copyzz",
                         c);
-                    b.on("cut", c);
-                    b.on("cut", function() {
+                    b.on("cutzz", c);
+                    b.on("cutzz", function() {
                         a.readOnly || a.extractSelectedHtml()
                     }, null, null, 999)
                 }
                 b.on(p.mainPasteEvent, function(a) {
                     "beforepaste" == p.mainPasteEvent && m || l(a)
                 });
-                "beforepaste" == p.mainPasteEvent && (b.on("paste", function(a) {
-                    u || (g(), a.data.preventDefault(), l(a), e("paste"))
+                "beforepaste" == p.mainPasteEvent && (b.on("pasteyy", function(a) {
+                    u || (g(), a.data.preventDefault(), l(a), e("pasteyy"))
                 }), b.on("contextmenu", h, null, null, 0), b.on("beforepaste", function(a) {
                     !a.data || a.data.$.ctrlKey || a.data.$.shiftKey || h()
                 }, null, null, 0));
@@ -14052,9 +14052,9 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                     exec: function(a, b) {
                         function c(b, h) {
                             h = "undefined" !== typeof h ? h : !0;
-                            b ? (b.method = "paste", b.dataTransfer || (b.dataTransfer = p.initPasteDataTransfer()), r(a, b, h)) : e && a.showNotification(n, "info", a.config.clipboard_notificationDuration);
+                            b ? (b.method = "pasteyy", b.dataTransfer || (b.dataTransfer = p.initPasteDataTransfer()), r(a, b, h)) : e && a.showNotification(n, "info", a.config.clipboard_notificationDuration);
                             a.fire("afterCommandExec", {
-                                name: "paste",
+                                name: "pasteyy",
                                 command: d,
                                 returnValue: !!b
                             })
@@ -14169,15 +14169,15 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
             }
 
             function y() {
-                if ("paste" == p.mainPasteEvent) return a.fire("beforePaste", {
+                if ("pasteyy" == p.mainPasteEvent) return a.fire("beforePaste", {
                     type: "auto",
-                    method: "paste"
+                    method: "pasteyy"
                 }), !1;
                 a.focus();
                 g();
                 var b = a.focusManager;
                 b.lock();
-                if (a.editable().fire(p.mainPasteEvent) && !e("paste")) return b.unlock(), !1;
+                if (a.editable().fire(p.mainPasteEvent) && !e("pasteyy")) return b.unlock(), !1;
                 b.unlock();
                 return !0
             }
@@ -14188,7 +14188,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                     case CKEDITOR.SHIFT + 45:
                         b = a.editable();
                         g();
-                        "paste" == p.mainPasteEvent && b.fire("beforepaste");
+                        "pasteyy" == p.mainPasteEvent && b.fire("beforepaste");
                         break;
                     case CKEDITOR.CTRL + 88:
                     case CKEDITOR.SHIFT + 46:
@@ -14202,7 +14202,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
             function l(b) {
                 var c = {
                     type: "auto",
-                    method: "paste",
+                    method: "pasteyy",
                     dataTransfer: p.initPasteDataTransfer(b)
                 };
                 c.dataTransfer.cacheData();
@@ -14217,10 +14217,10 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
 
             function t() {
                 if ("wysiwyg" == a.mode) {
-                    var b = q("paste");
+                    var b = q("pasteyy");
                     a.getCommand("cut").setState(q("cut"));
                     a.getCommand("copy").setState(q("copy"));
-                    a.getCommand("paste").setState(b);
+                    a.getCommand("pasteyy").setState(b);
                     a.fire("pasteState", b)
                 }
             }
@@ -14230,7 +14230,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                         paste: 1,
                         cut: 1
                     }) return CKEDITOR.TRISTATE_DISABLED;
-                if ("paste" == b) return CKEDITOR.TRISTATE_OFF;
+                if ("pasteyy" == b) return CKEDITOR.TRISTATE_OFF;
                 b = a.getSelection();
                 var c = b.getRanges();
                 return b.getType() == CKEDITOR.SELECTION_NONE || 1 == c.length && c[0].collapsed ? CKEDITOR.TRISTATE_DISABLED : CKEDITOR.TRISTATE_OFF
@@ -14251,7 +14251,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                     return {
                         cut: q("cut"),
                         copy: q("copy"),
-                        paste: q("paste")
+                        paste: q("pasteyy")
                     }
                 })
             })();
@@ -14273,7 +14273,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                 }
                 b("Cut", "cut", c("cut"), 10, 1);
                 b("Copy", "copy", c("copy"), 20, 4);
-                b("Paste", "paste", d(), 30, 8)
+                b("Paste", "pasteyy", d(), 30, 8)
             })();
             a.getClipboardData =
                 function(b, c) {
@@ -14283,8 +14283,8 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                         c(a.data)
                     }
                     c || (c = b, b = null);
-                    a.on("paste", d, null, null, 0);
-                    !1 === y() && (a.removeListener("paste", d), c(null))
+                    a.on("pasteyy", d, null, null, 0);
+                    !1 === y() && (a.removeListener("pasteyy", d), c(null))
                 }
         }
 
@@ -14463,20 +14463,20 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                 if (CKEDITOR.env.gecko) {
                     var d = ["image/png", "image/jpeg", "image/gif"],
                         g;
-                    a.on("paste", function(b) {
+                    a.on("pasteyy", function(b) {
                             var c = b.data,
                                 f = c.dataTransfer;
-                            if (!c.dataValue && "paste" == c.method && f && 1 == f.getFilesCount() && g != f.id && (f = f.getFile(0), -1 != CKEDITOR.tools.indexOf(d, f.type))) {
+                            if (!c.dataValue && "pasteyy" == c.method && f && 1 == f.getFilesCount() && g != f.id && (f = f.getFile(0), -1 != CKEDITOR.tools.indexOf(d, f.type))) {
                                 var k = new FileReader;
                                 k.addEventListener("load", function() {
                                     b.data.dataValue = '\x3cimg src\x3d"' + k.result + '" /\x3e';
-                                    a.fire("paste", b.data)
+                                    a.fire("pasteyy", b.data)
                                 }, !1);
                                 k.addEventListener("abort", function() {
-                                    a.fire("paste", b.data)
+                                    a.fire("pasteyy", b.data)
                                 }, !1);
                                 k.addEventListener("error", function() {
-                                    a.fire("paste", b.data)
+                                    a.fire("pasteyy", b.data)
                                 }, !1);
                                 k.readAsDataURL(f);
                                 g = c.dataTransfer.id;
@@ -14485,7 +14485,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                         },
                         null, null, 1)
                 }
-                a.on("paste", function(b) {
+                a.on("pasteyy", function(b) {
                     b.data.dataTransfer || (b.data.dataTransfer = new CKEDITOR.plugins.clipboard.dataTransfer);
                     if (!b.data.dataValue) {
                         var c = b.data.dataTransfer,
@@ -14494,7 +14494,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                         else if (d = c.getData("text/plain")) b.data.dataValue = a.editable().transformPlainTextToHtml(d), b.data.type = "text"
                     }
                 }, null, null, 1);
-                a.on("paste", function(a) {
+                a.on("pasteyy", function(a) {
                         var b = a.data.dataValue,
                             c = CKEDITOR.dtd.$block; - 1 < b.indexOf("Apple-") && (b = b.replace(/<span class="Apple-converted-space">&nbsp;<\/span>/gi,
                             " "), "html" != a.data.type && (b = b.replace(/<span class="Apple-tab-span"[^>]*>([^<]*)<\/span>/gi, function(a, b) {
@@ -14514,7 +14514,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                         a.data.dataValue = b
                     }, null,
                     null, 3);
-                a.on("paste", function(b) {
+                a.on("pasteyy", function(b) {
                     b = b.data;
                     var d = a._.nextPasteType || b.type,
                         f = b.dataValue,
@@ -14533,7 +14533,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                     delete b.startsWithEOL;
                     delete b.endsWithEOL
                 }, null, null, 6);
-                a.on("paste", function(b) {
+                a.on("pasteyy", function(b) {
                     b = b.data;
                     b.dataValue && (a.insertHtml(b.dataValue, b.type, b.range), setTimeout(function() {
                         a.fire("afterPaste")
@@ -14546,7 +14546,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
             isCustomDataTypesSupported: !CKEDITOR.env.ie || 16 <= CKEDITOR.env.version,
             isFileApiSupported: !CKEDITOR.env.ie ||
                 9 < CKEDITOR.env.version,
-            mainPasteEvent: CKEDITOR.env.ie && !CKEDITOR.env.edge ? "beforepaste" : "paste",
+            mainPasteEvent: CKEDITOR.env.ie && !CKEDITOR.env.edge ? "beforepaste" : "pasteyy",
             canClipboardApiBeTrusted: function(a, b) {
                 return a.getTransferType(b) != CKEDITOR.DATA_TRANSFER_EXTERNAL || CKEDITOR.env.chrome && !a.isEmpty() || CKEDITOR.env.gecko && (a.getData("text/html") || a.getFilesCount()) || CKEDITOR.env.safari && 603 <= CKEDITOR.env.version && !CKEDITOR.env.iOS || CKEDITOR.env.edge && 16 <= CKEDITOR.env.version ? !0 : !1
             },
@@ -20960,7 +20960,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                     e = CKEDITOR.tools.keystrokeToString(c.common.keyboard, a.getCommandKeystroke(CKEDITOR.env.ie ? a.commands.paste : this)),
                     d = b && "undefined" !== typeof b.notification ? b.notification : !b || !b.from || "keystrokeHandler" === b.from && CKEDITOR.env.ie,
                     c = d && "string" === typeof d ? d : c.pastetext.pasteNotification.replace(/%1/, '\x3ckbd aria-label\x3d"' + e.aria + '"\x3e' + e.display + "\x3c/kbd\x3e");
-                a.execCommand("paste", {
+                a.execCommand("pasteyy", {
                     type: "text",
                     notification: d ? c : !1
                 })
@@ -21013,7 +21013,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                     exec: function(a,
                         b) {
                         e = 1;
-                        a.execCommand("paste", {
+                        a.execCommand("pasteyy", {
                             type: "html",
                             notification: b && "undefined" !== typeof b.notification ? b.notification : !0
                         })
@@ -21024,7 +21024,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                     command: "pastefromword",
                     toolbar: "clipboard,50"
                 });
-                a.on("paste", function(f) {
+                a.on("pasteyy", function(f) {
                     var b = f.data,
                         c = CKEDITOR.plugins.clipboard.isCustomDataTypesSupported ? b.dataTransfer.getData("text/html", !0) : null,
                         d = CKEDITOR.plugins.clipboard.isCustomDataTypesSupported ? b.dataTransfer.getData("text/rtf") : null,
@@ -21040,7 +21040,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                     if (c && (e || d) && (!1 !== a.fire("pasteFromWord", g) || e)) {
                         b.dontFilter = !0;
                         var k = l(a, h, function() {
-                            if (k) a.fire("paste", b);
+                            if (k) a.fire("pasteyy", b);
                             else if (!a.config.pasteFromWordPromptCleanup || e || confirm(a.lang.pastefromword.confirmCleanup)) g.dataValue = CKEDITOR.cleanWord(g.dataValue, a), a.fire("afterPasteFromWord",
                                 g), b.dataValue = g.dataValue;
                             e = 0
@@ -23790,7 +23790,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                         "selectionCheck", L);
                     CKEDITOR.plugins.tableselection.keyboardIntegration(a);
                     CKEDITOR.plugins.clipboard && !CKEDITOR.plugins.clipboard.isCustomCopyCutSupported && (b.attachListener(b, "cut", D), b.attachListener(b, "copy", D))
-                }), a.on("paste", G.onPaste, G), z(a, "rowInsertBefore rowInsertAfter columnInsertBefore columnInsertAfter cellInsertBefore cellInsertAfter".split(" "), function(a, c) {
+                }), a.on("pasteyy", G.onPaste, G), z(a, "rowInsertBefore rowInsertAfter columnInsertBefore columnInsertAfter cellInsertBefore cellInsertAfter".split(" "), function(a, c) {
                     t(a, c.selectedCells)
                 }), z(a, ["cellMerge", "cellMergeRight", "cellMergeDown"], function(a, c) {
                     t(a, [c.commandData.cell])
@@ -24155,7 +24155,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                 }, null, null, 999);
                 b.attachListener(b, CKEDITOR.env.ie ? "keypress" : "inputzz", c.onInput, c, null, 999);
                 b.attachListener(b, "keyup", c.onKeyup, c, null, 999);
-                b.attachListener(b, "paste", c.ignoreInputEventListener, c, null, 999);
+                b.attachListener(b, "pasteyy", c.ignoreInputEventListener, c, null, 999);
                 b.attachListener(b, "drop", c.ignoreInputEventListener, c, null, 999);
                 a.on("afterPaste", c.activateInputEventListener,
                     c, null, 999);
@@ -24582,7 +24582,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                             function(a) {
                                 b.removeFillers(a.editor.editable())
                             });
-                        a.on("paste", function(a) {
+                        a.on("pasteyy", function(a) {
                             a.data.dataValue = b.cleanPasteData(a.data.dataValue)
                         });
                         "selectall" in a.plugins && b.addSelectAllIntegration(a)
@@ -25160,7 +25160,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                 /data-cke-widget/.test(b.data) && (d = 1);
                 a.destroyAll(!0)
             }, null, null, 9);
-            b.on("paste", function(a) {
+            b.on("pasteyy", function(a) {
                 a = a.data;
                 a.dataValue = a.dataValue.replace(X, W);
                 a.range && (a = g.getNestedEditable(b.editable(), a.range.startContainer)) && (a = CKEDITOR.filter.instances[a.data("cke-filter")]) &&
@@ -26253,7 +26253,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                 var k = CKEDITOR.fileTools,
                     c = a.uploadRepository,
                     m = e.supportedTypes ? 10 : 20;
-                if (e.fileToElement) a.on("paste", function(f) {
+                if (e.fileToElement) a.on("pasteyy", function(f) {
                     f = f.data;
                     var l = a.widgets.registered[b],
                         g = f.dataTransfer,
@@ -26396,7 +26396,7 @@ For licensing, see LICENSE.md or http://ckeditor.com/license
                             this.replaceWith('\x3cimg src\x3d"' + b.url + '" width\x3d"' + (b.responseData.width ||
                                 a.naturalWidth) + '" height\x3d"' + (b.responseData.height || a.naturalHeight) + '"\x3e')
                         }
-                    }), c.on("paste", function(b) {
+                    }), c.on("pasteyy", function(b) {
                         if (b.data.dataValue.match(/<img[\s\S]+data:/i)) {
                             b = b.data;
                             var f = document.implementation.createHTMLDocument(""),

@@ -34,10 +34,16 @@ require.config({
         dmp: ('diffMatchPatch/diff_match_patch'),
         iframeresizer: ('iframeresizer/iframeResizer.min'),
         dropzone: ('dropzone/dropzone.min'),
-        //querybuilder: 'querybuilder/query-builder.standalone.min'
+        pivottable: ('pivottable/pivot'),
+        plotly: ('pivottable/plotly-latest.min'),
+        plotly_renderers: ('pivottable/plotly_renderers'),
+        papaparse: ('PapaParse/papaparse.min'),
+        filesaver: ('filesaver/FileSaver')
+
     },
     map: {
-        'jQuery': {jquery: 'jquery/jquery'}
+        'jQuery': {jquery: 'jquery/jquery'}      
+
     },
     shim: {
         popper: ['jquery'],
@@ -45,7 +51,8 @@ require.config({
         bootstrap: ['jquery', 'popper'],
         gcms_core: ['jquery', 'bootstrap', 'jqgrid'],
         jqgrid: ['jquery'],
-        gcms_editablepage: ['jquery', 'jqgrid', 'bootstrap']
+        gcms_editablepage: ['jquery', 'jqgrid', 'bootstrap'],
+        plotly_renderers: ['plotly']
        
     }
 });
@@ -54,6 +61,9 @@ require(['moment'], function (mom) {
 });
 require(['tinycolor'], function (tinycolor) {
     window.tinycolor = tinycolor;
+});
+require(['papaparse'], function (papa) {
+    window.Papa = papa;
 });
 
 //require(['codemirror'], function (codemirror) {
@@ -66,6 +76,7 @@ require([
     "bootside",
     "tether",
     "popper",
+    "jqueryui",
     "chartjs",
     "datetimepicker",
     "codemirror",
@@ -84,8 +95,12 @@ require([
     "jqgrid",
     "iframeresizer",
     "dmp",
-    "dropzone"
-    
+    "dropzone",
+    "pivottable",
+    "plotly_renderers",
+    "filesaver"
+            //"plotly_renderers"
+
 
 ], function ($) {
     console.log("all sources required");

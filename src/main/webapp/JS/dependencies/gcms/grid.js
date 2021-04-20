@@ -327,23 +327,26 @@ class LCMSGrid {
                     },
                     custom_element: function (value, options, row) {
                         console.log("relation datainit");
-                        if (value === undefined || value === "") {
+                        if (value === undefined || value === "" || value === "undefined") {
                             value = gcmscore.domFormInputHidden("", uuidv4(), options.cm.name, {}, "").html();
                         }
                         return me.loadExternalList(value, options);
                     },
                     defaultValue: function () {
                         var requestingRow = $(this).jqGrid("getGridParam").requestingRow;
-                        if (requestingRow[value.name]) {
-                            var val = [{"id": ($(this).jqGrid("getGridParam").requestingRow[fk.pk]), "value": ($(this).jqGrid("getGridParam").requestingRow[fk.display])}];
-                            return gcmscore.domFormInputHidden("", uuidv4(), fk.pk, val, "").html();
+                        if (requestingRow) {
+                            if (requestingRow[fk.pk]) {
+                                var val = [{"id": ($(this).jqGrid("getGridParam").requestingRow[fk.pk]), "value": ($(this).jqGrid("getGridParam").requestingRow[fk.display])}];
+                                return gcmscore.domFormInputHidden("", uuidv4(), fk.pk, val, "").html();
+                            }
                         }
+
                     }
                 };
                 column.hidden = me.gridData.jqGridOptions.requestingRow ? (me.gridData.jqGridOptions.requestingRow[column.name] ? true : false) : false;
                 column.edittype = "custom";
                 column.relation = fk;
-                
+
                 console.log("foreign key editoptions");
 
             }
@@ -647,7 +650,7 @@ class LCMSGrid {
                             if (b.type === "pk" && b.editoptions.relation !== null) {
                                 jqgridOptions["subGrid"] = true;
                             }
-                            if (b.type === "fk" && b.editoptions.relation !== null) {
+                            if (b.type === "fk_zz" && b.editoptions.relation !== null) {
                                 jqgridOptions["subGrid"] = true;
                             }
                         });
@@ -662,31 +665,31 @@ class LCMSGrid {
                                         var pk = column.editoptions.relation;
                                         if (pk.relations !== null) {
                                             $.each(pk.relations, function (index, relation) {
-                               
-                                                    var filters = {"groupOp": "AND", "rules": []};
-                                                    if (relation.type === "OneToMany") {
-                                                        var data = "";
-                                                        if (typeof selectedRowData[column.name] !== "undefined") {
-                                                            data = selectedRowData[column.name];
-                                                        }
-                                                        var fieldName = column.name;
-                                                        filters = {"groupOp": "AND", "rules": [{"field": fieldName, "op": "cn", "data": data}]};
+
+                                                var filters = {"groupOp": "AND", "rules": []};
+                                                if (relation.type === "OneToMany") {
+                                                    var data = "";
+                                                    if (typeof selectedRowData[column.name] !== "undefined") {
+                                                        data = selectedRowData[column.name];
                                                     }
-                                                    if (filters !== null) {
-                                                        var lazyOptions = gcmscore.lazyOptions(relation.collection);
-                                                        lazyOptions.postData.filters = JSON.stringify(filters);
-                                                    }
-                                                    lazyOptions.requestingRow = selectedRowData;
-                                                    lazyOptions.onSelectRow = function (rowid) {
-                                                        me.onSelectRelationalRow(rowid, pk, $('#' + this.id));
-                                                    };
-                                                    gcmscore.loadLazyTable(relation.collection, $("#" + subgrid_id), relation.collection, lazyOptions);
-                                        
+                                                    var fieldName = column.name;
+                                                    filters = {"groupOp": "AND", "rules": [{"field": relation.fk, "op": "cn", "data": data}]};
+                                                }
+                                                if (filters !== null) {
+                                                    var lazyOptions = gcmscore.lazyOptions(relation.collection);
+                                                    lazyOptions.postData.filters = JSON.stringify(filters);
+                                                }
+                                                lazyOptions.requestingRow = selectedRowData;
+                                                lazyOptions.onSelectRow = function (rowid) {
+                                                    me.onSelectRelationalRow(rowid, pk, $('#' + this.id));
+                                                };
+                                                gcmscore.loadLazyTable(relation.collection, $("#" + subgrid_id), relation.collection, lazyOptions);
+
 
                                             });
                                         }
                                     }
-                                    if (column.type === "fk") {
+                                    if (column.type === "fk_zz") {
                                         var fk = column.editoptions.relation;
 
                                         var filters = {"groupOp": "AND", "rules": []};
@@ -699,7 +702,7 @@ class LCMSGrid {
                                                     data = ids.join("|");
                                                 }
                                             }
-                                            var fieldName = column.name;
+                                            var fieldName = fk.pk;
                                             filters = {"groupOp": "AND", "rules": [{"field": fieldName, "op": "cn", "data": data}]};
                                         }
                                         if (filters !== null) {
@@ -963,7 +966,11 @@ class LCMSGrid {
                 });
                 $("div[title=ckedit_code]").each(function (index) {
                     $(this).addClass("border rounded p-3");
-                    CKEDITOR.replace($(this).attr('id')).config.startupMode = 'source';
+                    CKEDITOR.replace($(this).attr('id'), {
+                        startupMode: 'source',
+                        codemirror: {mode: {name: "javascript", json: true, statementIndent: 2}}
+                    });
+
 
                 });
             },

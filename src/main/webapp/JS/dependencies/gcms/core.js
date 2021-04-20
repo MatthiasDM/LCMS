@@ -768,25 +768,54 @@ class gcmscore {
         return lazy;
     }
 
-    static loadLazyTable(_title, _parent, _baseName, _lazyOptions) {
+    static replaceProperties(original, obj) {
+        for (var property in obj) {
+            if (obj.hasOwnProperty(property)) {
+                if (typeof obj[property] === "object" & typeof original[property] === "object")
+                    gcmscore.replaceProperties(original[property], obj[property]);
+                else
+                    original[property] = obj[property];
+                //console.log(property + "   " + obj[property]);
+            }
+        }
+        return original;
+    }
+
+    static loadLazyTable(_title, _parent, _baseName, _lazyOptions, _extraRequestOptions) {
         console.log("Loading " + _title);
         var title = typeof lang[_baseName] !== "undefined" ? lang[_baseName]['title'] : _title;
         var baseName = _baseName;// + "-" + uuidv4();
         var containerName = _baseName + "-" + uuidv4();
         var container = dom_jqGridContainer(containerName);
         _parent.append(container);
-        LazyTableRequest(baseName, containerName, "./servlet", title, 1, _lazyOptions);
+        LazyTableRequest(baseName, containerName, "./servlet", title, 1, _lazyOptions, _extraRequestOptions);
     }
 
-    static createTableModal(_title, _baseName, _parent) {
+    static createTableModal(_title, _baseName, _parent, _extraContent) {
+        var me = this;
+        var mod = create_modal(_parent, "", "");
+        var modalBody = mod.find("div[class=modal-body]");
+        modalBody.css("padding", "0");
+        modalBody.css("border-top-right-radius", "calc(0.3rem - 1px)");
+        modalBody.css("border-top-left-radius", "calc(0.3rem - 1px)");
+
+        mod.on('hidden.bs.modal', function () {
+            $(this).remove();
+        });
+        me.loadLazyTable(_title, modalBody, _baseName);
+        modalBody.append(_extraContent);
+        mod.modal();
+    }
+
+    static createModal(_title, _parent) {
         var me = this;
         var mod = create_modal(_parent, _title, _title);
         var modalBody = mod.find("div[class=modal-body]");
         mod.on('hidden.bs.modal', function () {
             $(this).remove();
         });
-        me.loadLazyTable(_title, modalBody, _baseName);
         mod.modal();
+        return modalBody;
     }
 
 }
@@ -1092,7 +1121,7 @@ async function LCMSRequest(_url, _data, _onDone, _extraParam) {
     var ajaxParameters = {
         method: "POST",
         url: _url,
-        data: _data, //{action: "VALIDATION_GETVALIDATION", LCMS_session: _cookie, id: _id},
+        data: _data, 
         beforeSend: function (xhr) {
             xhr.overrideMimeType("application/html");
         }
@@ -1100,7 +1129,7 @@ async function LCMSRequest(_url, _data, _onDone, _extraParam) {
     $.each(_extraParam, function (key, value) {
         ajaxParameters[key] = value;
     });
-    showLoadingSmall("loading", "info", 2000);
+    showLoadingSmall("loading", "info", 20000);
     return await $.ajax(ajaxParameters).done(function (data) {
         if (typeof _onDone !== "undefined") {
             _onDone(data);
@@ -1108,7 +1137,7 @@ async function LCMSRequest(_url, _data, _onDone, _extraParam) {
         hideLoadingSmall();
         return data;
     }).fail(function (jqXHR, textStatus, errorThrown) {
-        showLoadingSmall("errorThrown", "error", 2000);
+        showLoadingSmall(jqXHR.responseText, "danger", 10000);
         console.log(errorThrown);
     });
 }
@@ -1313,7 +1342,7 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
         }
     };
 
-    
+
 
     var editparameters = {
         keys: true,
@@ -1344,7 +1373,7 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
     };
 
     gridData.jqGridParameters.navGridParameters.editParams = editparameters;
-    gridData.jqGridParameters.navGridParameters.addParams = {"position": "last", "addRowParams" : editparameters};
+    gridData.jqGridParameters.navGridParameters.addParams = {"position": "last", "addRowParams": editparameters};
 
 
     if (typeof jqGridOptions !== "undefined") {
@@ -1744,7 +1773,7 @@ bootstrap_alert.warning = function (message, alert, timeout) {
 bootstrap_alert.show = function (message, alert, timeout) {
     var id = uuidv4();
     var spinner = '<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>';
-    $('<div id="floating_alert_' + id + '" class="alert alert-' + alert + ' alert-dismissible fade show" role="alert" style="padding: 1em"><center>' + spinner + '&nbsp;&nbsp;<br/>' + message + '</center></div>').appendTo($("#alertWrapper"));
+    $('<div id="floating_alert_' + id + '" class="alert alert-' + alert + ' alert-dismissible fade show" role="alert" style="padding: 1em;max-width: 200px;max-height:200px;"><center>' + spinner + '&nbsp;&nbsp;<br/>' + message + '</center></div>').appendTo($("#alertWrapper"));
     setTimeout(function () {
         $("#floating_alert_" + id).alert('close');
     }, timeout);
@@ -1830,6 +1859,7 @@ function create_modal(parent, title, text) {
     var modal_dialog = $("<div class='modal-dialog modal-xl' role='document'></div>");
     var modal_content = $("<div class='modal-content'></div>");
     var modal_header = $("<div class='modal-header'></div>");
+
     var modal_title = $("<h5 class='modal-title'>" + title + "</h5>");
     var modal_title_close = $("<button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>");
     var modal_body = $("<div class='modal-body'>" + text + "</div>");
@@ -1837,7 +1867,10 @@ function create_modal(parent, title, text) {
 
     modal_header.append(modal_title);
     modal_header.append(modal_title_close);
-    modal_content.append(modal_header);
+    if (title !== "") {
+        modal_content.append(modal_header);
+    }
+
     modal_content.append(modal_body);
     modal_content.append(modal_footer);
     modal_dialog.append(modal_content);
@@ -1863,7 +1896,7 @@ function showLoadingSmall(text, type, timeout) {
     return bootstrap_alert.warning(text, type, timeout);
 }
 function hideLoadingSmall() {
-    return bootstrap_alert.clear;
+    return bootstrap_alert.clear();
 }
 
 function create_blank_modal(parent, id, html, style) {
@@ -2217,6 +2250,7 @@ function dom_jqGridContainer(name) {
     var row = dom_row();
     var col1 = dom_col("", "0");
     var col2 = dom_col(name + "-div-grid-wrapper", "12");
+    col2.css("padding", "0");
     var col3 = dom_col("", "0");
     var table = $("<table id='" + name + "-table'></table>");
     var div = $("<div id='" + name + "-pager'></div>");
@@ -2272,7 +2306,7 @@ function openFile(filename, text) {
     var blob = new Blob([text], {type: "text/html;charset=utf-8"});
     saveAs(blob, filename);
 
-    var x = window.open('http://10.210.202.21:8080/LCMS/index.html?p=temp', '_blank');
+    var x = window.open(location.origin + location.pathname + '?p=temp', '_blank');
     x.document.write(text);
     x.document.close();
 }
@@ -2710,3 +2744,15 @@ function gridClickFunctions(e, target) {
 
 }
 
+function getJQGridParamByCaption(_name) {
+    var gridParam = {};
+    //console.log("getJQGridParamByCaption()");
+    $("table[id^=grid]").each(function (a, b) {
+        var name = $("#gview_" + $(b).attr("id")).find("span[class=ui-jqgrid-title]")[0].innerText;
+        if (name === _name) {
+            gridParam = $(b).jqGrid("getGridParam");
+            return false;
+        }
+    });
+    return gridParam;
+}

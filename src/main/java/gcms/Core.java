@@ -71,6 +71,8 @@ import gcms.GsonObjects.annotations.gcmsObject;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 /**
  *
@@ -237,15 +239,15 @@ public class Core {
         System.out.print(path + "/" + _sessionId);
     }
 
-    public static void deleteTempDir(String _sessionId, String path) throws IOException {
+    public static void deleteTempDir(String _sessionId, String _contextPath) throws IOException {
         try {
-            FileUtils.deleteDirectory(new File(path + "\\" + _sessionId));
+            FileUtils.deleteDirectory(new File(gcms.Core.getTempDir(_sessionId, _contextPath)));
         } catch (Exception e) {
             System.out.println((e.getMessage()));
         }
     }
 
-    private void devalidateSession(String _sessionId, String path) throws IOException, ClassNotFoundException {
+    public static void devalidateSession(String _sessionId, String _contextPath) throws IOException, ClassNotFoundException {
         Session session = DatabaseActions.getSession(_sessionId);
         if (!session.getUsername().equals(getProp("username"))) {
             gcms.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
@@ -254,7 +256,7 @@ public class Core {
         } else {
             DatabaseActions.editSessionValidity(_sessionId, 9999 * -1);
         }
-        deleteTempDir(_sessionId, path);
+        deleteTempDir(_sessionId, _contextPath);
     }
 
     public static boolean checkUserRole(String _cookie, Roles _role) {
@@ -878,7 +880,7 @@ public class Core {
         return "{" + paramIn + "\"}";
     }
 
-    private FileObject createFileObject(String _id, String _filename, String _type, String _contenttype, String _accesstype) {
+    public static FileObject createFileObject(String _id, String _filename, String _type, String _contenttype, String _accesstype) {
         long now = Instant.now().toEpochMilli() / 1000;
         FileObject fileObject = new FileObject();
         fileObject.setFileid(_id);
@@ -941,6 +943,12 @@ public class Core {
 
         }
         return o;
+    }
+
+    public static long getCRC32Checksum(byte[] bytes) {
+        Checksum crc32 = new CRC32();
+        crc32.update(bytes, 0, bytes.length);
+        return crc32.getValue();
     }
 
 }

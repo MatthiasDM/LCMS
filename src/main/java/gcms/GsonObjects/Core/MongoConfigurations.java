@@ -15,8 +15,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class MongoConfigurations {
 
     @gcmsObject(
-            type = "string",
+            type = "pk",
             createRole = "SYSTEM",
+            pk = "{\"relations\": [{\"collection\": \"actions\", \"type\": \"OneToMany\", \"fk\": \"mongoconfiguration\"}]}",
             //editRole = "SYSTEM",
             visibleOnTable = false,
             visibleOnForm = false

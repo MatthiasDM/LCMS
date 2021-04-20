@@ -51,16 +51,34 @@ class LCMSGridForm {
             }
 
             var data = [];
+            var lines = 0;
+            var colNames = new Array();
             importCSV.forEach(function split(a) {
                 var line = a;
                 var lineObject = {};
-                var colNames = filterUnique($.map(colModel, function (el) {
-                    return el;
-                }), 'name');
-                line.forEach(function split(a, b) {
-                    lineObject[colNames[b]] = a;
-                });
-                data.push(lineObject);
+
+                if (lines === 0) {
+                    if (extraOptions.importCSVHeaders) {
+                        colNames = line;
+                        colModel = new Array();
+                        colNames.forEach(function split(a, b) {
+                            var column = {};
+                            column.name = a;
+                            column.type = "string";
+                            colModel.push(column);
+                        });
+                    } else {
+                        colNames = filterUnique($.map(colModel, function (el) {
+                            return el;
+                        }), 'name');
+                    }
+                } else {
+                    line.forEach(function split(a, b) {
+                        lineObject[colNames[b]] = a;
+                    });
+                    data.push(lineObject);
+                }
+                lines++;
             });
             _gridData = Object.assign(_gridData, data);
             var gridData = {
@@ -333,6 +351,10 @@ class LCMSGridForm {
                     options.subgridof = val.value;
                 }
 
+                if (option === 'headers') {
+                    options.importCSVHeaders = val.value;
+                }
+
                 options[val.name.substring(7)] = val.value;
             }
             if (val.name.match("^import")) {
@@ -406,6 +428,7 @@ class LCMSGridForm {
         form.append(forms_textbox("Titel", "option_caption", "option_caption", _griddata.caption));
         form.append(forms_checkbox("Geminimaliseerd starten", "option_hiddengrid", "option_hiddengrid", _griddata.hiddengrid));
         form.append(forms_textarea("Importeer CSV", "import", "import"));
+        form.append(forms_checkbox("Eerst rij zijn kolomtitels", "option_headers", "option_headers", true));
         form.append(addRowButton);
         me.addHeader(form);
         form.append(rowParent);

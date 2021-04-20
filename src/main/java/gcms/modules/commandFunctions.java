@@ -10,6 +10,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.itextpdf.*;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.tool.xml.XMLWorkerHelper;
 
 import com.mongodb.BasicDBObject;
 import static com.mongodb.client.model.Filters.and;
@@ -36,8 +40,10 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import static gcms.Core.getProp;
+import static gcms.Core.readFile;
 import gcms.GsonObjects.Core.Apikey;
 import gcms.GsonObjects.Core.Command;
+import gcms.GsonObjects.Core.FileObject;
 import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.GsonObjects.Core.User;
 import gcms.credentials.Cryptography;
@@ -48,11 +54,13 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.Part;
-
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 import static gcms.database.objects.get.GetObject.prepareObject;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.DecoderException;
@@ -122,14 +130,17 @@ public class commandFunctions {
         if (name.equals("doUserInfo")) {
             sb.append(command_doUserInfo(commandParameters, command));
         }
-        if (name.equals("doUploadFile")) {
-            sb.append(command_doUploadFile(commandParameters, command, parts));
-        }
+//        if (name.equals("doUploadFile")) {
+//            sb.append(command_doUploadFile(commandParameters, command, parts));
+//        }
         if (name.equals("doDownloadToTemp")) {
             sb.append(command_doDownloadToTemp(commandParameters, command, parts));
         }
         if (name.equals("doQuery")) {
             sb.append(command_doQuery(commandParameters));
+        }
+        if (name.equals("doHtmlToPdf")) {
+            sb.append(command_doHtmlToPdf(commandParameters));
         }
 
         return sb;
@@ -380,14 +391,28 @@ public class commandFunctions {
 
     private static StringBuilder command_doUploadFile(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
         StringBuilder sb = new StringBuilder();
+        ObjectMapper mapper = new ObjectMapper();
         String tempDir = parameters.get("contextPath") + "/" + Core.getProp("temp.folder") + "/";
+
         Core.checkDir(tempDir);
+//        for (Part part : parts) {
+//            String filename = part.getSubmittedFileName();
+//            if (filename != null) {
+//                UUID id = UUID.randomUUID();
+//                String fileName = id + filename;
+//                part.write(tempDir + fileName);
+//            }
+//        }
+
         for (Part part : parts) {
-            String filename = part.getSubmittedFileName();
-            if (filename != null) {
+            if (part.getName().equals("file")) {
                 UUID id = UUID.randomUUID();
-                String fileName = id + filename;
+                String fileName = id + part.getSubmittedFileName();
                 part.write(tempDir + fileName);
+                FileObject fileobject = Core.createFileObject(id.toString(), fileName, part.getName(), part.getContentType(), "private");
+                sb.append(mapper.writeValueAsString(fileobject));
+                DatabaseActions.insertFile(part.getInputStream(), fileName, fileobject);
+                DatabaseActions.insertFileObject(fileobject);
             }
         }
         return sb;
@@ -395,17 +420,46 @@ public class commandFunctions {
 
     private static StringBuilder command_doDownloadToTemp(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
         StringBuilder sb = new StringBuilder();
-        sb.append(
-                DatabaseActions.downloadFileToTemp(parameters.get("filename"), parameters.get("LCMS_session"), parameters.get("contextPath"), Boolean.valueOf(parameters.get("public")))
-        );
+        ObjectNode jsonData = Core.universalObjectMapper.createObjectNode();
+        jsonData.put("filePath", DatabaseActions.downloadFileToTemp(parameters.get("filename"), parameters.get("LCMS_session"), parameters.get("contextPath"), Boolean.valueOf(parameters.get("public"))));
+        sb.append(jsonData);
+
         return sb;
     }
 
     private static StringBuilder command_doQuery(Map<String, String> parameters) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append(
-                DatabaseActions.doQuery(parameters.get("database"), parameters.get("query")));
+                DatabaseActions.doQuery(parameters.get("database"), parameters.get("query")).toJson());
 
+        return sb;
+    }
+
+    private static StringBuilder command_doHtmlToPdf(Map<String, String> parameters) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        String fileName = UUID.randomUUID() + ".pdf";
+        String outputPath = gcms.Core.getTempDir(parameters.get("LCMS_session"), parameters.get("contextPath")) + fileName;
+        String trimmedOutputPath = "./HTML/other/files/" + parameters.get("LCMS_session") + "/" + fileName;
+//        if (_publicPage) {
+//            if (Core.checkDir(parameters.get("contextPath") + "/public/")) {
+//                outputPath = parameters.get("contextPath") + "/public/" + fileName;
+//                trimmedOutputPath = "./HTML/other/files" + "/public/" + fileName;
+//            }
+//        }       
+
+        try {
+            com.itextpdf.text.Document document = new com.itextpdf.text.Document();
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(outputPath));
+            document.open();
+            XMLWorkerHelper.getInstance().parseXHtml(writer, document, new ByteArrayInputStream(readFile(Core.getProp("pdf.style")).getBytes()));
+            XMLWorkerHelper.getInstance().parseXHtml(writer, document, new ByteArrayInputStream(parameters.get("html").getBytes()));
+            document.close();
+            ObjectNode jsonData = Core.universalObjectMapper.createObjectNode();
+            jsonData.put("filePath", trimmedOutputPath);
+            sb.append(jsonData);
+        } catch (DocumentException ex) {
+            Logger.getLogger(commandFunctions.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return sb;
     }
 
@@ -452,9 +506,11 @@ public class commandFunctions {
 
     private static StringBuilder command_doLogout(Map<String, String> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode jsonData = mapper.createObjectNode();
-        sb.append(DatabaseWrapper.getWebPage(parameters.get("url"), new String[]{})); //e.g. "admin/tools/index.html"
+        try {
+            Core.devalidateSession(parameters.get("LCMS_session"), parameters.get("contextPath"));
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(commandFunctions.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return sb;
     }
 

@@ -512,7 +512,7 @@ public class DatabaseActions {
     public static Document getObject(String className, String database, String collection, Bson bson) throws ClassNotFoundException, JsonProcessingException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         MongoCollection<Document> ObjectItems = getObjectsFromDatabase(className, database, collection);
-        ArrayList<Document> results = null;
+        ArrayList<Document> results = new ArrayList<>();
 
         results = ObjectItems.find(bson).into(new ArrayList<>());
         JsonNode actualObj = Core.universalObjectMapper.readTree(mapper.writeValueAsString(results.get(0)));
@@ -536,7 +536,7 @@ public class DatabaseActions {
                 columns.remove(exclude);
             }
         }
-        ArrayList<Document> results = null;
+        ArrayList<Document> results = new ArrayList<>();
         try {
             MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);
             results = ObjectItems.find(bson).sort(sort).limit(limit).projection(
@@ -557,7 +557,7 @@ public class DatabaseActions {
                 columns.remove(exclude);
             }
         }
-        ArrayList<Document> results = null;
+        ArrayList<Document> results = new ArrayList<>();
         try {
             MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);
             results = ObjectItems.find(bson).sort(sort).limit(limit).projection(fields(include(columns), exclude("_id"))).into(new ArrayList<>());
@@ -577,7 +577,7 @@ public class DatabaseActions {
                 columns.remove(exclude);
             }
         }
-        ArrayList<Document> results = null;
+        ArrayList<Document> results = new ArrayList<>();
         try {
             MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);
             results = ObjectItems.find(bson).sort(sort).skip(rows * (page - 1)).limit(limit).projection(
@@ -594,7 +594,7 @@ public class DatabaseActions {
     public static long getObjectCount(MongoConfigurations mongoConf, Bson bson) {
         long count = 0;
 
-        ArrayList<Document> results = null;
+        ArrayList<Document> results = new ArrayList<>();
         try {
             MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);
             count = ObjectItems.count(bson);
@@ -791,10 +791,15 @@ public class DatabaseActions {
     }
 
     public static Document doQuery(String database, String query) {
+
+        BasicDBObject q = BasicDBObject.parse(query);
+        return databases.get(database).runCommand(q);
+    }
+
+    public static Document doAggregation(String database, String query) {
         Document results = null;
         BasicDBObject q = BasicDBObject.parse(query);
-        //results = databases.get(database).
-        return results;
+        return databases.get(database).runCommand(q);
     }
 }
 

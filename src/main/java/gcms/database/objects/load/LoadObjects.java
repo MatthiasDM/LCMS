@@ -154,7 +154,7 @@ public class LoadObjects {
 
                     for (int i = 0; i < results.size(); i++) {
                         String pkFilter = (String) results.get(i).get(column);
-                        ArrayList<Document> fkResults = DatabaseActions.getObjectsSpecificListv2(_fkMongoConf, new BasicDBObject(column, new BasicDBObject("$eq", pkFilter)), new BasicDBObject(), 1, new String[0], fields);
+                        ArrayList<Document> fkResults = DatabaseActions.getObjectsSpecificListv2(_fkMongoConf, new BasicDBObject(pk, new BasicDBObject("$eq", pkFilter)), new BasicDBObject(), 1, new String[0], fields);
                         for (int j = 0; j < fkResults.size(); j++) {
                             fkResults.get(j).append("id", fkResults.get(j).get(pk));
                             fkResults.get(j).append("value", fkResults.get(j).get(display));

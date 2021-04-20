@@ -96,41 +96,51 @@ function ckOnInstanceReady(e, imageController) {
 
     }
     if (typeof editor.dropzone !== "undefined") {
-        if (editor.dropzone.destroy !== "undefined") {
-            editor.dropzone({
-                url: "./servlet",
-                clickable: false,
-                createImageThumbnails: false,
-                previewsContainer: false,
-                method: 'POST',
-                init: function () {
-                    this.on("sending", function (file, xhr, formData) {
-                        formData.append('action', 'docommand');
-                        formData.append('k', 'doUploadFile');
-                        formData.append('LCMS_session', $.cookie('LCMS_session'));
-                        
-                        console.log(formData);
-                    });
-                    this.on("success", function (file, response) {
-                        response = JSON.parse(response);
-                        imageController.insertFileInEditor(response.name, response.fileid, editor);
-                        bootstrap_alert.warning('Adding image succesfull', 'success', 1000);
-                    });
-                }});
+        // if (editor.dropzone.destroy !== undefined) {
+        // if (editor.dropzone.destroy !== "undefined") {
+        if (true) {
+            if (true) {
+                try {
+                    editor.dropzone({
+                        url: "./servlet",
+                        clickable: false,
+                        createImageThumbnails: false,
+                        previewsContainer: false,
+                        method: 'POST',
+                        init: function () {
+                            this.on("sending", function (file, xhr, formData) {
+                                formData.append('action', 'docommand');
+                                formData.append('k', 'doUploadFile');
+                                formData.append('LCMS_session', $.cookie('LCMS_session'));
+
+                                console.log(formData);
+                            });
+                            this.on("success", function (file, response) {
+                                response = JSON.parse(response);
+                                imageController.insertFileInEditor(response.name, response.fileid, editor);
+                                bootstrap_alert.warning('Adding image succesfull', 'success', 1000);
+                            });
+                        }});
+                } catch (e) {
+
+                }
+            }
         }
+
 
     }
     // }
 
     editor.on('paste', function (e) {
         var pastedImages = capturePaste(e, editorId);
+        var t = e.target;
         setTimeout(function () {
             if (pastedImages) {
                 var text = CKEDITOR.instances[editorId].getData();
                 text = text.replace(/<img (?!fileid).*?>/, "");
                 CKEDITOR.instances[editorId].setData(text);
             }
-        }, 100);
+        }, 1000);
     });
 
     imageController.loadImages(editorId);

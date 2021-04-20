@@ -55,8 +55,8 @@ class LCMSImageController {
 
         async function onDone(data) {
             try {
-        
-                var filePath = data;
+                var jsonData = JSON.parse(data);
+                var filePath = jsonData.filePath;
                 console.log("Changing filepath from " + file.attr("src") + " to " + filePath);
                 file.attr("src", filePath);
                 file.attr("href", filePath);
@@ -71,36 +71,60 @@ class LCMSImageController {
         requestOptions.k = "doDownloadToTemp";
         requestOptions.filename = file.attr("name");
         requestOptions.public = this.publicPage;
-                let request = await LCMSRequest("./servlet", requestOptions);
-                let returnvalue = await onDone(request);
+        let request = await LCMSRequest("./servlet", requestOptions);
+        let returnvalue = await onDone(request);
         return returnvalue;
 
 
     }
 
-    insertFileInEditor(_fileName, _fileId, _ckeditor) {
+    async insertFileInEditor(_fileName, _fileId, _ckeditor) {
         var re = /(?:\.([^.]+))?$/;
         var type = re.exec(_fileName)[0];
         var formData = new FormData();
         var ckeditor = CKEDITOR.instances[_ckeditor.attr('id')];
-        formData.append('action', 'FILE_DOWNLOADTEMP');
-        formData.append('LCMS_session', $.cookie('LCMS_session'));
-        formData.append('public', this.publicPage);
-        formData.append('filename', _fileName);
-        var request = new XMLHttpRequest();
-        request.onreadystatechange = function () {
-            if (request.readyState === 4) {
-                var jsonData = JSON.parse(request.responseText);
+        var requestOptions = {};
+        requestOptions.action = "docommand";
+        requestOptions.k = "doDownloadToTemp";
+        requestOptions.filename = _fileName;
+        requestOptions.public = this.publicPage;
+        let request = await LCMSRequest("./servlet", requestOptions);
+        let returnvalue = await onDone(request);
+
+        async function onDone(data) {
+            try {
+                var jsonData = JSON.parse(data);
                 var filePath = jsonData.filePath;
                 if (type === ".png" || type === ".jpg" || type === ".JPG" || type === ".gif" || type === ".PNG") {
                     ckeditor.insertHtml("<div style='overflow-x:auto'><img name='" + _fileName + "' fileid='" + _fileId + "' src='" + filePath + "'/></div>");
                 } else {
                     ckeditor.insertHtml("<a name='" + _fileName + "'  href='" + filePath + "' fileid='" + _fileId + "'>" + _fileName + "</a>");
                 }
+            } catch (e) {
+                console.log(e);
+                return {};
             }
-        };
-        request.open('POST', "./upload", /* async = */ false);
-        request.send(formData);
+        }
+        return returnvalue;
+
+//        formData.append('action', 'FILE_DOWNLOADTEMP');
+//        formData.append('LCMS_session', $.cookie('LCMS_session'));
+//        formData.append('public', this.publicPage);
+//        formData.append('filename', _fileName);
+//        var request = new XMLHttpRequest();
+//        request.onreadystatechange = function () {
+//            if (request.readyState === 4) {
+//                var jsonData = JSON.parse(request.responseText);
+//                var filePath = jsonData.filePath;
+//                if (type === ".png" || type === ".jpg" || type === ".JPG" || type === ".gif" || type === ".PNG") {
+//                    ckeditor.insertHtml("<div style='overflow-x:auto'><img name='" + _fileName + "' fileid='" + _fileId + "' src='" + filePath + "'/></div>");
+//                } else {
+//                    ckeditor.insertHtml("<a name='" + _fileName + "'  href='" + filePath + "' fileid='" + _fileId + "'>" + _fileName + "</a>");
+//                }
+//            }
+//        };
+//        request.open('POST', "./upload", /* async = */ false);
+//        request.send(formData);
     }
 
 //    encodeImage(imageUri, callback) {
