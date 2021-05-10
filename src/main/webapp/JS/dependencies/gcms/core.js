@@ -240,8 +240,8 @@ class gcmscore {
 
     getPatches(oldData, newData) {
         console.log("getPatches()");
-        oldData = bytesToHex(stringToUTF8Bytes(oldData));
-        newData = bytesToHex(stringToUTF8Bytes(newData));
+        // oldData = bytesToHex(stringToUTF8Bytes(oldData));
+        // newData = bytesToHex(stringToUTF8Bytes(newData));
         var dmp = new diff_match_patch();
         // var diff = dmp.diff_main((oldData), (newData));
         var diff = dmp.diff_main((oldData), (newData));
@@ -661,40 +661,44 @@ class gcmscore {
     //functions for relationsal funciontality
 
     static valuesFromInputHidden(wrapper) {
-        var vals = new Object();
-        var valueArray = new Array();
-        var base;
+        if (typeof wrapper !== "undefined"){
+            var vals = new Object();
+            var valueArray = new Array();
+            var base;
 
-        if (Array.isArray(wrapper)) {
-            return JSON.stringify(wrapper);
-        } else {
-            if (typeof wrapper === 'string') {
-                try {
-                    wrapper = $.parseJSON(wrapper);
-                    return JSON.stringify(wrapper);
-                } catch (e) {
-                    wrapper = $($.parseHTML(wrapper));
+            if (Array.isArray(wrapper)) {
+                return JSON.stringify(wrapper);
+            } else {
+                if (typeof wrapper === 'string') {
+                    try {
+                        wrapper = $.parseJSON(wrapper);
+                        return JSON.stringify(wrapper);
+                    } catch (e) {
+                        wrapper = $($.parseHTML(wrapper));
+                    }
                 }
+                base = wrapper.find("input[type=hidden]");
+                if (base.length === 0) {
+                    base = wrapper.filter("input[type=hidden]");
+                }
+                var values = base.map(function () {
+                    return $(this).attr("value");
+                }).get();
+                var ids = base.map(function () {
+                    return $(this).attr("id");
+                }).get();
+                $(ids).each(function (a, b) {
+                    vals = {
+                        id: b,
+                        value: values[a]
+                    };
+                    valueArray.push(vals);
+                });
             }
-            base = wrapper.find("input[type=hidden]");
-            if (base.length === 0) {
-                base = wrapper.filter("input[type=hidden]");
-            }
-            var values = base.map(function () {
-                return $(this).attr("value");
-            }).get();
-            var ids = base.map(function () {
-                return $(this).attr("id");
-            }).get();
-            $(ids).each(function (a, b) {
-                vals = {
-                    id: b,
-                    value: values[a]
-                };
-                valueArray.push(vals);
-            });
+            return JSON.stringify(valueArray);
         }
-        return JSON.stringify(valueArray);
+
+
     }
 
     static idsFromInputHidden(wrapper) {
@@ -728,7 +732,7 @@ class gcmscore {
     }
 
     static domFormInputHidden(title, id, name, valObjects, val) {
-        console.log("forms_select()");
+        console.log("domFormInputHidden()");
         if (typeof valObjects === "string") {
             valObjects = $.parseJSON(valObjects);
         }
@@ -743,7 +747,7 @@ class gcmscore {
         form_group.append(label);
         form_group.append(select);
         $.each(valObjects, function (a, b) {
-            form_group.append($("<input type='hidden' id='" + b.id + "' value='" + b.value + "'/>"));
+            form_group.append($("<input type='hidden' id='" + b.id + "' value='" + b.value + "' meta='" + JSON.stringify(b) + "'/>"));
         });
 
         if (typeof val !== "undefined") {
@@ -791,7 +795,7 @@ class gcmscore {
         LazyTableRequest(baseName, containerName, "./servlet", title, 1, _lazyOptions, _extraRequestOptions);
     }
 
-    static createTableModal(_title, _baseName, _parent, _extraContent) {
+    static createTableModal(_title, _baseName, _parent, _extraContent, _lazyOptions) {
         var me = this;
         var mod = create_modal(_parent, "", "");
         var modalBody = mod.find("div[class=modal-body]");
@@ -802,7 +806,7 @@ class gcmscore {
         mod.on('hidden.bs.modal', function () {
             $(this).remove();
         });
-        me.loadLazyTable(_title, modalBody, _baseName);
+        me.loadLazyTable(_title, modalBody, _baseName, _lazyOptions);
         modalBody.append(_extraContent);
         mod.modal();
     }
@@ -819,8 +823,6 @@ class gcmscore {
     }
 
 }
-
-
 function page_doLoadPage(_page, parent) {
     function onDone(data) {
         var jsonData = JSON.parse(data, parent);
@@ -1121,7 +1123,7 @@ async function LCMSRequest(_url, _data, _onDone, _extraParam) {
     var ajaxParameters = {
         method: "POST",
         url: _url,
-        data: _data, 
+        data: _data,
         beforeSend: function (xhr) {
             xhr.overrideMimeType("application/html");
         }
@@ -1144,8 +1146,8 @@ async function LCMSRequest(_url, _data, _onDone, _extraParam) {
 
 function getPatches(oldData, newData) {
     console.log("getPatches()");
-    oldData = bytesToHex(stringToUTF8Bytes(oldData));
-    newData = bytesToHex(stringToUTF8Bytes(newData));
+    //oldData = bytesToHex(stringToUTF8Bytes(oldData));
+    //newData = bytesToHex(stringToUTF8Bytes(newData));
     var dmp = new diff_match_patch();
     // var diff = dmp.diff_main((oldData), (newData));
     var diff = dmp.diff_main((oldData), (newData));
@@ -1842,7 +1844,18 @@ class LCMSloading {
 
 function removeElements(classname, source) {
     console.log("removeElements()");
+
+    var callback = function (a) {
+        console.log(a);
+    };
+    source = minify(source, {
+        removeAttributeQuotes: true,
+        collapseWhitespace: true
+                // other options
+    }, callback);
+    console.log(source);
     var $s = $(source).find("." + classname).remove().end();
+
     return $("<div></div>").append($s).html();
 }
 
@@ -2471,16 +2484,6 @@ var numberTemplate = {
 
 $(function () {
 
-//    initDateEdit = function (elem) {
-//        $(elem).datepicker({
-//            dateFormat: "yy-mm-d\THH:MM:SS",
-//            autoSize: true,
-//            changeYear: true,
-//            changeMonth: true,
-//            showButtonPanel: true,
-//            showWeek: true
-//        });
-//    };
     initDateEdit = function (elem) {
         $(elem).datetimepicker({
             format: 'Y-m-d H:i'
@@ -2499,6 +2502,8 @@ $(function () {
     };
     $.jgrid.defaults.responsive = true;
     $.jgrid.defaults.guiStyle = 'bootstrap4';
+
+
 });
 
 function LcmsJqGrid1(_tableOptions) {

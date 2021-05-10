@@ -46,6 +46,7 @@ import gcms.GsonObjects.Core.Command;
 import gcms.GsonObjects.Core.FileObject;
 import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.GsonObjects.Core.User;
+import gcms.GsonObjects.Other.SerializableClass;
 import gcms.credentials.Cryptography;
 import gcms.database.DatabaseActions;
 import gcms.database.DatabaseWrapper;
@@ -113,7 +114,7 @@ public class commandFunctions {
             sb.append(command_doGenerateHash(parameters, command));
         }
         if (name.equals("doAPICall")) {
-            sb.append(command_doAPICall(commandParameters, command));
+            sb.append(command_doAPICall(commandParameters, command, parts));
         }
         if (name.equals("doUploadFile")) {
             sb.append(command_doUploadFile(commandParameters, command, parts));
@@ -130,17 +131,17 @@ public class commandFunctions {
         if (name.equals("doUserInfo")) {
             sb.append(command_doUserInfo(commandParameters, command));
         }
-//        if (name.equals("doUploadFile")) {
-//            sb.append(command_doUploadFile(commandParameters, command, parts));
-//        }
         if (name.equals("doDownloadToTemp")) {
             sb.append(command_doDownloadToTemp(commandParameters, command, parts));
         }
         if (name.equals("doQuery")) {
-            sb.append(command_doQuery(commandParameters));
+            sb.append(command_doQueryByName(commandParameters));
         }
         if (name.equals("doHtmlToPdf")) {
             sb.append(command_doHtmlToPdf(commandParameters));
+        }
+        if (name.equals("doGetClassInfo")) {
+            sb.append(command_doGetCollectionInfo(commandParameters));
         }
 
         return sb;
@@ -354,7 +355,7 @@ public class commandFunctions {
         return sb;
     }
 
-    public static StringBuilder command_doAPICall(Map<String, String> parameters, Command command) throws IOException, ClassNotFoundException {
+    public static StringBuilder command_doAPICall(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
         ObjectMapper mapper = new ObjectMapper();
@@ -374,7 +375,8 @@ public class commandFunctions {
         receiver = key.getUrl();
         receiver += path;
         receiver += "?key=" + key.getApiKey();
-        sb.append(Core.httpRequest(receiver, method, extraParameters));
+        //sb.append(Core.httpRequest(receiver, method, extraParameters));
+        sb.append(Core.multiPartHttpRequest(parts, receiver, method, extraParameters));
         return sb;
     }
 
@@ -429,8 +431,30 @@ public class commandFunctions {
 
     private static StringBuilder command_doQuery(Map<String, String> parameters) throws IOException {
         StringBuilder sb = new StringBuilder();
+
         sb.append(
                 DatabaseActions.doQuery(parameters.get("database"), parameters.get("query")).toJson());
+
+        return sb;
+    }
+
+    private static StringBuilder command_doQueryByName(Map<String, String> parameters) throws IOException, ClassNotFoundException {
+        StringBuilder sb = new StringBuilder();
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(DatabaseActions.getMongoConfiguration("queries"), eq("name", parameters.get("name")), null, 1, new String[]{}, Arrays.asList(new String[]{"query"}));
+        List<String> replaceList = parameters.keySet().stream().filter(k -> k.startsWith("replaces")).collect(Collectors.toList());
+        String query = results.get(0).get("query").toString();
+        for (String replace : replaceList) {
+            String replaceBy = replace;
+            replaceBy = replaceBy.replace("replaces", "");
+            replaceBy = replaceBy.replace("[", "");
+            replaceBy = replaceBy.replace("]", "");
+            query = query.replace("$" + replaceBy + "$", parameters.get(replace));
+        }
+
+        if (!results.isEmpty()) {
+            sb.append(
+                    DatabaseActions.doQuery(parameters.get("database"), query).toJson());
+        }
 
         return sb;
     }
@@ -460,6 +484,16 @@ public class commandFunctions {
         } catch (DocumentException ex) {
             Logger.getLogger(commandFunctions.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return sb;
+    }
+
+    private static StringBuilder command_doGetCollectionInfo(Map<String, String> parameters) throws IOException, ClassNotFoundException {
+        StringBuilder sb = new StringBuilder();
+        String collection = parameters.get("collection");
+        String session = parameters.get("LCMS_session");
+        MongoConfigurations mongoConf = DatabaseActions.getMongoConfiguration(collection);
+        SerializableClass serializableClass = Core.getSerializableClass(session, mongoConf);
+        sb.append(Core.universalObjectMapper.writeValueAsString(serializableClass));
         return sb;
     }
 

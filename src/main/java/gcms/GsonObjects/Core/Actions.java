@@ -32,7 +32,9 @@ public class Actions {
     public String name;
 
     @gcmsObject(
-            type = "select",
+            type = "fk",
+            formatterName = "reference",
+            fk = "{\"collection\": \"mongoconfigurations\", \"pk\": \"mongoconfigurationsid\", \"display\": \"name\", \"type\": \"ManyToOne\"}",            
             reference = {"Mongo", "mongoconfigurations", "mongoconfigurationsid", "name"},            
             editRole = "ICTMANAGER"
     )

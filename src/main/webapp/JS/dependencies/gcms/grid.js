@@ -343,7 +343,7 @@ class LCMSGrid {
 
                     }
                 };
-                column.hidden = me.gridData.jqGridOptions.requestingRow ? (me.gridData.jqGridOptions.requestingRow[column.name] ? true : false) : false;
+                column.hidden = me.gridData.jqGridOptions.requestingRow ? (me.gridData.jqGridOptions.requestingRow[fk.pk] ? true : false) : false;
                 column.edittype = "custom";
                 column.relation = fk;
 
@@ -756,9 +756,13 @@ class LCMSGrid {
                         if (typeof gridData.jqGridOptions.preSelectData !== "undefined") {
                             gridData.jqGridOptions.preSelectData(grid);
                         }
-
+                        if (typeof gridData.jqGridOptions.afterLoadComplete !== "undefined") {
+                            gridData.jqGridOptions.afterLoadComplete(grid, me);
+                        }
 
                     };
+
+
                     jqgridOptions.serializeRowData = function (postdata) {
                         console.log(postdata);
                         var colModel = $("#" + this.id).jqGrid("getGridParam").colModel;
@@ -873,7 +877,8 @@ class LCMSGrid {
             var vals = new Object();
             vals = {
                 id: rowData[relation.pk],
-                value: rowData[relation.display]
+                value: rowData[relation.display],
+                meta: rowData
             };
             valueArray.push(vals);
         }
@@ -887,6 +892,7 @@ class LCMSGrid {
             var hiddeninput = $("<input type='hidden'/>");
             hiddeninput.attr("id", b.id);
             hiddeninput.attr("value", b.value);
+            hiddeninput.attr("meta", JSON.stringify(b.value));
             target.find("input[type=text]").parent().append(hiddeninput);
         });
         var vals = new Array();
@@ -959,6 +965,7 @@ class LCMSGrid {
                 });
                 $("div[title=ckedit]").each(function (index) {
                     $(this).addClass("border rounded p-3");
+                    $(this).css("display", "grid");                    
                     if (CKEDITOR.instances[$(this).attr('id')] !== undefined) {
                         delete CKEDITOR.instances[$(this).attr('id')];
                     }
@@ -966,6 +973,7 @@ class LCMSGrid {
                 });
                 $("div[title=ckedit_code]").each(function (index) {
                     $(this).addClass("border rounded p-3");
+                    $(this).css("display", "grid");   
                     CKEDITOR.replace($(this).attr('id'), {
                         startupMode: 'source',
                         codemirror: {mode: {name: "javascript", json: true, statementIndent: 2}}

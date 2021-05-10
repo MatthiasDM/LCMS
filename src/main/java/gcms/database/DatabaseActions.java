@@ -623,7 +623,7 @@ public class DatabaseActions {
             _old = "";
         }
         if (!_old.toString().matches("^[0-9A-Fa-f]+$")) {
-            _old = Hex.encodeHexString(_old.toString().getBytes());
+            //_old = Hex.encodeHexString(_old.toString().getBytes());
         }
 
         DiffMatchPatch dmp = new DiffMatchPatch();
@@ -796,11 +796,7 @@ public class DatabaseActions {
         return databases.get(database).runCommand(q);
     }
 
-    public static Document doAggregation(String database, String query) {
-        Document results = null;
-        BasicDBObject q = BasicDBObject.parse(query);
-        return databases.get(database).runCommand(q);
-    }
+   
 }
 
 class CronTask extends TimerTask {

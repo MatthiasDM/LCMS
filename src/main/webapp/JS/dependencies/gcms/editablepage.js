@@ -195,7 +195,8 @@ class LCMSEditablePage {
                         //data = new TextDecoder().decode(hexToBytes(data));
                         console.log("Reverting document...");
                         var dmp = new diff_match_patch();
-                        var reverted = new TextDecoder().decode(hexToBytes($.parseJSON(data).replaces["LCMSEditablePage-content"]))
+                        //var reverted = new TextDecoder().decode(hexToBytes($.parseJSON(data).replaces["LCMSEditablePage-content"]))
+                        var reverted = ($.parseJSON(data).replaces["LCMSEditablePage-content"])
                         var current = documentPage.originalDocument;
                         var d = dmp.diff_main(current, reverted);
                         var ds = dmp.diff_prettyHtml(d);  

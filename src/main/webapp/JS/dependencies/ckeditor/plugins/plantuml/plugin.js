@@ -92,7 +92,7 @@ CKEDITOR.plugins.add( 'plantuml',
 								commit : function( element )
 								{
 									var u = compress(this.getValue());
-									u = "http://10.210.202.21:8080/plantuml/png/"+u;
+									u = "../plantuml/png/"+u;
 									element.setAttribute( "alt", this.getValue() );
 									element.setAttribute( "src", u );
 								}

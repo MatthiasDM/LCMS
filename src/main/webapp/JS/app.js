@@ -38,11 +38,12 @@ require.config({
         plotly: ('pivottable/plotly-latest.min'),
         plotly_renderers: ('pivottable/plotly_renderers'),
         papaparse: ('PapaParse/papaparse.min'),
-        filesaver: ('filesaver/FileSaver')
+        filesaver: ('filesaver/FileSaver'),
+        htmlminifier: ('htmlminifier/htmlminifier')
 
     },
     map: {
-        'jQuery': {jquery: 'jquery/jquery'}      
+        'jQuery': {jquery: 'jquery/jquery'}
 
     },
     shim: {
@@ -53,7 +54,7 @@ require.config({
         jqgrid: ['jquery'],
         gcms_editablepage: ['jquery', 'jqgrid', 'bootstrap'],
         plotly_renderers: ['plotly']
-       
+
     }
 });
 require(['moment'], function (mom) {
@@ -66,9 +67,26 @@ require(['papaparse'], function (papa) {
     window.Papa = papa;
 });
 
-//require(['codemirror'], function (codemirror) {
-//    window.CodeMirror = codemirror;
-//});
+
+//    minify = (function () {
+//        var minify = require('html-minifier').minify;
+//        return function (value, options, callback, errorback) {
+//            options.log = function (message) {
+//                console.log(message);
+//            };
+//            var minified;
+//            try {
+//                minified = minify(value, options);
+//            } catch (err) {
+//                return errorback(err);
+//            }
+//            callback(minified);
+//            return minified;
+//        };
+//    })();
+require(['htmlminifier'], function (htmlminifier) {
+    window.minify = req('html-minifier').minify;
+});
 
 require([
     "jquery",
@@ -79,7 +97,6 @@ require([
     "jqueryui",
     "chartjs",
     "datetimepicker",
-    "codemirror",
     "gcms_lang_nl",
     "gcms_editablepage",
     "gcms_grid",
@@ -98,10 +115,9 @@ require([
     "dropzone",
     "pivottable",
     "plotly_renderers",
-    "filesaver"
-            //"plotly_renderers"
-
-
+    "filesaver",
+    "htmlminifier"
+            // "codemirror"
 ], function ($) {
     console.log("all sources required");
     $("body").css({"background-image": "url(./images/background.jpg)", "background-attachment": "fixed", "background-repeat": "no-repeat", "background-size": "cover", "background-position": "center", "-webkit-mask-size": "cover"});

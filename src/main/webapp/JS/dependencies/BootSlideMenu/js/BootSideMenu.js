@@ -20,7 +20,6 @@
 
         var defaults = {
 
-        
             // animation speed
             //duration: 500,
             // auto close
@@ -30,21 +29,15 @@
             // width
             width: "250px",
             pushBody: false,
-
             // icons
             icons: {
                 left: 'fa fa-angle-left fa-2x',
                 right: 'fa fa-angle-right fa-2x',
                 down: 'fa fa-angle-down fa-2x'
             },
-
             // 'dracula', 'darkblue', 'zenburn', 'pinklady', 'somebook'
-            theme: '',
-
             remember: false,
-
             theme: 'default',
-
             onTogglerClick: function () {
                 //code to be executed when the toggler arrow was clicked
             },
@@ -437,16 +430,51 @@
         var resizeStart;
         var resizeEnd;
         var wait = 250;
-        window.addEventListener("resize", function () {
-            resizeStart = new Date().getMilliseconds();
-            resizeEnd = resizeStart + wait;
-            setTimeout(function () {
-                var now = new Date().getMilliseconds();
-                if (now > resizeEnd) {
-                    onResize();
-                }
-            }, wait);
-        }, false);
+//        window.addEventListener("resize", function () {
+//            resizeStart = new Date().getMilliseconds();
+//            resizeEnd = resizeStart + wait;
+//            setTimeout(function () {
+//                var now = new Date().getMilliseconds();
+//                if (now > resizeEnd) {
+//                    onResize();
+//                }
+//            }, wait);
+//        }, false);
+
+        $(window).on('orientationchange', function () {
+            // After orientationchange, add a one-time resize event
+            $(window).one('resize', function () {
+                resizeStart = new Date().getMilliseconds();
+                resizeEnd = resizeStart + wait;
+                setTimeout(function () {
+                    var now = new Date().getMilliseconds();
+                    if (now > resizeEnd) {
+                        onResize();
+                    }
+                }, wait);
+            });
+        });
+
+        var ro = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                const cr = entry.contentRect;
+                //console.log('Element:', entry.target);
+                console.log(`Element size: ${cr.width}px x ${cr.height}px`);
+                //console.log(`Element padding: ${cr.top}px ; ${cr.left}px`);
+
+                resizeStart = new Date().getMilliseconds();
+                resizeEnd = resizeStart + wait;
+                setTimeout(function () {
+                    var now = new Date().getMilliseconds();
+                    if (now > resizeEnd) {
+                        onResize();
+                    }
+                }, wait);
+            }
+        });
+
+// Observe one or multiple elements
+        ro.observe(document.body);
 
 
         $.fn.BootSideMenu.open = function () {
@@ -464,5 +492,5 @@
 
         return this;
 
-    }
+    };
 }(jQuery));

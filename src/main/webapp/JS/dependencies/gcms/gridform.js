@@ -20,16 +20,9 @@ class LCMSGridForm {
     new_grid_wizard(_editablePage, colModel, extraOptions, importCSV, _gridData, gridId, location) {
         console.log("new_grid_form()");
         var me = this;
-        if (typeof colModel === 'undefined') {
+        if (typeof colModel === 'undefined' && Array.isArray(importCSV) === false) {
             me.new_grid_form(_editablePage);
-        } else {
-
-            if (typeof extraOptions.subgridof !== "undefined") {
-
-            } else {
-
-            }
-
+        } else {          
 
             var editable = $("div[id^=editable_]");
             if (editable.length === 0) {
@@ -150,47 +143,10 @@ class LCMSGridForm {
             gridObject.then(
                     function (gridObjectResult) {
                         console.log("after documentGrid.createGrid()");
-                        documentPage.addGridButtons(documentGrid, gridObjectResult, gridData, editor);
+                        _editablePage.addGridButtons(documentGrid, gridObjectResult, gridData, editor);
                     }
             );
-//            if (typeof extraOptions.subgridof !== "undefined") {
-//
-//                var id = getJQGridParamByCaption(extraOptions.subgridof).id;
-//                var params = getJQGridParamByCaption(extraOptions.subgridof);
-//                var createSubGrid = (async function () {
-//                    let promise = new Promise((res, rej) => {
-//                        res(documentGrid.createGridOptions(id + "_subgridTableTemplate", {pager: "#" + id + "_subgridPagerTemplate"}));
-//                    });
-//                    let subGridTemplate = await promise;
-//                    params.subgridTemplate = subGridTemplate;
-//                });
-//                params.subGridRowExpanded = function (subgridDivId, rowId) {
-//                    var subgridTableId = subgridDivId + "_t";
-//                    $("#" + subgridDivId).html("<table id='" + subgridTableId + "'></table><div id='pager_" + subgridTableId + "'></div>");
-//                    var createSubGrid = (async function () {
-//                        let promise = new Promise((res, rej) => {
-//                            res(documentGrid.createGridOptions(subgridTableId, {pager: "#pager_" + subgridTableId}));
-//                        });
-//                        let value = await  promise;
-//                        $("#" + subgridTableId).jqGrid(value);
-//                        params.subgridTemplate = value;
-//                        //documentGrid = new LCMSGrid($("#" + subgridTableId).jqGrid("getGridParam"));
-//                        gridData.tableObject = subgridTableId;
-//                        gridData.pagerID = "pager_" + subgridTableId;
-//                        gridData.jqGridOptions.pager = "#pager_" + subgridTableId;
-//                        documentGrid.gridData.pagerID = "pager_" + subgridTableId;
-//                        documentGrid.gridData.jqGridOptions.pager = "#pager_" + subgridTableId;
-//                        documentGrid.gridData.tableObject = subgridTableId;
-//                        documentPage.gridController.addLCMSGrid(subgridTableId, documentGrid);
-//                        $("#" + subgridTableId).inlineNav("#" + gridData.pagerID, gridData.jqGridParameters.navGridParameters);
-//                    })();
-//                };
-//                //params.subgridof = extraOptions.subgridof;
-//                // params.subgridTemplate = $("#" + id).jqGrid("getGridParam");
-//                params.subGridHasSubGridValidation = me.checkHasSubGrid;
-//                $("#" + id).jqGrid("setGridParam", params);
-//                $("#" + id).trigger("reloadGrid");
-//            }
+
 
 
             return gridObject;

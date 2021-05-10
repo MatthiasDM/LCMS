@@ -27,7 +27,11 @@ public class Query {
             createRole = "ADMIN"
     )
     public String name;
-
+    @gcmsObject(
+            type = "String",
+            createRole = "ADMIN"
+    )
+    public String description;
     @gcmsObject(
             type = "cktext_code",
             createRole = "ADMIN"

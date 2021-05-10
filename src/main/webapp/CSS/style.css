@@ -15,7 +15,11 @@ and open the template in the editor.
 }
 .navbar{
     background: white;
-    opacity: 0.9; 
+    opacity: 0.8;
+    
+}
+.jumbotron{
+    opacity: 0.8;    
 }
 
 .sticky-top{
@@ -191,6 +195,14 @@ textarea[title=ckedit] {
 
 /*MODAL*/
 .modal-body {
-    max-height: calc(100vh - 210px);
+ //   max-height: calc(100vh - 210px);
     overflow-y: auto;
+}
+
+.modal-backdrop{
+    position: absolute;    
+}
+
+.modal-open {
+    overflow: scroll;
 }

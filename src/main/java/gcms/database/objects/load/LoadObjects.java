@@ -60,7 +60,7 @@ public class LoadObjects {
         } else {
             if (Core.checkSession(cookie)) {
                 SerializableClass serializableClass = new SerializableClass();
-                if (_mongoConf.getPluginName() != null) {
+                if (_mongoConf.getPluginName() != null && !_mongoConf.getPluginName().isBlank()) {
                     serializableClass = Core.getFields(_mongoConf, cookie);
                 } else {
                     serializableClass.setClassName(_mongoConf.getClassName());
@@ -110,13 +110,7 @@ public class LoadObjects {
     public static GetResponse dataload(String cookie, MongoConfigurations _mongoConf, Map<String, String[]> requestParameters, BasicDBObject prefilter) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
         GetResponse response = new GetResponse();
         if (Core.checkSession(cookie)) {
-            SerializableClass serializableClass = new SerializableClass();
-            if (_mongoConf.getPluginName() != null) {
-                serializableClass = Core.getFields(_mongoConf, cookie);
-            } else {
-                serializableClass.setClassName(_mongoConf.getClassName());
-                serializableClass.convertFields(Arrays.asList(Class.forName(_mongoConf.getClassName()).getDeclaredFields()));
-            }
+            SerializableClass serializableClass = Core.getSerializableClass(cookie, _mongoConf);
             List<String> columns = getDocumentPriveleges(PrivilegeType.viewRole, cookie, _mongoConf, true, serializableClass);
 
             ArrayList<String> excludes = new ArrayList<>();
@@ -151,13 +145,13 @@ public class LoadObjects {
                     fields.add(pk);
                     fields.add(display);
                     MongoConfigurations _fkMongoConf = DatabaseActions.getMongoConfiguration(collection);
-
+                    fields.addAll(getDocumentPriveleges(PrivilegeType.viewRole, cookie, _fkMongoConf, true, Core.getSerializableClass(cookie, _fkMongoConf)));
                     for (int i = 0; i < results.size(); i++) {
                         String pkFilter = (String) results.get(i).get(column);
                         ArrayList<Document> fkResults = DatabaseActions.getObjectsSpecificListv2(_fkMongoConf, new BasicDBObject(pk, new BasicDBObject("$eq", pkFilter)), new BasicDBObject(), 1, new String[0], fields);
                         for (int j = 0; j < fkResults.size(); j++) {
                             fkResults.get(j).append("id", fkResults.get(j).get(pk));
-                            fkResults.get(j).append("value", fkResults.get(j).get(display));
+                            fkResults.get(j).append("value", fkResults.get(j).get(display));                       
                             fkResults.get(j).remove(pk);
                             fkResults.get(j).remove(display);
                         }

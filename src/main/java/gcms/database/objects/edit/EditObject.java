@@ -43,7 +43,7 @@ public class EditObject {
         if (cookie != null) {
 
             SerializableClass serializableClass = new SerializableClass();
-            if (_mongoConf.getPluginName() != null) {
+            if (_mongoConf.getPluginName() != null && _mongoConf.getPluginName().isBlank() != true) {
                 serializableClass = Core.getFields(_mongoConf, cookie);
             } else {
                 serializableClass.setClassName(_mongoConf.getClassName());

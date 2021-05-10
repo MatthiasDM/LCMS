@@ -71,8 +71,23 @@ import gcms.GsonObjects.annotations.gcmsObject;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.net.http.HttpClient;
+import java.util.Collection;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MinimalField;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.ByteArrayBody;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicHeader;
+import javax.servlet.http.Part;
+import org.apache.http.Header;
 
 /**
  *
@@ -139,6 +154,56 @@ public class Core {
         }
         in.close();
         return content.toString();
+    }
+
+    public static String multiPartHttpRequest(Collection<Part> parts, String receiver, String method, String parameterMap) throws IOException {
+        Map<String, String> parameters = Core.universalObjectMapper.readValue(parameterMap, new TypeReference<Map<String, String>>() {
+        });
+
+        MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+        HttpResponse response;
+        List<Header> headers = new ArrayList<>();
+        if (parts != null) {
+            for (Part p : parts) {
+                if (p.getSubmittedFileName() != null) {
+                    entityBuilder.addPart("file", new ByteArrayBody(p.getInputStream().readAllBytes(), p.getContentType(), p.getName()));
+                }
+            }
+        }
+        for (Map.Entry<String, String> param : parameters.entrySet()) {
+            //  Header h = new BasicHeader();
+            // headers.add(h);
+            entityBuilder.addTextBody(param.getKey(), String.valueOf(param.getValue()));
+            // entityBuilder.addTextBody(URLEncoder.encode(param.getKey(), "UTF-8"), URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
+        }
+
+        HttpEntity entity = entityBuilder.build();
+
+        if (method.toUpperCase().equals("GET")) {
+            HttpGet request = new HttpGet(receiver);
+            request.setHeaders(headers.toArray(new Header[0]));
+            response = client.execute(request);
+        } else {
+            HttpPost request = new HttpPost(receiver);
+            request.setEntity(entity);
+            request.setHeaders(headers.toArray(new Header[0]));
+            response = client.execute(request);
+
+        }
+        String output = new String(response.getEntity().getContent().readAllBytes());
+        return output;
+    }
+
+    public static SerializableClass getSerializableClass(String cookie, MongoConfigurations _mongoConf) throws ClassNotFoundException {
+        SerializableClass serializableClass = new SerializableClass();
+        if (_mongoConf.getPluginName() != null && !_mongoConf.getPluginName().isBlank()) {
+            serializableClass = Core.getFields(_mongoConf, cookie);
+        } else {
+            serializableClass.setClassName(_mongoConf.getClassName());
+            serializableClass.convertFields(Arrays.asList(Class.forName(_mongoConf.getClassName()).getDeclaredFields()));
+        }
+        return serializableClass;
     }
 
     public static String httpRestfulRequest(String receiver, ArrayList<String> parameters) throws MalformedURLException, IOException {
@@ -904,7 +969,7 @@ public class Core {
             parameters.put("action", "docommand");
             parameters.put("k", mongoconf.getPluginName());
             parameters.put("extra", Core.universalObjectMapper.writeValueAsString(extra));
-            sb.append(Core.httpRequest(baseURL + dirName + "servlet/", "post", Core.universalObjectMapper.writeValueAsString(parameters)));
+            sb.append(Core.multiPartHttpRequest(null, baseURL + dirName + "servlet/", "post", Core.universalObjectMapper.writeValueAsString(parameters)));
             JsonNode parentJson = Core.universalObjectMapper.readTree(sb.toString());
             String requestResult = parentJson.asText();
 
