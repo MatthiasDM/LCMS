@@ -65,6 +65,7 @@ class LCMSEditablePage {
         console.log("generatePage()");
         var me = this;
         me.gridsloaded = false;
+        //jsonData.webPage = $('<div />').html(jsonData.webPage).text();
         var webPage = $($.parseHTML(jsonData.webPage, document, true));
         var scripts = jsonData.scripts;
         var parameters = jsonData.parameters;

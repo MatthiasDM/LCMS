@@ -8,8 +8,10 @@ package gcms.modules;
 import gcms.Core;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.Gson;
 import com.itextpdf.*;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -20,6 +22,7 @@ import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.regex;
 import static com.mongodb.client.model.Filters.gte;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -66,6 +69,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+
+import org.apache.http.entity.mime.content.StringBody;
 
 /**
  *
@@ -135,7 +142,7 @@ public class commandFunctions {
             sb.append(command_doDownloadToTemp(commandParameters, command, parts));
         }
         if (name.equals("doQuery")) {
-            sb.append(command_doQueryByName(commandParameters));
+            sb.append(command_doQueryByName(commandParameters, parts));
         }
         if (name.equals("doHtmlToPdf")) {
             sb.append(command_doHtmlToPdf(commandParameters));
@@ -250,7 +257,13 @@ public class commandFunctions {
         searchObject.put(searchKey, new BasicDBObject("$eq", value));
         Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session"), mongoConfiguration, searchObject);
         String result = searchResult.get(contentKey).toString();
-        result = new String(Hex.decodeHex(result));
+        if (result.matches("^[0-9A-Fa-f]+$")) {
+            try {
+                result = new String(Hex.decodeHex(result));
+            } catch (DecoderException ex) {
+                Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         Map<String, Map> contentMap = mapper.readValue(result, Map.class);
 
         Map<String, Map> grids = contentMap.get("grids");
@@ -394,7 +407,7 @@ public class commandFunctions {
     private static StringBuilder command_doUploadFile(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
-        String tempDir = parameters.get("contextPath") + "/" + Core.getProp("temp.folder") + "/";
+        String tempDir = gcms.Core.getProp("files.path") + "/" + Core.getProp("temp.folder") + "/";
 
         Core.checkDir(tempDir);
 //        for (Part part : parts) {
@@ -404,7 +417,7 @@ public class commandFunctions {
 //                String fileName = id + filename;
 //                part.write(tempDir + fileName);
 //            }
-//        }
+//    }
 
         for (Part part : parts) {
             if (part.getName().equals("file")) {
@@ -438,8 +451,21 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doQueryByName(Map<String, String> parameters) throws IOException, ClassNotFoundException {
+    private static StringBuilder command_doQueryByName(Map<String, String> parameters, Collection<Part> parts) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
+        Gson gson = new Gson();
+        if (parts != null) {
+            for (Part part : parts) {
+                System.out.println(part.getName());
+                if (part.getName().contains("contents")) {
+
+                    String contents = IOUtils.toString(part.getInputStream(), Charset.defaultCharset());
+                    //contents = StringEscapeUtils.escapeHtml4(contents);
+
+                    parameters.put(part.getName(), contents);
+                }
+            }
+        }
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(DatabaseActions.getMongoConfiguration("queries"), eq("name", parameters.get("name")), null, 1, new String[]{}, Arrays.asList(new String[]{"query"}));
         List<String> replaceList = parameters.keySet().stream().filter(k -> k.startsWith("replaces")).collect(Collectors.toList());
         String query = results.get(0).get("query").toString();
@@ -447,10 +473,12 @@ public class commandFunctions {
             String replaceBy = replace;
             replaceBy = replaceBy.replace("replaces", "");
             replaceBy = replaceBy.replace("[", "");
-            replaceBy = replaceBy.replace("]", "");
-            query = query.replace("$" + replaceBy + "$", parameters.get(replace));
+            replaceBy = replaceBy.replace("]", "");          
+            query = query.replace("$" + replaceBy + "$", (parameters.get(replace)));
         }
-
+        
+        //data is User DTO, just pojo!
+        //asicDBObject document = (BasicDBObject) JSON.parse(query);
         if (!results.isEmpty()) {
             sb.append(
                     DatabaseActions.doQuery(parameters.get("database"), query).toJson());
@@ -462,20 +490,19 @@ public class commandFunctions {
     private static StringBuilder command_doHtmlToPdf(Map<String, String> parameters) throws IOException {
         StringBuilder sb = new StringBuilder();
         String fileName = UUID.randomUUID() + ".pdf";
-        String outputPath = gcms.Core.getTempDir(parameters.get("LCMS_session"), parameters.get("contextPath")) + fileName;
-        String trimmedOutputPath = "./HTML/other/files/" + parameters.get("LCMS_session") + "/" + fileName;
-//        if (_publicPage) {
-//            if (Core.checkDir(parameters.get("contextPath") + "/public/")) {
-//                outputPath = parameters.get("contextPath") + "/public/" + fileName;
-//                trimmedOutputPath = "./HTML/other/files" + "/public/" + fileName;
-//            }
-//        }       
+        // String outputPath = gcms.Core.getTempDir(parameters.get("LCMS_session"), parameters.get("contextPath")) + fileName;
+        //  String trimmedOutputPath = "./HTML/other/files/" + parameters.get("LCMS_session") + "/" + fileName;
+
+        String outputPath = gcms.Core.getTempDir(parameters.get("LCMS_session"), gcms.Core.getProp("files.path")) + fileName;
+        String trimmedOutputPath = gcms.Core.getProp("files.folder") + parameters.get("LCMS_session") + "/" + fileName;
+        String outputDir = gcms.Core.getTempDir(parameters.get("LCMS_session"), gcms.Core.getProp("files.path"));
+        Core.checkDir(outputDir);
 
         try {
             com.itextpdf.text.Document document = new com.itextpdf.text.Document();
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(outputPath));
             document.open();
-            XMLWorkerHelper.getInstance().parseXHtml(writer, document, new ByteArrayInputStream(readFile(Core.getProp("pdf.style")).getBytes()));
+            //XMLWorkerHelper.getInstance().parseXHtml(writer, document, new ByteArrayInputStream(readFile(Core.getProp("pdf.style")).getBytes()));
             XMLWorkerHelper.getInstance().parseXHtml(writer, document, new ByteArrayInputStream(parameters.get("html").getBytes()));
             document.close();
             ObjectNode jsonData = Core.universalObjectMapper.createObjectNode();

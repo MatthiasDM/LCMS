@@ -72,6 +72,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import gcms.GsonObjects.annotations.gcmsObject;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
 /**
@@ -306,15 +307,15 @@ public class DatabaseActions {
 
     public static String downloadFileToTemp(String _fileName, String _cookie, String _contextPath, boolean _publicPage) {
         System.out.println("Calling download..");
-        String outputPath = gcms.Core.getTempDir(_cookie, _contextPath) + _fileName;
-        String trimmedOutputPath = "./HTML/other/files/" + _cookie + "/" + _fileName;
+        String outputPath = gcms.Core.getTempDir(_cookie, gcms.Core.getProp("files.path")) + _fileName;
+        String trimmedOutputPath = gcms.Core.getProp("files.folder") + _cookie + "/" + _fileName;
+        String outputDir = gcms.Core.getTempDir(_cookie, gcms.Core.getProp("files.path"));
         if (_publicPage) {
-            if (Core.checkDir(_contextPath + "/public/")) {
-                outputPath = _contextPath + "/public/" + _fileName;
-                trimmedOutputPath = "./HTML/other/files" + "/public/" + _fileName;
-            }
+            outputPath = gcms.Core.getProp("files.path") + "/public/" + _fileName;
+            trimmedOutputPath = gcms.Core.getProp("files.folder") + "public/" + _fileName;
+            outputDir = gcms.Core.getProp("files.path") + "/public/";
         }
-
+        Core.checkDir(outputDir);
         try {
             MongoDatabase database = databases.get("files");
             GridFSBucket gridBucket = GridFSBuckets.create(database);
@@ -622,8 +623,12 @@ public class DatabaseActions {
         if (_old == null) {
             _old = "";
         }
-        if (!_old.toString().matches("^[0-9A-Fa-f]+$")) {
-            //_old = Hex.encodeHexString(_old.toString().getBytes());
+        if (_old.toString().matches("^[0-9A-Fa-f]+$")) {
+            try {
+                _old = new String(Hex.decodeHex(_old.toString()));
+            } catch (DecoderException ex) {
+                Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
         DiffMatchPatch dmp = new DiffMatchPatch();
@@ -796,7 +801,6 @@ public class DatabaseActions {
         return databases.get(database).runCommand(q);
     }
 
-   
 }
 
 class CronTask extends TimerTask {

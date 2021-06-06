@@ -72,6 +72,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.net.http.HttpClient;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
@@ -87,7 +88,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import javax.servlet.http.Part;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
+import org.apache.http.entity.mime.content.StringBody;
 
 /**
  *
@@ -168,7 +171,9 @@ public class Core {
             for (Part p : parts) {
                 if (p.getSubmittedFileName() != null) {
                     entityBuilder.addPart("file", new ByteArrayBody(p.getInputStream().readAllBytes(), p.getContentType(), p.getName()));
-                }
+
+                }           
+
             }
         }
         for (Map.Entry<String, String> param : parameters.entrySet()) {
@@ -593,10 +598,13 @@ public class Core {
                     if (f != null) {
                         System.out.println(f.getType());
 
-                        if (f.getType().equals("long") && !val.equals("") && val != null) {
+                        if (f.getType().equals("long") && !val.equals("")) {
                             parameters.put(key, Long.parseLong(val));
                         }
-                        if (f.getType().equals("java.util.List") && !val.equals("") && val != null) {
+                        if (f.getType().equals("double") && !val.equals("")) {
+                            parameters.put(key, Double.parseDouble(val));
+                        }
+                        if (f.getType().equals("java.util.List") && !val.equals("")) {
                             ArrayList vals = new ArrayList<>();
                             try {
                                 vals = Core.universalObjectMapper.readValue(val, ArrayList.class);
@@ -610,7 +618,7 @@ public class Core {
                             }
 
                         }
-                        if (f.getType().equals("java.lang.String") && !val.equals("") && val != null) {
+                        if (f.getType().equals("java.lang.String") && !val.equals("")) {
                             parameters.put(key, (val));
                         }
                         if (f.getType().equals("boolean")) {

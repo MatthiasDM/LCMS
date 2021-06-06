@@ -121,7 +121,7 @@ public class Servlet extends HttpServlet {
         StringBuilder sb = new StringBuilder();
         Map<String, String[]> requestParameters = new HashMap<>();
         requestParameters.putAll(request.getParameterMap());
-        requestParameters.put("contextPath", new String[]{context.getRealPath("/HTML/other/files")});
+        requestParameters.put("contextPath", new String[]{context.getRealPath("./HTML/other/files")});
         ActionManager aM;
         String host = Core.getClientPCName(request.getRemoteAddr());
         String user = request.getRemoteUser();

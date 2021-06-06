@@ -5,6 +5,7 @@
  */
 
 require.config({
+    waitSeconds: 30,
     baseUrl: './JS/dependencies',
     paths: {
         jquery: 'jquery/jquery',
@@ -67,23 +68,6 @@ require(['papaparse'], function (papa) {
     window.Papa = papa;
 });
 
-
-//    minify = (function () {
-//        var minify = require('html-minifier').minify;
-//        return function (value, options, callback, errorback) {
-//            options.log = function (message) {
-//                console.log(message);
-//            };
-//            var minified;
-//            try {
-//                minified = minify(value, options);
-//            } catch (err) {
-//                return errorback(err);
-//            }
-//            callback(minified);
-//            return minified;
-//        };
-//    })();
 require(['htmlminifier'], function (htmlminifier) {
     window.minify = req('html-minifier').minify;
 });
@@ -120,7 +104,7 @@ require([
             // "codemirror"
 ], function ($) {
     console.log("all sources required");
-    $("body").css({"background-image": "url(./images/background.jpg)", "background-attachment": "fixed", "background-repeat": "no-repeat", "background-size": "cover", "background-position": "center", "-webkit-mask-size": "cover"});
+    $("body").css({"background-image": "url(./files/background.jpg)", "background-attachment": "fixed", "background-repeat": "no-repeat", "background-size": "cover", "background-position": "center", "-webkit-mask-size": "cover"});
     credentials_doUserInfo($("#navbar-toggler"));
     page_doLoadPage(getUrlParam(window.location.href, "p"), $("body"));
 });
