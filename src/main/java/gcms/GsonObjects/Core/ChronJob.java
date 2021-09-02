@@ -22,7 +22,7 @@ public class ChronJob {
             multiple = true,
             reference = {"Mongo", "commands", "commandid", "name"},
             visibleOnTable = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public List<String> commmands;
     @gcmsObject(
             type = "string",
@@ -32,21 +32,21 @@ public class ChronJob {
     public String parameters;
     @gcmsObject(
             type = "number",
-            editRole = "ICTMANAGER"
+            editRole = "ADMIN"
     )
     public String interval;
 
     @gcmsObject(
             type = "datetime",
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public long start;
     @gcmsObject(
             type = "datetime",
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public long last;
     @gcmsObject(
             type = "datetime",
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public long stop;
 
     public ChronJob() {

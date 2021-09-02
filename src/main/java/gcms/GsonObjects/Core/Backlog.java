@@ -30,16 +30,16 @@ public class Backlog {
             type = "datetime",
             visibleOnTable = true,
             visibleOnForm = false,
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             createRole = "SYSTEM")
     public long created_on;
     @gcmsObject(
             type = "ref",
             visibleOnTable = false,
             visibleOnForm = false,
-            viewRole = "ICTMANAGER",
+            viewRole = "ADMIN",
             createRole = "SYSTEM",
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public String created_by;
 
     public Backlog() {

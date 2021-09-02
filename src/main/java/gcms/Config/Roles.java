@@ -10,7 +10,7 @@ package gcms.Config;
  * @author Matthias
  */
 public enum Roles {
-    ADMIN(100), QCMANAGER(50), ICTMANAGER(49), LABASSISTANT(4), SECRETARY(3), DRIVER(2), GUEST(1), ROLE3(48);
+    ADMIN(100), USER(2), GUEST(1);
     private final int levelCode;
 
     Roles(int levelCode) {

@@ -116,7 +116,7 @@ class LCMSgridController {
                 if (!me.grids[grid.attr('id')].subGridHasSubGridValidation(value.parentNode.id, me.grids[grid.attr('id')].subgridref, me)) {
                     $("#" + value.parentNode.id + " td.sgcollapsed", grid[0]).unbind('click').html('');
                 } else {
-                    $("#" + value.parentNode.id + " td.sgcollapsed", grid[0]).bind('click').html("<div class='sgbutton-div'><a role='button' class='btn btn-xs sgbutton'><span class='fa fa-fw fa-plus'></span></a></div>");
+                    $("#" + value.parentNode.id + " td.sgcollapsed", grid[0]).bind('click').html("<div class='sgbutton-div'><a role='button' class='btn bg-xs sgbutton'><span class='fa fa-fw fa-plus'></span></a></div>");
                 }
                 if (htmlValue !== $("#" + value.parentNode.id + " td.sgcollapsed", grid[0]).html()) {
                     change = true;

@@ -17,7 +17,7 @@ public class MongoConfigurations {
     @gcmsObject(
             type = "pk",
             createRole = "SYSTEM",
-            pk = "{\"relations\": [{\"collection\": \"actions\", \"type\": \"OneToMany\", \"fk\": \"mongoconfiguration\"}]}",
+            pk = "{\"relations\": [{\"collection\": \"actions\", \"type\": \"OneToMany\", \"fk\": \"mongoconfiguration\"}, {\"collection\": \"mobCalculatedFields\", \"type\": \"OneToMany\", \"fk\": \"mob\"}]}",
             //editRole = "SYSTEM",
             visibleOnTable = false,
             visibleOnForm = false
@@ -25,47 +25,47 @@ public class MongoConfigurations {
     public String mongoconfigurationsid;
     @gcmsObject(
             type = "string",
-            editRole = "ICTMANAGER",
-            createRole = "ICTMANAGER",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
             visibleOnTable = true
     )
     public String name;
     @gcmsObject(
             type = "string",
-            editRole = "ICTMANAGER",
-            createRole = "ICTMANAGER",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
             visibleOnTable = true
     )
     public String database;
 
     @gcmsObject(
             type = "string",
-            editRole = "ICTMANAGER",
-            createRole = "ICTMANAGER",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
             visibleOnTable = true
     )
     public String collection;
 
     @gcmsObject(
             type = "string",
-            editRole = "ICTMANAGER",
-            createRole = "ICTMANAGER",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
             visibleOnTable = true
     )
     public String className;
 
     @gcmsObject(
             type = "string",
-            editRole = "ICTMANAGER",
-            createRole = "ICTMANAGER",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
             visibleOnTable = true
     )
     public String idName;
 
      @gcmsObject(
             type = "string",
-            editRole = "ICTMANAGER",
-            createRole = "ICTMANAGER",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
             visibleOnTable = true
     )
     public String pluginName;

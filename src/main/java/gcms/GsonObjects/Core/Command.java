@@ -42,7 +42,7 @@ public class Command {
     public String parameters;
 
     @gcmsObject(
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             type = "select",
             choices = {"guest", "user", "api"},
             multiple = true
@@ -54,25 +54,25 @@ public class Command {
             reference = {"Mongo", "roles", "role", "role"},
             visibleOnTable = true,
             multiple = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public List<String> executionRoles;
     
     @gcmsObject(
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             type = "number",
             visibleOnTable = false
     )
     public String executionLimit;
 
     @gcmsObject(
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             type = "number",
             visibleOnTable = false
     )
     public String executionCount;
 
     @gcmsObject(
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             type = "number",
             visibleOnTable = false
     )

@@ -9,7 +9,7 @@
 (function () {
     CKEDITOR.plugins.add("codemirror", {
         icons: "searchcode,autoformat,commentselectedrange,uncommentselectedrange,autocomplete", // %REMOVE_LINE_CORE%
-        lang: "af,ar,bg,bn,bs,ca,cs,cy,da,de,el,en-au,en-ca,en-gb,en,eo,es,et,eu,fa,fi,fo,fr-ca,fr,gl,gu,he,hi,hr,hu,is,it,ja,ka,km,ko,ku,lt,lv,mk,mn,ms,nb,nl,no,pl,pt-br,pt,ro,ru,sk,sl,sr-latn,sr,sv,th,tr,ug,uk,vi,zh-cn,zh", // %REMOVE_LINE_CORE%
+        lang: "en", // %REMOVE_LINE_CORE%
         version: "1.17.11",
         init: function (editor) {
             var rootPath = this.path,
@@ -26,11 +26,12 @@
                         highlightMatches: true,
                         indentWithTabs: true,
                         lineNumbers: true,
-                        lineWrapping: false,
                         mode: "htmlmixed",
                         matchBrackets: true,
                         maxHighlightLineLength: 1000,
                         matchTags: true,
+                        tabSize: 6,
+                        lineWrapping: true,
                         showAutoCompleteButton: true,
                         showCommentButton: true,
                         showFormatButton: true,
@@ -39,7 +40,8 @@
                         showUncommentButton: true,
                         styleActiveLine: true,
                         theme: "rubyblue",
-                        useBeautifyOnStart: false
+                        useBeautifyOnStart: false,
+                        fullPage: true
                     };
 
             // Get Config & Lang
@@ -147,7 +149,9 @@
                             workTime: 35,
                             readOnly: editor.readOnly,
                             lineNumbers: config.lineNumbers,
-                            lineWrapping: false, //config.lineWrapping,
+                            tabSize: 6,
+                            fullPage: true,
+                            lineWrapping: true,
                             autoCloseTags: config.autoCloseTags,
                             autoCloseBrackets: config.autoCloseBrackets,
                             highlightSelectionMatches: config.highlightMatches,
@@ -159,14 +163,14 @@
                             styleActiveLine: config.styleActiveLine,
                             viewportMargin: Infinity,
                             extraKeys: {
-								"Ctrl-Space": "autocomplete",
-								"Ctrl-Q": function (codeMirror_Editor) {
-									if (config.enableCodeFolding) {
-										window["foldFunc_" + editor.id](codeMirror_Editor, codeMirror_Editor.getCursor().line);
-									}
-								},
-								"Ctrl-Y": cm => CodeMirror.commands.foldAll(cm),
-								"Ctrl-I": cm => CodeMirror.commands.unfoldAll(cm)	
+                                "Ctrl-Space": "autocomplete",
+                                "Ctrl-Q": function (codeMirror_Editor) {
+                                    if (config.enableCodeFolding) {
+                                        window["foldFunc_" + editor.id](codeMirror_Editor, codeMirror_Editor.getCursor().line);
+                                    }
+                                },
+                                "Ctrl-Y": cm => CodeMirror.commands.foldAll(cm),
+                                "Ctrl-I": cm => CodeMirror.commands.unfoldAll(cm)
                             },
                             foldGutter: true,
                             gutters: ["CodeMirror-linenumbbers", "CodeMirror-foldgutter"]
@@ -181,7 +185,7 @@
 
                         if (config.autoFormatOnStart) {
                             if (config.useBeautifyOnStart) {
-                                var indent_size = 4,
+                                var indent_size = 8,
                                         indent_char = " ",
                                         brace_style = "collapse"; //collapse, expand, end-expand
 
@@ -305,7 +309,7 @@
                             data = documentPage.minimizeGrids(documentPage, htmlData).prop("innerHTML");
                             this.setValueOf("main", "data", oldData = data);
                             // Load the content
-                           // this.setValueOf("main", "data", oldData = editor.getData());
+                            // this.setValueOf("main", "data", oldData = editor.getData());
 
                             if (config.autoLoadCodeMirror) {
 
@@ -348,7 +352,7 @@
                                     }
                                 }
                             }
-							
+
                         },
                         onCancel: function (event) {
                             if (event.data.hide) {
@@ -846,9 +850,9 @@
                 var sourceAreaElement = window["editable_" + editor.id],
                         holderElement = sourceAreaElement.getParent();
 
-                CodeMirror.commands.autocomplete = function(cm) {
-                 CodeMirror.showHint(cm, CodeMirror.htmlHint);
-                 };
+                CodeMirror.commands.autocomplete = function (cm) {
+                    CodeMirror.showHint(cm, CodeMirror.htmlHint);
+                };
 
                 // Enable Code Folding (Requires 'lineNumbers' to be set to 'true')
                 if (config.lineNumbers && config.enableCodeFolding) {
@@ -897,8 +901,8 @@
                             window["foldFunc_" + editor.id](codeMirror_Editor, codeMirror_Editor.getCursor().line);
                         }
                     },
-					"Ctrl-Y": cm => CodeMirror.commands.foldAll(cm),
-					"Ctrl-I": cm => CodeMirror.commands.unfoldAll(cm)							
+                    "Ctrl-Y": cm => CodeMirror.commands.foldAll(cm),
+                    "Ctrl-I": cm => CodeMirror.commands.unfoldAll(cm)
                 };
 
                 addCKEditorKeystrokes(extraKeys);
@@ -935,7 +939,7 @@
                 window["codemirror_" + editor.id].config = config;
                 if (config.autoFormatOnStart) {
                     if (config.useBeautifyOnStart) {
-                        var indent_size = 4;
+                        var indent_size = 8;
                         var indent_char = " ";
                         var brace_style = "collapse"; //collapse, expand, end-expand
 

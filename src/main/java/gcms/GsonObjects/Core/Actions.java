@@ -25,8 +25,8 @@ public class Actions {
     public String actionsid;
     @gcmsObject(
             type = "string",
-            editRole = "ICTMANAGER",
-            createRole = "ICTMANAGER",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
             visibleOnTable = true
     )
     public String name;
@@ -36,7 +36,7 @@ public class Actions {
             formatterName = "reference",
             fk = "{\"collection\": \"mongoconfigurations\", \"pk\": \"mongoconfigurationsid\", \"display\": \"name\", \"type\": \"ManyToOne\"}",            
             reference = {"Mongo", "mongoconfigurations", "mongoconfigurationsid", "name"},            
-            editRole = "ICTMANAGER"
+            editRole = "ADMIN"
     )
     public String mongoconfiguration;
 

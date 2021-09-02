@@ -8,6 +8,7 @@ package gcms.GsonObjects.Core;
 import java.util.List;
 import gcms.GsonObjects.annotations.gcmsObject;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  *
  * @author Matthias
@@ -16,19 +17,25 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class Role {
 
     @gcmsObject(
-            viewRole = "ICTMANAGER",
+            viewRole = "ADMIN",
             createRole = "SYSTEM",
-            //editRole = "ICTMANAGER",
+            //editRole = "ADMIN",
             type = "string",
             visibleOnTable = false,
             visibleOnForm = false)
     public String roleid;
     @gcmsObject(
             type = "string",
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             visibleOnTable = true
     )
     public String role;
+
+    @gcmsObject(
+            type = "string",
+            visibleOnTable = true
+    )
+    public int levelCode;
 
     public String getRoleid() {
         return roleid;
@@ -49,13 +56,20 @@ public class Role {
     public Role() {
     }
 
-    public Role(String roleid, String role) {
+    public int getLevelCode() {
+        return levelCode;
+    }
+
+    public void setLevelCode(int levelCode) {
+        this.levelCode = levelCode;
+    }
+
+    public Role(String roleid, String role, int levelCode) {
         this.roleid = roleid;
         this.role = role;
+        this.levelCode = levelCode;
     }
-      
 
-  
-    
+
 
 }

@@ -50,6 +50,7 @@ import gcms.Config.Roles;
 import gcms.GsonObjects.Core.Apikey;
 import gcms.GsonObjects.Core.FileObject;
 import gcms.GsonObjects.Core.MongoConfigurations;
+import gcms.GsonObjects.Core.Role;
 import gcms.GsonObjects.Core.Session;
 import gcms.GsonObjects.Core.User;
 import gcms.GsonObjects.Other.SerializableClass;
@@ -74,6 +75,7 @@ import java.io.ObjectInputStream;
 import java.net.http.HttpClient;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 import org.apache.http.Header;
@@ -90,6 +92,7 @@ import org.apache.http.message.BasicHeader;
 import javax.servlet.http.Part;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.mime.content.StringBody;
 
 /**
@@ -160,9 +163,11 @@ public class Core {
     }
 
     public static String multiPartHttpRequest(Collection<Part> parts, String receiver, String method, String parameterMap) throws IOException {
-        Map<String, String> parameters = Core.universalObjectMapper.readValue(parameterMap, new TypeReference<Map<String, String>>() {
-        });
-
+        Map<String, String> parameters = new HashMap<>();
+        if (parameterMap != null) {
+            parameters = Core.universalObjectMapper.readValue(parameterMap, new TypeReference<Map<String, String>>() {
+            });
+        }
         MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
         CloseableHttpClient client = HttpClientBuilder.create().build();
         HttpResponse response;
@@ -171,30 +176,30 @@ public class Core {
             for (Part p : parts) {
                 if (p.getSubmittedFileName() != null) {
                     entityBuilder.addPart("file", new ByteArrayBody(p.getInputStream().readAllBytes(), p.getContentType(), p.getName()));
-
-                }           
-
+                }
             }
         }
         for (Map.Entry<String, String> param : parameters.entrySet()) {
-            //  Header h = new BasicHeader();
-            // headers.add(h);
             entityBuilder.addTextBody(param.getKey(), String.valueOf(param.getValue()));
-            // entityBuilder.addTextBody(URLEncoder.encode(param.getKey(), "UTF-8"), URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
         }
-
         HttpEntity entity = entityBuilder.build();
-
         if (method.toUpperCase().equals("GET")) {
             HttpGet request = new HttpGet(receiver);
             request.setHeaders(headers.toArray(new Header[0]));
             response = client.execute(request);
         } else {
-            HttpPost request = new HttpPost(receiver);
-            request.setEntity(entity);
-            request.setHeaders(headers.toArray(new Header[0]));
-            response = client.execute(request);
-
+            if (method.toUpperCase().equals("POST")) {
+                HttpPost request = new HttpPost(receiver);
+                request.setEntity(entity);
+                request.setHeaders(headers.toArray(new Header[0]));
+                response = client.execute(request);
+            } else {
+                System.out.println("put request....");
+                HttpPut request = new HttpPut(receiver);
+                request.setEntity(entity);
+                request.setHeaders(headers.toArray(new Header[0]));
+                response = client.execute(request);
+            }
         }
         String output = new String(response.getEntity().getContent().readAllBytes());
         return output;
@@ -351,11 +356,29 @@ public class Core {
 
         List<String> roles = getUserRoles(_cookie);
         for (String role : roles) {
-            if (Roles.valueOf(role).getLevelCode() >= _value) {
+
+            if (getRoleLevelCode(role) >= _value) {
                 return true;
             }
         }
         return false;
+    }
+
+    public static int getRoleLevelCode(String userRole) {
+        int levelCode = 1;
+        Roles roles = null;
+        Optional<Roles> searchRole = Arrays.asList(gcms.Config.Roles.values()).stream().filter(r -> r.toString().equals(userRole)).findFirst();
+        if (searchRole.isPresent()) {
+            roles = searchRole.get();
+        }
+        if (roles != null) {
+            levelCode = roles.getLevelCode();
+        }
+        Role role = DatabaseActions.getRole(userRole);
+        if(role != null){
+            levelCode = role.getLevelCode();
+        }
+        return levelCode;
     }
 
     public static boolean checkUserAgainstRoles(String _cookie, List<String> _roles) {
@@ -377,10 +400,10 @@ public class Core {
         }
         if (session.getUsername().equals("root")) {
             roles.add(Roles.ADMIN.toString());
-            roles.add(Roles.ICTMANAGER.toString());
             return roles;
         } else {
-            User user = DatabaseActions.getUser(session.getUsername());
+            User user = DatabaseActions.getUser(session.getUsername());       
+           
             return user.getRoles();
         }
     }
@@ -401,7 +424,6 @@ public class Core {
         }
         if (session.getUsername().equals("root")) {
             roles.add(Roles.ADMIN.toString());
-            roles.add(Roles.ICTMANAGER.toString());
             return roles;
         } else {
             User user = DatabaseActions.getUser(session.getUsername());

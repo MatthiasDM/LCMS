@@ -17,7 +17,7 @@ public class User {
 
     @gcmsObject(
             createRole = "SYSTEM",
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             type = "string",
             visibleOnTable = false,
             visibleOnForm = false)
@@ -25,25 +25,25 @@ public class User {
     @gcmsObject(
             type = "string",
             visibleOnTable = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public String username;
     @gcmsObject(
             type = "encrypted",
             visibleOnTable = false,
             visibleOnForm = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public String password;
     @gcmsObject(
             type = "boolean",
             visibleOnTable = true,
             visibleOnForm = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public String passwordLock;
     @gcmsObject(
             type = "String",
             visibleOnTable = false,
             visibleOnForm = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public String INSS;
     @gcmsObject(
             type = "email",
@@ -54,14 +54,14 @@ public class User {
             multiple = true,
             reference = {"Mongo", "roles", "role", "role"},
             visibleOnTable = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public List<String> roles;
     @gcmsObject(type = "boolean", visibleOnTable = true)
     public boolean ldap;
     @gcmsObject(
             type = "string",
             visibleOnTable = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public String sessionValidity;
 
     public User() {

@@ -21,7 +21,7 @@
         var defaults = {
 
             // animation speed
-            //duration: 500,
+            duration: 0,
             // auto close
             autoClose: true,
             // close on click

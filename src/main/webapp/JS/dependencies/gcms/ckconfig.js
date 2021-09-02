@@ -77,7 +77,7 @@ function config2(publicPage) { //for inline editing
 function ckOnInstanceReady(e, imageController) {
 
     var editor = $("#" + e.editor.name);
-    loadTOC(CKEDITOR.instances, $("#sidebar-col-contentmenu"));//sidebar-col-contentmenu
+    loadTOC(editor, $("#contentTableCollapse"));//sidebar-col-contentmenu
 
     console.log("loading image & file management for: " + e.editor.name);
     var editorId = e.editor.name;
@@ -135,9 +135,9 @@ function ckOnInstanceReady(e, imageController) {
         var pastedImages = capturePaste(e, editorId);
         var t = e.target;
         setTimeout(function () {
-            if (pastedImages) {
+            if (false) {
                 var text = CKEDITOR.instances[editorId].getData();
-                text = text.replace(/<img (?!fileid).*?>/, "");
+                text = text.replace(/<img .*? src=\"data.*?\/>/, "");
                 CKEDITOR.instances[editorId].setData(text);
             }
         }, 1000);
@@ -184,11 +184,15 @@ function capturePaste(e, _editable) {
         Dropzone.forElement("#" + _editable).addFile(blob);
 
     });
+    if (images !== null) {
+        return (Object.keys(images).length > 0);
+    }else{
+        return false;        
+    }
 
-    return (images.length > 0 && images.keys.length > 0);
 }
 
-function loadTOC(editors, appendTo) {
+function loadTOC(editor, appendTo) {
     console.log("Loading TOC");
     // if (appendTo.find("li[class=list-group-item]").length === 0) {
     var level1 = 0;
@@ -201,8 +205,8 @@ function loadTOC(editors, appendTo) {
     appendTo.empty();
 
 
-    $.each(editors, function (index, editor) {
-        var editorContents = $("#" + editor.name);
+  //  $.each(editors, function (index, editor) {
+        var editorContents = editor;
         editorContents.find("span[class*=heading]").remove();
         var editorHeaders = editorContents.find("h1[class=heading], h2[class=heading], h3[class=heading], h4[class=heading], h5[class=heading], h6[class=heading]");
 
@@ -269,7 +273,7 @@ function loadTOC(editors, appendTo) {
 
             var previousHeader = this.tagName.substr(1, this.tagName.length);
         });
-    });
+    //});
     //}
 }
 

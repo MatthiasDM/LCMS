@@ -33,33 +33,18 @@ class LCMSImageController {
     }
 
     async downloadToTemp(file) {
-//        var formData = new FormData();
-//        formData.append('action', 'FILE_DOWNLOADTEMP');
-//        formData.append('LCMS_session', $.cookie('LCMS_session'));
-//        formData.append('public', this.publicPage);
-//        formData.append('filename', file.attr("name"));
-//        var request = new XMLHttpRequest();
-//        request.onreadystatechange = function () {
-//            if (request.readyState == 4) {
-//                var jsonData = JSON.parse(request.responseText);
-//                var filePath = jsonData.filePath;
-//                console.log("Changing filepath from " + file.attr("src") + " to " + filePath);
-//                file.attr("src", filePath);
-//                file.attr("href", filePath);
-//                return file;
-//            }
-//        }
-//        request.open('POST', "./upload", /* async = */ false);
-//        request.send(formData);
-
 
         async function onDone(data) {
             try {
-                var jsonData = JSON.parse(data);
-                var filePath = jsonData.filePath;
-                console.log("Changing filepath from " + file.attr("src") + " to " + filePath);
-                file.attr("src", filePath);
-                file.attr("href", filePath);
+                if (data.length > 0){ //&& file.attr("src").length <= 0) {
+                    var jsonData = JSON.parse(data);
+                    var filePath = jsonData.filePath;
+                    console.log("Changing filepath from " + file.attr("src") + " to " + filePath);
+                    file.attr("src", filePath);
+                    file.attr("href", filePath);
+                }else{
+                    console.log("Something wrong with image file (incorrect attributes?): " + jsonData);                    
+                }
                 return file;
             } catch (e) {
                 console.log(e);
@@ -70,6 +55,7 @@ class LCMSImageController {
         requestOptions.action = "docommand";
         requestOptions.k = "doDownloadToTemp";
         requestOptions.filename = file.attr("name");
+        console.log("file to be downloaded: " + file.attr("name"));
         requestOptions.public = this.publicPage;
         let request = await LCMSRequest("./servlet", requestOptions);
         let returnvalue = await onDone(request);
@@ -96,7 +82,8 @@ class LCMSImageController {
                 var jsonData = JSON.parse(data);
                 var filePath = jsonData.filePath;
                 if (type === ".png" || type === ".jpg" || type === ".JPG" || type === ".gif" || type === ".PNG") {
-                    ckeditor.insertHtml("<div style='overflow-x:auto'><img name='" + _fileName + "' fileid='" + _fileId + "' src='" + filePath + "'/></div>");
+                    ckeditor.insertHtml("<div style='overflow-x:auto' id='" + _fileId + "'><img name='" + _fileName + "' fileid='" + _fileId + "' src='" + filePath + "'/></div>");
+                    $(ckeditor.editable().$).find('img[src^=data]').remove();
                 } else {
                     ckeditor.insertHtml("<a name='" + _fileName + "'  href='" + filePath + "' fileid='" + _fileId + "'>" + _fileName + "</a>");
                 }
@@ -153,6 +140,7 @@ class LCMSImageController {
 //    }
 
     toDataURL(url, callback) {
+        
         var httpRequest = new XMLHttpRequest();
         httpRequest.onload = function () {
             var fileReader = new FileReader();

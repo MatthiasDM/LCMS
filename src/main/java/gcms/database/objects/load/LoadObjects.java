@@ -125,9 +125,21 @@ public class LoadObjects {
             filter.forEach((k, v) -> prefilter.put(k, v));
             Integer page = Integer.parseInt(requestParameters.get("page")[0]);
             Integer rows = Integer.parseInt(requestParameters.get("rows")[0]);
+            Boolean includeLargeFields = false;
+            if (requestParameters.get("include_large_files") != null) {
+                includeLargeFields = Boolean.parseBoolean(requestParameters.get("include_large_files")[0]); 
+            }
+            for (SerializableField f : serializableClass.getFields()) {
+                gcmsObject annotation = (gcmsObject) f.getAnnotation();
+                if ((annotation.type().equals("cktext") || annotation.type().equals("ckcode")) && !includeLargeFields) {
+                    excludes.add(f.getName());
+                }
+            }
+
             ArrayList<Document> results = DatabaseActions.getObjectsRest(_mongoConf, filter, null, rows, excludes.toArray(new String[0]), columns, rows, page);
 
             columns.removeAll(excludes);
+
             for (String column : columns) {
                 HashMap relationships = new HashMap();
                 SerializableField serializableField = serializableClass.getFields().stream().filter(f -> f.getName().equals(column)).findFirst().get();
@@ -145,13 +157,21 @@ public class LoadObjects {
                     fields.add(pk);
                     fields.add(display);
                     MongoConfigurations _fkMongoConf = DatabaseActions.getMongoConfiguration(collection);
+                    SerializableClass fkClass = Core.getSerializableClass(cookie, _fkMongoConf);
                     fields.addAll(getDocumentPriveleges(PrivilegeType.viewRole, cookie, _fkMongoConf, true, Core.getSerializableClass(cookie, _fkMongoConf)));
+
+                    for (SerializableField f : fkClass.getFields()) {
+                        gcmsObject annotation = (gcmsObject) f.getAnnotation();
+                        if (annotation.type().equals("cktext") || annotation.type().equals("ckcode")) {
+                            fields.remove(f.getName());
+                        }
+                    }
                     for (int i = 0; i < results.size(); i++) {
                         String pkFilter = (String) results.get(i).get(column);
                         ArrayList<Document> fkResults = DatabaseActions.getObjectsSpecificListv2(_fkMongoConf, new BasicDBObject(pk, new BasicDBObject("$eq", pkFilter)), new BasicDBObject(), 1, new String[0], fields);
                         for (int j = 0; j < fkResults.size(); j++) {
                             fkResults.get(j).append("id", fkResults.get(j).get(pk));
-                            fkResults.get(j).append("value", fkResults.get(j).get(display));                       
+                            fkResults.get(j).append("value", fkResults.get(j).get(display));
                             fkResults.get(j).remove(pk);
                             fkResults.get(j).remove(display);
                         }

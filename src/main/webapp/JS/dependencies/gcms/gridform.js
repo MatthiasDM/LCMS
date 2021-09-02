@@ -10,11 +10,11 @@ class LCMSGridForm {
         console.log("loading LCMSGridForm");
         var me = this;
         me.editablePage = _editablePage;
-        loadFormatters().then(
-                function (result) {
-                    me.formatters = result;
-                }
-        );
+//        loadFormatters().then(
+//                function (result) {
+//                    me.formatters = result;
+//                }
+//        );
     }
 
     new_grid_wizard(_editablePage, colModel, extraOptions, importCSV, _gridData, gridId, location) {
@@ -159,12 +159,12 @@ class LCMSGridForm {
     async new_grid_form(_editablePage, _gridData, _parentGrid) {
         console.log("new_grid_form()");
         var me = this;
-        // me.formatters = await loadFormatters();
+        me.formatters = await gcmscore.loadFormatters();
 
         var modal = create_modal(_editablePage.parent, "Tabel invoegen of wijzigen", "");
         var form = me.createForm(modal.find("div[class='modal-body']"), _gridData, modal, _editablePage);
         modal.modal('show');
-        modal.find("button[id=btn-save]").on('click', function (e) {
+        modal.find("button[id=bg-save]").on('click', function (e) {
             e.preventDefault();
             modal.modal('hide');
             var colModelWrapper = me.createColModel(form, _gridData, _editablePage); //1. create new colModel
@@ -379,7 +379,7 @@ class LCMSGridForm {
         var form = $("<form></form>");
         var container = $("<div class='container'></div>");
         var rowParent = dom_div("", "rowParent");
-        var addRowButton = $("<button type='button' class='btn btn-primary'>Add column</button>");
+        var addRowButton = $("<button type='button' class='btn bg-primary'>Add column</button>");
         form.append(container);
         form.append(forms_textbox("Titel", "option_caption", "option_caption", _griddata.caption));
         form.append(forms_checkbox("Geminimaliseerd starten", "option_hiddengrid", "option_hiddengrid", _griddata.hiddengrid));
@@ -446,12 +446,12 @@ class LCMSGridForm {
         form.append(forms_textbox("Load complete function", "option_loadCompleteFunction", "option_loadCompleteFunction", loadCompleteFunction));
         var extraOptionsJSON = typeof _griddata.extraOptionsJSON !== "undefined" ? _griddata.extraOptionsJSON : "";
         form.append(forms_textbox("Extra grid options", "option_extraOptionsJSON", "option_extraOptionsJSON", extraOptionsJSON));
-        var deleteContentButton = $("<button type='button' style='margin-right: 5px;' class='btn btn-warning'>Verwijder inhoud</button>");
+        var deleteContentButton = $("<button type='button' style='margin-right: 5px;' class='btn bg-warning'>Verwijder inhoud</button>");
         form.append(deleteContentButton);
         deleteContentButton.on('click', function (e) {
             $("#" + _griddata.id).jqGrid("clearGridData", true);
         });
-        var deleteTableButton = $("<button type='button' class='btn btn-danger'>Verwijder tabel</button>");
+        var deleteTableButton = $("<button type='button' class='btn bg-danger'>Verwijder tabel</button>");
         form.append(deleteTableButton);
         deleteTableButton.on('click', function (e) {
             $("#" + _griddata.id).remove();
@@ -460,6 +460,8 @@ class LCMSGridForm {
             $("#gbox_" + _griddata.id).remove();
             _modal.modal('hide');
         });
+        var saveTableButton = $("<button type='button' id='bg-save' class='btn bg-success'>Wijzigingen opslaan</button>");
+        form.append(saveTableButton);
         _parent.append(form);
         return form;
     }
@@ -551,7 +553,7 @@ class LCMSGridForm {
         var element3 = $("<input type='checkbox' class='form-check-input' name='option_hidden' id='hidden-" + elementID + "' placeholder='fieldname'>");
         element3.attr("checked", visibleVal);
         row = me.addElement(row, element3, 2, "form-check");
-        var element4 = $("<button type='button' class='btn btn-secondary'>X</button>");
+        var element4 = $("<button type='button' class='btn bg-secondary'>X</button>");
         row = me.addElement(row, element4, 2, "form-group");
         element1.on('change', function (e) {
             if ($("#option_rename-name-" + elementID).length < 1 && typeof nameVal !== "undefined") {

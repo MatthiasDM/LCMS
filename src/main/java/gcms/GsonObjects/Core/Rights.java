@@ -19,9 +19,9 @@ import java.util.ArrayList;
 public class Rights {
 
     @gcmsObject(
-            viewRole = "ICTMANAGER",
+            viewRole = "ADMIN",
             createRole = "SYSTEM",
-            //editRole = "ICTMANAGER",
+            //editRole = "ADMIN",
             type = "string",
             visibleOnTable = false,
             visibleOnForm = false)
@@ -31,11 +31,11 @@ public class Rights {
             multiple = false,
             reference = {"Mongo", "mongoconfigurations", "name", "name"},
             visibleOnTable = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public String table;
     @gcmsObject(
             type = "string",
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             visibleOnTable = true
     )
     public String field;
@@ -43,39 +43,39 @@ public class Rights {
             type = "select",
             reference = {"Mongo", "roles", "role", "role"},
             visibleOnTable = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public List<String> viewRole;
 
     @gcmsObject(
             type = "select",
             reference = {"Mongo", "roles", "role", "role"},
             visibleOnTable = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public List<String> editRole;
 
     @gcmsObject(
             type = "select",
             reference = {"Mongo", "roles", "role", "role"},
             visibleOnTable = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public List<String> createRole;
 
     @gcmsObject(
             type = "boolean",
             visibleOnTable = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public boolean visibleOnTable;
 
     @gcmsObject(
             type = "boolean",
             visibleOnTable = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public boolean visibleOnForm;
 
     @gcmsObject(
             type = "boolean",
             visibleOnTable = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public boolean editable;
 
     public Rights(String rightsid, String table, String field, List<String> viewRole, List<String> editRole, List<String> createRole, boolean visibleOnTable, boolean visibleOnForm, boolean editable) {

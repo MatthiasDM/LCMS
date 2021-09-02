@@ -10,7 +10,8 @@ require.config({
     paths: {
         jquery: 'jquery/jquery',
         popper: ('jquery/popper.min'),
-        bootstrap: ('bootstrap/bootstrap.bundle.min'),
+        //bootstrap: ('bootstrap/bootstrap.bundle.min'),
+        bootstrap: ('https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min'),
         moment: ('moment/moment.min'),
         ckeditor: ('ckeditor/ckeditor'),
         codemirror: ('codemirror/codemirror'),
@@ -36,11 +37,13 @@ require.config({
         iframeresizer: ('iframeresizer/iframeResizer.min'),
         dropzone: ('dropzone/dropzone.min'),
         pivottable: ('pivottable/pivot'),
+        pivottablemulti: ('pivottable/multifact-pivottable'),
         plotly: ('pivottable/plotly-latest.min'),
         plotly_renderers: ('pivottable/plotly_renderers'),
         papaparse: ('PapaParse/papaparse.min'),
-        filesaver: ('filesaver/FileSaver'),
-        htmlminifier: ('htmlminifier/htmlminifier')
+        filesaver: ('filesaver/filesaver.min'),
+        htmlminifier: ('htmlminifier/htmlminifier.min'),
+        zxing: ('zxing/zxing.min')
 
     },
     map: {
@@ -54,22 +57,20 @@ require.config({
         gcms_core: ['jquery', 'bootstrap', 'jqgrid'],
         jqgrid: ['jquery'],
         gcms_editablepage: ['jquery', 'jqgrid', 'bootstrap'],
-        plotly_renderers: ['plotly']
+        pivottable: ['jqueryui'],
+        pivottablemulti: ['pivottable'],
+        plotly_renderers: ['plotly', 'pivottable']
 
     }
 });
+
+
 require(['moment'], function (mom) {
     window.moment = mom;
 });
-require(['tinycolor'], function (tinycolor) {
-    window.tinycolor = tinycolor;
-});
-require(['papaparse'], function (papa) {
-    window.Papa = papa;
-});
 
-require(['htmlminifier'], function (htmlminifier) {
-    window.minify = req('html-minifier').minify;
+require(['bootstrap'], function (bootstrap) {
+    window.bootstrap = bootstrap;
 });
 
 require([
@@ -78,10 +79,7 @@ require([
     "bootside",
     "tether",
     "popper",
-    "jqueryui",
-    "chartjs",
     "datetimepicker",
-    "gcms_lang_nl",
     "gcms_editablepage",
     "gcms_grid",
     "gcms_gridform",
@@ -91,22 +89,28 @@ require([
     "gcms_ckconfig",
     "gcms_lang_nl",
     "gcms_core",
-    "bootstrap",
-    "ckeditor",
     "jqgrid",
-    "iframeresizer",
     "dmp",
     "dropzone",
-    "pivottable",
-    "plotly_renderers",
-    "filesaver",
+    "iframeresizer",
     "htmlminifier"
-            // "codemirror"
 ], function ($) {
     console.log("all sources required");
     $("body").css({"background-image": "url(./files/background.jpg)", "background-attachment": "fixed", "background-repeat": "no-repeat", "background-size": "cover", "background-position": "center", "-webkit-mask-size": "cover"});
-    credentials_doUserInfo($("#navbar-toggler"));
+    credentials_doUserInfo($("#user-menu"));
     page_doLoadPage(getUrlParam(window.location.href, "p"), $("body"));
+
+    require(['tinycolor'], function (tinycolor) {
+        window.tinycolor = tinycolor;
+    });
+    require(['papaparse'], function (papa) {
+        window.Papa = papa;
+    });
+
+    require(['htmlminifier'], function (htmlminifier) {
+        window.minify = req('html-minifier').minify;
+    });
+
 });
 
 

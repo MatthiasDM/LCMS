@@ -102,7 +102,7 @@ public class commandFunctions {
             sb.append(command_doGetTableConfig(commandParameters, command));
         }
         if (name.equals("doSendEmail")) {
-            sb.append(command_sendEmail(parameters, command));
+            sb.append(command_sendEmail(commandParameters, command, parts));
         }
         if (name.equals("doGetTableFromDocument")) {
             try {
@@ -173,20 +173,19 @@ public class commandFunctions {
         return sb;
     }
 
-    public static StringBuilder command_sendEmail(Map<String, String[]> parameters, Command command) throws IOException {
+    public static StringBuilder command_sendEmail(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
         });
 
-        String subject = parameters.get("subject")[0];
-        String text = parameters.get("text")[0];
-        String from = parameters.get("from")[0];
+        String subject = parameters.get("subject");
+        String text = parameters.get("text");
+        String from = parameters.get("from");
         List<String> receivers = Arrays.asList(parameters.get("receivers"));
 
         Properties props = new Properties();
-//        Map<String, Object> properties = mapper.readValue(commandParameters.get("mail.sessionProperties"), new TypeReference<Map<String, Object>>() {
-//        });
+
         props.putAll(commandParameters);
         Session session = Session.getInstance(props,
                 new javax.mail.Authenticator() {

@@ -8,6 +8,8 @@
 class LCMSEditablePage {
 
     constructor(pageData, parent) {
+        require(['ckeditor']);
+        
         this.pageData = pageData;
         this.originalDocument = "";
         this.gridForm = new LCMSGridForm(this);
@@ -16,6 +18,7 @@ class LCMSEditablePage {
         this.parent = parent;
         this.pageName = "Page";
         this.gridController = new LCMSgridController(this.parent);
+        this.usermenu = $("#content-menu");
     }
 
     buildPageData(data, _originalDocument) {
@@ -61,13 +64,35 @@ class LCMSEditablePage {
         this.generatePage(jsonData, grids);
     }
 
-    generatePage(jsonData, grids) {
+    async fetchDependencies() {
+        console.log("fetchDependencies()");
+        var me = this;
+        function fetchedDeps(results) {
+            if (results.length > 0) {
+                var parsedResults = $.parseJSON(results);
+                if (parsedResults.cursor.firstBatch.length > 0) {
+                    var deps = parsedResults.cursor.firstBatch[0]._id.dependencies;
+                    var scripts = "";
+                    $.each(deps, function (a, b) {
+                        scripts += b;
+                    });
+                    return "<div class='nosave'>" + scripts + "</div>";
+                }
+            }
+
+        }
+        return await gcmscore.doQuery("getPageDepedencies", {"editablepageid": me.pageData.pageId}, fetchedDeps);
+    }
+
+    async generatePage(jsonData, grids) {
         console.log("generatePage()");
         var me = this;
         me.gridsloaded = false;
+        var deps = await me.fetchDependencies();
         //jsonData.webPage = $('<div />').html(jsonData.webPage).text();
+        //require(jsonData.scripts);
+        //var scripts = jsonData.scripts;
         var webPage = $($.parseHTML(jsonData.webPage, document, true));
-        var scripts = jsonData.scripts;
         var parameters = jsonData.parameters;
         $.each(parameters, function (key, value) {
             webPage.find("[LCMS='" + key + "']").append(value);
@@ -87,8 +112,8 @@ class LCMSEditablePage {
                 $(b).remove();
             };
         });
+        jsonData.parent.append(deps);
         jsonData.parent.append(webPage);
-        jsonData.parent.append("<script>" + scripts + "</script>");
         var editor = $($("div[id^='wrapper']")[0]);
         $.each(grids, function (key, value) {
             var grid = (async function () {
@@ -118,7 +143,8 @@ class LCMSEditablePage {
                 let editorsLoaded = await me.loadEditors();
                 try {
                     me.loadSideBarMenu();
-                    $("#sidebar").BootSideMenu({side: "left"});
+                    //me.usermenu.BootSideMenu({side: "left"});
+
                     me.afterLoadComplete();
                     hideLoading();
                 } catch (e) {
@@ -128,7 +154,7 @@ class LCMSEditablePage {
             hideLoading();
         } else {
             me.loadSideBarMenu();
-            $("#sidebar").BootSideMenu({side: "left"});
+            //me.usermenu.BootSideMenu({side: "left"});
             me.afterLoadComplete();
         }
         $("#page-elements").remove();
@@ -171,11 +197,12 @@ class LCMSEditablePage {
     getHistory() {
         var me = this;
         var extraOptions = {
+            rowNum: 10,
             onSelectRow: function (rowid) {
                 var modal = create_modal($("#public-menu"), "Geschiedenis bekijken", "");
                 modal.attr("id", "historyModal");
-                modal.find("#btn-save").remove();
-                var btn = dom_button("btn-revert", "history", "Versie herstellen", "primary");
+                modal.find("#bg-save").remove();
+                var btn = dom_button("bg-revert", "history", "Versie herstellen", "primary");
                 var historyDiv = $("<div></div>");
                 var rowData = $("#history-table").jqGrid('getRowData', rowid);
                 btn.on("click", async function (e) {
@@ -200,7 +227,7 @@ class LCMSEditablePage {
                         var reverted = ($.parseJSON(data).replaces["LCMSEditablePage-content"])
                         var current = documentPage.originalDocument;
                         var d = dmp.diff_main(current, reverted);
-                        var ds = dmp.diff_prettyHtml(d);  
+                        var ds = dmp.diff_prettyHtml(d);
                         historyDiv.html(ds);
                     }
                     let afterRequest = await onDone(request);
@@ -324,40 +351,6 @@ class LCMSEditablePage {
 
         return "done";
     }
-
-//    subGridRowExpanded(subgridDivId, rowId) {
-//        var me = this;
-//        var subgridTableId = subgridDivId + "_t";
-//        var documentGrid = documentPage.gridController.LCMSGrids[subgridTableId];
-//        documentPage.gridController.addLCMSGrid(subgridTableId, documentGrid);
-//        $("#" + subgridDivId).html("<table id='" + subgridTableId + "'></table><div id='pager_" + subgridTableId + "'></div>");
-//        var createSubGrid = (async function (me) {
-//            let value;
-//            documentGrid = documentPage.gridController.LCMSGrids[subgridTableId];
-//            if (typeof documentGrid === "undefined") {
-//                var documentGridToCopy = documentPage.gridController.LCMSGrids[Object.keys(documentPage.gridController.LCMSGrids).find(function (a) {
-//                    return a.includes("_row");
-//                })];
-//                var documentGrid = jQuery.extend(true, {}, documentGridToCopy);
-//                //var documentGrid = Object.assign({}, documentGridToCopy);
-//                documentGrid.gridData.data.table = [];
-//                documentGrid.gridData.pagerID = "pager_" + subgridTableId;
-//                documentGrid.gridData.jqGridOptions.pager = "#pager_" + subgridTableId;
-//                documentGrid.gridData.tableObject = subgridTableId;
-//                documentGrid = new LCMSGrid(documentGrid.gridData);
-//                documentPage.gridController.addLCMSGrid(subgridTableId, documentGrid);
-//            }
-//            let promise = new Promise((res, rej) => {
-//                res(documentGrid.createGridOptions(subgridTableId, {pager: "#pager_" + subgridTableId}));
-//            });
-//            value = await  promise;
-//            $("#" + subgridTableId).jqGrid(value);
-//            documentGrid.gridData.pagerID = "pager_" + subgridTableId;
-//            documentGrid.gridData.jqGridOptions.pager = "#pager_" + subgridTableId;
-//            documentGrid.gridData.tableObject = subgridTableId;
-//            $("#" + subgridTableId).inlineNav("#" + documentGrid.gridData.pagerID, documentGrid.gridData.jqGridParameters.navGridParameters);
-//        })();
-//    }
 
     checkHasSubGrid(_rowid, _subgridref, _gridController) {
         console.log("checking hasSubgrid");
@@ -639,69 +632,21 @@ class LCMSEditablePage {
     loadSideBarMenu() {
         var me = this;
         console.log("loadSideBarMenu()");
-        me.parent.find("#sidebar").empty();
+        //me.parent.find("#sidebar").empty();
+        me.usermenu.empty();
         var sidebarContainer = dom_div("", "sidebar-container");
-        //---------------------------------------------------
-        var row1 = dom_row("sidebar-row-1");
-        var col1 = dom_col("sidebar-col-1", 12);
-        var div1 = dom_div("navbar-brand", "sidebar-title");
-        col1.css("text-align", "center");
-        div1.css("margin-right", "0px");
-        div1.css("margin-top", "0.5em");
-        div1.append("Menu");
-        col1.append(div1);
-        col1.append("<hr>");
-        row1.append(col1);
-        sidebarContainer.append(row1);
-        //---------------------------------------------------
-        var row2 = dom_row("sidebar-row-2");
-        var col2 = dom_col("sidebar-col-2", 12);
-        me.generate_menu(col2);
-        row2.append(col2);
-        sidebarContainer.append(row2);
-        //---------------------------------------------------
-        var row1 = dom_row("sidebar-row-1");
-        var col1 = dom_col("sidebar-col-1", 12);
-        var div1 = dom_div("navbar-brand", "sidebar-title");
-        col1.css("text-align", "center");
-        div1.css("margin-right", "0px");
-        div1.css("margin-top", "0.5em");
-        div1.append("Inhoudsopgave");
-        col1.append(div1);
-        col1.append("<hr>");
-        row1.append(col1);
-        sidebarContainer.append(row1);
-        //---------------------------------------------------
-        var row2 = dom_row("sidebar-row-2");
-        var col2 = dom_col("sidebar-col-contentmenu", 12);
-        row2.append(col2);
-        sidebarContainer.append(row2);
-        //---------------------------------------------------
-        var row1 = dom_row("sidebar-row-1");
-        var col1 = dom_col("sidebar-col-1", 12);
-        var div1 = dom_div("navbar-brand", "sidebar-title");
-        col1.css("text-align", "center");
-        div1.css("margin-right", "0px");
-        div1.css("margin-top", "0.5em");
-        //div1.append("Structuur");
-        col1.append(div1);
-        col1.append("<hr>");
-        row1.append(col1);
-        sidebarContainer.append(row1);
-        //---------------------------------------------------
-        var row3 = dom_row("sidebar-row-3");
-        var col3 = dom_col("sidebar-col-3", 12);
-        var div3 = dom_div("", "structure-container");
-        //  div3.append(dom_moveUpDownList("page-elements", $("div[id^=gbox_grid], div[id^=editable]")));
-        col3.append(div3);
-        row3.append(col3);
-        //sidebarContainer.append(row3);
 
 
-
-
-
-        me.parent.find("#sidebar").append(sidebarContainer);
+        var sidebarMenu = $('<ul class="nav nav-pills flex-column mb-auto" id="global-menu" style="display: contents;flex-direction: column;justify-content: space-between;overflow: hidden;"></ul>');
+        var documentMenu = $('<li class="nav-item"><a href="#documentCollapse" class="nav-link active" aria-expanded="false" aria-controls="documentCollapse" data-bs-toggle="collapse" data-bs-target="#documentCollapse" aria-current="page"><i class="fa fa-lg fa-fw fa-edit"></i>Menu</a></li>');
+        var documentCollapse = $('<div class="collapse" id="documentCollapse"></div>');        
+        sidebarMenu.append(documentMenu);
+        sidebarMenu.append(documentCollapse);
+        //sidebarMenu.append(contentTable);
+        //sidebarMenu.append(contentTableCollapse);
+        sidebarContainer.append(sidebarMenu);
+        me.generate_menu(documentCollapse);
+        me.usermenu.append(sidebarContainer);
         //---------------------------------------------------
         me.parent.find("#importTableButton").change(function () {
             $.each(this.files, function (index, file) {
@@ -754,7 +699,7 @@ class LCMSEditablePage {
         }
     }
 
-    edit_page() {
+    edit_page(editOptionsWrapper) {
         var me = this;
         console.log("edit_page()");
         me.toggleCtrlClick();
@@ -783,12 +728,13 @@ class LCMSEditablePage {
                 // CKEDITOR.instances[b.id].setReadOnly(me.readonly);
             }
         });
-        me.parent.find("#edit-menu button").each(function (index, btn) {
-            if ($(btn).prop('disabled') === true) {
-                $(btn).prop('disabled', false);
-            } else {
-                $(btn).prop('disabled', true);
-            }
+        editOptionsWrapper.find(".nav-link").each(function (index, btn) {
+            $(btn).toggleClass("disabled");
+//            if ($(btn).prop('disabled') === true) {
+//                $(btn).prop('disabled', false);
+//            } else {
+//                $(btn).prop('disabled', true);
+//            }
 
         });
     }
@@ -808,7 +754,7 @@ class LCMSEditablePage {
     }
 
     async export_page() {
-        console.log("exportToHTML()");
+        console.log("exportPage()");
         var me = this;
         var htmlData = $("<output id='tempOutaput'>");
         var styleText = getCSS();
@@ -863,13 +809,13 @@ class LCMSEditablePage {
                     bootstrap_alert.warning('Images loaded: ' + imagesLoadedCounter, 'success', 1000);
                     if (imagesLoadedCounter === images.length - 1) {
                         htmlData.find("div").attr("contenteditable", false);
-                        openFile(me.pageName + ".html", "<div class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + htmlData[0].innerHTML + "</div><div class='col-sm-1 mx-auto'></div></div>");
+                        gcmscore.openFile(me.pageName + ".html", "<div class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + htmlData[0].innerHTML + "</div><div class='col-sm-1 mx-auto'></div></div>");
                     }
                     imagesLoadedCounter++;
                 });
             });
         } else {
-            openFile(me.pageName + ".html", "<div id='export' class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + htmlData[0].innerHTML + "</div><div class='col-sm-1 mx-auto'></div></div>");
+            gcmscore.openFile(me.pageName + ".html", "<div id='export' class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + htmlData[0].innerHTML + "</div><div class='col-sm-1 mx-auto'></div></div>");
         }
 
 
@@ -879,35 +825,39 @@ class LCMSEditablePage {
         console.log("generate menu");
         var menu_uuid = uuidv4();
         var me = this;
-        var div_page_menu = $('<div id="div-page-menu"></div>');
+        // var div_page_menu = $('<div id="div-page-menu"></div>');
+        var div_page_menu = $('<ul class="nav nav-pills flex-column mb-auto" id="global-menu" style="display: contents;flex-direction: column;justify-content: space-between;overflow: hidden;"></ul>');
+
         div_page_menu.appendTo(_parent);
-        var btn_page_edit = $('<button type="button" id="btn-page-edit-' + menu_uuid + '" class="btn btn-info"><i class="fa fa-lg fa-fw fa-edit"></i><span>Bewerken</span></button>');
-        $(document).on('click', '#btn-page-edit-' + menu_uuid, function (e) {
-            me.edit_page();
+        var btn_page_edit = $('<li class="nav-item" id="bg-page-edit-' + menu_uuid + '"><a href="#" class="nav-link" aria-current="page"><i class="fa fa-lg fa-fw fa-edit"></i>Bewerken</a></li>');
+        $(document).on('click', '#bg-page-edit-' + menu_uuid, function (e) {
+            me.edit_page($("#edit-menu"));
         });
         btn_page_edit.appendTo(div_page_menu);
         var edit_menu = $('<div id="edit-menu"></div>');
-        var btn_page_save = $('<button type="button" id="btn-page-save-' + menu_uuid + '" class="btn btn-primary" disabled><i class="fa fa-lg fa-fw fa-save"></i><span>Opslaan</span></button>');
-        $(document).on('click', '#btn-page-save-' + menu_uuid, function (e) {
+        var btn_page_save = $('<li class="nav-item" id="bg-page-save-' + menu_uuid + '" disabled><a href="#" class="nav-link disabled" aria-current="page"><i class="fa fa-lg fa-fw fa-save"></i>Opslaan</a></list>');
+        $(document).on('click', '#bg-page-save-' + menu_uuid, function (e) {
             me.savePage();
         });
-        var btn_invoegen = $('<button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#collapseInvoegen" role="button" aria-expanded="false" aria-controls="collapseInvoegen" disabled>Invoegen</button>');
+        var btn_invoegen = $('<li class="nav-item" data-bs-toggle="collapse" data-bs-target="#collapseInvoegen" role="button" aria-expanded="false" aria-controls="collapseInvoegen" disabled><a href="#" class="nav-link disabled" aria-current="page"><i class="fa fa-lg fa-fw fa-plus"></i>Invoegen</a></li>');
         var div_invoegen = $('<div class="collapse" id="collapseInvoegen"></div>');
         var div_card_invoegen = $('<div class="card card-body"></div>');
-        var btn_tekstveld = $('<button type="button" id="btn-new-editable-field-' + menu_uuid + '" class="btn btn-primary" disabled><i class="fa fa-lg fa-fw fa-align-justify"></i><span>Tekstveld</span></button>');
-        $(document).on('click', '#btn-new-editable-field-' + menu_uuid, function (e) {
+        var btn_tekstveld = $('<li class="nav-item"  id="bg-new-editable-field-' + menu_uuid + '" disabled><i class="fa fa-lg fa-fw fa-align-justify"></i><span>Tekstveld</span></li>');
+        $(document).on('click', '#bg-new-editable-field-' + menu_uuid, function (e) {
             me.new_editable_field();
         });
-        var btn_jqgrid = $('<button type="button" id="btn-new-jqgrid-' + menu_uuid + '" class="btn btn-primary" disabled><i class="fa fa-lg fa-fw fa-table"></i><span>Tabel</span></button>');
-        $(document).on('click', '#btn-new-jqgrid-' + menu_uuid, function (e) {
+        var btn_jqgrid = $('<li class="nav-item" id="bg-new-jqgrid-' + menu_uuid + '" disabled><i class="fa fa-lg fa-fw fa-table"></i><span>Tabel</span></li>');
+        $(document).on('click', '#bg-new-jqgrid-' + menu_uuid, function (e) {
             me.gridForm.new_grid_wizard(me);
         });
-        var btn_acties = $('<button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#collapseActies" role="button" aria-expanded="false" aria-controls="collapseActies" disabled>Acties</button>');
+        var btn_acties = $('<li class="nav-item" data-bs-toggle="collapse" data-bs-target="#collapseActies" role="button" aria-expanded="false" aria-controls="collapseActies" disabled><a href="#" class="nav-link disabled" aria-current="page"><i class="fa fa-lg fa-fw fa-cog"></i>Acties</a></li>');
         var div_acties = $('<div class="collapse" id="collapseActies"></div>');
+        var btn_contentTable = $('<li class="nav-item" aria-expanded="false" aria-controls="contentTableCollapse" data-bs-target="#contentTableCollapse" data-bs-toggle="collapse" aria-current="page"><a href="#" class="nav-link" aria-current="page"><i class="fa fa-lg fa-fw fa-list"></i>Inhoudsopgave</a></li>');
+        var div_contentTable = $('<div class="collapse" id="contentTableCollapse">test2</div>');
         var div_card_acties = $('<div class="card card-body"></div>');
-        var btn_importeer_tabel = $('<label class="btn btn-primary btn-file"><i class="fa fa-lg fa-fw fa-th"></i><span>Importeer</span> <input id="importTableButton" type="file" style="display: none;"></label>');
-        var btn_exporteer = $('<button type="button" id="btn-export-html-' + menu_uuid + '" class="btn btn-primary" disabled><i class="fa fa-lg fa-fw fa-download" ></i><span>Download</span></button>');
-        $(document).on('click', '#btn-export-html-' + menu_uuid, function (e) {
+        var btn_importeer_tabel = $('<li class="nav-item"><i class="fa fa-lg fa-fw fa-th"></i><span>Importeer</span> <input id="importTableButton" type="file" style="display: none;"></li>');
+        var btn_exporteer = $('<li class="nav-item" id="bg-export-html-' + menu_uuid + '" disabled><i class="fa fa-lg fa-fw fa-download" ></i><span>Download</span></li>');
+        $(document).on('click', '#bg-export-html-' + menu_uuid, function (e) {
             console.log("Export page...");
             me.export_page(me);
         });
@@ -921,10 +871,12 @@ class LCMSEditablePage {
         btn_acties.appendTo(edit_menu);
         div_acties.appendTo(edit_menu);
         div_card_acties.appendTo(div_acties);
+        btn_contentTable.appendTo(edit_menu);
+        div_contentTable.appendTo(btn_contentTable);
         btn_importeer_tabel.appendTo(div_card_acties);
         btn_exporteer.appendTo(div_card_acties);
         var div_public_menu = $('<div id="public-menu"></div>');
-        var btn_page_history = $('<button type="button" id="btn-page-history" class="btn btn-primary" onclick="documentPage.getHistory()"><i class="fa fa-lg fa-fw fa-history"></i><span>Versies</span></button>');
+        var btn_page_history = $('<li class="nav-item" id="bg-page-history" onclick="documentPage.getHistory()"><a href="#" class="nav-link" aria-current="page"><i class="fa fa-lg fa-fw fa-history"></i>Geschiedenis</a></li>');
         var history_table = $('<table id="history-table"></table>');
         var history_pager = $(' <div id="history-pager"></div>');
         div_public_menu.appendTo(div_page_menu);

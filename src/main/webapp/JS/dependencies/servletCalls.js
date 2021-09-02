@@ -36,6 +36,9 @@ async function credentials_doUserInfo(_parent){
     requestOptions.action = "docommand";
     requestOptions.k = "doUserInfo";
     let request = await LCMSRequest("./servlet", requestOptions);
+    if(request != ""){
+        $("nav").show();
+    }
     let returnvalue = await onDone(request);
     return returnvalue;
 

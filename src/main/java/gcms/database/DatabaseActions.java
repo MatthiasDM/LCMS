@@ -41,6 +41,7 @@ import com.mongodb.util.JSON;
 import difflib.DiffUtils;
 import difflib.Patch;
 import gcms.Config.PrivilegeType;
+import gcms.Config.Roles;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,6 +53,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import gcms.Core;
+import static gcms.Core.getRoleLevelCode;
 import static gcms.Core.getUserRoles;
 import static gcms.Core.universalObjectMapper;
 import gcms.modules.DiffMatchPatch;
@@ -61,6 +63,7 @@ import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.GsonObjects.Core.Backlog;
 import gcms.GsonObjects.Core.FileObject;
 import gcms.GsonObjects.Core.Rights;
+import gcms.GsonObjects.Core.Role;
 import gcms.GsonObjects.Core.User;
 import gcms.GsonObjects.Other.SerializableClass;
 import gcms.GsonObjects.Other.SerializableField;
@@ -72,6 +75,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import gcms.GsonObjects.annotations.gcmsObject;
+import java.util.Optional;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
@@ -282,6 +286,32 @@ public class DatabaseActions {
         return user;
     }
 
+    static private MongoCollection<Role> getRoles() {
+        MongoCollection<Role> roles = databases.get("roles")
+                .getCollection("roles", Role.class);
+        return roles;
+
+    }
+
+    static public Role getRole(String _role) {
+        Role role = null;
+        if (checkConnection("roles")) {
+            try {
+                MongoCollection<Role> users = getRoles();
+                FindIterable it = users.find(and(eq("username", _role)));
+                ArrayList<Role> results = new ArrayList();
+                it.into(results);
+                for (Role entry : results) {
+                    role = (Role) entry;
+                }
+                return role;
+            } catch (Exception e) {
+                LOG.severe(e.getMessage());
+            }
+        }
+        return role;
+    }
+
     private static boolean checkConnection(String db) {
 
         if (databases.get(db) == null) {
@@ -307,13 +337,13 @@ public class DatabaseActions {
 
     public static String downloadFileToTemp(String _fileName, String _cookie, String _contextPath, boolean _publicPage) {
         System.out.println("Calling download..");
-        String outputPath = gcms.Core.getTempDir(_cookie, gcms.Core.getProp("files.path")) + _fileName;
-        String trimmedOutputPath = gcms.Core.getProp("files.folder") + _cookie + "/" + _fileName;
-        String outputDir = gcms.Core.getTempDir(_cookie, gcms.Core.getProp("files.path"));
+        String outputDir = gcms.Core.getProp("files.path") + "/"+ _cookie +"/";
+        String outputPath = outputDir + _fileName;
+        String trimmedOutputPath = gcms.Core.getProp("files.folder") + _cookie + "/" + _fileName;        
         if (_publicPage) {
-            outputPath = gcms.Core.getProp("files.path") + "/public/" + _fileName;
-            trimmedOutputPath = gcms.Core.getProp("files.folder") + "public/" + _fileName;
             outputDir = gcms.Core.getProp("files.path") + "/public/";
+            outputPath = outputDir + _fileName;
+            trimmedOutputPath = gcms.Core.getProp("files.folder") + "public/" + _fileName;            
         }
         Core.checkDir(outputDir);
         try {
@@ -409,34 +439,34 @@ public class DatabaseActions {
             gcmsObject annotation = (gcmsObject) field.getAnnotation();
             Rights databaseRight = rights.stream().filter(r -> r.getField().equals(field.getName())).findFirst().orElse(new Rights());
             if (annotation != null) {
-                String role = "";
-                int roleVal = 2;
+                String requiredRole = "";
+                int requiredRoleVal = 2;
                 switch (_privelegeType) {
                     case viewRole:
-                        role = annotation.viewRole();
-                        roleVal = annotation.minimumViewRoleVal();
+                        requiredRole = annotation.viewRole();
+                        requiredRoleVal = annotation.minimumViewRoleVal();
                         break;
                     case editRole:
-                        role = annotation.editRole();
-                        roleVal = annotation.minimumEditRoleVal();
+                        requiredRole = annotation.editRole();
+                        requiredRoleVal = annotation.minimumEditRoleVal();
                         break;
                     case createRole:
-                        role = annotation.createRole();
-                        roleVal = annotation.minimumCreateRoleVal();
+                        requiredRole = annotation.createRole();
+                        requiredRoleVal = annotation.minimumCreateRoleVal();
                         break;
                     default:
                         break;
                 }
 
                 for (String userRole : userRoles) {
-                    if (role.equals("")) {
-                        if (gcms.Config.Roles.valueOf(userRole).getLevelCode() >= roleVal) {
+                    if (requiredRole.equals("")) {
+                        if (Core.getRoleLevelCode(userRole) >= requiredRoleVal) {
                             columns.add(field.getName());
                             break;
                         }
                     } else {
-                        if (role.startsWith("@")) {
-                            String roleName = role.substring(1);
+                        if (requiredRole.startsWith("@")) {
+                            String roleName = requiredRole.substring(1);
                             String referencedField = fields.stream()
                                     .filter(r -> r.getName().equals(roleName.substring(1)))
                                     .findFirst()
@@ -446,7 +476,7 @@ public class DatabaseActions {
                             }
                         }
 
-                        if (userRole.equals(role)) {
+                        if (userRole.equals(requiredRole)) {
                             columns.add(field.getName());
                             break;
                         }
@@ -797,7 +827,7 @@ public class DatabaseActions {
 
     public static Document doQuery(String database, String query) {
 
-        BasicDBObject q = BasicDBObject.parse(query);
+        BasicDBObject q = BasicDBObject.parse(JSON.parse(query).toString());
         return databases.get(database).runCommand(q);
     }
 

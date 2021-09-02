@@ -9,7 +9,7 @@ and open the template in the editor.
 */
 
 .cke_reset_all, .cke_reset_all *, .cke_reset_all a, .cke_reset_all textarea{
-    font: inherit;
+    /*font: inherit;*/
 }
 
 .ui-jqgrid-bdiv{

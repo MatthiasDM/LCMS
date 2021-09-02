@@ -16,7 +16,7 @@ and open the template in the editor.
 .navbar{
     background: white;
     opacity: 0.8;
-    
+
 }
 .jumbotron{
     opacity: 0.8;    
@@ -25,12 +25,15 @@ and open the template in the editor.
 .sticky-top{
     z-index: 900;
 }
+.subgrid-data{
+   
+}
 
 #alertWrapper{    
     position: fixed;
     z-index: 1000;    
     bottom: 20px;
-    right: 20px;
+    left: 20px;
 }
 
 #floating_alert{
@@ -46,6 +49,10 @@ and open the template in the editor.
 #navbar-extra{
     overflow-x: auto;
 
+}
+
+.nav-item{
+    margin-top: 0.5em;    
 }
 
 h1, .h1 {
@@ -80,6 +87,39 @@ img {
     width: auto\9; /* ie8 */
 }
 
+:root {
+    --header-height: 3rem;
+    --nav-width: 250px;
+    --first-color: #4723D9;
+    --first-color-light: #AFA5D9;
+    --white-color: #F7F6FB;
+    //--body-font: 'Nunito', sans-serif;
+    --normal-font-size: 1rem;
+    --z-fixed: 100
+}
+.show-menu {
+    left: 0 !important;
+}
+.sidebar-toggle {
+    position: fixed;
+    top: 60px;
+    overflow-y: auto;
+    left:  calc(var(--nav-width) * -1);
+    width: var(--nav-width);
+    height: 100vh;
+    background-color: var(--first-color);
+    /* padding: .5rem 1rem 0 0; */
+    transition: .5s;
+    z-index: var(--z-fixed);
+}
+
+@media screen and (min-width: 768px) {
+    .show-menu {
+        width: calc(var(--nav-width))
+    }
+}
+
+
 @include media-breakpoint-up(sm) {
     html {
         font-size: 1.2rem;
@@ -105,7 +145,7 @@ img {
 }
 
 jqgrid-bootstrap tr.jqgrow>td {
-    padding: 0.8em .3em;
+    padding: 0.8em .8em;
 }
 .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-view {
     font-size: 1em;
@@ -126,7 +166,7 @@ jqgrid-bootstrap tr.jqgrow>td {
 }
 
 .ui-jqdialog.ui-jqgrid-bootstrap .ui-jqdialog-titlebar .ui-jqdialog-title, .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-errorbar .ui-jqgrid-error, .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-titlebar .ui-jqgrid-title {
-    font-size: 2em;
+    font-size: 1.2em;
 }
 
 .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-bootstrap-corner-top {
@@ -135,30 +175,44 @@ jqgrid-bootstrap tr.jqgrow>td {
     padding: .6em;
 }
 
+.ui-jqdialog.ui-jqgrid-bootstrap {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 0.5rem;
+    //margin: 1% !important;
+}
+
 .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-caption {
-    font-size: 0.6rem;
-    background-color: #2C3E50;
-    color: #f7a100;
-    -ms-border-top-left-radius: 0px;
-    -ms-border-top-right-radius: 0px;
+    font-size: 1rem;
+    //background-color: #FFFFFF;
+    //color: #797979;
+    //-ms-border-top-left-radius: 0px;
+    //-ms-border-top-right-radius: 0px;
+    //border-radius: 5px;
 }
 
 .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-bootstrap-corner-bottom {
     border-bottom-left-radius: 0px;
     border-bottom-right-radius: 0px;
+    background-color: #FFFFFF;
+    //border-radius: 5px;
 }
 
 .ui-jqgrid .ui-jqgrid-caption .ui-jqgrid-titlebar-close {
-    right: .6em;
+    //right: .6em;
 }
 
 .ui-jqgrid.ui-jqgrid-bootstrap {
     border: 1px solid #ddd;
     -ms-border-radius: 0px;
     border-radius: 0px; 
+    margin-top: 0.5rem;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.ui-jqgrid tr.jqgrow td { font-size: 0.8rem;word-wrap: break-word; /* IE 5.5+ and CSS3 */ white-space: no-wrap; /* CSS3 */ white-space: -moz-pre-wrap; /* Mozilla, since 1999 */ white-space: -pre-wrap; /* Opera 4-6 */ white-space: -o-pre-wrap; /* Opera 7 */ overflow: hidden; height: auto; vertical-align: middle; padding-top: 3px; padding-bottom: 3px; }
+.ui-jqgrid tr.jqgrow td { font-size: 1rem;word-wrap: break-word; /* IE 5.5+ and CSS3 */ white-space: no-wrap; /* CSS3 */ white-space: -moz-pre-wrap; /* Mozilla, since 1999 */ white-space: -pre-wrap; /* Opera 4-6 */ white-space: -o-pre-wrap; /* Opera 7 */ overflow: hidden; height: auto; vertical-align: middle; padding-top: 3px; padding-bottom: 3px; }
 
 .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-pager .fa, .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-view .fa {
     font-size: 1.2em;
@@ -195,14 +249,40 @@ textarea[title=ckedit] {
 
 /*MODAL*/
 .modal-body {
- //   max-height: calc(100vh - 210px);
+    //   max-height: calc(100vh - 210px);
     overflow-y: auto;
 }
 
-.modal-backdrop{
-    position: absolute;    
+.modal-body .container {
+    //   max-height: calc(100vh - 210px);
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
+    padding-top: 0rem;
 }
 
+.modal-backdrop{
+    //position: absolute;    
+    //display:none;
+   // background-color: transparent;
+}
+.modal ui-jqgrid-bootstrap{
+
+}
 .modal-open {
-    overflow: scroll;
+    overflow: scroll !important;
+}
+
+
+
+
+body.modal-open {
+    /*  overflow: hidden;
+       position: fixed;*/
+}
+
+/*CODEMIRROR*/
+.CodeMirror {
+    font-family: monospace !important;
+    font-size: 16px !important;
+    line-height: 1.5rem !important;
 }

@@ -27,12 +27,12 @@ public class Document {
             type = "select",
             viewRole = "GUEST",
             reference = {"Mongo", "users", "userid", "username"},
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             visibleOnTable = false
     )
     public String approver;
     @gcmsObject(
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             type = "select",
             choices = {"Algemeen", "Glims", "Nomenclatuur", "Labo", "Software", "Gearchiveerd"}
     )
@@ -41,7 +41,7 @@ public class Document {
             type = "date",
             visibleOnTable = false,
             visibleOnForm = false,
-            viewRole = "ICTMANAGER",
+            viewRole = "ADMIN",
             createRole = "SYSTEM",
             editRole = "SYSTEM")
     public long approved_on;
@@ -50,9 +50,9 @@ public class Document {
             type = "ref",
             visibleOnTable = false,
             visibleOnForm = false,
-            viewRole = "ICTMANAGER",
+            viewRole = "ADMIN",
             createRole = "SYSTEM",
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public String created_by;
     @gcmsObject(
             type = "date",
@@ -66,7 +66,7 @@ public class Document {
             visibleOnTable = true,
             visibleOnForm = false,
             viewRole = "GUEST",
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             createRole = "SYSTEM")
     public long created_on;
 

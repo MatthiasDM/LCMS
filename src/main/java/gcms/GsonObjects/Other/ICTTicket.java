@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class ICTTicket {
 
     @gcmsObject(
-            //viewRole = "ICTMANAGER",
+            //viewRole = "ADMIN",
             createRole = "SYSTEM",
             //editRole = "SYSTEM",
             type = "string",
@@ -32,49 +32,49 @@ public class ICTTicket {
             type = "string")
     public String number;
     @gcmsObject(
-            editRole = "ICTMANAGER",
-            createRole = "LABASSISTANT",
+            editRole = "ADMIN",
+            createRole = "USER",
             type = "string")
     public String subject;
     @gcmsObject(
-            editRole = "ICTMANAGER",
-            //viewRole = "ICTMANAGER",
+            editRole = "ADMIN",
+            //viewRole = "ADMIN",
             type = "select",
-            createRole = "LABASSISTANT",
+            createRole = "USER",
             choices = {"Glims", "Cyberlab", "Sharepoint", "Hardware", ""}
     )
     public String category;
     @gcmsObject(
-            editRole = "ICTMANAGER",
-            //viewRole = "ICTMANAGER",
+            editRole = "ADMIN",
+            //viewRole = "ADMIN",
             type = "string",
-            createRole = "ICTMANAGER"
+            createRole = "ADMIN"
     )
     public String discriminator;
     @gcmsObject(
             type = "cktext",
-            editRole = "ICTMANAGER",
-            createRole = "LABASSISTANT",
+            editRole = "ADMIN",
+            createRole = "USER",
             visibleOnTable = false)
     public String overview;
     @gcmsObject(
-            editRole = "ICTMANAGER",
-            createRole = "ICTMANAGER",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
             type = "cktext",
             visibleOnTable = false)
     public String followup;
     @gcmsObject(
-            editRole = "ICTMANAGER",
-            createRole = "LABASSISTANT",
-            //viewRole = "ICTMANAGER",
+            editRole = "ADMIN",
+            createRole = "USER",
+            //viewRole = "ADMIN",
             type = "select",
             choices = {"Gemeld", "Analyse", "Validatie", "Voltooid"}
     )
     public String status;
     @gcmsObject(
-            editRole = "ICTMANAGER",
-            viewRole = "ICTMANAGER",
-            createRole = "ICTMANAGER",
+            editRole = "ADMIN",
+            viewRole = "ADMIN",
+            createRole = "ADMIN",
             type = "select",
             multiple = true,
             reference = {"Mongo", "users", "userid", "username"},
@@ -83,10 +83,10 @@ public class ICTTicket {
     public List<String> involved_persons;
     @gcmsObject(
             type = "select",
-            viewRole = "ICTMANAGER",
+            viewRole = "ADMIN",
             reference = {"Mongo", "users", "userid", "username"},
-            editRole = "ICTMANAGER",
-            createRole = "ICTMANAGER",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
             visibleOnTable = false
     )
     public String approver;
@@ -101,7 +101,7 @@ public class ICTTicket {
             type = "datetime",
             visibleOnTable = false,
             visibleOnForm = false,
-            viewRole = "ICTMANAGER",
+            viewRole = "ADMIN",
             createRole = "SYSTEM",
             editRole = "SYSTEM")
     public long approved_on;
@@ -109,16 +109,16 @@ public class ICTTicket {
             type = "datetime",
             visibleOnTable = true,
             visibleOnForm = false,
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             createRole = "SYSTEM")
     public long created_on;
     @gcmsObject(
             type = "ref",
             visibleOnTable = false,
             visibleOnForm = false,
-            viewRole = "ICTMANAGER",
+            viewRole = "ADMIN",
             createRole = "SYSTEM",
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public String created_by;
     @gcmsObject(
             type = "datetime",
@@ -131,9 +131,9 @@ public class ICTTicket {
             type = "json",
             visibleOnTable = false,
             visibleOnForm = true,
-            viewRole = "ICTMANAGER",
-            createRole = "ICTMANAGER",
-            editRole = "ICTMANAGER")
+            viewRole = "ADMIN",
+            createRole = "ADMIN",
+            editRole = "ADMIN")
     public HashMap<String, List<String>> events;
 
     public ICTTicket() {

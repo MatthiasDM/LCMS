@@ -25,37 +25,37 @@ public class Apikey {
     public String name;
     @gcmsObject(
             type = "string",
-            editRole = "ICTMANAGER",
-            viewRole = "ICTMANAGER"
+            editRole = "ADMIN",
+            viewRole = "ADMIN"
     )
     public String keyprefix;
     @gcmsObject(
             type = "encrypted",
-            editRole = "ICTMANAGER",
-            viewRole = "ICTMANAGER"
+            editRole = "ADMIN",
+            viewRole = "ADMIN"
     )
     public String apiKey;
     @gcmsObject(
             type = "boolean",
-            editRole = "ICTMANAGER",
-            viewRole = "LABASSISTANT"
+            editRole = "ADMIN",
+            viewRole = "USER"
     )
     public String apiKeyLock;
     @gcmsObject(
             type = "string",
-            editRole = "ICTMANAGER"
+            editRole = "ADMIN"
     )
     public String url;
     @gcmsObject(
             type = "select",
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             choices = {"Incoming", "Outgoing"}
     )
     public String connection;
 
     @gcmsObject(
             type = "string",
-            editRole = "ICTMANAGER"
+            editRole = "ADMIN"
     )
 
     public String port;
@@ -64,7 +64,7 @@ public class Apikey {
             multiple = true,
             reference = {"Mongo", "commands", "commandid", "name"},
             visibleOnTable = true,
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public List<String> scope;
 
     @gcmsObject(type = "boolean", visibleOnTable = true)
@@ -74,16 +74,16 @@ public class Apikey {
             type = "datetime",
             visibleOnTable = true,
             visibleOnForm = false,
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             createRole = "SYSTEM")
     public long created_on;
     @gcmsObject(
             type = "ref",
             visibleOnTable = false,
             visibleOnForm = false,
-            viewRole = "ICTMANAGER",
+            viewRole = "ADMIN",
             createRole = "SYSTEM",
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public String created_by;
 
     public Apikey() {

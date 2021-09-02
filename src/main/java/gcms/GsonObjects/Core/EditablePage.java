@@ -7,6 +7,7 @@ package gcms.GsonObjects.Core;
 
 import gcms.GsonObjects.annotations.gcmsObject;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.List;
 /**
  *
  * @author Matthias
@@ -14,13 +15,18 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EditablePage {
 
-    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
+    @gcmsObject(
+            type = "pk",
+            pk = "{\"relations\": [{\"collection\": \"pageDependencies\", \"type\": \"OneToMany\", \"fk\": \"page\"}]}",
+            visibleOnTable = false,
+            visibleOnForm = false
+    )
     public String editablepageid;
     @gcmsObject(type = "string", visibleOnTable = true, visibleOnForm = true)
     public String title;
     @gcmsObject(
-            editRole = "ICTMANAGER",
-            viewRole = "LABASSISTANT",
+            editRole = "ADMIN",
+            viewRole = "USER",
             type = "string",
             visibleOnTable = false,
             visibleOnForm = true,
@@ -32,30 +38,32 @@ public class EditablePage {
     @gcmsObject(
             type = "select",
             reference = {"Mongo", "users", "userid", "username"},
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             visibleOnTable = false
     )
     public String approver;
     @gcmsObject(
-            editRole = "ICTMANAGER",
+            editRole = "ADMIN",
             type = "select",
             choices = {"Algemeen", "Glims", "Nomenclatuur", "Labo", "Software"}
     )
     public String category;
 
     @gcmsObject(
-            editRole = "ICTMANAGER",
-            viewRole = "LABASSISTANT",
+            editRole = "ADMIN",
+            viewRole = "USER",
             type = "select",
             choices = {"public", "private", "partial"}
     )
     public String accessType;
+    
+
 
     @gcmsObject(
             type = "date",
             visibleOnTable = false,
             visibleOnForm = false,
-            viewRole = "ICTMANAGER",
+            viewRole = "ADMIN",
             createRole = "SYSTEM",
             editRole = "SYSTEM")
     public long approved_on;
@@ -70,9 +78,9 @@ public class EditablePage {
             type = "ref",
             visibleOnTable = false,
             visibleOnForm = false,
-            viewRole = "ICTMANAGER",
+            viewRole = "ADMIN",
             createRole = "SYSTEM",
-            editRole = "ICTMANAGER")
+            editRole = "ADMIN")
     public String created_by;
     @gcmsObject(
             type = "date",

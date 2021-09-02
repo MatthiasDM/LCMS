@@ -24,12 +24,12 @@ public class Workflow {
     @gcmsObject(
             type = "select",
             reference = {"Mongo", "mongoconfigurations", "mongoconfigurationsid", "collection"},
-            editRole = "ICTMANAGER"
+            editRole = "ADMIN"
     )
     public String mongoconfiguration;
         @gcmsObject(
-            editRole = "ICTMANAGER",
-            //viewRole = "ICTMANAGER",
+            editRole = "ADMIN",
+            //viewRole = "ADMIN",
             type = "select",
             choices = {"onedit", "oncreate"}
     )

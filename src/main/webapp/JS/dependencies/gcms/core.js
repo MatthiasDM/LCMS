@@ -201,10 +201,13 @@ class gcmscore {
 
     }
 
-    async LCMSRequest(_url, _data, _onDone, _extraParam) {
+    async LCMSRequest(_url, _data, _onDone, _extraParam, _includeSession) {
 
+        if (typeof _includeSession === "undefined") {
+            _includeSession = true;
+        }
 
-        if (!_data.__proto__.toString().includes("FormData")) {
+        if (!_data.__proto__.toString().includes("FormData") && _includeSession) {
             _data['LCMS_session'] = $.cookie('LCMS_session');
         }
 
@@ -285,6 +288,8 @@ class gcmscore {
                     if (typeof LCMSEditablePageObject !== "undefined") {
                         LCMSEditablePageObject.gridController.addLCMSGrid(LCMSGrid.gridData.tableObject, LCMSGrid);
                     }
+
+
                 }
             } catch (e) {
                 console.log(e);
@@ -320,7 +325,7 @@ class gcmscore {
         }
     }
 
-    LCMSGridTemplateSimple(_jqGridOptions, _editAction, _editUrl, _tableName, _wrapperObject) {
+    async LCMSGridTemplateSimple(_jqGridOptions, _editAction, _editUrl, _tableName, _wrapperObject) {
         var gridData = {
             data: {header: _jqGridOptions.colModel, table: _jqGridOptions.data},
             editAction: _editAction,
@@ -348,7 +353,7 @@ class gcmscore {
         return LcmsGrid;
     }
 
-    LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
+    async LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pagerName, wrapperObject, caption, jqGridOptions) {
         try {
             if (typeof jsonData.table === "string") {
                 jsonData.table = $.parseJSON(jsonData.table);
@@ -368,7 +373,7 @@ class gcmscore {
             editUrl: editUrl, // "./lab",
             tableObject: tableName, //("department-table"),
             pagerID: pagerName, //"department-pager",
-            wrapperObject: $("#" + wrapperName),
+            wrapperObject: wrapperObject,
             jqGridOptions: {
                 grouping: false,
                 caption: caption, //lang["department"]['title']
@@ -383,11 +388,11 @@ class gcmscore {
             });
         }
         let lcmsGrid = new LCMSGrid(gridData);
-        lcmsGrid.createGrid();
+        await lcmsGrid.createGrid();
         return lcmsGrid;
     }
 
-    LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
+    async LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
         console.log("LCMSGridTemplateStandard()");
         var gridData = {
             data: jsonData,
@@ -411,8 +416,12 @@ class gcmscore {
                 gridData.jqGridOptions[i] = n;
             });
         }
+
+
+
         let lcmsGrid = new LCMSGrid(gridData);
-        lcmsGrid.createGrid().then(
+
+        var data = await lcmsGrid.createGrid().then(
                 function (result) {
                     lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw item", "", function () {
                         return lcmsGrid.popupEdit("new", function () {
@@ -429,12 +438,13 @@ class gcmscore {
                             return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
                         }
                     }));
+                    $("#" + gridData.tableObject).trigger("reloadGrid");
                 }
         );
         return lcmsGrid;
     }
 
-    LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
+    async LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
         try {
             if (typeof jsonData.table === "string") {
                 jsonData.table = $.parseJSON(jsonData.table);
@@ -463,7 +473,7 @@ class gcmscore {
             gridData.jqGridOptions[i] = n;
         });
         let lcmsGrid = new LCMSGrid(gridData);
-        lcmsGrid.createGrid().then(
+        await lcmsGrid.createGrid().then(
                 function (result) {
                     lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw item", "", function () {
                         return lcmsGrid.popupEdit("new", function () {
@@ -483,7 +493,7 @@ class gcmscore {
                     lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-download", "Export", "", function () {
                         (async () => {
                             var data = (await lcmsGrid.export_as_html());
-                            openFile("test.html", "<div id='export' class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + data + "</div><div class='col-sm-1 mx-auto'></div></div>");
+                            //openFile("test.html", "<div id='export' class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + data + "</div><div class='col-sm-1 mx-auto'></div></div>");
                         })();
                     }));
                     lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-arrow-down", "Download as CSV", "", function () {
@@ -583,10 +593,11 @@ class gcmscore {
         var fullName = id;//baseName + uuidv4();
         var container = dom_jqGridContainerFullWidth(fullName);
         parent.append(container);
+        var lazyOptions = gcmscore.lazyOptions(baseName);
+        var tableOptions = gcmscore.replaceProperties(lazyOptions, extraOptions);
+        let table = await LCMSTableRequest("load" + baseName, "edit" + baseName, "./servlet", fullName + "-table", fullName + "-pager", fullName + "-div-grid-wrapper", title, 1, tableOptions);
 
-        let table = await LCMSTableRequest("load" + baseName, "edit" + baseName, "./servlet", fullName + "-table", fullName + "-pager", "div-grid-" + fullName + "-wrapper", title, 1, extraOptions);
-
-        return table;
+        return fullName + "-table";
 
     }
 
@@ -640,12 +651,17 @@ class gcmscore {
     }
 
     static jqGridFilter(filtersparam, grid) {
+        console.log("gcmscore.jqGridFilter()");
+        if (typeof filtersparam !== "string") {
+            filtersparam = JSON.stringify(filtersparam);
+        }
         grid.setGridParam({
             postData: {
-                filters: JSON.stringify(filtersparam)
+                filters: filtersparam
             },
             search: true
         });
+
         grid.trigger("reloadGrid");
     }
 
@@ -661,7 +677,7 @@ class gcmscore {
     //functions for relationsal funciontality
 
     static valuesFromInputHidden(wrapper) {
-        if (typeof wrapper !== "undefined"){
+        if (typeof wrapper !== "undefined") {
             var vals = new Object();
             var valueArray = new Array();
             var base;
@@ -742,19 +758,18 @@ class gcmscore {
         });
         vals.toString();
         var form_group = $("<div id='" + id + "' class='form-group'></div>");
-        var label = $("<label for='" + title + "'>" + title + "</label>");
         var select = $("<input type='text' autocomplete='off' class='form-control' name='" + name + "' value='" + vals + "' id='select-" + id + "'/>");
-        form_group.append(label);
         form_group.append(select);
         $.each(valObjects, function (a, b) {
-            form_group.append($("<input type='hidden' id='" + b.id + "' value='" + b.value + "' meta='" + JSON.stringify(b) + "'/>"));
+            var hidden = $("<input type='hidden' id='" + b.id + "' value='" + b.value + "'/>"); //meta='" + JSON.stringify(b) + "'
+            hidden.data("meta", b);
+            form_group.append(hidden);
+            //
         });
-
         if (typeof val !== "undefined") {
             select.val(val);
         }
         return form_group;
-
     }
 
     static foreignKeyFunction(selRowData, key) {
@@ -764,7 +779,7 @@ class gcmscore {
     }
 
     static lazyOptions(baseName) {
-        var lazy = {baseName: baseName, multiple: false, rowList: [20, 50, 100], recordtext: "View {0} - {1} of {2}", repeatitems: false, pgbuttons: true, reloadAfterSubmit: true, bindkeys: false, selectToInlineEdit: false, multiselect: false, datatype: "json", page: 1, jsonReader: {id: "2", total: "total", records: "records", page: "page", root: "rows", cell: "", subgrid: {id: "2", total: "total", records: "records", page: "page", root: "rows", cell: ""}}, emptyrecords: "Scroll to bottom to load records", loadonce: false, rowNum: 20, url: "./servlet", mtype: "post", postData: {"LCMS_session": $.cookie('LCMS_session'), action: "data" + baseName, datatype: "json"},
+        var lazy = {baseName: baseName, multiple: false, rowList: [20, 50, 100], recordtext: "{0}- {1} ({2})", pagerpos: "right", repeatitems: false, pgbuttons: true, reloadAfterSubmit: true, bindkeys: false, selectToInlineEdit: false, multiselect: false, datatype: "json", page: 1, jsonReader: {id: "2", total: "total", records: "records", page: "page", root: "rows", cell: "", subgrid: {id: "2", total: "total", records: "records", page: "page", root: "rows", cell: ""}}, emptyrecords: "No records", loadonce: false, rowNum: 20, url: "./servlet", mtype: "post", postData: {"LCMS_session": $.cookie('LCMS_session'), action: "data" + baseName, datatype: "json"},
             loadBeforeSend: function (jqXHR) {
                 jqXHR.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded; charset=UTF-8');
             }
@@ -802,13 +817,15 @@ class gcmscore {
         modalBody.css("padding", "0");
         modalBody.css("border-top-right-radius", "calc(0.3rem - 1px)");
         modalBody.css("border-top-left-radius", "calc(0.3rem - 1px)");
-
+        modalBody.css("display", "contents");
         mod.on('hidden.bs.modal', function () {
             $(this).remove();
         });
         me.loadLazyTable(_title, modalBody, _baseName, _lazyOptions);
         modalBody.append(_extraContent);
-        mod.modal();
+        var modbs5 = new bootstrap.Modal(mod);
+        modbs5.show();
+        //mod.modal();
     }
 
     static createModal(_title, _parent) {
@@ -818,11 +835,224 @@ class gcmscore {
         mod.on('hidden.bs.modal', function () {
             $(this).remove();
         });
-        mod.modal();
+        var modbs5 = new bootstrap.Modal(mod);
+        modbs5.show();
         return modalBody;
     }
 
+    static async getSnippet(name) {
+        async function onDone(data) {
+            try {
+                console.log(JSON.parse(data).cursor.firstBatch[0].code);
+                return JSON.parse(data).cursor.firstBatch[0].code;
+            } catch (e) {
+                console.log(e);
+                return {};
+            }
+        }
+        var requestOptions = {};
+        requestOptions.action = "docommand";
+        requestOptions.k = "doQuery";
+        requestOptions.name = "getSnippet";
+        requestOptions.database = "lcms";
+        requestOptions.replaces = {};
+        requestOptions.replaces.name = name;
+        let request = await LCMSRequest("./servlet", requestOptions);
+        let returnvalue = await onDone(request);
+        return returnvalue;
+    }
+
+    static async doQuery(name, replaces, onDone) {
+
+        var requestOptions = {};
+        requestOptions.action = "docommand";
+        requestOptions.k = "doQuery";
+        requestOptions.name = name;
+        requestOptions.database = "lcms";
+        requestOptions.replaces = {};
+        requestOptions.replaces = replaces;
+        try {
+            let request = await LCMSRequest("./servlet", requestOptions);
+            let returnvalue = await onDone(request);
+            return returnvalue;
+        } catch (e) {
+            console.log(e);
+            return {};
+        }
+    }
+
+    static async doQueryPopup(name) {
+        async function onDone(data) {
+            try {
+                console.log(data);
+                var data = JSON.stringify(JSON.parse(data), null, 2);
+                var modalBody = gcmscore.createModal('Query result', $('#admin-container'));
+                var code = JSON.parse(data).cursor.firstBatch[0].code;
+                var modalContent = $("<div></div>");
+                modalContent.append(code);
+                modalBody.html(modalContent);
+            } catch (e) {
+                console.log(e);
+                return {};
+            }
+        }
+        var requestOptions = {};
+        requestOptions.action = "docommand";
+        requestOptions.k = "doQuery";
+        requestOptions.name = name;
+        requestOptions.database = "lcms";
+        let request = await LCMSRequest("./servlet", requestOptions);
+        let returnvalue = await onDone(request);
+        return returnvalue;
+    }
+
+    static async doCommand(_command, _parameters, onDone) {
+        var requestOptions = {};
+        requestOptions.action = "docommand";
+        requestOptions.k = _command;
+        $.extend(true, requestOptions, _parameters);
+        try {
+            let request = await LCMSRequest("./servlet", requestOptions);
+            let returnvalue = await onDone(request);
+            return returnvalue;
+        } catch (e) {
+            console.log(e);
+            return {};
+        }
+
+    }
+
+    static async fetchFormatters(mob) {
+        var me = this;
+        var formatters = {};
+        function fetchedFormatters(results) {
+            if (results.length > 0) {
+                var parsedResults = $.parseJSON(results);
+                var index = 0;
+                $.each(parsedResults.cursor.firstBatch, function (a, b) {
+
+                    $.each(b.name, function (c, d) {
+                        if (formatters[d] == undefined) {
+                            formatters[d] = eval("eval(`" + b.function[index] + "`)");
+                            index++;
+                        }
+                    });
+                    index = 0;
+
+                });
+
+//                    me.formatters[0].function[me.formatters[0].name.indexOf(value.formatterName)]
+//                     
+                return formatters;
+
+            }
+
+        }
+        return await gcmscore.doQuery("getCalculatedFields", {"name": mob}, fetchedFormatters);
+    }
+
+    static async loadFormatters() {
+
+        var templates = [];
+        var formatters = {};
+        async function onDone(data) {
+            try {
+                console.log("Adding formatters...");
+                var jsonData = JSON.parse(data);
+                $.each(jsonData.data, function (a, b) {
+                    formatters[b.title] = eval(b.function);
+                });
+                return formatters;
+            } catch (e) {
+                console.log(e);
+                return {};
+            }
+
+
+        }
+        var requestOptions = {};
+        requestOptions.action = "docommand";
+        requestOptions.k = "getFormatters";
+        let request = await LCMSRequest("./servlet", requestOptions);
+        let returnvalue = await onDone(request);
+        return returnvalue;
+    }
+
+    static async getSnippet(name, target) {
+        async function onDone(data) {
+            try {
+                console.log(JSON.parse(data).cursor.firstBatch[0].code);
+                return JSON.parse(data).cursor.firstBatch[0].code;
+            } catch (e) {
+                console.log(e);
+                return {};
+            }
+        }
+        var requestOptions = {};
+        requestOptions.action = "docommand";
+        requestOptions.k = "doQuery";
+        requestOptions.name = "getSnippet";
+        requestOptions.database = "lcms";
+        requestOptions.replaces = {};
+        requestOptions.replaces.name = name;
+        let request = await LCMSRequest("./servlet", requestOptions);
+        let returnvalue = await onDone(request);
+        return returnvalue;
+    }
+
+    static async getSnippetPopup(name, target) {
+        var code = await this.getSnippet(name);
+        var modalBody = gcmscore.createModal('Query result', $('#admin-container'));
+        var modalContent = $("<div id='target'></div>");
+        modalContent.data('target', target);
+        modalContent.append(code);
+        modalBody.html(modalContent);
+    }
+
+    static async editTable(collection, oper, data) {
+        data.oper = oper;
+        data.LCMS_session = $.cookie("LCMS_session");
+        if (oper == "edit" || oper == "add") {
+            data.action = "edit" + collection;
+        }
+        let result = await LCMSRequest("./servlet", data, onDone);
+        function onDone(results) {
+            showLoadingSmall("Added document", "success", 2000);
+        }
+        return result;
+    }
+
+    static async classInfo(collection) {
+        async function onDone(data) {
+            try {
+                console.log(data);
+            } catch (e) {
+                console.log(e);
+                return {};
+            }
+        }
+        var requestOptions = {};
+        requestOptions.action = "docommand";
+        requestOptions.k = "doGetClassInfo";
+        requestOptions.collection = "documents";
+        let request = await LCMSRequest("./servlet", requestOptions);
+        let returnvalue = await onDone(request);
+        return returnvalue;
+    }
+
+    static async openFile(filename, text) {
+        require(['filesaver'], function () {
+            var blob = new Blob([text], {type: "text/html;charset=utf-8"});
+            saveAs(blob, filename);
+
+            var x = window.open(location.origin + location.pathname + '?p=temp', '_blank');
+            x.document.write(text);
+            x.document.close();
+        });
+    }
 }
+
+
 function page_doLoadPage(_page, parent) {
     function onDone(data) {
         var jsonData = JSON.parse(data, parent);
@@ -851,6 +1081,9 @@ async function credentials_doUserInfo(_parent) {
     requestOptions.action = "docommand";
     requestOptions.k = "doUserInfo";
     let request = await LCMSRequest("./servlet", requestOptions);
+    if (request != "") {
+        $("nav").show();
+    }
     let returnvalue = await onDone(request);
     return returnvalue;
 }
@@ -1051,7 +1284,6 @@ async function getJS() {
     return scriptsOnPage;
 }
 
-
 function getCSS() {
     var css = [];
     for (var i = 0; i < document.styleSheets.length; i++)
@@ -1074,7 +1306,6 @@ function getCSS() {
     var cssInline = css.join('\n') + '\n';
     return cssInline;
 }
-
 
 async function getDocumentByName(_parent, _id) {
     let request = await LCMSRequest("./servlet", {action: "getdocument", k: "title", v: _id});
@@ -1113,10 +1344,14 @@ function getPostDataFromUrl() {
 
 }
 
-async function LCMSRequest(_url, _data, _onDone, _extraParam) {
+async function LCMSRequest(_url, _data, _onDone, _extraParam, _includeSession) {
 
 
-    if (!_data.__proto__.toString().includes("FormData")) {
+    if (typeof _includeSession === "undefined") {
+        _includeSession = true;
+    }
+
+    if (!_data.__proto__.toString().includes("FormData") && _includeSession) {
         _data['LCMS_session'] = $.cookie('LCMS_session');
     }
 
@@ -1168,13 +1403,12 @@ function getPatchesReverse(oldData, newData) {
     return (textPatches);
 }
 
-async function LazyTableRequest(baseName, containerName, editUrl, caption, tableType, lazyOptions, extraRequestOptions, LCMSEditablePageObject) {
-
-    if (!lazyOptions) {
-        lazyOptions = gcmscore.lazyOptions(baseName);
+async function LazyTableRequest(baseName, containerName, editUrl, caption, tableType, extraLazyOptions, extraRequestOptions, LCMSEditablePageObject) {
+    let lazyOptions = gcmscore.lazyOptions(baseName);
+    if (extraLazyOptions) {
+        lazyOptions = gcmscore.replaceProperties(lazyOptions, extraLazyOptions);
     }
-
-    return LCMSTableRequest("load" + baseName, "edit" + baseName, editUrl, containerName + "-table", containerName + "-pager", "div-grid-" + containerName + "-wrapper", caption, tableType, lazyOptions, extraRequestOptions, LCMSEditablePageObject);
+    return LCMSTableRequest("load" + baseName, "edit" + baseName, editUrl, containerName + "-table", containerName + "-pager",containerName + "-div-grid-wrapper", caption, tableType, lazyOptions, extraRequestOptions, LCMSEditablePageObject);
 }
 
 
@@ -1201,6 +1435,8 @@ async function LCMSTableRequest(loadAction, editAction, editUrl, tableName, page
                 if (typeof LCMSEditablePageObject !== "undefined") {
                     LCMSEditablePageObject.gridController.addLCMSGrid(LCMSGrid.gridData.tableObject, LCMSGrid);
                 }
+
+
             }
         } catch (e) {
             console.log(e);
@@ -1274,7 +1510,7 @@ function LCMSGridTemplateSimple(_jqGridOptions, _editAction, _editUrl, _tableNam
     return LcmsGrid;
 }
 
-function LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
+async function LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableObject, pagerName, wrapperObject, caption, jqGridOptions) {
     try {
         if (typeof jsonData.table === "string") {
             jsonData.table = $.parseJSON(jsonData.table);
@@ -1292,9 +1528,9 @@ function LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pager
         data: jsonData,
         editAction: editAction, //"LAB_EDITDEPARTMENT",
         editUrl: editUrl, // "./lab",
-        tableObject: tableName, //("department-table"),
+        tableObject: tableObject, //("department-table"),
         pagerID: pagerName, //"department-pager",
-        wrapperObject: $("#" + wrapperName),
+        wrapperObject: wrapperObject,
         jqGridOptions: {
             grouping: false,
             caption: caption, //lang["department"]['title']
@@ -1309,11 +1545,11 @@ function LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pager
         });
     }
     let lcmsGrid = new LCMSGrid(gridData);
-    lcmsGrid.createGrid();
-    return lcmsGrid;
+    return await lcmsGrid.createGrid();
+
 }
 
-function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
+async function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
     console.log("LCMSGridTemplateStandard()");
     var gridData = {
         data: jsonData,
@@ -1356,6 +1592,14 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
         },
         afterrestorefunc: function (a, b, c) {
             console.log("afterrestorefunc");
+            let filters = $(this).jqGrid("getGridParam").postData.filters;
+            if (filters != null) {
+                if (typeof filters !== "string") {
+                    filters = $.parseJSON(filters);
+                }
+                $(this).jqGrid('setGridParam', {"postData": {"filters": filters}});
+
+            }
             $(this).trigger("reloadGrid");
         },
         aftersavefunc: function (a, b, c) {
@@ -1383,8 +1627,12 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
             gridData.jqGridOptions[i] = n;
         });
     }
+    //let test = new LCMSGridForm(documentPage);
+    //var testArr = new Array();
+    //test.new_grid_wizard(documentPage, $.parseJSON(gridData.data.header), gridData.jqGridOptions, testArr, $.parseJSON(gridData.data.table), tableName, $("body"));
+
     let lcmsGrid = new LCMSGrid(gridData);
-    lcmsGrid.createGrid().then(
+    await lcmsGrid.createGrid().then(
             function (result) {
                 lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-plus-square", "Nieuw item", "", function () {
                     return lcmsGrid.popupEdit("new", function () {
@@ -1401,14 +1649,34 @@ function LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, page
                         return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
                     }
                 }));
-                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-list-alt", "Snelle wijzigingen aan/uit", "", function () {
-                    var tableObj = $("#" + gridData.tableObject);
-                    tableObj.jqGrid('bindKeys', {
-                        "onEnter": function (rowid) {
-                            alert("You enter a row with id:" + rowid);
-                        }
-                    });
+//                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-list-alt", "Snelle wijzigingen aan/uit", "", function () {
+//                    var tableObj = $("#" + gridData.tableObject);
+//                    tableObj.jqGrid('bindKeys', {
+//                        "onEnter": function (rowid) {
+//                            alert("You enter a row with id:" + rowid);
+//                        }
+//                    });
+//                }));
+
+                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-arrow-down", "Download as CSV", "", function () {
+                    return lcmsGrid.download_grid();
                 }));
+
+                lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-download", "Download", "", function () {
+                    (async () => {
+                        var data = (await lcmsGrid.export_as_html());
+                        //openFile("test.html", "<div id='export' class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + data + "</div><div class='col-sm-1 mx-auto'></div></div>");
+                    })();
+                }));
+                if (gridData.jqGridOptions.postData.filters != null) {
+                    gcmscore.jqGridFilter(gridData.jqGridOptions.postData.filters, $("#" + gridData.tableObject));
+                }
+                $(window).bind('resize', function () {
+                    //var width = gridData.jqGridOptions.requestingRow != null ? 60 : 2;
+                    $("#" + gridData.tableObject).setGridWidth(gridData.wrapperObject.width() - 5);
+                }).trigger('resize');
+
+
             }
     );
     return lcmsGrid;
@@ -1465,7 +1733,7 @@ function LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName,
                 lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-download", "Export", "", function () {
                     (async () => {
                         var data = (await lcmsGrid.export_as_html());
-                        openFile("test.html", "<div id='export' class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + data + "</div><div class='col-sm-1 mx-auto'></div></div>");
+                        // openFile("test.html", "<div id='export' class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + data + "</div><div class='col-sm-1 mx-auto'></div></div>");
                     })();
                 }));
                 lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-arrow-down", "Download as CSV", "", function () {
@@ -1494,9 +1762,12 @@ function buildEditablePage(data, _parent, _originalDocument, _pageData) {
     if (typeof _pageData !== "undefined") {
         pageData = _pageData;
     }
-    config2(publicPage);
-    documentPage = new LCMSEditablePage(pageData, _parent);
-    documentPage.buildPageData(data, _originalDocument);
+    require(['ckeditor'], function (papa) {
+        config2(publicPage);
+        documentPage = new LCMSEditablePage(pageData, _parent);
+        documentPage.buildPageData(data, _originalDocument);
+    });
+
     // documentPage.setPageId($($("div[id^='wrapper']")[0]).attr("id").substring(8));
 }
 
@@ -1529,15 +1800,10 @@ function LCMSgetEditablePage(_parent, _k, _v) {
 }
 
 $(function () {
-    // sessionCountdown();
-
     Object.filter = (obj, predicate) =>
         Object.keys(obj)
                 .filter(key => predicate(obj[key]))
                 .reduce((res, key) => (res[key] = obj[key], res), {});
-
-
-
 
     $.fn.modal.Constructor.prototype._enforceFocus = function () {
         modal_this = this;
@@ -1592,15 +1858,21 @@ $(function () {
         }
     };
 
-//    $(document).mouseup(function (e) {
-//        var externalListContent = $("div[id='external-list']");
-//        if (!externalListContent.is(e.target) && externalListContent.has(e.target).length === 0){
-//            console.log("close external list");
-//            externalListContent.parent().hide();
-//            externalListContent.empty();
-//            //externalListContent.hide();
-//        }
-//    });
+    $.extend($.fn.fmatter, {
+        reference: function (cellvalue, options, rowObject) {
+            console.log("eval reference");
+            try {
+                var vals = gcmscore.valuesFromInputHidden(cellvalue, options.colModel.fk);
+                var uuid = uuidv4();
+                var selectWrapper = gcmscore.domFormInputHidden("", uuid, options.colModel.name, vals, "", false);
+                var input = selectWrapper.find("input[type=text]");
+                input.attr("style", "padding:0;height:auto;border:none;margin-top:0;margin-bottom:0;background:transparent !important;");
+                return selectWrapper.html();
+            } catch (err) {
+                console.log(err);
+            }
+        }
+    });
 
 
 
@@ -1772,15 +2044,32 @@ bootstrap_alert.warning = function (message, alert, timeout) {
     }
 };
 
+bootstrap_alert.info = function (message, alert, timeout) {
+
+    if ($("div[id^=floating_alert]").length === 0) {
+        bootstrap_alert.info(message, alert, timeout);
+    } else {
+        bootstrap_alert.clear();
+        bootstrap_alert.info(message, alert, timeout);
+
+    }
+};
+
 bootstrap_alert.show = function (message, alert, timeout) {
     var id = uuidv4();
-    var spinner = '<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>';
-    $('<div id="floating_alert_' + id + '" class="alert alert-' + alert + ' alert-dismissible fade show" role="alert" style="padding: 1em;max-width: 200px;max-height:200px;"><center>' + spinner + '&nbsp;&nbsp;<br/>' + message + '</center></div>').appendTo($("#alertWrapper"));
+    var spinner = '<div class="spinner-border" role="status"><span class="sr-only"></span></div>';
+    $('<div id="floating_alert_' + id + '" class="alert alert-' + alert + ' alert-dismissible fade show" role="alert" style="padding: 1em;max-width: 400px;max-height:400px;overflow-y:auto"><center>' + spinner + '&nbsp;&nbsp;<br/>' + message + '</center></div>').appendTo($("#alertWrapper"));
     setTimeout(function () {
         $("#floating_alert_" + id).alert('close');
     }, timeout);
 };
-
+bootstrap_alert.info = function (message, alert, timeout) {
+    var id = uuidv4();
+    $('<div id="floating_alert_' + id + '" class="alert alert-' + alert + ' alert-dismissible fade show" role="alert" style="padding: 1em;max-width: 400px;max-height:400px;overflow-y:auto"><center>&nbsp;&nbsp;<br/>' + message + '</center></div>').appendTo($("#alertWrapper"));
+    setTimeout(function () {
+        $("#floating_alert_" + id).alert('close');
+    }, timeout);
+};
 bootstrap_alert.clear = function () {
     $("div[id^=floating_alert]").remove();
 };
@@ -1868,15 +2157,15 @@ $.fn.textWidth = function (text, font) {
 
 function create_modal(parent, title, text) {
 
-    var modal = $("<div class='modal' tabindex='-1' role='dialog'></div>");
-    var modal_dialog = $("<div class='modal-dialog modal-xl' role='document'></div>");
-    var modal_content = $("<div class='modal-content'></div>");
+    var modal = $("<div class='modal' style='padding:0 !important' tabindex='-1' role='dialog'></div>");
+    var modal_dialog = $("<div class='modal-dialog modal-xl modal-fullscreen-xl-down' style='padding:0.1rem' role='document'></div>");
+    var modal_content = $("<div class='modal-content'  style='backdrop-filter: blur(6px);background: rgba(255, 255, 255, 0.8);'></div>");
     var modal_header = $("<div class='modal-header'></div>");
 
     var modal_title = $("<h5 class='modal-title'>" + title + "</h5>");
-    var modal_title_close = $("<button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>");
+    var modal_title_close = $("<button type='button' class='close' data-bs-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>");
     var modal_body = $("<div class='modal-body'>" + text + "</div>");
-    var modal_footer = $("<div class='modal-footer'><button type='button' id='btn-save' class='btn btn-primary'>Save changes</button><button type='button' class='btn btn-secondary' data-dismiss='modal'>Close</button></div>");
+    var modal_footer = $("<div class='modal-footer'><button type='button' class='btn bg-secondary' data-bs-dismiss='modal'>Close</button></div>");
 
     modal_header.append(modal_title);
     modal_header.append(modal_title_close);
@@ -1903,6 +2192,10 @@ function showLoading() {
 function hideLoading() {
     $("#loadingModal").modal('hide');
     $("#loadingModal").remove();
+}
+
+function showInfoSmall(text, type, timeout) {
+    return bootstrap_alert.info(text, type, timeout);
 }
 
 function showLoadingSmall(text, type, timeout) {
@@ -2027,7 +2320,7 @@ function forms_jqgrid(id, data) {
 }
 
 function dom_link(id, color, href, txt, _click) {
-    var link = $('<a href="' + href + '" id="' + id + '" class="badge badge-' + color + '" target="_blank">' + txt + '</a>');
+    var link = $('<a href="' + href + '" id="' + id + '" class="badge bg-' + color + '" target="_blank">' + txt + '</a>');
     if (typeof _click !== "undefined") {
         link.on("click", function () {
             _click(href);
@@ -2131,7 +2424,7 @@ function dom_col(id, size) {
     return $("<div id='" + id + "' class='col-sm-" + size + " mx-auto'></div>");
 }
 function dom_button(id, icon, text, color) {
-    return $("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "' style='margin-right:5px;width:auto;max-width:200px'></i><span>" + text + "</span></button>");
+    return $("<button type='button' id='" + id + "' class='btn bg-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "' style='margin-right:5px;width:auto;max-width:200px'></i><span>" + text + "</span></button>");
 }
 function dom_list(id, items) {
     var ul = $("<ul class='list-group' id='" + id + "'></ul> ");
@@ -2173,7 +2466,7 @@ function dom_nav(pills, _id) {
     var nav = $("<ul class='nav nav-pills mb-3' id='' role='tablist'>");
     $.each(pills, function (id, val) {
         //{'home': 'thuis', 'urgent': 'dringend'};
-        nav.append("<li class='nav-item'><a class='nav-link' id='pill" + id + "' data-toggle='pill' href='#tab" + id + "' role='tab' aria-controls='tab" + id + "' aria-selected='true'>" + val + "</a></li>");
+        nav.append("<li class='nav-item'><a class='nav-link' id='pill" + id + "' data-bs-toggle='pill' href='#tab" + id + "' role='tab' aria-controls='tab" + id + "' aria-selected='true'>" + val + "</a></li>");
     });
 
     var tab = $("<div class='tab-content' id='pills-tabContent'>");
@@ -2259,13 +2552,13 @@ function dom_fourColContainer(containerID) {
 }
 
 function dom_jqGridContainer(name) {
-    var container = $("<div class='container' id='" + name + "-container'></div>");
+    var container = $("<div class='container-lg' id='" + name + "-container' style='padding-left:0.9rem;padding-right:0.9rem;width:100%;'></div>");
     var row = dom_row();
     var col1 = dom_col("", "0");
     var col2 = dom_col(name + "-div-grid-wrapper", "12");
     col2.css("padding", "0");
     var col3 = dom_col("", "0");
-    var table = $("<table id='" + name + "-table'></table>");
+    var table = $("<p></p><table id='" + name + "-table'></table>");
     var div = $("<div id='" + name + "-pager'></div>");
     col2.append(table);
     col2.append(div);
@@ -2293,7 +2586,7 @@ function dom_jqGridContainerFullWidth(name) {
 
 function dom_collapse() {
     var wrapper = $("<div></div>");
-    var btn = $('<button aria-controls="collapseExample" aria-expanded="false" class="btn btn-primary" data-target="#collapseExample" data-toggle="collapse" type="button">Titel... <i class="fa fa-lg fa-fw fa-angle-up" style="margin-right:5px;width:auto;max-width:200px"></i></button>');
+    var btn = $('<button aria-controls="collapseExample" aria-expanded="false" class="btn bg-primary" data-target="#collapseExample" data-toggle="collapse" type="button">Titel... <i class="fa fa-lg fa-fw fa-angle-up" style="margin-right:5px;width:auto;max-width:200px"></i></button>');
     var collapse = $('<div class="collapse" id="collapseExample"></div>');
     var content = $('<p style="margin-bottom: 0rem">&nbsp;</p><div class="card card-body">Inklapbare tekst</div>');
     btn.on("click", function () {
@@ -2315,14 +2608,7 @@ function not_undefined(test, value) {
 
 }
 
-function openFile(filename, text) {
-    var blob = new Blob([text], {type: "text/html;charset=utf-8"});
-    saveAs(blob, filename);
 
-    var x = window.open(location.origin + location.pathname + '?p=temp', '_blank');
-    x.document.write(text);
-    x.document.close();
-}
 
 function exists(obj) {
 
@@ -2396,37 +2682,7 @@ async function loadTemplates() {
 
 }
 
-async function loadFormatters() {
 
-    var templates = [];
-    var formatters = {};
-    async function onDone(data) {
-        try {
-            console.log("Adding formatters...");
-            var jsonData = JSON.parse(data);
-            $.each(jsonData.data, function (a, b) {
-                formatters[b.title] = eval(b.function);
-            });
-            return formatters;
-        } catch (e) {
-            console.log(e);
-            return {};
-        }
-
-
-    }
-    var requestOptions = {};
-    requestOptions.action = "docommand";
-    requestOptions.k = "getFormatters";
-    // requestOptions.title = "Configurationtables";
-    //requestOptions.table = "Templates";
-    let request = await LCMSRequest("./servlet", requestOptions);
-    let returnvalue = await onDone(request);
-    return returnvalue;
-
-
-
-}
 
 function get_url_extension(url) {
     return url.split(/\#|\?/)[0].split('.').pop().trim();
@@ -2760,4 +3016,45 @@ function getJQGridParamByCaption(_name) {
         }
     });
     return gridParam;
+}
+
+function buildHtmlTable(json) {
+    if (typeof json === "string") {
+        json = $.parseJSON(json);
+    }
+    var table = $("<table></table>");
+    var columns = addAllColumnHeaders(json, table);
+
+    for (var i = 0; i < json.length; i++) {
+        var row$ = $('<tr/>');
+        for (var colIndex = 0; colIndex < columns.length; colIndex++) {
+            var cellValue = json[i][columns[colIndex]];
+            if (cellValue === null)
+                cellValue = "";
+            if (typeof cellValue === "number" && String(cellValue).match(/\d{13}/g)) {
+                cellValue = moment.unix(cellValue / 1000).format('d-M-Y H:m');
+            }
+            row$.append($("<td data-title='" + columns[colIndex] + "'/>").html(cellValue));
+        }
+        table.append(row$);
+    }
+    return table;
+}
+
+function addAllColumnHeaders(myList, table) {
+    var columnSet = [];
+    var headerTr$ = $('<tr/>');
+
+    for (var i = 0; i < myList.length; i++) {
+        var rowHash = myList[i];
+        for (var key in rowHash) {
+            if ($.inArray(key, columnSet) == -1) {
+                columnSet.push(key);
+                headerTr$.append($('<th/>').html(key));
+            }
+        }
+    }
+    table.append("<thead>" + headerTr$ + "</thead>");
+
+    return columnSet;
 }

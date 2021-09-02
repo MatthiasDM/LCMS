@@ -9,17 +9,21 @@
 #export tr {
     border : #ccc solid 1px;
     margin: 10px;
+    border-radius: 5px;
+    padding: .5em;
+    background: #fbf9f9;
 }
 #export tr:nth-of-type(odd) {
-    background : #e0e0e0;
+    background : rgb(224, 224, 224);
 }
 #export td {
     border : none;
     border-bottom : 1px solid #eee;
-    position : relative;
-   
+    position : relative;   
     white-space : normal;
     text-align : left;
+    overflow: auto;
+    max-height: 700px;
 }
 #export td:before {
     top : 6px;
