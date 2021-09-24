@@ -17,10 +17,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class Role {
 
     @gcmsObject(
-            viewRole = "ADMIN",
             createRole = "SYSTEM",
-            //editRole = "ADMIN",
-            type = "string",
+            type = "pk",
+             pk = "{\"relations\": [{\"collection\": \"collectionRolePriveleges\", \"type\": \"OneToMany\", \"fk\": \"role\"}"
+            + "]}",
             visibleOnTable = false,
             visibleOnForm = false)
     public String roleid;

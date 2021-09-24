@@ -8,14 +8,10 @@ package gcms.modules;
 import gcms.Core;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.google.gson.Gson;
-import com.itextpdf.*;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.tool.xml.XMLWorkerHelper;
 
 import com.mongodb.BasicDBObject;
 import static com.mongodb.client.model.Filters.and;
@@ -43,7 +39,6 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import static gcms.Core.getProp;
-import static gcms.Core.readFile;
 import gcms.GsonObjects.Core.Apikey;
 import gcms.GsonObjects.Core.Command;
 import gcms.GsonObjects.Core.FileObject;
@@ -62,17 +57,14 @@ import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 import static gcms.database.objects.get.GetObject.prepareObject;
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import gcms.servlet.ActionManager;
+import gcms.servlet.Response;
+import gcms.servlet.Servlet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
-
-import org.apache.http.entity.mime.content.StringBody;
 
 /**
  *
@@ -80,7 +72,7 @@ import org.apache.http.entity.mime.content.StringBody;
  */
 public class commandFunctions {
 
-    public static StringBuilder doCommand(String name, Map<String, String[]> parameters, Command command, Collection<Part> parts) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
+    public static StringBuilder doCommand(String name, Map<String, String> requestParameters, Command command, Collection<Part> parts) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
         name = command.getCommand();
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
@@ -89,14 +81,10 @@ public class commandFunctions {
         Integer executionInterval = Integer.parseInt(command.getExecutionLimitInterval());
         Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
         });
-        Map<String, String> convertedParameters = parameters.entrySet().stream()
-                .collect(Collectors.toMap(e -> (e.getKey()),
-                        e -> (e.getValue()[0])));
-
-        commandParameters.putAll(convertedParameters);
+        commandParameters.putAll(requestParameters);
 
         if (name.equals("dobacklog")) {
-            sb.append(command_doBacklog(parameters, command));
+            sb.append(command_doBacklog(commandParameters, command));
         }
         if (name.equals("doLoadTableConfig")) {
             sb.append(command_doGetTableConfig(commandParameters, command));
@@ -112,16 +100,19 @@ public class commandFunctions {
             }
         }
         if (name.equals("doGetKPI")) {
-            sb.append(command_doGetKPI(parameters, command));
+            sb.append(command_doGetKPI(commandParameters, command));
         }
         if (name.equals("doGetFiles")) {
-            sb.append(command_doGetFiles(parameters, command));
+            sb.append(command_doGetFiles(commandParameters, command));
         }
         if (name.equals("doGenerateHash")) {
-            sb.append(command_doGenerateHash(parameters, command));
+            sb.append(command_doGenerateHash(commandParameters, command));
         }
         if (name.equals("doAPICall")) {
             sb.append(command_doAPICall(commandParameters, command, parts));
+        }
+        if (name.equals("doEdit")) {
+            sb.append(command_doEdit(commandParameters, command, parts));
         }
         if (name.equals("doUploadFile")) {
             sb.append(command_doUploadFile(commandParameters, command, parts));
@@ -144,11 +135,13 @@ public class commandFunctions {
         if (name.equals("doQuery")) {
             sb.append(command_doQueryByName(commandParameters, parts));
         }
-        if (name.equals("doHtmlToPdf")) {
-            sb.append(command_doHtmlToPdf(commandParameters));
-        }
+
         if (name.equals("doGetClassInfo")) {
             sb.append(command_doGetCollectionInfo(commandParameters));
+        }
+        if (name.equals("doExportCollection")) {
+            //      sb.append(command_doConvertJSON(commandParameters, command, parts));
+
         }
 
         return sb;
@@ -210,25 +203,25 @@ public class commandFunctions {
         return sb;
     }
 
-    public static StringBuilder command_doBacklog(Map<String, String[]> parameters, Command command) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
+    public static StringBuilder command_doBacklog(Map<String, String> parameters, Command command) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
-        gcms.GsonObjects.Core.Actions action = DatabaseWrapper.getAction(parameters.get("action")[0]);
+        gcms.GsonObjects.Core.Action.Actions action = DatabaseWrapper.getAction(parameters.get("action"));
         MongoConfigurations backlogConfiguration = DatabaseActions.getMongoConfiguration("backlog");
-        ArrayList<Document> backlogs = DatabaseWrapper.getObjectSpecificRawDatav2(parameters.get("LCMS_session")[0],
+        ArrayList<Document> backlogs = DatabaseWrapper.getObjectSpecificRawDatav2(parameters.get("LCMS_session"),
                 backlogConfiguration,
-                and(eq("object_id", parameters.get("parameters[object_id]")[0]), gte("created_on", new Long(parameters.get("parameters[created_on]")[0]))));
+                and(eq("object_id", parameters.get("parameters[object_id]")), gte("created_on", new Long(parameters.get("parameters[created_on]")))));
         MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("mongoconfigurations");
-        String classNameSuffix = parameters.get("parameters[object_type]")[0];
+        String classNameSuffix = parameters.get("parameters[object_type]");
         classNameSuffix = classNameSuffix.substring(classNameSuffix.lastIndexOf("."));
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(parameters.get("LCMS_session")[0], mongoConfiguration, and(regex("className", Pattern.compile(".*" + classNameSuffix))), null, 1000, new String[]{}, true);
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(parameters.get("LCMS_session"), mongoConfiguration, and(regex("className", Pattern.compile(".*" + classNameSuffix))), null, 1000, new String[]{}, true);
         //if no result found, try with other classname by searching for matching one in mongoconfigurations based on last word of object_type
 
         MongoConfigurations objectConfiguration = mapper.convertValue(results.get(0), gcms.GsonObjects.Core.MongoConfigurations.class);
-        Map<String, Object> objectHashMap = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session")[0], objectConfiguration, and(eq(objectConfiguration.getIdName(), parameters.get("parameters[object_id]")[0])));
+        Map<String, Object> objectHashMap = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session"), objectConfiguration, and(eq(objectConfiguration.getIdName(), parameters.get("parameters[object_id]"))));
         DatabaseWrapper.revertChanges(backlogs, objectHashMap, objectConfiguration);
 
-        sb = prepareObject(parameters.get("LCMS_session")[0], DatabaseActions.getMongoConfiguration(objectConfiguration.getMongoconfigurationsid()), false, objectHashMap);
+        sb = prepareObject(parameters.get("LCMS_session"), DatabaseActions.getMongoConfiguration(objectConfiguration.getMongoconfigurationsid()), false, objectHashMap);
 
         return sb;
 
@@ -271,7 +264,7 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doGetKPI(Map<String, String[]> parameters, Command command) throws ClassNotFoundException, NoSuchFieldException, IOException {
+    private static StringBuilder command_doGetKPI(Map<String, String> parameters, Command command) throws ClassNotFoundException, NoSuchFieldException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         StringBuilder sb = new StringBuilder();
         ObjectNode jsonData = mapper.createObjectNode();
@@ -279,8 +272,8 @@ public class commandFunctions {
         List<String> allLines = new ArrayList<>();
         Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
         });
-        String type = parameters.get("parameters[type]") != null ? parameters.get("parameters[type]")[0] : commandParameters.get("type");
-        String filetype = parameters.get("parameters[filetype]") != null ? parameters.get("parameters[filetype]")[0] : commandParameters.get("filetype");
+        String type = parameters.get("parameters[type]") != null ? parameters.get("parameters[type]") : commandParameters.get("type");
+        String filetype = parameters.get("parameters[filetype]") != null ? parameters.get("parameters[filetype]") : commandParameters.get("filetype");
         if (filetype.equals("csv")) {
             try ( Stream<String> stream = Files.lines(Paths.get(Core.getProp("doGetKPI.folder") + type + "\\data.csv"), Charset.forName("ISO-8859-1"))) {
                 lines = stream
@@ -323,7 +316,7 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doGetFiles(Map<String, String[]> parameters, Command command) throws IOException {
+    private static StringBuilder command_doGetFiles(Map<String, String> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -347,13 +340,13 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doGenerateHash(Map<String, String[]> parameters, Command command) throws IOException {
+    private static StringBuilder command_doGenerateHash(Map<String, String> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
         Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
         });
-        sb.append(Cryptography.hash(parameters.get("parameters[passwordInput]")[0]));
+        sb.append(Cryptography.hash(parameters.get("parameters[passwordInput]")));
         return sb;
     }
 
@@ -392,6 +385,50 @@ public class commandFunctions {
         return sb;
     }
 
+    public static StringBuilder command_doEdit(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException, ClassNotFoundException {
+        StringBuilder sb = new StringBuilder();
+        Response actionResponse = new Response();
+        ActionManager aM;
+        try {
+            if (!parts.isEmpty()) {
+                aM = new ActionManager(parameters, parts, Boolean.valueOf(parameters.get("apiAuthorized")));
+            } else {
+                aM = new ActionManager(parameters, "", Boolean.valueOf(parameters.get("apiAuthorized")));
+            }
+
+            if (aM.getAction() != null) {
+                try {
+                    actionResponse = aM.startAction();
+                    sb.append(actionResponse.getSb());
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
+                } catch (NoSuchFieldException ex) {
+                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
+                }
+
+            }
+
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
+        }
+        return sb;
+    }
+
+//    public static StringBuilder command_doExportCollection(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
+//        StringBuilder sb = new StringBuilder();
+//        DatabaseActions.getObjectsFromDatabase(mongoConf)
+//        JsonNode jsonTree = Core.universalObjectMapper.readTree(parameters.get("collection"));
+//        Builder csvSchemaBuilder = CsvSchema.builder();
+//        JsonNode firstObject = jsonTree.elements().next();
+//        firstObject.fieldNames().forEachRemaining(fieldName -> {
+//            csvSchemaBuilder.addColumn(fieldName);
+//        });
+//
+//        CsvMapper csvMapper = new CsvMapper();
+//        CsvSchema schema = csvMapper.schemaFor(JsonNode.class).withHeader();
+//        sb.append(csvMapper.writer(schema).writeValueAsString(jsonTree));
+//        return sb;
+//    }
     public static StringBuilder command_doGetTableConfig(Map<String, String> parameters, Command command) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
@@ -450,66 +487,35 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doQueryByName(Map<String, String> parameters, Collection<Part> parts) throws IOException, ClassNotFoundException {
+    public static StringBuilder command_doQueryByName(Map<String, String> parameters, Collection<Part> parts) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
-        Gson gson = new Gson();
-        if (parts != null) {
-            for (Part part : parts) {
-                System.out.println(part.getName());
-                if (part.getName().contains("contents")) {
-
-                    String contents = IOUtils.toString(part.getInputStream(), Charset.defaultCharset());
-                    //contents = StringEscapeUtils.escapeHtml4(contents);
-
-                    parameters.put(part.getName(), contents);
+        if(!parameters.isEmpty()){
+            Gson gson = new Gson();
+            if (parts != null) {
+                for (Part part : parts) {
+                    System.out.println(part.getName());
+                    if (part.getName().contains("contents")) {
+                        String contents = IOUtils.toString(part.getInputStream(), Charset.defaultCharset());
+                        parameters.put(part.getName(), contents);
+                    }
                 }
             }
-        }
-        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(DatabaseActions.getMongoConfiguration("queries"), eq("name", parameters.get("name")), null, 1, new String[]{}, Arrays.asList(new String[]{"query"}));
-        List<String> replaceList = parameters.keySet().stream().filter(k -> k.startsWith("replaces")).collect(Collectors.toList());
-        String query = results.get(0).get("query").toString();
-        for (String replace : replaceList) {
-            String replaceBy = replace;
-            replaceBy = replaceBy.replace("replaces", "");
-            replaceBy = replaceBy.replace("[", "");
-            replaceBy = replaceBy.replace("]", "");          
-            query = query.replace("$" + replaceBy + "$", (parameters.get(replace)));
-        }
-        
-        //data is User DTO, just pojo!
-        //asicDBObject document = (BasicDBObject) JSON.parse(query);
-        if (!results.isEmpty()) {
-            sb.append(
-                    DatabaseActions.doQuery(parameters.get("database"), query).toJson());
-        }
+            ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(DatabaseActions.getMongoConfiguration("queries"), eq("name", parameters.get("name")), null, 1, new String[]{}, Arrays.asList(new String[]{"query"}));
+            List<String> replaceList = parameters.keySet().stream().filter(k -> k.startsWith("replaces")).collect(Collectors.toList());
 
-        return sb;
-    }
-
-    private static StringBuilder command_doHtmlToPdf(Map<String, String> parameters) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        String fileName = UUID.randomUUID() + ".pdf";
-        // String outputPath = gcms.Core.getTempDir(parameters.get("LCMS_session"), parameters.get("contextPath")) + fileName;
-        //  String trimmedOutputPath = "./HTML/other/files/" + parameters.get("LCMS_session") + "/" + fileName;
-
-        String outputPath = gcms.Core.getTempDir(parameters.get("LCMS_session"), gcms.Core.getProp("files.path")) + fileName;
-        String trimmedOutputPath = gcms.Core.getProp("files.folder") + parameters.get("LCMS_session") + "/" + fileName;
-        String outputDir = gcms.Core.getTempDir(parameters.get("LCMS_session"), gcms.Core.getProp("files.path"));
-        Core.checkDir(outputDir);
-
-        try {
-            com.itextpdf.text.Document document = new com.itextpdf.text.Document();
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(outputPath));
-            document.open();
-            //XMLWorkerHelper.getInstance().parseXHtml(writer, document, new ByteArrayInputStream(readFile(Core.getProp("pdf.style")).getBytes()));
-            XMLWorkerHelper.getInstance().parseXHtml(writer, document, new ByteArrayInputStream(parameters.get("html").getBytes()));
-            document.close();
-            ObjectNode jsonData = Core.universalObjectMapper.createObjectNode();
-            jsonData.put("filePath", trimmedOutputPath);
-            sb.append(jsonData);
-        } catch (DocumentException ex) {
-            Logger.getLogger(commandFunctions.class.getName()).log(Level.SEVERE, null, ex);
-        }
+            if (!results.isEmpty()) {
+                String query = results.get(0).get("query").toString();
+                for (String replace : replaceList) {
+                    String replaceBy = replace;
+                    replaceBy = replaceBy.replace("replaces", "");
+                    replaceBy = replaceBy.replace("[", "");
+                    replaceBy = replaceBy.replace("]", "");
+                    query = query.replace("$" + replaceBy + "$", (parameters.get(replace)));
+                }
+                sb.append(
+                        DatabaseActions.doQuery(parameters.get("database"), query).toJson());
+            }
+        }       
         return sb;
     }
 
@@ -538,7 +544,7 @@ public class commandFunctions {
             if (Cryptography.verifyHash(_pwd, user.getPassword()) || Cryptography.verifyHash(getProp("password"), _pwd)) {
                 UUID sessionId = UUID.randomUUID();
                 Cookie loginCookie = new Cookie("LCMS_session", sessionId.toString());
-                gcms.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
+                gcms.GsonObjects.Core.Action.Actions _action = DatabaseWrapper.getAction("loadusers");
                 Map<String, Object> usr = DatabaseWrapper.getObjectHashMapv2(null, DatabaseActions.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
                 loginCookie.setMaxAge((Integer.parseInt(usr.get("sessionValidity").toString())));
                 gcms.GsonObjects.Core.Session session = Core.createSession(_user, loginCookie.getValue());

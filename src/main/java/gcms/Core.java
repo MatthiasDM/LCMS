@@ -296,7 +296,7 @@ public class Core {
 
         try {
             if (!_user.equals(getProp("username"))) {
-                gcms.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
+                gcms.GsonObjects.Core.Action.Actions _action = DatabaseWrapper.getAction("loadusers");
                 Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, DatabaseActions.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
                 session = new Session(_user, _sessionId, now + ((Integer.parseInt(user.get("sessionValidity").toString()))), true, user.get("userid").toString());
             } else {
@@ -325,7 +325,7 @@ public class Core {
     public static void devalidateSession(String _sessionId, String _contextPath) throws IOException, ClassNotFoundException {
         Session session = DatabaseActions.getSession(_sessionId);
         if (!session.getUsername().equals(getProp("username"))) {
-            gcms.GsonObjects.Core.Actions _action = DatabaseWrapper.getAction("loadusers");
+            gcms.GsonObjects.Core.Action.Actions _action = DatabaseWrapper.getAction("loadusers");
             Map<String, Object> user = DatabaseWrapper.getObjectHashMapv2(null, DatabaseActions.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", session.getUsername())));
             DatabaseActions.editSessionValidity(_sessionId, (Integer.parseInt(user.get("sessionValidity").toString()) * -1));
         } else {
@@ -375,7 +375,7 @@ public class Core {
             levelCode = roles.getLevelCode();
         }
         Role role = DatabaseActions.getRole(userRole);
-        if(role != null){
+        if (role != null) {
             levelCode = role.getLevelCode();
         }
         return levelCode;
@@ -396,30 +396,7 @@ public class Core {
         Session session = DatabaseActions.getSession(_cookie);
         List<String> roles = new ArrayList<>();
         if (!Core.checkSession(_cookie)) {
-            return roles;
-        }
-        if (session.getUsername().equals("root")) {
-            roles.add(Roles.ADMIN.toString());
-            return roles;
-        } else {
-            User user = DatabaseActions.getUser(session.getUsername());       
-           
-            return user.getRoles();
-        }
-    }
-
-    public static boolean notNullNorEmpty(List<String> obj) {
-        if (obj != null) {
-            return obj.size() > 0;
-        } else {
-            return false;
-        }
-    }
-
-    public static List<String> getUserRolesV2(String _cookie) {
-        Session session = DatabaseActions.getSession(_cookie);
-        List<String> roles = new ArrayList<>();
-        if (!Core.checkSession(_cookie)) {
+            roles.add(Roles.GUEST.toString());
             return roles;
         }
         if (session.getUsername().equals("root")) {
@@ -428,6 +405,36 @@ public class Core {
         } else {
             User user = DatabaseActions.getUser(session.getUsername());
             return user.getRoles();
+        }
+    }
+
+    public static User getUserData(String _cookie) {
+        Session session = DatabaseActions.getSession(_cookie);
+        User user = new User();
+        if (!Core.checkSession(_cookie)) {
+            List<String> roles = new ArrayList<>();
+            roles.add(Roles.GUEST.toString());
+            user.setRoles(roles);
+            user.setUsername("root");
+            return user;
+        }
+        if (session.getUsername().equals("root")) {
+            List<String> roles = new ArrayList<>();
+            roles.add(Roles.ADMIN.toString());
+            user.setRoles(roles);
+            user.setUsername("root");
+            return user;
+        } else {
+            user = DatabaseActions.getUser(session.getUsername());
+            return user;
+        }
+    }
+
+    public static boolean notNullNorEmpty(List<String> obj) {
+        if (obj != null) {
+            return obj.size() > 0;
+        } else {
+            return false;
         }
     }
 
@@ -605,7 +612,7 @@ public class Core {
         return databaseObject;
     }
 
-    public static HashMap<String, Object> createDatabaseObject(HashMap<String, String[]> requestParameters, SerializableClass cls) {
+    public static HashMap<String, Object> createDatabaseObject(HashMap<String, String> requestParameters, SerializableClass cls) {
         HashMap<String, Object> databaseObject = null;
         try {
             requestParameters.remove("oper");
@@ -615,7 +622,7 @@ public class Core {
                 key = key.replaceAll("\\[|\\]", "");
                 try {
 
-                    String val = value[0];
+                    String val = value;
                     SerializableField f = cls.getField(key);
                     if (f != null) {
                         System.out.println(f.getType());
@@ -762,17 +769,17 @@ public class Core {
         }
     }
 
-    public static HashMap<String, String[]> updateHash(String hashField, HashMap<String, String[]> requestParameters) {
-        if (requestParameters.get(hashField + "Lock")[0].equals("false")) {
-            requestParameters.get(hashField)[0] = Cryptography.hash(requestParameters.get(hashField)[0]);
+    public static HashMap<String, String> updateHash(String hashField, HashMap<String, String> requestParameters) {
+        if (requestParameters.get(hashField + "Lock").equals("false")) {
+            requestParameters.put(hashField, Cryptography.hash(requestParameters.get(hashField)));
         } else {
             requestParameters.remove(hashField);
         }
-        requestParameters.put(hashField + "Lock", new String[]{"true"});
+        requestParameters.put(hashField + "Lock", "true");
         return requestParameters;
     }
 
-    public static List<String> getHashFields(HashMap<String, String[]> requestParameters, Class cls) {
+    public static List<String> getHashFields(HashMap<String, String> requestParameters, Class cls) {
         List<String> hashFields = requestParameters.keySet().stream().filter((String k) -> {
             try {
                 Field f = cls.getField(k);
@@ -786,7 +793,7 @@ public class Core {
         return hashFields;
     }
 
-    public static List<String> getHashFields(HashMap<String, String[]> requestParameters, SerializableClass cls) {
+    public static List<String> getHashFields(HashMap<String, String> requestParameters, SerializableClass cls) {
         List<String> hashFields = requestParameters.keySet().stream().filter((String k) -> {
             SerializableField f = cls.getField(k);
             if (f != null) {
@@ -799,7 +806,7 @@ public class Core {
         return hashFields;
     }
 
-    public static HashMap<String, String[]> checkHashFields(HashMap<String, String[]> requestParameters, Class cls) {
+    public static HashMap<String, String> checkHashFields(HashMap<String, String> requestParameters, Class cls) {
         List<String> hashFields = getHashFields(requestParameters, cls);
         for (String hashField : hashFields) {
             if (requestParameters.get(hashField + "Lock") == null) {
@@ -811,7 +818,7 @@ public class Core {
         return requestParameters;
     }
 
-    public static HashMap<String, String[]> checkHashFields(HashMap<String, String[]> requestParameters, SerializableClass cls) {
+    public static HashMap<String, String> checkHashFields(HashMap<String, String> requestParameters, SerializableClass cls) {
         List<String> hashFields = getHashFields(requestParameters, cls);
         for (String hashField : hashFields) {
             if (requestParameters.get(hashField + "Lock") == null) {
@@ -1008,20 +1015,35 @@ public class Core {
             Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-//        for (String resultEntry : apiResult) {
-//            SerializableField serializableField;
-//            try {
-//                serializableField = Core.universalObjectMapper.readValue(resultEntry, SerializableField.class);
-//                serializableFields.add(serializableField);
-//            } catch (IOException ex) {
-//                Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//
-//        }
         return serializableClass;
 
     }
 
+        public static SerializableClass getFieldsv2(gcms.objects.collections.Collection collection, String _cookie) {
+        List<Field> fields = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        HashMap<String, String> parameters = new HashMap<>();
+        HashMap<String, String> extra = new HashMap<>();
+        SerializableClass serializableClass = new SerializableClass();
+        try {
+            extra.put("className", collection.getClassName());
+            parameters.put("LCMS_session", _cookie);
+            parameters.put("action", "docommand");
+            parameters.put("k", collection.getPluginName());
+            parameters.put("extra", Core.universalObjectMapper.writeValueAsString(extra));
+            sb.append(Core.multiPartHttpRequest(null, baseURL + dirName + "servlet/", "post", Core.universalObjectMapper.writeValueAsString(parameters)));
+            JsonNode parentJson = Core.universalObjectMapper.readTree(sb.toString());
+            String requestResult = parentJson.asText();
+
+            serializableClass = Core.universalObjectMapper.readValue(requestResult, SerializableClass.class);
+        } catch (IOException ex) {
+            Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return serializableClass;
+
+    }
+    
     public Object readBytesIntoFields(byte[] yourBytes) throws IOException, ClassNotFoundException {
         Object o;
         ByteArrayInputStream bis = new ByteArrayInputStream(yourBytes);

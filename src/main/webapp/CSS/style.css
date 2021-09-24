@@ -263,7 +263,7 @@ textarea[title=ckedit] {
 .modal-backdrop{
     //position: absolute;    
     //display:none;
-   // background-color: transparent;
+    background-color: transparent;
 }
 .modal ui-jqgrid-bootstrap{
 

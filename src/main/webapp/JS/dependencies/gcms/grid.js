@@ -319,6 +319,8 @@ class LCMSGrid {
                 column.editoptions = {
                     relation: gcmscore.parseJSONString(value.pk)
                 };
+                column.hidden = true;
+                column.editrules = {edithidden: false};
                 me.gridData.jqGridOptions.idColumn = column.name;
             }
 
@@ -447,7 +449,7 @@ class LCMSGrid {
         console.log("loading list");
         var position = "inherit";
         if (options.mode === "edit" || options.mode === "add") {
-            position = "absolute";
+            position = "sticky";
         }
         var datatarget = "external-list-" + options.relation.collection;
         var datatargetcontent = "external-list-content-" + options.relation.collection;
@@ -696,7 +698,7 @@ class LCMSGrid {
                     var selectedRowData = $(this).jqGrid("getRowData", row_id);
                     $("#" + subgrid_id).closest("td").siblings().remove();
                     $("#" + subgrid_id).closest("td").attr("colspan", "50");
-                   // $("#" + subgrid_id).css("width", "max-content");
+                    $("#" + subgrid_id).closest("td").css("height", "auto");
                     $.each(me.colModel, function (index, column) {
                         if (column.type === "pk" && column.editoptions.relation) {
                             var pk = column.editoptions.relation;

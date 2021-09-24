@@ -5,10 +5,7 @@
  */
 package gcms.database.objects.edit;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
 import gcms.Config.PrivilegeType;
 import gcms.Core;
@@ -22,7 +19,6 @@ import static gcms.database.DatabaseActions.getObject;
 import gcms.database.DatabaseWrapper;
 import gcms.modules.commandFunctions;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +26,9 @@ import java.util.UUID;
 import org.bson.Document;
 import static gcms.database.DatabaseActions.getObjectsFromDatabase;
 import gcms.GsonObjects.annotations.gcmsObject;
+import gcms.objects.collections.Collection;
 import java.util.Arrays;
+
 
 /**
  *
@@ -38,7 +36,7 @@ import java.util.Arrays;
  */
 public class EditObject {
 
-    public static StringBuilder editObject(HashMap<String, String[]> requestParameters, String cookie, MongoConfigurations _mongoConf) throws IOException, ClassNotFoundException, NoSuchFieldException {
+    public static StringBuilder editObject(HashMap<String, String> requestParameters, String cookie, MongoConfigurations _mongoConf, Collection collection) throws IOException, ClassNotFoundException, NoSuchFieldException {
         StringBuilder sb = new StringBuilder();
         if (cookie != null) {
 
@@ -53,7 +51,7 @@ public class EditObject {
             if (Core.checkUserRoleValue(cookie, 2)) {
                 requestParameters.remove("action");
                 requestParameters.remove("LCMS_session");
-                String operation = requestParameters.get("oper")[0];
+                String operation = requestParameters.get("oper");
 
                 //Class cls = Class.forName(_mongoConf.getClassName());
                 if (requestParameters.get("oper") != null) {
@@ -62,7 +60,7 @@ public class EditObject {
 
                     if (operation.equals("edit")) {
                         HashMap<String, Object> obj = createDatabaseObject(requestParameters, serializableClass);
-                        editObject(obj, _mongoConf, cookie, serializableClass);
+                        editObject(obj, _mongoConf, cookie, serializableClass, collection);
                         commandFunctions.doWorkflow("edit", _mongoConf);
                     }
                     if (operation.equals("add")) {
@@ -71,12 +69,12 @@ public class EditObject {
                         HashMap<String, Object> parameters = new HashMap<>();
                         requestParameters.forEach((key, value) -> {
                             key = key.replaceAll("\\[|\\]", "");
-                            parameters.put(key, value[0]);
+                            parameters.put(key, value);
                         });
                         //Object obj = Core.universalObjectMapper.readValue(Core.universalObjectMapper.writeValueAsString(parameters), cls);
                         Document document = Document.parse(Core.universalObjectMapper.writeValueAsString(parameters));
                         document.append(_mongoConf.getIdName(), UUID.randomUUID().toString());
-                        addObject(document, _mongoConf, cookie, serializableClass);
+                        addObject(document, _mongoConf, cookie, serializableClass, collection);
                         commandFunctions.doWorkflow("add", _mongoConf);
                     }
                 }
@@ -87,14 +85,14 @@ public class EditObject {
         return sb;
     }
 
-    public static void editObject(HashMap<String, Object> mongoObject, MongoConfigurations _mongoConf, String cookie, SerializableClass serializableClass) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException {
-        List<String> columns = getDocumentPriveleges(PrivilegeType.editRole, cookie, _mongoConf, true, serializableClass);
+    public static void editObject(HashMap<String, Object> mongoObject, MongoConfigurations _mongoConf, String cookie, SerializableClass serializableClass, Collection collection) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
+        List<String> columns = getDocumentPriveleges(PrivilegeType.editRole, cookie, _mongoConf, true, serializableClass, new Collection());
         List<SerializableField> systemFields = gcms.Core.getSystemFields(serializableClass, "edit");
         BasicDBObject obj = BasicDBObject.parse(Core.universalObjectMapper.writeValueAsString(mongoObject));
         BasicDBObject filteredObj = new BasicDBObject();
         BasicDBObject backlogObj = new BasicDBObject();
         Object oldObject = getObject(_mongoConf, mongoObject.get(_mongoConf.getIdName()).toString());
-        Document oldDocument = Document.parse((Core.universalObjectMapper.writeValueAsString(oldObject)));
+        //Document oldDocument = Document.parse((Core.universalObjectMapper.writeValueAsString(oldObject)));
 
         for (String key : obj.keySet()) {
             if (columns.indexOf(key) != -1) {
@@ -103,8 +101,8 @@ public class EditObject {
                     if (!mdmAnnotations.DMP()) {
                         filteredObj.put(key, obj.get(key));
                     } else {
-                        String patchedObj = DatabaseActions.patchText(oldDocument.get(key), obj.get(key));
-                        filteredObj.put(key, patchedObj);
+                        //String patchedObj = DatabaseActions.patchText(oldDocument.get(key), obj.get(key));
+                        //filteredObj.put(key, patchedObj);
                     }
                     backlogObj.put(key, obj.get(key));
                 }
@@ -133,8 +131,8 @@ public class EditObject {
         }
     }
 
-    public static void addObject(Document doc, MongoConfigurations _mongoConf, String cookie, SerializableClass serializableClass) throws ClassNotFoundException {
-        List<String> columns = getDocumentPriveleges(PrivilegeType.createRole, cookie, _mongoConf, true, serializableClass);
+    public static void addObject(Document doc, MongoConfigurations _mongoConf, String cookie, SerializableClass serializableClass, Collection collection) throws ClassNotFoundException, IOException {
+        List<String> columns = getDocumentPriveleges(PrivilegeType.createRole, cookie, _mongoConf, true, serializableClass, new Collection());
         List<SerializableField> systemFields = gcms.Core.getSystemFields(serializableClass, "create");
         Document filteredDoc = new Document();
         for (String key : doc.keySet()) {

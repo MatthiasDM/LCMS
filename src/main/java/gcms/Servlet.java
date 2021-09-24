@@ -21,10 +21,13 @@ import gcms.database.DatabaseWrapper;
 import org.apache.commons.lang.StringEscapeUtils;
 
 /**
- *
- * @author matmey
- */
-@WebServlet(name = "pageServlet", urlPatterns = {"/page", "/IT/page"})
+* This is the main servlet used for loading pages.
+* 
+* Please see the {@link gcms.GsonObjects.Core.EditablePage} class for true identity
+* @author De Mey Matthias
+* 
+*/
+@WebServlet(name = "pageServlet", urlPatterns = {"/page"})
 public class Servlet extends HttpServlet {
 
     String cookie;

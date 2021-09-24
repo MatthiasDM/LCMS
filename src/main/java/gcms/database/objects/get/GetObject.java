@@ -16,6 +16,7 @@ import gcms.database.DatabaseWrapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import gcms.objects.collections.Collection;
 
 /**
  *
@@ -23,7 +24,7 @@ import java.util.Map;
  */
 public class GetObject {
 
-    public static StringBuilder getObject(String cookie, MongoConfigurations _mongoConf, String key, String value, Boolean publicPage) throws JsonProcessingException, JsonProcessingException, ClassNotFoundException, JsonProcessingException, JsonProcessingException, NoSuchFieldException, IOException {
+    public static StringBuilder getObject(String cookie, MongoConfigurations _mongoConf, String key, String value, Boolean publicPage, Collection collection) throws JsonProcessingException, JsonProcessingException, ClassNotFoundException, JsonProcessingException, JsonProcessingException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
         if (cookie == null && !publicPage) {
             sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));

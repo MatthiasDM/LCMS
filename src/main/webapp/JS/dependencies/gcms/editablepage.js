@@ -9,7 +9,7 @@ class LCMSEditablePage {
 
     constructor(pageData, parent) {
         require(['ckeditor']);
-        
+
         this.pageData = pageData;
         this.originalDocument = "";
         this.gridForm = new LCMSGridForm(this);
@@ -41,6 +41,7 @@ class LCMSEditablePage {
                         jsonData.replaces["LCMSEditablePage-content"] = new TextDecoder().decode(hexToBytes(jsonData.replaces["LCMSEditablePage-content"]));
                     }
                     LCMSEditablePage_content = $.parseJSON(jsonData.replaces["LCMSEditablePage-content"]);
+
                     if (typeof _originalDocument !== "undefined") {
                         me.originalDocument = _originalDocument;
                     } else {
@@ -55,8 +56,13 @@ class LCMSEditablePage {
                 jsonData.webPage = replaceAll(jsonData.webPage, "LCMSEditablePage-content", LCMSEditablePage_content.html);
                 grids = LCMSEditablePage_content.grids;
             } catch (e) {
-                console.log(e);
+
+                var temp_editable = $("<div id='editable_" + uuidv4() + "' contenteditable='false' class='cke_editable cke_editable_inline cke_contents_ltr cke_focus'tabindex='0' role='textbox' aria-label='false'></div>");
+                LCMSEditablePage_content = jsonData.replaces["LCMSEditablePage-content"];
+                temp_editable.text(LCMSEditablePage_content);
+                jsonData.webPage = replaceAll(jsonData.webPage, "LCMSEditablePage-content", temp_editable[0].outerHTML);
                 bootstrap_alert.warning("Something went wrong", "warning", "1000");
+                console.log(e);
             }
             me.parent.click();
         }
@@ -163,7 +169,7 @@ class LCMSEditablePage {
 
     doSave(me, data) {
 
-        var patches = getPatches(me.originalDocument, data);
+        // var patches = getPatches(me.originalDocument, data);
         var _cookie = $.cookie('LCMS_session');
         function onDone(_data) {
             me.originalDocument = data;
@@ -171,7 +177,7 @@ class LCMSEditablePage {
             console.log("Changes saved.");
         }
         var formData = new FormData();
-        var pageContent = new Blob([patches], {type: "text/xml"});
+        var pageContent = new Blob([data], {type: "text/xml"});
         formData.append("action", me.pageData.editAction);
         formData.append("LCMS_session", _cookie);
         formData.append("oper", "edit");
@@ -639,7 +645,7 @@ class LCMSEditablePage {
 
         var sidebarMenu = $('<ul class="nav nav-pills flex-column mb-auto" id="global-menu" style="display: contents;flex-direction: column;justify-content: space-between;overflow: hidden;"></ul>');
         var documentMenu = $('<li class="nav-item"><a href="#documentCollapse" class="nav-link active" aria-expanded="false" aria-controls="documentCollapse" data-bs-toggle="collapse" data-bs-target="#documentCollapse" aria-current="page"><i class="fa fa-lg fa-fw fa-edit"></i>Menu</a></li>');
-        var documentCollapse = $('<div class="collapse" id="documentCollapse"></div>');        
+        var documentCollapse = $('<div class="collapse" id="documentCollapse"></div>');
         sidebarMenu.append(documentMenu);
         sidebarMenu.append(documentCollapse);
         //sidebarMenu.append(contentTable);

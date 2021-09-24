@@ -16,7 +16,8 @@
             Configuratie
         </div>
         <div class="card-body">
-            <a class="badge bg-secondary" style="margin: 5px;" onclick="gcmscore.createTableModal('Database-objecten', 'mongoconfigurations', $('#admin-container'))">Database-objecten</a>
+            <a class="badge bg-secondary" style="margin: 5px;" onclick="loadCollectionsv2()">Collecties</a>
+            <a class="badge bg-secondary" style="margin: 5px;" onclick="loadCollections()">Database-objecten</a>
             <a class="badge bg-info" onclick="gcmscore.createTableModal('Database-acties', 'actions', $('#admin-container'))" style="margin: 5px;">Database-acties</a>            
             <a class="badge bg-warning" onclick="gcmscore.createTableModal('Gebruikers', 'users', $('#admin-container'))" style="margin: 5px;">Gebruikers</a>
             <a class="badge bg-secondary" onclick="gcmscore.createTableModal('Paginas', 'pages', $('#admin-container'))" style="margin: 5px;">Paginas</a>
@@ -29,6 +30,8 @@
             <a class="badge bg-success" onclick="queryModal()" style="margin: 5px;">Queries</a>
             <a class="badge bg-info" onclick="gcmscore.createTableModal('Berekende velden', 'calculatedFields', $('#admin-container'))" style="margin: 5px;">Berekende velden</a>
             <a class="badge bg-warning" onclick="gcmscore.createTableModal('Depedencies', 'dependencies', $('#admin-container'))" style="margin: 5px;">Depedencies</a>
+            <a class="badge bg-success" onclick="gcmscore.createTableModal('Snippets', 'snippets', $('#admin-container'))" style="margin: 5px;">Snippets</a>
+            <a class="badge bg-success" onclick="gcmscore.createTableModal('Methods', 'methods', $('#admin-container'))" style="margin: 5px;">Methods</a>
 
         </div>
     </div>
@@ -36,7 +39,51 @@
 </div>
 
 <script>
-    config2(false);
+
+    require(["ckeditor"], function () {
+        config2(false);
+    });
+
+
+
+    async function loadCollections() {
+        var lazyOptions = gcmscore.lazyOptions("mongoconfigurations");
+        lazyOptions.afterLoadComplete = function (a, b) {
+            b.addGridButton(new LCMSTemplateGridButton("fa-bars", "Show menu", "", function () {
+                console.log("Show menu");
+                var rowId = a.jqGrid('getGridParam', 'selrow');
+                var rowData = a.jqGrid('getRowData', rowId);
+                gcmscore.getSnippetPopup('collectionMenu', JSON.stringify(rowData));
+            }));
+        }
+        gcmscore.createTableModal('Collections', 'mongoconfigurations', $('#admin-container'), null, lazyOptions);
+    }
+    
+       async function loadCollectionsv2() {
+        var lazyOptions = gcmscore.lazyOptions("collections");
+        lazyOptions.afterLoadComplete = function (a, b) {
+            b.addGridButton(new LCMSTemplateGridButton("fa-bars", "Show menu", "", function () {
+                console.log("Show menu");
+                var rowId = a.jqGrid('getGridParam', 'selrow');
+                var rowData = a.jqGrid('getRowData', rowId);
+                gcmscore.getSnippetPopup('collectionMenu', JSON.stringify(rowData));
+            }));
+        }
+        gcmscore.createTableModal('Collections', 'collections', $('#admin-container'), null, lazyOptions);
+    }
+
+    function queryModal() {
+        var lazyOptions = gcmscore.lazyOptions("mongoconfigurations");
+        lazyOptions.afterLoadComplete = function (a, b) {
+            b.addGridButton(new LCMSTemplateGridButton("fa-play", "Acties tonen", "", function () {
+                var rowId = a.jqGrid('getGridParam', 'selrow');
+                var rowData = a.jqGrid('getRowData', rowId);
+                doQuery(rowData.name);
+            }));
+        }
+        gcmscore.createTableModal('Queries', 'queries', $('#admin-container'), null, lazyOptions);
+    }
+
     function queryModal() {
         var lazyOptions = gcmscore.lazyOptions("queries");
         lazyOptions.afterLoadComplete = function (a, b) {
@@ -70,4 +117,9 @@
         let returnvalue = await onDone(request);
         return returnvalue;
     }
+
+
+
+
+
 </script>

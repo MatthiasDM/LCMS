@@ -30,7 +30,7 @@ public class EditablePage {
             type = "string",
             visibleOnTable = false,
             visibleOnForm = true,
-            DMP = true
+            DMP = false
     )
     public String contents;
     @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false)
@@ -50,8 +50,7 @@ public class EditablePage {
     public String category;
 
     @gcmsObject(
-            editRole = "ADMIN",
-            viewRole = "USER",
+            editRole = "ADMIN",         
             type = "select",
             choices = {"public", "private", "partial"}
     )

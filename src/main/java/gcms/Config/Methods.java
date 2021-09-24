@@ -9,11 +9,11 @@ package gcms.Config;
  *
  * @author Matthias
  */
-public enum PrivilegeType {
-    viewRole(1), editRole(2), createRole(3), GET(4), PUT(5), POST(6);
+public enum Methods {
+    GET(1), PUT(2), POST(3);
     private final int levelCode;
 
-    PrivilegeType(int levelCode) {
+    Methods(int levelCode) {
         this.levelCode = levelCode;
     }
 

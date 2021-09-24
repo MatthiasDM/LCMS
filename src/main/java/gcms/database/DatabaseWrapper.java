@@ -5,7 +5,6 @@
  */
 package gcms.database;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,11 +27,6 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import gcms.GsonObjects.annotations.gcmsObject;
 import java.util.HashMap;
-import java.util.Map.Entry;
-import jdk.jfr.internal.LogLevel;
-import jdk.jfr.internal.LogTag;
-import jdk.jfr.internal.Logger;
-
 /**
  *
  * @author matmey
@@ -75,7 +69,7 @@ public class DatabaseWrapper {
         return results;
     }
 
-    public static Map<String, Object> getObjectHashMapv2(String cookie, MongoConfigurations _mongoConf, Bson bson) throws ClassNotFoundException, JsonProcessingException {
+    public static Map<String, Object> getObjectHashMapv2(String cookie, MongoConfigurations _mongoConf, Bson bson) throws ClassNotFoundException, JsonProcessingException, IOException {
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(cookie, _mongoConf, bson, null, 0, null, false);
         String parseDocumentString = "";
         try {
@@ -112,7 +106,7 @@ public class DatabaseWrapper {
                     if (!mdmAnnotations.DMP()) {
                         documentHashMap.put(key, changesHashMap.get(key));
                     } else {
-                        documentHashMap.put(key, DatabaseActions.revertDMP(documentHashMap.get(key).toString(), changesHashMap.get(key).toString()));
+                        //documentHashMap.put(key, DatabaseActions.revertDMP(documentHashMap.get(key).toString(), changesHashMap.get(key).toString()));
                     }
                 }
             }
@@ -122,15 +116,15 @@ public class DatabaseWrapper {
         return documentHashMap;
     }
 
-    public static gcms.GsonObjects.Core.Actions getAction(String _action) throws ClassNotFoundException {
+    public static gcms.GsonObjects.Core.Action.Actions getAction(String _action) throws ClassNotFoundException, IOException {
         ObjectMapper mapper = new ObjectMapper();
-        gcms.GsonObjects.Core.Actions action = null;
+        gcms.GsonObjects.Core.Action.Actions action = null;
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("name", new BasicDBObject("$eq", _action));
         MongoConfigurations actionsConfiguration = DatabaseActions.getMongoConfiguration("actions");
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2("", actionsConfiguration, searchObject, null, 1000, new String[]{}, false);
         if (results.size() > 0) {
-            action = mapper.convertValue(results.get(0), gcms.GsonObjects.Core.Actions.class);
+            action = mapper.convertValue(results.get(0), gcms.GsonObjects.Core.Action.Actions.class);
         }
         return action;
     }

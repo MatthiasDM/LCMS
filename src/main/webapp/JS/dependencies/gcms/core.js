@@ -821,6 +821,7 @@ class gcmscore {
         mod.on('hidden.bs.modal', function () {
             $(this).remove();
         });
+
         me.loadLazyTable(_title, modalBody, _baseName, _lazyOptions);
         modalBody.append(_extraContent);
         var modbs5 = new bootstrap.Modal(mod);
@@ -834,7 +835,8 @@ class gcmscore {
         var modalBody = mod.find("div[class=modal-body]");
         mod.on('hidden.bs.modal', function () {
             $(this).remove();
-        });
+
+        }); 
         var modbs5 = new bootstrap.Modal(mod);
         modbs5.show();
         return modalBody;
@@ -1408,7 +1410,7 @@ async function LazyTableRequest(baseName, containerName, editUrl, caption, table
     if (extraLazyOptions) {
         lazyOptions = gcmscore.replaceProperties(lazyOptions, extraLazyOptions);
     }
-    return LCMSTableRequest("load" + baseName, "edit" + baseName, editUrl, containerName + "-table", containerName + "-pager",containerName + "-div-grid-wrapper", caption, tableType, lazyOptions, extraRequestOptions, LCMSEditablePageObject);
+    return LCMSTableRequest("load" + baseName, "edit" + baseName, editUrl, containerName + "-table", containerName + "-pager", containerName + "-div-grid-wrapper", caption, tableType, lazyOptions, extraRequestOptions, LCMSEditablePageObject);
 }
 
 
