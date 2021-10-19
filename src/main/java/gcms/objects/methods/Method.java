@@ -23,4 +23,30 @@ public class Method {
     )
     public String method;
 
+    public Method() {
+    }
+
+    public Method(String methodId, String method) {
+        this.methodId = methodId;
+        this.method = method;
+    }
+
+    public String getMethodId() {
+        return methodId;
+    }
+
+    public void setMethodId(String methodId) {
+        this.methodId = methodId;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+    
+    
+
 }

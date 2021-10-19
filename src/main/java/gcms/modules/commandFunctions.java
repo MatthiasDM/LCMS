@@ -39,11 +39,13 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import static gcms.Core.getProp;
+import gcms.GsonObjects.Core.Action.ActionPrivelege;
+import gcms.GsonObjects.Core.Action.Actions;
 import gcms.GsonObjects.Core.Apikey;
 import gcms.GsonObjects.Core.Command;
 import gcms.GsonObjects.Core.FileObject;
-import gcms.GsonObjects.Core.MongoConfigurations;
 import gcms.GsonObjects.Core.User;
+import gcms.GsonObjects.Core.Workflow;
 import gcms.GsonObjects.Other.SerializableClass;
 import gcms.credentials.Cryptography;
 import gcms.database.DatabaseActions;
@@ -57,9 +59,14 @@ import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 import static gcms.database.objects.get.GetObject.prepareObject;
+import gcms.database.objects.load.LoadObjects;
+import gcms.objects.collections.MongoConfigurations;
+import gcms.objects.methods.Method;
 import gcms.servlet.ActionManager;
 import gcms.servlet.Response;
 import gcms.servlet.Servlet;
+import java.util.HashMap;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.DecoderException;
@@ -114,6 +121,9 @@ public class commandFunctions {
         if (name.equals("doEdit")) {
             sb.append(command_doEdit(commandParameters, command, parts));
         }
+        if (name.equals("TableStructure")) {
+            sb.append(command_TableStructure(commandParameters, command, parts));
+        }
         if (name.equals("doUploadFile")) {
             sb.append(command_doUploadFile(commandParameters, command, parts));
         }
@@ -135,7 +145,6 @@ public class commandFunctions {
         if (name.equals("doQuery")) {
             sb.append(command_doQueryByName(commandParameters, parts));
         }
-
         if (name.equals("doGetClassInfo")) {
             sb.append(command_doGetCollectionInfo(commandParameters));
         }
@@ -152,17 +161,29 @@ public class commandFunctions {
         return sb;
     }
 
-    public static StringBuilder doWorkflow(String type, MongoConfigurations _mongoConf) {
+    public static StringBuilder doWorkflow(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
+        Method _method = DatabaseActions.getMethod(parameters.get("method"));
+        MongoConfigurations _mongoConf = DatabaseActions.getMongoConfiguration(parameters.get("mongoconfiguration"));
 
-        if (type.equals("add")) {
-            //
-        } else {
-            if (type.equals("edit")) {
-                //
+        Map<String, String> queryParameters = new HashMap<>();
+        queryParameters.put("name", "qryGetWorkflows");
+        queryParameters.put("database", "lcms");
+        queryParameters.put("replaces[mongoconfiguration]", _mongoConf.getCollectionId());
+        queryParameters.put("replaces[method]", _method.getMethodId());
+        String qryResult = commandFunctions.command_doQueryByName(queryParameters, null).toString();
+        Core.universalObjectMapper.readTree(qryResult.getBytes()).get("cursor").get("firstBatch").forEach((arg0) -> {
+            try {
+                Workflow workflow = Core.universalObjectMapper.readValue(arg0.toString(), new TypeReference<Workflow>() {
+                });
+                Map<String, String> workflowCommandParameteres = Core.universalObjectMapper.readValue(workflow.getParameters(), new TypeReference<Map<String, String>>() {
+                });
+                Command workflowCommand = DatabaseActions.getCommand(workflow.getCommand());
+                doCommand(workflowCommand.getCommand(), workflowCommandParameteres, workflowCommand, null);
+            } catch (ClassNotFoundException | IOException | NoSuchFieldException ex) {
+                Logger.getLogger(commandFunctions.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-
+        });
         return sb;
     }
 
@@ -217,11 +238,11 @@ public class commandFunctions {
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(parameters.get("LCMS_session"), mongoConfiguration, and(regex("className", Pattern.compile(".*" + classNameSuffix))), null, 1000, new String[]{}, true);
         //if no result found, try with other classname by searching for matching one in mongoconfigurations based on last word of object_type
 
-        MongoConfigurations objectConfiguration = mapper.convertValue(results.get(0), gcms.GsonObjects.Core.MongoConfigurations.class);
+        MongoConfigurations objectConfiguration = mapper.convertValue(results.get(0), MongoConfigurations.class);
         Map<String, Object> objectHashMap = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session"), objectConfiguration, and(eq(objectConfiguration.getIdName(), parameters.get("parameters[object_id]"))));
         DatabaseWrapper.revertChanges(backlogs, objectHashMap, objectConfiguration);
 
-        sb = prepareObject(parameters.get("LCMS_session"), DatabaseActions.getMongoConfiguration(objectConfiguration.getMongoconfigurationsid()), false, objectHashMap);
+        sb = prepareObject(parameters.get("LCMS_session"), DatabaseActions.getMongoConfiguration(objectConfiguration.getCollectionId()), false, objectHashMap);
 
         return sb;
 
@@ -414,21 +435,31 @@ public class commandFunctions {
         return sb;
     }
 
-//    public static StringBuilder command_doExportCollection(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
-//        StringBuilder sb = new StringBuilder();
-//        DatabaseActions.getObjectsFromDatabase(mongoConf)
-//        JsonNode jsonTree = Core.universalObjectMapper.readTree(parameters.get("collection"));
-//        Builder csvSchemaBuilder = CsvSchema.builder();
-//        JsonNode firstObject = jsonTree.elements().next();
-//        firstObject.fieldNames().forEachRemaining(fieldName -> {
-//            csvSchemaBuilder.addColumn(fieldName);
-//        });
-//
-//        CsvMapper csvMapper = new CsvMapper();
-//        CsvSchema schema = csvMapper.schemaFor(JsonNode.class).withHeader();
-//        sb.append(csvMapper.writer(schema).writeValueAsString(jsonTree));
-//        return sb;
-//    }
+    public static StringBuilder command_TableStructure(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException, ClassNotFoundException {
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            ArrayList<String> excludes = new ArrayList<>();
+            BasicDBObject filterObject = new BasicDBObject();
+            if (parameters.get("excludes") != null) {
+                excludes.addAll(Arrays.asList(parameters.get("excludes")));
+            }
+            if (parameters.get("excludes[]") != null) {
+                String _excludes = parameters.get("excludes[]");
+                excludes.addAll(Arrays.asList(_excludes));
+            }
+            MongoConfigurations mongoConf = DatabaseActions.getMongoConfiguration(parameters.get("collection"));
+
+            sb.append(LoadObjects.structureload(parameters.get("LCMS_session"), mongoConf, filterObject, excludes.toArray(new String[0])));
+
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        } catch (JsonProcessingException | NoSuchFieldException ex) {
+            Logger.getLogger(commandFunctions.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        }
+        return sb;
+    }
+
     public static StringBuilder command_doGetTableConfig(Map<String, String> parameters, Command command) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
@@ -478,18 +509,9 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doQuery(Map<String, String> parameters) throws IOException {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(
-                DatabaseActions.doQuery(parameters.get("database"), parameters.get("query")).toJson());
-
-        return sb;
-    }
-
     public static StringBuilder command_doQueryByName(Map<String, String> parameters, Collection<Part> parts) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
-        if(!parameters.isEmpty()){
+        if (!parameters.isEmpty()) {
             Gson gson = new Gson();
             if (parts != null) {
                 for (Part part : parts) {
@@ -515,7 +537,7 @@ public class commandFunctions {
                 sb.append(
                         DatabaseActions.doQuery(parameters.get("database"), query).toJson());
             }
-        }       
+        }
         return sb;
     }
 

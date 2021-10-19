@@ -10,7 +10,7 @@ package gcms.Config;
  * @author Matthias
  */
 public enum Methods {
-    GET(1), PUT(2), POST(3);
+    get(1), put(2), post(3);
     private final int levelCode;
 
     Methods(int levelCode) {

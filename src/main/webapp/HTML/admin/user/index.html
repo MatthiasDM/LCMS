@@ -1,0 +1,53 @@
+<div id="user-container">
+    <style></style>
+
+    <div class="container" style="width:100%" id="user-container">
+        <div class="row">           
+            <div class="col-sm-6 mx-auto">
+                <div class="card">
+                    <div class="card-header">Gebruikersconfiguratie</div>
+                    <div class="card-body">
+                        <div class="dropdown" id="theme-dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="btn-theme" data-bs-toggle="dropdown" aria-expanded="false">
+                                Thema
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                <li><a class="dropdown-item change-style-menu-item" rel="cerulean" href="#">Cerulean</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="morph" href="#">Morph</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="slate" href="#">Slate</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="superhero" href="#">Superhero</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br><br>
+<script>
+
+    jQuery(function ($) {
+        $('body').on('click', '.change-style-menu-item', function () {
+            var theme_name = $(this).attr('rel');
+            var theme = "./JS/dependencies/bootstrap/5.0.0/bootstrap." + theme_name + ".min.css";
+            set_theme(theme);
+            if (supports_storage) {
+                localStorage.themeName = theme_name;
+                $("#btn-theme").text("Thema (" + themeName + ")");
+            }
+        });
+        if (supports_storage) {
+            var themeName = localStorage.themeName;
+            if (themeName) {
+                $("#btn-theme").text("Thema (" + themeName + ")")
+            }
+        }
+    });
+
+
+
+
+
+</script>

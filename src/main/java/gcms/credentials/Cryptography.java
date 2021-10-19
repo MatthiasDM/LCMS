@@ -47,11 +47,7 @@ public class Cryptography {
         return false;
     }
 
-    /*
-     * Copy pasted from BCrypt internals :(. Ideally a method
-     * to exports parts would be public. We only care about rounds
-     * currently.
-     */
+ 
     private int getRounds(String salt) {
         char minor = (char) 0;
         int off = 0;

@@ -11,7 +11,7 @@ and open the template in the editor.
     background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(0, 0, 0, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
 }
 .navbar-toggler {
-    background: #fff; /* pick your color */
+    //  background: #fff; /* pick your color */
 }
 .navbar{
     background: white;
@@ -26,7 +26,7 @@ and open the template in the editor.
     z-index: 900;
 }
 .subgrid-data{
-   
+
 }
 
 #alertWrapper{    
@@ -90,13 +90,28 @@ img {
 :root {
     --header-height: 3rem;
     --nav-width: 250px;
-    --first-color: #4723D9;
-    --first-color-light: #AFA5D9;
-    --white-color: #F7F6FB;
+    --bs-table-striped-color: var(--bs-gray-300) !important;
+
+    // --first-color: #4723D9;
+    // --first-color-light: #AFA5D9;
+    // --white-color: #F7F6FB;
     //--body-font: 'Nunito', sans-serif;
     --normal-font-size: 1rem;
-    --z-fixed: 100
+    --z-fixed: 100;
+
 }
+
+table {
+    color: var(--bs-gray-300) !important;   
+    --bs-table-striped-color: var(--bs-gray-300) !important;
+}
+
+input[type="text"], textarea {
+
+   // background-color : var(--bs-gray-200); 
+
+}
+
 .show-menu {
     left: 0 !important;
 }
@@ -149,6 +164,7 @@ jqgrid-bootstrap tr.jqgrow>td {
 }
 .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-view {
     font-size: 1em;
+    border: none !important;
 }
 
 .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-pager {
@@ -195,7 +211,7 @@ jqgrid-bootstrap tr.jqgrow>td {
 .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-bootstrap-corner-bottom {
     border-bottom-left-radius: 0px;
     border-bottom-right-radius: 0px;
-    background-color: #FFFFFF;
+    // background-color: #FFFFFF;
     //border-radius: 5px;
 }
 
@@ -204,15 +220,33 @@ jqgrid-bootstrap tr.jqgrow>td {
 }
 
 .ui-jqgrid.ui-jqgrid-bootstrap {
-    border: 1px solid #ddd;
+    border: 0px solid #ddd;
     -ms-border-radius: 0px;
     border-radius: 0px; 
-    margin-top: 0.5rem;
-    margin-left: auto;
-    margin-right: auto;
+   margin-left: auto;
+   margin-right: auto;
+
+
+
 }
 
-.ui-jqgrid tr.jqgrow td { font-size: 1rem;word-wrap: break-word; /* IE 5.5+ and CSS3 */ white-space: no-wrap; /* CSS3 */ white-space: -moz-pre-wrap; /* Mozilla, since 1999 */ white-space: -pre-wrap; /* Opera 4-6 */ white-space: -o-pre-wrap; /* Opera 7 */ overflow: hidden; height: auto; vertical-align: middle; padding-top: 3px; padding-bottom: 3px; }
+.ui-jqgrid tr.jqgrow td { 
+    font-size: 1rem;
+    word-wrap: break-word;
+    /*white-space: no-wrap; 
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap; */
+    overflow: hidden;
+    height: auto;
+    vertical-align: middle;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.ui-jqgrid tr.jqgrow:hover {
+    background-color: lightblue !important;
+}
 
 .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-pager .fa, .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-view .fa {
     font-size: 1.2em;
@@ -260,11 +294,24 @@ textarea[title=ckedit] {
     padding-top: 0rem;
 }
 
-.modal-backdrop{
-    //position: absolute;    
+/*.modal-backdrop{
+    position: absolute;    
     //display:none;
-    background-color: transparent;
+    //background-color: transparent;
+}*/
+
+.modal-backdrop {
+    width: auto !important;
+    position: fixed;
+    //background: rgba(0, 0, 0, 0.45);
+    //display: none;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom:0;
+    z-index: 40;
 }
+
 .modal ui-jqgrid-bootstrap{
 
 }
@@ -272,17 +319,18 @@ textarea[title=ckedit] {
     overflow: scroll !important;
 }
 
-
-
+.ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-hdiv, .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-legacy-subgrid>thead {
+    background-color: inherit !important;
+}
 
 body.modal-open {
     /*  overflow: hidden;
        position: fixed;*/
 }
 
-/*CODEMIRROR*/
 .CodeMirror {
     font-family: monospace !important;
     font-size: 16px !important;
     line-height: 1.5rem !important;
 }
+

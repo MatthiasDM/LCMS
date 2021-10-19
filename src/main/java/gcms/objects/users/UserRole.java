@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package gcms.objects.priveleges.users;
+package gcms.objects.users;
 
 import gcms.GsonObjects.annotations.gcmsObject;
 
@@ -11,18 +11,22 @@ import gcms.GsonObjects.annotations.gcmsObject;
  *
  * @author Matthias
  */
-public class CollectionUserPrivelege {
+public class UserRole {
 
     @gcmsObject(
-            type = "pk"
+            type = "pk",
+            createRole = "SYSTEM",
+            visibleOnTable = false,
+            visibleOnForm = false
     )
-    public String collectionUserPrivelegeId;
+    public String userRoleId;
+
     @gcmsObject(
             type = "fk",
             formatterName = "reference",
-            fk = "{\"collection\": \"collections\", \"pk\": \"collectionId\", \"display\": \"name\", \"type\": \"ManyToOne\"}"
+            fk = "{\"collection\": \"roles\", \"pk\": \"roleid\", \"display\": \"role\", \"type\": \"ManyToOne\"}"
     )
-    public String collection;
+    public String role;
 
     @gcmsObject(
             type = "fk",
@@ -30,12 +34,5 @@ public class CollectionUserPrivelege {
             fk = "{\"collection\": \"users\", \"pk\": \"userid\", \"display\": \"username\", \"type\": \"ManyToOne\"}"
     )
     public String user;
-
-    @gcmsObject(
-            type = "fk",
-            formatterName = "reference",
-            fk = "{\"collection\": \"methods\", \"pk\": \"methodId\", \"display\": \"method\", \"type\": \"ManyToOne\"}"
-    )
-    public String method;
 
 }

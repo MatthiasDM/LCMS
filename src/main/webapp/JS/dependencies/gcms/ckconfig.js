@@ -142,8 +142,12 @@ function ckOnInstanceReady(e, imageController) {
             }
         }, 1000);
     });
-
+    console.log("imageController.loadImages");
     imageController.loadImages(editorId);
+//    (async function () {
+//         await imageController.loadImages(editorId);
+//    })() 
+//   
     $("#cke_" + editorId).css("border", "0px dotted grey");
     $("#cke_" + editorId).css("padding", "10px");
 
@@ -186,8 +190,8 @@ function capturePaste(e, _editable) {
     });
     if (images !== null) {
         return (Object.keys(images).length > 0);
-    }else{
-        return false;        
+    } else {
+        return false;
     }
 
 }
@@ -205,74 +209,74 @@ function loadTOC(editor, appendTo) {
     appendTo.empty();
 
 
-  //  $.each(editors, function (index, editor) {
-        var editorContents = editor;
-        editorContents.find("span[class*=heading]").remove();
-        var editorHeaders = editorContents.find("h1[class=heading], h2[class=heading], h3[class=heading], h4[class=heading], h5[class=heading], h6[class=heading]");
+    //  $.each(editors, function (index, editor) {
+    var editorContents = editor;
+    editorContents.find("span[class*=heading]").remove();
+    var editorHeaders = editorContents.find("h1[class=heading], h2[class=heading], h3[class=heading], h4[class=heading], h5[class=heading], h6[class=heading]");
 
-        editorHeaders.each(function (index) {
-            var currentHeader = this.tagName.substr(1, this.tagName.length);
-            if (currentHeader === "1") {
-                level1++;
-                level2 = 0;
-                level3 = 0;
-                level4 = 0;
-                level5 = 0;
-                level6 = 0;
-            }
-            if (currentHeader === "2") {
-                level2++;
-                level3 = 0;
-                level4 = 0;
-                level5 = 0;
-                level6 = 0;
-            }
-            if (currentHeader === "3") {
-                level3++;
-                level4 = 0;
-                level5 = 0;
-                level6 = 0;
-            }
-            if (currentHeader === "4") {
-                level4++;
-                level5 = 0;
-                level6 = 0;
-            }
-            if (currentHeader === '5') {
-                level5++;
-                level6 = 0;
-            }
-            if (currentHeader === '6') {
-                level6++;
-            }
-            var uuid = uuidv4();
-            $(this).attr("id", uuid);
-            var heading = level1 + "." + level2 + "." + level3 + "." + level4 + "." + level5 + "." + level6;
-            while (heading.slice(-1) === "0") {
-                heading = heading.substr(0, heading.length - 2);
-            }
-            heading += ".";
+    editorHeaders.each(function (index) {
+        var currentHeader = this.tagName.substr(1, this.tagName.length);
+        if (currentHeader === "1") {
+            level1++;
+            level2 = 0;
+            level3 = 0;
+            level4 = 0;
+            level5 = 0;
+            level6 = 0;
+        }
+        if (currentHeader === "2") {
+            level2++;
+            level3 = 0;
+            level4 = 0;
+            level5 = 0;
+            level6 = 0;
+        }
+        if (currentHeader === "3") {
+            level3++;
+            level4 = 0;
+            level5 = 0;
+            level6 = 0;
+        }
+        if (currentHeader === "4") {
+            level4++;
+            level5 = 0;
+            level6 = 0;
+        }
+        if (currentHeader === '5') {
+            level5++;
+            level6 = 0;
+        }
+        if (currentHeader === '6') {
+            level6++;
+        }
+        var uuid = uuidv4();
+        $(this).attr("id", uuid);
+        var heading = level1 + "." + level2 + "." + level3 + "." + level4 + "." + level5 + "." + level6;
+        while (heading.slice(-1) === "0") {
+            heading = heading.substr(0, heading.length - 2);
+        }
+        heading += ".";
 
-            function jumpToAnchor(event, editorContents) {
-                var target = editorContents.find(event.target.getAttribute('anchor'));
-                if (target.length) {
-                    event.preventDefault();
-                    $('html, body').stop().animate({
-                        scrollTop: target.offset().top
-                    }, 1000);
-                }
+        function jumpToAnchor(event, editorContents) {
+            var target = editorContents.find(event.target.getAttribute('anchor'));
+            if (target.length) {
+                event.preventDefault();
+                $('html, body').stop().animate({
+                    scrollTop: target.offset().top
+                }, 1000);
             }
+        }
 
-            var listItem = $('<li class="list-group-item" style="font-size:1em"  anchor="#' + uuid + '">' + heading + " " + $(this).text() + "</li>");
-            appendTo.append(listItem);
-            listItem.on('click', function (event) {
-                console.log("onclick event");
-                jumpToAnchor(event, editorContents);
-            });
-            this.innerHTML = "<span class='heading nosave'>" + heading + " </span>" + this.innerHTML;
-
-            var previousHeader = this.tagName.substr(1, this.tagName.length);
+        var listItem = $('<li class="list-group-item" style="font-size:1em"  anchor="#' + uuid + '">' + heading + " " + $(this).text() + "</li>");
+        appendTo.append(listItem);
+        listItem.on('click', function (event) {
+            console.log("onclick event");
+            jumpToAnchor(event, editorContents);
         });
+        this.innerHTML = "<span class='heading nosave'>" + heading + " </span>" + this.innerHTML;
+
+        var previousHeader = this.tagName.substr(1, this.tagName.length);
+    });
     //});
     //}
 }

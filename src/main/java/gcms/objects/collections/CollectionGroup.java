@@ -27,7 +27,7 @@ public class CollectionGroup {
     @gcmsObject(
             type = "select",
             multiple = true,
-            reference = {"Mongo", "collections", "collectionId", "collection"},
+            reference = {"Mongo", "mongoconfigurations", "mongoconfigurationsid", "collection"},
             visibleOnTable = true,
             editRole = "ADMIN")
     public List<String> collections;

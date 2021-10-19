@@ -5,7 +5,6 @@
  */
 package gcms.objects.collections;
 
-import gcms.GsonObjects.Core.*;
 import gcms.GsonObjects.annotations.gcmsObject;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -14,53 +13,72 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Matthias
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Collection {
+public class MongoConfigurations {
 
     @gcmsObject(
             type = "pk",
             createRole = "SYSTEM",
-            pk = "{\"relations\": ["
-            + " {\"collection\": \"mobCalculatedFields\", \"type\": \"OneToMany\", \"fk\": \"mob\"},"
-            + "{\"collection\": \"actions\", \"type\": \"OneToMany\", \"fk\": \"collection\"}"
+            pk = "{\"relations\": [{\"collection\": \"actions\", \"type\": \"OneToMany\", \"fk\": \"mongoconfiguration\"}, {\"collection\": \"mobCalculatedFields\", \"type\": \"OneToMany\", \"fk\": \"mob\"},"
+            + "{\"collection\": \"attributes\", \"type\": \"OneToMany\", \"fk\": \"collection\"}"
             + "]}",
+            //editRole = "SYSTEM",
             visibleOnTable = false,
             visibleOnForm = false
     )
-    public String collectionId;
+    public String mongoconfigurationsid;
     @gcmsObject(
-            type = "string"
+            type = "string",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
+            visibleOnTable = true
     )
     public String name;
     @gcmsObject(
-            type = "string"
+            type = "string",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
+            visibleOnTable = true
     )
     public String database;
+
     @gcmsObject(
-            type = "string"
+            type = "string",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
+            visibleOnTable = true
     )
     public String collection;
 
     @gcmsObject(
-            type = "string"
+            type = "string",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
+            visibleOnTable = true
     )
     public String className;
 
     @gcmsObject(
-            type = "string"
+            type = "string",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
+            visibleOnTable = true
     )
     public String idName;
 
     @gcmsObject(
-            type = "string"
+            type = "string",
+            editRole = "ADMIN",
+            createRole = "ADMIN",
+            visibleOnTable = true
     )
     public String pluginName;
 
-    public Collection() {
+    public MongoConfigurations() {
 
     }
 
-    public Collection(String collectionId, String name, String database, String collection, String className, String idName, String pluginName) {
-        this.collectionId = collectionId;
+    public MongoConfigurations(String mongoconfigurationsid, String name, String database, String collection, String className, String idName, String pluginName) {
+        this.mongoconfigurationsid = mongoconfigurationsid;
         this.name = name;
         this.database = database;
         this.collection = collection;
@@ -86,11 +104,11 @@ public class Collection {
     }
 
     public String getCollectionId() {
-        return collectionId;
+        return mongoconfigurationsid;
     }
 
-    public void setCollectionId(String collectionId) {
-        this.collectionId = collectionId;
+    public void setCollectionId(String mongoconfigurationsid) {
+        this.mongoconfigurationsid = mongoconfigurationsid;
     }
 
     public void setDatabase(String database) {

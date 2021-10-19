@@ -19,7 +19,8 @@ public class Role {
     @gcmsObject(
             createRole = "SYSTEM",
             type = "pk",
-             pk = "{\"relations\": [{\"collection\": \"collectionRolePriveleges\", \"type\": \"OneToMany\", \"fk\": \"role\"}"
+            pk = "{\"relations\": [{\"collection\": \"collectionRolePriveleges\", \"type\": \"OneToMany\", \"fk\": \"role\"},"
+            + "{\"collection\": \"fieldRolePriveleges\", \"type\": \"OneToMany\", \"fk\": \"role\"}"
             + "]}",
             visibleOnTable = false,
             visibleOnForm = false)
@@ -69,7 +70,5 @@ public class Role {
         this.role = role;
         this.levelCode = levelCode;
     }
-
-
 
 }

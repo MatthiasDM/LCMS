@@ -32,7 +32,7 @@ import javax.servlet.http.Part;
 import gcms.Core;
 import static gcms.Core.loadWebFile;
 import gcms.GsonObjects.Core.Command;
-import gcms.GsonObjects.Core.MongoConfigurations;
+import gcms.objects.collections.MongoConfigurations;
 import gcms.database.DatabaseActions;
 import gcms.database.DatabaseWrapper;
 import gcms.database.GetResponse;
@@ -52,7 +52,7 @@ import org.apache.commons.collections.CollectionUtils;
  *
  * @author matmey
  */
-@WebServlet(name = "Servlet", urlPatterns = {"/servlet/*", "/IT/servlet"})
+@WebServlet(name = "Servlet", urlPatterns = {"/servlet/*"})
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 20, // 20MB
         maxFileSize = 1024 * 1024 * 20, // 20MB
         maxRequestSize = 1024 * 1024 * 50)   // 50MB
@@ -170,9 +170,7 @@ public class Servlet extends HttpServlet {
                 try {
                     actionResponse = aM.startAction();
                     sb.append(actionResponse.getSb());
-                } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
-                } catch (NoSuchFieldException ex) {
+                } catch (ClassNotFoundException | NoSuchFieldException ex) {
                     Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
                 }
 

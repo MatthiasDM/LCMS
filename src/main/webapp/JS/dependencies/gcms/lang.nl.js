@@ -24,7 +24,7 @@ lang = {
         "other/worksummary": "Samenvatting van orders en resultaten."
 
     },
-    ICTTickets: {
+    tickets: {
         title: "ICT-tickets in het labo",
         subject: "Onderwerp",
         overview: "Beschrijving",
@@ -33,7 +33,9 @@ lang = {
         created_on: "Aangemaakt op",
         approver: "Goedkeurder",
         status: "Status",
-        discriminator: "Kernwoord(en)"
+        discriminator: "Kernwoord(en)",
+        meta: "Andere info",
+        edited_on: "Gewijzigd op"
     },
     file_table: {
         name: "Naam"
@@ -183,6 +185,15 @@ lang = {
     },
     countries: {
         title: "Landen"
+    },
+    collectionRolePriveleges: {
+        title: "Rechten op tabellen",
+        name: "Naam",
+        collectionGroup: "Tabellengroep",
+        method: "Autorisatie"
+    },
+    fieldRolePriveleges: {
+        title: "Rechten op velden"
     }
 
 };

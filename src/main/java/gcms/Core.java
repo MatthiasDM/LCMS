@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import com.mongodb.BasicDBObject;
 import static com.mongodb.client.model.Filters.*;
+import gcms.Config.Methods;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -49,7 +50,7 @@ import java.util.stream.Stream;
 import gcms.Config.Roles;
 import gcms.GsonObjects.Core.Apikey;
 import gcms.GsonObjects.Core.FileObject;
-import gcms.GsonObjects.Core.MongoConfigurations;
+import gcms.objects.collections.MongoConfigurations;
 import gcms.GsonObjects.Core.Role;
 import gcms.GsonObjects.Core.Session;
 import gcms.GsonObjects.Core.User;
@@ -69,6 +70,7 @@ import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 import gcms.GsonObjects.annotations.gcmsObject;
+import gcms.modules.commandFunctions;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
@@ -406,6 +408,28 @@ public class Core {
             User user = DatabaseActions.getUser(session.getUsername());
             return user.getRoles();
         }
+    }
+
+    public static List<String> getUserRolesv2(String _cookie) throws IOException, ClassNotFoundException {
+        Session session = DatabaseActions.getSession(_cookie);
+        List<String> output = new ArrayList<>();
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("name", "UserRoles");
+        parameters.put("database", "lcms");
+        parameters.put("replaces[userid]", session.getUserid());
+        String qryResult = commandFunctions.command_doQueryByName(parameters, null).toString();
+        Core.universalObjectMapper.readTree(qryResult.getBytes()).get("cursor").get("firstBatch").forEach((arg0) -> {
+            try {
+                List<String> roles = Core.universalObjectMapper.readValue(arg0.get("roles").toString(), new TypeReference<List<String>>() {
+                });
+                output.addAll(roles);
+            } catch (IOException ex) {
+                output.add("Guest");
+                Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        });        
+        return output;
     }
 
     public static User getUserData(String _cookie) {
@@ -1019,7 +1043,7 @@ public class Core {
 
     }
 
-        public static SerializableClass getFieldsv2(gcms.objects.collections.Collection collection, String _cookie) {
+    public static SerializableClass getFieldsv2(gcms.objects.collections.MongoConfigurations collection, String _cookie) {
         List<Field> fields = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         HashMap<String, String> parameters = new HashMap<>();
@@ -1043,7 +1067,7 @@ public class Core {
         return serializableClass;
 
     }
-    
+
     public Object readBytesIntoFields(byte[] yourBytes) throws IOException, ClassNotFoundException {
         Object o;
         ByteArrayInputStream bis = new ByteArrayInputStream(yourBytes);

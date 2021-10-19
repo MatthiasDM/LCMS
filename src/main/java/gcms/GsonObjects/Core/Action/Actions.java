@@ -18,7 +18,7 @@ public class Actions {
     @gcmsObject(
             type = "pk",
             createRole = "SYSTEM",
-            pk = "{\"relations\": [{\"collection\": \"actionPriveleges\", \"type\": \"OneToMany\", \"fk\": \"action\"}]}",
+            pk = "{\"relations\": [{\"collection\": \"actionPriveleges\", \"type\": \"OneToMany\", \"fk\": \"actions\"}]}",
             //editRole = "SYSTEM",
             visibleOnTable = false,
             visibleOnForm = false
@@ -35,19 +35,42 @@ public class Actions {
     @gcmsObject(
             type = "fk",
             formatterName = "reference",
-            fk = "{\"collection\": \"mongoconfigurations\", \"pk\": \"mongoconfigurationsid\", \"display\": \"name\", \"type\": \"ManyToOne\"}",            
-            reference = {"Mongo", "mongoconfigurations", "mongoconfigurationsid", "name"},            
-            editRole = "ADMIN"
+            fk = "{\"collection\": \"mongoconfigurations\", \"pk\": \"mongoconfigurationsid\", \"display\": \"name\", \"type\": \"ManyToOne\"}"
     )
     public String mongoconfiguration;
-    
-        @gcmsObject(
-            type = "fk",
-            formatterName = "reference",
-            fk = "{\"collection\": \"collections\", \"pk\": \"collectionsId\", \"display\": \"name\", \"type\": \"ManyToOne\"}",            
-            reference = {"Mongo", "mongoconfigurations", "mongoconfigurationsid", "name"},            
-            editRole = "ADMIN"
-    )
-    public String collection;
 
+    public Actions() {
+    }
+
+    public Actions(String actionsid, String name, String mongoconfiguration) {
+        this.actionsid = actionsid;
+        this.name = name;
+        this.mongoconfiguration = mongoconfiguration;
+    }
+
+    public String getActionsid() {
+        return actionsid;
+    }
+
+    public void setActionsid(String actionsid) {
+        this.actionsid = actionsid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getMongoconfiguration() {
+        return mongoconfiguration;
+    }
+
+    public void setMongoconfiguration(String mongoconfiguration) {
+        this.mongoconfiguration = mongoconfiguration;
+    }
+
+    
 }

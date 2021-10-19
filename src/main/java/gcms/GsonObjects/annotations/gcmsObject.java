@@ -73,15 +73,14 @@ public @interface gcmsObject {
     String createRole() default "";
 
     @JsonProperty
-    int minimumViewRoleVal() default 2;
+    int minimumViewRoleVal() default 1;
 
     @JsonProperty
     int minimumEditRoleVal() default 2;
 
     @JsonProperty
-    int minimumCreateRoleVal() default 2;
+    int minimumCreateRoleVal() default 1;
 
-    //HITORY MANAGENT
     @JsonProperty
     boolean DMP() default false;
 }

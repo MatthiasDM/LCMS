@@ -305,8 +305,12 @@
                             if (htmlToParse === "") {
                                 htmlToParse = editor.element.$.value;
                             }
-                            var htmlData = $('<output>').append($($.parseHTML(htmlToParse, document, true)));
-                            data = documentPage.minimizeGrids(documentPage, htmlData).prop("innerHTML");
+                            var htmlData = $('<output>').append($($.parseHTML(htmlToParse, document, true)));                        
+
+                            if (typeof documentPage !== 'undefined' && documentPage) {
+                                data = documentPage.minimizeGrids(documentPage, htmlData).prop("innerHTML");
+                            }
+
                             this.setValueOf("main", "data", oldData = data);
                             // Load the content
                             // this.setValueOf("main", "data", oldData = editor.getData());

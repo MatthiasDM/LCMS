@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package gcms.GsonObjects.Core;
+package gcms.objects.collections;
 
 import java.util.List;
 import gcms.GsonObjects.annotations.gcmsObject;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import gcms.Config.PrivilegeType;
+import gcms.Config.Methods;
 import java.util.ArrayList;
 
 /**
@@ -16,33 +16,32 @@ import java.util.ArrayList;
  * @author Matthias
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Rights {
+public class Attribute {
 
     @gcmsObject(
             viewRole = "ADMIN",
             createRole = "SYSTEM",
-            //editRole = "ADMIN",
-            type = "string",
+            type = "pk",
             visibleOnTable = false,
             visibleOnForm = false)
-    public String rightsid;
+    public String attributeId;
     @gcmsObject(
-            type = "select",
-            multiple = false,
-            reference = {"Mongo", "mongoconfigurations", "name", "name"},
-            visibleOnTable = true,
-            editRole = "ADMIN")
-    public String table;
+            type = "fk",
+            formatterName = "reference",
+            fk = "{\"collection\": \"mongoconfigurations\", \"pk\": \"mongoconfigurationsid\", \"display\": \"name\", \"type\": \"ManyToOne\"}"
+    )
+    public String collection;
     @gcmsObject(
             type = "string",
             editRole = "ADMIN",
             visibleOnTable = true
     )
-    public String field;
+    public String attribute;
     @gcmsObject(
             type = "select",
             reference = {"Mongo", "roles", "role", "role"},
             visibleOnTable = true,
+            multiple = true,
             editRole = "ADMIN")
     public List<String> viewRole;
 
@@ -50,6 +49,7 @@ public class Rights {
             type = "select",
             reference = {"Mongo", "roles", "role", "role"},
             visibleOnTable = true,
+            multiple = true,
             editRole = "ADMIN")
     public List<String> editRole;
 
@@ -57,6 +57,7 @@ public class Rights {
             type = "select",
             reference = {"Mongo", "roles", "role", "role"},
             visibleOnTable = true,
+            multiple = true,
             editRole = "ADMIN")
     public List<String> createRole;
 
@@ -78,17 +79,10 @@ public class Rights {
             editRole = "ADMIN")
     public boolean editable;
 
-    public Rights(String rightsid, String table, String field, List<String> viewRole, List<String> editRole, List<String> createRole, boolean visibleOnTable, boolean visibleOnForm, boolean editable) {
-        this.rightsid = rightsid;
-        this.table = table;
-        this.field = field;
-        this.viewRole = viewRole;
-        this.editRole = editRole;
-        this.createRole = createRole;
-        this.visibleOnTable = visibleOnTable;
-        this.visibleOnForm = visibleOnForm;
-        this.editable = editable;
-    }
+ 
+
+    
+    
 
     public boolean isVisibleOnTable() {
         return visibleOnTable;
@@ -114,37 +108,51 @@ public class Rights {
         this.editable = editable;
     }
 
+    public String getCollection() {
+        return collection;
+    }
+
+    public void setCollection(String collection) {
+        this.collection = collection;
+    }
+
+    public Attribute(String attributeId, String collection, String attribute, List<String> viewRole, List<String> editRole, List<String> createRole, boolean visibleOnTable, boolean visibleOnForm, boolean editable) {
+        this.attributeId = attributeId;
+        this.collection = collection;
+        this.attribute = attribute;
+        this.viewRole = viewRole;
+        this.editRole = editRole;
+        this.createRole = createRole;
+        this.visibleOnTable = visibleOnTable;
+        this.visibleOnForm = visibleOnForm;
+        this.editable = editable;
+    }
+
+    public String getAttributeId() {
+        return attributeId;
+    }
+
+    public void setAttributeId(String attributeId) {
+        this.attributeId = attributeId;
+    }
+
+    public String getAttribute() {
+        return attribute;
+    }
+
+    public void setAttribute(String attribute) {
+        this.attribute = attribute;
+    }
+
   
   
 
 
 
-    public Rights() {
+    public Attribute() {
     }
 
-    public String getRightsid() {
-        return rightsid;
-    }
-
-    public void setRightsid(String rightsid) {
-        this.rightsid = rightsid;
-    }
-
-    public String getTable() {
-        return table;
-    }
-
-    public void setTable(String table) {
-        this.table = table;
-    }
-
-    public String getField() {
-        return field;
-    }
-
-    public void setField(String field) {
-        this.field = field;
-    }
+ 
 
     public List<String> getViewRole() {
         return viewRole;
@@ -170,14 +178,14 @@ public class Rights {
         this.createRole = createRole;
     }
 
-    public List<String> getRolesFromPrivilege(PrivilegeType privelegeType) {
-        if (privelegeType.equals(PrivilegeType.viewRole) && viewRole != null) {
+    public List<String> getRolesFromPrivilege(Methods _method) {
+        if (_method.equals(Methods.get) && viewRole != null) {
             return viewRole;
         }
-        if (privelegeType.equals(PrivilegeType.editRole) && editRole != null) {
+        if (_method.equals(Methods.put) && editRole != null) {
             return editRole;
         }
-        if (privelegeType.equals(PrivilegeType.createRole) && createRole != null) {
+        if (_method.equals(Methods.post) && createRole != null) {
             return createRole;
         }
         return new ArrayList<>();

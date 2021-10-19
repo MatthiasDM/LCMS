@@ -29,38 +29,38 @@ class LCMSEditablePage {
         var grids = {};
         jsonData.parent = me.parent;
         if (typeof (jsonData.replaces) !== "undefined") {
-            jsonData.webPage = replaceAll(jsonData.webPage, "LCMSEditablePage-id", jsonData.replaces["LCMSEditablePage-id"]);
+            jsonData.webPage = replaceAll(jsonData.webPage, "$pageId$", jsonData.replaces["$pageId$"]);
             //jsonData.webPage = replaceAll(jsonData.webPage, "LCMSEditablePage-menu", jsonData.replaces["LCMSEditablePage-menu"]);
-            me.setPageId(jsonData.replaces["LCMSEditablePage-id"]);
+            me.setPageId(jsonData.replaces["$pageId$"]);
             console.log("Regenerating grids...");
             try {
-                var LCMSEditablePage_content = {};
-                if (jsonData.replaces["LCMSEditablePage-content"] !== "") {
+                var pageContent = {};
+                if (jsonData.replaces["$pageContent$"] !== "") {
                     var re = /^[0-9A-Fa-f]+$/;
-                    if (re.test(jsonData.replaces["LCMSEditablePage-content"])) {
-                        jsonData.replaces["LCMSEditablePage-content"] = new TextDecoder().decode(hexToBytes(jsonData.replaces["LCMSEditablePage-content"]));
+                    if (re.test(jsonData.replaces["$pageContent$"])) {
+                        jsonData.replaces["$pageContent$t"] = new TextDecoder().decode(hexToBytes(jsonData.replaces["$pageContent$"]));
                     }
-                    LCMSEditablePage_content = $.parseJSON(jsonData.replaces["LCMSEditablePage-content"]);
+                    pageContent = $.parseJSON(jsonData.replaces["$pageContent$"]);
 
                     if (typeof _originalDocument !== "undefined") {
                         me.originalDocument = _originalDocument;
                     } else {
-                        me.originalDocument = JSON.stringify(LCMSEditablePage_content);
+                        me.originalDocument = JSON.stringify(pageContent);
                     }
 
                 } else {
-                    LCMSEditablePage_content.html = "";
-                    LCMSEditablePage_content.grids = {};
+                    pageContent.html = "";
+                    pageContent.grids = {};
                     me.originalDocument = '';
                 }
-                jsonData.webPage = replaceAll(jsonData.webPage, "LCMSEditablePage-content", LCMSEditablePage_content.html);
-                grids = LCMSEditablePage_content.grids;
+                jsonData.webPage = replaceAll(jsonData.webPage, "$pageContent$", pageContent.html);
+                grids = pageContent.grids;
             } catch (e) {
 
                 var temp_editable = $("<div id='editable_" + uuidv4() + "' contenteditable='false' class='cke_editable cke_editable_inline cke_contents_ltr cke_focus'tabindex='0' role='textbox' aria-label='false'></div>");
-                LCMSEditablePage_content = jsonData.replaces["LCMSEditablePage-content"];
-                temp_editable.text(LCMSEditablePage_content);
-                jsonData.webPage = replaceAll(jsonData.webPage, "LCMSEditablePage-content", temp_editable[0].outerHTML);
+                pageContent = jsonData.replaces["$pageContent$"];
+                temp_editable.text(pageContent);
+                jsonData.webPage = replaceAll(jsonData.webPage, "$pageContent$", temp_editable[0].outerHTML);
                 bootstrap_alert.warning("Something went wrong", "warning", "1000");
                 console.log(e);
             }
@@ -571,7 +571,7 @@ class LCMSEditablePage {
                 responsive: true,
                 headertitles: true,
                 iconSet: "fontAwesome",
-                guiStyle: "bootstrap4"
+                //guiStyle: "bootstrap4"
 
             });
         };

@@ -12,7 +12,7 @@ class LCMSImageController {
 
     uploadFile() {}
 
-    loadImages(editor, editorObject) {
+    async loadImages(editor, editorObject) {
         var me = this;
         var _editorObject;
         if (editor !== "") {
@@ -23,11 +23,15 @@ class LCMSImageController {
             _editorObject = $("#" + editor);
         } else {
             var images = editorObject.find('[fileid]');
+            
             _editorObject = editorObject;
         }
-        images.each(function (index) {
-            var newImage = me.downloadToTemp($(this));
-            _editorObject.find('[fileid]')[index] = newImage;
+        images.each(async function (index) {
+            let newImage = await me.downloadToTemp($(this));
+            if($(newImage).attr("src") != $(_editorObject.find('[fileid]')[index]).attr("src")){
+                 _editorObject.find('[fileid]')[index] = newImage;
+            }
+           
         });
         return images;
     }
@@ -82,6 +86,7 @@ class LCMSImageController {
                 var jsonData = JSON.parse(data);
                 var filePath = jsonData.filePath;
                 if (type === ".png" || type === ".jpg" || type === ".JPG" || type === ".gif" || type === ".PNG") {
+                    console.log("Insert image into editor...");
                     ckeditor.insertHtml("<div style='overflow-x:auto' id='" + _fileId + "'><img name='" + _fileName + "' fileid='" + _fileId + "' src='" + filePath + "'/></div>");
                     $(ckeditor.editable().$).find('img[src^=data]').remove();
                 } else {

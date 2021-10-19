@@ -16,13 +16,16 @@ import static com.mongodb.client.model.Projections.exclude;
 import static com.mongodb.client.model.Projections.fields;
 import static com.mongodb.client.model.Projections.include;
 import gcms.Config.Methods;
-import gcms.Config.PrivilegeType;
+import gcms.Config.Methods;
 import gcms.Config.RelationParameter;
 import gcms.Config.Roles;
 import gcms.Core;
+import static gcms.Core.loadWebFile;
 import static gcms.Core.universalObjectMapper;
-import gcms.GsonObjects.Core.MongoConfigurations;
-import gcms.GsonObjects.Core.Rights;
+import gcms.GsonObjects.Core.Action.ActionPrivelege;
+import gcms.GsonObjects.Core.Action.Actions;
+
+import gcms.objects.collections.Attribute;
 import gcms.GsonObjects.Other.SerializableClass;
 import gcms.GsonObjects.Other.SerializableField;
 import gcms.database.DatabaseActions;
@@ -43,9 +46,11 @@ import static gcms.database.DatabaseActions.getRightsFromDatabaseInCollection;
 import gcms.database.GetResponse;
 import gcms.database.filters.FilterObject;
 import gcms.database.filters.FilterRule;
-import gcms.objects.collections.Collection;
+import gcms.objects.collections.MongoConfigurations;
+
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Optional;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -55,7 +60,7 @@ import org.apache.commons.lang.StringUtils;
 public class LoadObjects {
 
     //structure and data
-    public static StringBuilder loadObjects(String cookie, MongoConfigurations _mongoConf, Bson filter, String[] excludes, Collection collection) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
+    public static StringBuilder loadObjects(String cookie, MongoConfigurations _mongoConf, Bson filter, String[] excludes) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
         if (cookie == null) {
             sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
@@ -68,7 +73,7 @@ public class LoadObjects {
                     serializableClass.setClassName(_mongoConf.getClassName());
                     serializableClass.convertFields(Arrays.asList(Class.forName(_mongoConf.getClassName()).getDeclaredFields()));
                 }
-                List<String> columns = getDocumentPriveleges(PrivilegeType.viewRole, cookie, _mongoConf, true, serializableClass, new Collection());
+                List<String> columns = getDocumentPriveleges(Methods.get, cookie, _mongoConf, true, serializableClass);
                 ObjectNode jsonData = getObjects(cookie, _mongoConf, _mongoConf.getCollection(), filter, excludes, serializableClass, columns);
                 sb.append(jsonData);
             } else {
@@ -81,33 +86,40 @@ public class LoadObjects {
     //structure
     public static StringBuilder structureload(String cookie, MongoConfigurations _mongoConf, Bson filter, String[] excludes) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
-        if (cookie == null) {
-            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
+        boolean access = false;
+        List<Actions> actions = DatabaseWrapper.getActions(_mongoConf.getCollectionId());
+        Optional<Actions> optionalAction = actions.stream().filter(action -> action.getName().startsWith("data")).findFirst();
+        if (optionalAction.isPresent()) {
+            List<ActionPrivelege> actionPriveleges = DatabaseWrapper.getActionPriveleges(optionalAction.get());
+            access = DatabaseWrapper.checkActionAccess(cookie, actionPriveleges);
         } else {
-            if (Core.checkSession(cookie)) {
-                SerializableClass serializableClass = new SerializableClass();
-                if (_mongoConf.getPluginName() != null) {
-                    serializableClass = Core.getFields(_mongoConf, cookie);
-                } else {
-                    serializableClass.setClassName(_mongoConf.getClassName());
-                    serializableClass.convertFields(Arrays.asList(Class.forName(_mongoConf.getClassName()).getDeclaredFields()));
-                }
-                List<String> columns = getDocumentPriveleges(PrivilegeType.viewRole, cookie, _mongoConf, true, serializableClass, new Collection());
-                ObjectNode jsonData = getObjects(cookie, _mongoConf, _mongoConf.getCollection(), filter, excludes, serializableClass, columns);
-                sb.append(jsonData);
-            } else {
-                sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
-            }
+            access = Core.checkSession(cookie);
         }
+
+        if (access) {
+            SerializableClass serializableClass = new SerializableClass();
+            if (_mongoConf.getPluginName() != null && !_mongoConf.getPluginName().isBlank()) {
+                serializableClass = Core.getFields(_mongoConf, cookie);
+            } else {
+                serializableClass.setClassName(_mongoConf.getClassName());
+                serializableClass.convertFields(Arrays.asList(Class.forName(_mongoConf.getClassName()).getDeclaredFields()));
+            }
+            List<String> columns = getDocumentPriveleges(Methods.get, cookie, _mongoConf, true, serializableClass);
+            ObjectNode jsonData = getObjects(cookie, _mongoConf, _mongoConf.getCollection(), filter, excludes, serializableClass, columns);
+            sb.append(jsonData);
+        } else {
+            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
+        }
+
         return sb;
     }
 
     //data
-    public static GetResponse dataload(String cookie, MongoConfigurations _mongoConf, Map<String, String> requestParameters, BasicDBObject prefilter, Collection _collection) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
+    public static GetResponse dataload(String cookie, MongoConfigurations _mongoConf, Map<String, String> requestParameters, BasicDBObject prefilter) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
         GetResponse response = new GetResponse();
-        if (Core.checkSession(cookie)) {
+
             SerializableClass serializableClass = Core.getSerializableClass(cookie, _mongoConf);
-            List<String> columns = getDocumentPriveleges(PrivilegeType.viewRole, cookie, _mongoConf, true, serializableClass, new Collection());
+            List<String> columns = getDocumentPriveleges(Methods.get, cookie, _mongoConf, true, serializableClass);
 
             ArrayList<String> excludes = new ArrayList<>();
             String sidx = _mongoConf.getIdName();
@@ -163,7 +175,7 @@ public class LoadObjects {
                     fields.add(display);
                     MongoConfigurations _fkMongoConf = DatabaseActions.getMongoConfiguration(collection);
                     SerializableClass fkClass = Core.getSerializableClass(cookie, _fkMongoConf);
-                    fields.addAll(getDocumentPriveleges(PrivilegeType.viewRole, cookie, _fkMongoConf, true, Core.getSerializableClass(cookie, _fkMongoConf), new Collection()));
+                    fields.addAll(getDocumentPriveleges(Methods.get, cookie, _fkMongoConf, true, Core.getSerializableClass(cookie, _fkMongoConf)));
 
                     for (SerializableField f : fkClass.getFields()) {
                         gcmsObject annotation = (gcmsObject) f.getAnnotation();
@@ -192,7 +204,7 @@ public class LoadObjects {
             if (!results.isEmpty()) {
                 response.setRows(results);
             }
-        }
+        
         return response;
     }
 
@@ -221,16 +233,16 @@ public class LoadObjects {
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
-        List<String> editableColumns = getDocumentPriveleges(PrivilegeType.editRole, cookie, _mongoConf, true, serializableClass, new Collection());
-        List<String> createableColumns = getDocumentPriveleges(PrivilegeType.createRole, cookie, _mongoConf, true, serializableClass, new Collection());
+        List<String> editableColumns = getDocumentPriveleges(Methods.put, cookie, _mongoConf, true, serializableClass);
+        List<String> createableColumns = getDocumentPriveleges(Methods.post, cookie, _mongoConf, true, serializableClass);
         ArrayList<HashMap> header = new ArrayList<>();
         ArrayList<HashMap> table = new ArrayList<>();
         HashMap tableEntry = new HashMap();
         ArrayList<Document> results = null;
-        ArrayList<Rights> rights = getRightsFromDatabaseInCollection(_mongoConf.name);
+        ArrayList<Attribute> rights = getRightsFromDatabaseInCollection(_mongoConf.getCollectionId());
 
         for (String column : columns) {
-            Rights databaseRight = rights.stream().filter(r -> r.getField().equals(column)).findFirst().orElse(new Rights());
+            Attribute databaseRight = rights.stream().filter(r -> r.getAttribute().equals(column)).findFirst().orElse(new Attribute());
 
             SerializableField serializableField = serializableClass.getFields().stream().filter(f -> f.getName().equals(column)).findFirst().get();
             String fieldName = serializableField.getName();
@@ -245,7 +257,7 @@ public class LoadObjects {
                 headerEntry.put("relationParameters", mdmAnnotations.relationParameters());
                 headerEntry.put("fk", mdmAnnotations.fk());
                 headerEntry.put("pk", mdmAnnotations.pk());
-                if (databaseRight.table != null) {
+                if (databaseRight.getCollection() != null) {
                     headerEntry.put("visibleOnForm", databaseRight.isVisibleOnForm());
                     headerEntry.put("visibleOnTable", databaseRight.isVisibleOnTable());
                     headerEntry.put("editable", databaseRight.isEditable());
@@ -340,6 +352,39 @@ public class LoadObjects {
             return results;
         }
         return results;
+    }
+
+    public static GetResponse parseAsPage(String cookie, MongoConfigurations _mongoConf, Boolean publicPage, GetResponse restResponse) throws ClassNotFoundException, JsonProcessingException {
+        StringBuilder sb = new StringBuilder();
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jsonData = mapper.createObjectNode();
+        ObjectNode jsonParameters = mapper.createObjectNode();
+        String contents = "";
+        String id = "";
+        Document document = restResponse.getRows().get(0);
+        if (document.get("contents") != null) {
+            contents = document.get("contents").toString();
+        }
+        if (document.get(_mongoConf.getIdName()) != null) {
+            id = document.get(_mongoConf.getIdName()).toString();
+        }
+
+        if (_mongoConf.collection.equals("pages") || _mongoConf.collection.equals("document")) {
+            document.clear();
+            ObjectNode jsonReplaces = mapper.createObjectNode();
+            jsonReplaces.put("$pageId$", id);
+            jsonReplaces.put("$pageContent$", contents);
+            document.put("contents", "");
+            jsonParameters.put("public", publicPage);
+            document.put("parameters", jsonParameters);
+            document.put("webPage", loadWebFile("pages/template/index.html"));
+            document.put("replaces", jsonReplaces);
+            sb.append(document);
+        } else {
+            sb.append(mapper.writeValueAsString(document));
+        }
+        restResponse.getRows().set(0, document);
+        return restResponse;
     }
 
 }

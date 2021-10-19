@@ -21,7 +21,7 @@ public class Document {
     public String title;
     @gcmsObject(type = "string", visibleOnTable = true, visibleOnForm = false)
     public String prefix;
-    @gcmsObject(type = "string", visibleOnTable = false, visibleOnForm = false, DMP = true)
+    @gcmsObject(type = "cktext", visibleOnTable = false, visibleOnForm = false)
     public String contents;
     @gcmsObject(
             type = "select",

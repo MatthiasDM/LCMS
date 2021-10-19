@@ -10,13 +10,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
 import static gcms.Core.loadWebFile;
-import gcms.GsonObjects.Core.MongoConfigurations;
+import gcms.objects.collections.MongoConfigurations;
 import static gcms.database.DatabaseActions.getDocumentPriveleges;
 import gcms.database.DatabaseWrapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import gcms.objects.collections.Collection;
+import gcms.objects.collections.MongoConfigurations;
 
 /**
  *
@@ -24,20 +24,19 @@ import gcms.objects.collections.Collection;
  */
 public class GetObject {
 
-    public static StringBuilder getObject(String cookie, MongoConfigurations _mongoConf, String key, String value, Boolean publicPage, Collection collection) throws JsonProcessingException, JsonProcessingException, ClassNotFoundException, JsonProcessingException, JsonProcessingException, NoSuchFieldException, IOException {
+    public static StringBuilder getObject(String cookie, MongoConfigurations _mongoConf, String key, String value, Boolean publicPage) throws JsonProcessingException, JsonProcessingException, ClassNotFoundException, JsonProcessingException, JsonProcessingException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
-        if (cookie == null && !publicPage) {
-            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
-        } else {
-            if (!key.equals("")) {
-                BasicDBObject searchObject = new BasicDBObject(); 
-                searchObject.put(key, new BasicDBObject("$eq", value));
-                Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, _mongoConf, searchObject);
-                sb.append(prepareObject(cookie, _mongoConf, publicPage, searchResult).toString());
-            }
+
+        if (!key.equals("")) {
+            BasicDBObject searchObject = new BasicDBObject();
+            searchObject.put(key, new BasicDBObject("$eq", value));
+            Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, _mongoConf, searchObject);
+            sb.append(prepareObject(cookie, _mongoConf, publicPage, searchResult).toString());
         }
+
         return sb;
     }
+
     public static StringBuilder prepareObject(String cookie, MongoConfigurations _mongoConf, Boolean publicPage, Map<String, Object> searchResult) throws ClassNotFoundException, JsonProcessingException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
@@ -45,13 +44,17 @@ public class GetObject {
         ObjectNode jsonParameters = mapper.createObjectNode();
         String contents = "";
         String id = "";
-        if(searchResult.get("contents") != null){contents = searchResult.get("contents").toString();}
-        if(searchResult.get(_mongoConf.getIdName()) != null){id = searchResult.get(_mongoConf.getIdName()).toString();}
-        
+        if (searchResult.get("contents") != null) {
+            contents = searchResult.get("contents").toString();
+        }
+        if (searchResult.get(_mongoConf.getIdName()) != null) {
+            id = searchResult.get(_mongoConf.getIdName()).toString();
+        }
+
         if (_mongoConf.collection.equals("pages") || _mongoConf.collection.equals("document")) {
             ObjectNode jsonReplaces = mapper.createObjectNode();
-            jsonReplaces.put("LCMSEditablePage-id", id);
-            jsonReplaces.put("LCMSEditablePage-content", contents);
+            jsonReplaces.put("$pageId$", id);
+            jsonReplaces.put("$pageContent$", contents);
             searchResult.put("contents", "");
             jsonParameters.put("public", publicPage);
             jsonData.set("parameters", jsonParameters);

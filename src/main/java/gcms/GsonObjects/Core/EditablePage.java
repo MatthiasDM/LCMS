@@ -27,7 +27,7 @@ public class EditablePage {
     @gcmsObject(
             editRole = "ADMIN",
             viewRole = "USER",
-            type = "string",
+            type = "cktext",
             visibleOnTable = false,
             visibleOnForm = true,
             DMP = false

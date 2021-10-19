@@ -8,6 +8,7 @@ package gcms.GsonObjects.Core;
 import java.util.List;
 import gcms.GsonObjects.annotations.gcmsObject;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  *
  * @author Matthias
@@ -18,7 +19,10 @@ public class User {
     @gcmsObject(
             createRole = "SYSTEM",
             editRole = "ADMIN",
-            type = "string",
+            type = "pk",
+            pk = "{\"relations\": ["
+            + " {\"collection\": \"userRoles\", \"type\": \"OneToMany\", \"fk\": \"user\"}"
+            + "]}",
             visibleOnTable = false,
             visibleOnForm = false)
     public String userid;

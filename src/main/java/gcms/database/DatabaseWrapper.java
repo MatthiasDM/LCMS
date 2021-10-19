@@ -20,13 +20,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import static gcms.Core.loadScriptFile;
 import static gcms.Core.loadWebFile;
-import gcms.GsonObjects.Core.MongoConfigurations;
+import gcms.GsonObjects.Core.Action.ActionPrivelege;
+import gcms.GsonObjects.Core.Action.Actions;
+import gcms.objects.collections.MongoConfigurations;
 import gcms.GsonObjects.Core.Session;
+import gcms.GsonObjects.Core.User;
 import static gcms.database.DatabaseActions.getEnviromentInfo;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import gcms.GsonObjects.annotations.gcmsObject;
 import java.util.HashMap;
+import java.util.List;
+import org.apache.commons.collections.CollectionUtils;
+
 /**
  *
  * @author matmey
@@ -74,7 +80,7 @@ public class DatabaseWrapper {
         String parseDocumentString = "";
         try {
             JsonNode actualObj = Core.universalObjectMapper.readTree(Core.universalObjectMapper.writeValueAsString(results.get(0)));
-            parseDocumentString = actualObj.toString();           
+            parseDocumentString = actualObj.toString();
         } catch (Exception e) {
             System.out.println("Error Parsing document into String");
         }
@@ -116,17 +122,62 @@ public class DatabaseWrapper {
         return documentHashMap;
     }
 
-    public static gcms.GsonObjects.Core.Action.Actions getAction(String _action) throws ClassNotFoundException, IOException {
-        ObjectMapper mapper = new ObjectMapper();
+    public static Actions getAction(String _action) throws ClassNotFoundException, IOException {
         gcms.GsonObjects.Core.Action.Actions action = null;
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("name", new BasicDBObject("$eq", _action));
         MongoConfigurations actionsConfiguration = DatabaseActions.getMongoConfiguration("actions");
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2("", actionsConfiguration, searchObject, null, 1000, new String[]{}, false);
         if (results.size() > 0) {
-            action = mapper.convertValue(results.get(0), gcms.GsonObjects.Core.Action.Actions.class);
+            action = Core.universalObjectMapper.convertValue(results.get(0), gcms.GsonObjects.Core.Action.Actions.class);
         }
         return action;
+    }
+
+    public static List<ActionPrivelege> getActionPriveleges(Actions _action) throws ClassNotFoundException, IOException {
+        List<ActionPrivelege> actionPriveleges = new ArrayList<>();
+        BasicDBObject searchObject = new BasicDBObject();
+        searchObject.put("actions", new BasicDBObject("$eq", _action.getActionsid()));
+        MongoConfigurations actionsConfiguration = DatabaseActions.getMongoConfiguration("actionPriveleges");
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2("", actionsConfiguration, searchObject, null, 1000, new String[]{}, false);
+        for (Document result : results) {
+            actionPriveleges.add(Core.universalObjectMapper.convertValue(result, gcms.GsonObjects.Core.Action.ActionPrivelege.class));
+        }
+        return actionPriveleges;
+    }
+    
+        public static List<Actions> getActions(String collectionId) throws ClassNotFoundException, IOException {
+        List<Actions> actions = new ArrayList<>();
+        BasicDBObject searchObject = new BasicDBObject();
+        searchObject.put("mongoconfiguration", new BasicDBObject("$eq", collectionId));
+        MongoConfigurations actionsConfiguration = DatabaseActions.getMongoConfiguration("actions");
+        ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2("", actionsConfiguration, searchObject, null, 1000, new String[]{}, false);
+        for (Document result : results) {
+            actions.add(Core.universalObjectMapper.convertValue(result, gcms.GsonObjects.Core.Action.Actions.class));
+        }
+        return actions;
+    }
+
+ 
+        
+    public static Boolean checkActionAccess(String cookie, List<ActionPrivelege> actionPriveleges) {
+        Boolean access = false;
+        if (actionPriveleges.size() > 0) {
+            if (actionPriveleges.stream().anyMatch((actionPrivelege) -> (actionPrivelege.getSession() == false))) {
+                return true;
+            }
+            List<String> userRoles = Core.getUserRoles(cookie);
+            User user = Core.getUserData(cookie);
+            if (actionPriveleges.stream().anyMatch((actionPrivelege) -> (CollectionUtils.containsAny(actionPrivelege.getExecutionRoles(), userRoles)))) {
+                return true;
+            }
+            if (actionPriveleges.stream().anyMatch((actionPrivelege) -> (actionPrivelege.getExecutionUsers().contains(user.getUserid())))) {
+                return true;
+            }
+        } else {
+            return Core.checkSession(cookie);
+        }
+        return false;
     }
 
 }
