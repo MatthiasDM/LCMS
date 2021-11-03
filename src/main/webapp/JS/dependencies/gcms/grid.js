@@ -445,11 +445,11 @@ class LCMSGrid {
         console.log("loading list");
         var position = "inherit";
         if (options.mode === "edit" || options.mode === "add") {
-            position = "sticky";
+                position = "fixed";
         }
         var datatarget = "external-list-" + options.relation.collection;
         var datatargetcontent = "external-list-content-" + options.relation.collection;
-        var list = $("<div style='' data-bs-target='#" + datatarget + "'>" + _value + "</div><div class='collapse' id='" + datatarget + "' style='position: " + position + ";width: 100%;z-index:100;left:0px;display:block'><div class='card border-secondary mb-6'><div id='" + datatargetcontent + "' style='padding:0' class='card-body text-secondary'></div></div></div>");
+        var list = $("<div style='' data-bs-target='#" + datatarget + "'>" + _value + "</div><div class='collapse' id='" + datatarget + "' style='position: " + position + ";width: 100%;z-index:100;left:0px;display:block'><div class='card mb-6' style='border:none'><div id='" + datatargetcontent + "' style='padding:0' class='card-body text-secondary'></div></div></div>");
         list.find("input[type='text']").attr("style", "");
         $(list).find("input").click(async function (e) {
             e.preventDefault();

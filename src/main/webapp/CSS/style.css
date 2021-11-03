@@ -91,23 +91,19 @@ img {
     --header-height: 3rem;
     --nav-width: 250px;
     --bs-table-striped-color: var(--bs-gray-300) !important;
-
-    // --first-color: #4723D9;
-    // --first-color-light: #AFA5D9;
-    // --white-color: #F7F6FB;
-    //--body-font: 'Nunito', sans-serif;
+    --alpha: 0.9;
     --normal-font-size: 1rem;
     --z-fixed: 100;
 
 }
 
 table {
-    color: var(--bs-gray-300) !important;   
-    --bs-table-striped-color: var(--bs-gray-300) !important;
+   // color: var(--bs-gray-300) !important;   
+   // --bs-table-striped-color: var(--bs-gray-300) !important;
 }
 
 input[type="text"], textarea {
-
+    color: var(--bs-gray-600);
    // background-color : var(--bs-gray-200); 
 
 }

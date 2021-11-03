@@ -11,7 +11,7 @@
     </session-config>
     <listener>
         <listener-class>
-             gcms.MainServletContextListener            
+             sdm.gcms.MainServletContextListener            
         </listener-class>
     </listener>     
     

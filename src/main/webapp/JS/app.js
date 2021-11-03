@@ -97,7 +97,7 @@ require([
     "htmlminifier"
 ], function ($) {
     console.log("all sources required");
-    $("body").css({"background-image": "url(./files/background.jpg)", "background-attachment": "fixed", "background-repeat": "no-repeat", "background-size": "cover", "background-position": "center", "-webkit-mask-size": "cover"});
+    $("body").css({"background-image": "linear-gradient(rgba(var(--bs-body-bg-rgb), var(--alpha)),rgba(var(--bs-body-bg-rgb), var(--alpha))) , url('./files/background.jpg')", "background-attachment": "fixed", "background-repeat": "no-repeat", "background-size": "cover", "background-position": "center", "-webkit-mask-size": "cover"});
     credentials_doUserInfo($("#user-menu"));
     page_doLoadPage(getUrlParam(window.location.href, "p"), $("body"));
 

@@ -1807,7 +1807,7 @@ $(function () {
                 var uuid = uuidv4();
                 var selectWrapper = gcmscore.domFormInputHidden("", uuid, options.colModel.name, vals, "", false);
                 var input = selectWrapper.find("input[type=text]");
-                input.attr("style", "padding:0;height:auto;border:none;margin-top:0;margin-bottom:0;background:transparent !important;");
+                input.attr("style", "padding:0;height:auto;border:none;margin-top:0;margin-bottom:0;background:transparent !important;color:var(--bs-gray-500)");
                 return selectWrapper.html();
             } catch (err) {
                 console.log(err);
@@ -2358,8 +2358,14 @@ function dom_row(id) {
 function dom_col(id, size) {
     return $("<div id='" + id + "' class='col-sm-" + size + " mx-auto'></div>");
 }
-function dom_button(id, icon, text, color) {
-    return $("<button type='button' id='" + id + "' class='btn bg-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "' style='margin-right:5px;width:auto;max-width:200px'></i><span>" + text + "</span></button>");
+function dom_button(id, icon, text, color, _attributes) {
+    var btn = $("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "' style='margin-right:5px;width:auto;max-width:200px'></i><span>" + text + "</span></button>");
+    if(getType(_attributes) == "object"){
+        $.each(_attributes, function(a,b){
+          btn.attr(a, b);            
+        });               
+    }
+    return btn;
 }
 function dom_list(id, items) {
     var ul = $("<ul class='list-group' id='" + id + "'></ul> ");
@@ -3019,3 +3025,7 @@ if (supports_storage) {
     }
 }
 
+var getType = function(value) {
+  return Object.prototype.toString.call(value)
+    .replace(/^\[object |\]$/g, '').toLowerCase();
+};
