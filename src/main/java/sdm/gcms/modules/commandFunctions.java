@@ -167,7 +167,11 @@ public class commandFunctions {
             Map<String, String> workflowParameters = new HashMap<>();
             workflowParameters.put("action", "docommand");
             workflowParameters.put("k", "doWorkflow");
-            workflowParameters.put("extra", universalObjectMapper.writeValueAsString(Map.of("LCMS_session", parameters.get("LCMS_session"), "mongoconfiguration", parameters.get("mongoconfiguration"))));
+            workflowParameters.put("extra", universalObjectMapper.writeValueAsString(Map.of(
+                    "LCMS_session", parameters.get("LCMS_session"),
+                    "mongoconfiguration", parameters.get("mongoconfiguration"),
+                    "method", parameters.get("method")
+                    )));
             command_doActionManager(workflowParameters, null);
         };
         return sb;

@@ -103,17 +103,17 @@ public class Core {
     static String baseURL = getProp("base.url");
     //public static ObjectMapper universalObjectMapper = startObjectMapper();
 
-    public static ObjectMapper startObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-        mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
-        //mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-
-        return mapper;
-    }
+//    public static ObjectMapper startObjectMapper() {
+//        ObjectMapper mapper = new ObjectMapper();
+//        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+//        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+//        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+//        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+//        mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+//        //mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+//
+//        return mapper;
+//    }
 
     public static String httpRequest(String receiver, String method, String postParameters) throws MalformedURLException, IOException {
         ObjectMapper mapper = new ObjectMapper();
@@ -1035,7 +1035,7 @@ public class Core {
             sb.append(Core.multiPartHttpRequest(null, baseURL + dirName + "servlet/", "post", universalObjectMapper.writeValueAsString(parameters)));
             JsonNode parentJson = universalObjectMapper.readTree(sb.toString());
             String requestResult = parentJson.asText();
-
+            
             serializableClass = universalObjectMapper.readValue(requestResult, SerializableClass.class);
         } catch (IOException ex) {
             Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
