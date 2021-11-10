@@ -36,6 +36,8 @@ import sdm.gcms.shared.database.collections.MongoConfigurations;
 import static sdm.gcms.shared.database.Core.universalObjectMapper;
 import sdm.gcms.shared.database.collections.ActionPrivelege;
 import sdm.gcms.shared.database.collections.Actions;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.or;
 /**
  *
  * @author Matthias
@@ -107,11 +109,11 @@ public class ActionManager {
             if (accesstype.equals("0")) {
                 publicPage = true;
                 if (publicPage) {
-                    sb.append(getObject(cookie, mongoConfiguration, key, value, publicPage));
+                    sb.append(getObject(cookie, mongoConfiguration, key, value, publicPage, null));
                 }
             } else {
                 if (DatabaseWrapper.checkActionAccess(cookie, actionPriveleges)) {
-                    sb.append(getObject(cookie, mongoConfiguration, key, value, publicPage));
+                    sb.append(getObject(cookie, mongoConfiguration, key, value, publicPage, null));
                 } else {
                     sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
                 }
@@ -124,9 +126,9 @@ public class ActionManager {
                 if (mongoConfiguration.getCollection().equals("commands")) {
                     requestParameters.put("apiAuthorized", apiAuthorized.toString());
                     String key = requestParameters.get("k");
-                    BasicDBObject searchObject = new BasicDBObject();
-                    searchObject.put("name", new BasicDBObject("$eq", key));
-                    Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, mongoConfiguration, searchObject);
+                    //BasicDBObject searchObject = new BasicDBObject();
+                    //searchObject.put("name", new BasicDBObject("$eq", key));
+                    Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, mongoConfiguration, or(eq("name", key),eq(mongoConfiguration.getIdName(), key)));
                     Command command = mapper.convertValue(searchResult, sdm.gcms.GsonObjects.Core.Command.class);
                     List<String> accesstype = command.getAccessType();
                     if (accesstype.contains("0")) {
@@ -159,12 +161,12 @@ public class ActionManager {
                         }
                     }
                     if (action.name.toUpperCase().startsWith("EDIT")) {
-                        sb.append(editObject(requestParameters, cookie, mongoConfiguration));
+                        sb.append(editObject(requestParameters, cookie, mongoConfiguration, action));
                     } else {
                         if (action.name.toUpperCase().startsWith("GET")) {
                             String key = requestParameters.get("k");
                             String value = requestParameters.get("v");
-                            sb.append(getObject(cookie, mongoConfiguration, key, value, publicPage));
+                            sb.append(getObject(cookie, mongoConfiguration, key, value, publicPage, action));
                         }
                         if (action.name.toUpperCase().startsWith("DATA")) {
                             BasicDBObject filterObject = new BasicDBObject();

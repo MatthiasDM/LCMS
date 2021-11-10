@@ -35,6 +35,8 @@ import sdm.gcms.shared.database.collections.ActionPrivelege;
 import sdm.gcms.shared.database.collections.Actions;
 import sdm.gcms.shared.database.users.Session;
 import sdm.gcms.shared.database.users.User;
+import sdm.gcms.shared.database.Database;
+
 /**
  *
  * @author matmey
@@ -132,6 +134,10 @@ public class DatabaseWrapper {
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2("", actionsConfiguration, searchObject, null, 1000, new String[]{}, false);
         if (results.size() > 0) {
             action = universalObjectMapper.convertValue(results.get(0), Actions.class);
+            if(action.getMethod() == null){
+                String method = action.name.toUpperCase().startsWith("EDIT") ? "post" : "get";
+                action.setMethod(Database.getMethod(method).getMethodId());
+            }
         }
         return action;
     }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="108px" preserveAspectRatio="none" style="width:479px;height:108px;background:#FFFFFF;" version="1.1" viewBox="0 0 479 108" width="479px" zoomAndPan="magnify"><defs><filter height="300%" id="f1w97lr0fupknb" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[4d9408114b426fa363398fec728b1433]
+class sdm.gcms.database.objects.get.GetObject--><a href="GetObject.html" target="_top" title="GetObject.html" xlink:actuate="onRequest" xlink:href="GetObject.html" xlink:show="new" xlink:title="GetObject.html" xlink:type="simple"><rect codeLine="5" fill="#FEFECE" filter="url(#f1w97lr0fupknb)" height="75.8594" id="sdm.gcms.database.objects.get.GetObject" style="stroke:#A80036;stroke-width:1.5;" width="458" x="7" y="7"/><ellipse cx="158.25" cy="27.0938" fill="#ADD1B2" rx="11" ry="11" style="stroke:#A80036;stroke-width:1.0;"/><path d="M161.0156,22.9688 Q161.1719,22.75 161.3594,22.6406 Q161.5469,22.5313 161.7656,22.5313 Q162.1406,22.5313 162.375,22.7969 Q162.6094,23.0469 162.6094,23.6563 L162.6094,25.1094 Q162.6094,25.7188 162.375,25.9844 Q162.1406,26.25 161.7656,26.25 Q161.4219,26.25 161.2188,26.0469 Q161.0156,25.8594 160.9063,25.3438 Q160.8594,24.9844 160.6719,24.7969 Q160.3438,24.4219 159.7344,24.2031 Q159.125,23.9844 158.5,23.9844 Q157.7344,23.9844 157.0938,24.3125 Q156.4688,24.6406 155.9688,25.3906 Q155.4844,26.1406 155.4844,27.1719 L155.4844,28.2656 Q155.4844,29.5 156.375,30.3281 Q157.2656,31.1406 158.8594,31.1406 Q159.7969,31.1406 160.4531,30.8906 Q160.8438,30.7344 161.2656,30.2969 Q161.5313,30.0313 161.6719,29.9531 Q161.8281,29.875 162.0313,29.875 Q162.3594,29.875 162.6094,30.1406 Q162.875,30.3906 162.875,30.7344 Q162.875,31.0781 162.5313,31.4844 Q162.0313,32.0625 161.2344,32.3906 Q160.1563,32.8438 158.8594,32.8438 Q157.3438,32.8438 156.1406,32.2188 Q155.1563,31.7188 154.4688,30.6563 Q153.7813,29.5781 153.7813,28.2969 L153.7813,27.1406 Q153.7813,25.8125 154.3906,24.6719 Q155.0156,23.5156 156.1094,22.9063 Q157.2031,22.2813 158.4375,22.2813 Q159.1719,22.2813 159.8125,22.4531 Q160.4688,22.6094 161.0156,22.9688 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="64" x="220.25" y="26.5332">GetObject</text><text fill="#000000" font-family="sans-serif" font-size="10" lengthAdjust="spacing" textLength="147" x="178.75" y="39.9902">sdm.gcms.database.objects.get</text><line style="stroke:#A80036;stroke-width:1.5;" x1="8" x2="464" y1="47.1875" y2="47.1875"/><ellipse cx="18" cy="58.1875" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" text-decoration="underline" textLength="414" x="27" y="62.6064">getObject(String, MongoConfigurations, String, String, Boolean, Actions): StringBuilder</text><ellipse cx="18" cy="72.0234" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" text-decoration="underline" textLength="432" x="27" y="76.4424">prepareObject(String, MongoConfigurations, Boolean, Map&lt;String, Object&gt;): StringBuilder</text></a><text fill="#888888" font-family="sans-serif" font-size="10" lengthAdjust="spacing" textLength="179" x="146.5" y="100.2402">UMLDoclet 2.0.14, PlantUML 1.2021.9</text><!--MD5=[81a936cb45f668684848585bef8651c9]
+@startuml
+    set namespaceSeparator none
+    hide empty fields
+    hide empty methods
+
+    class "<size:14>GetObject\n<size:10>sdm.gcms.database.objects.get" as sdm.gcms.database.objects.get.GetObject [[GetObject.html]] {
+        {static} +getObject(String, MongoConfigurations, String, String, Boolean, Actions): StringBuilder
+        {static} +prepareObject(String, MongoConfigurations, Boolean, Map<String, Object>): StringBuilder
+    }
+
+    center footer UMLDoclet 2.0.14, PlantUML 1.2021.9
+@enduml
+
+PlantUML version 1.2021.9(Sun Jul 25 12:13:56 CEST 2021)
+(APACHE source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Default Encoding: Cp1252
+Language: nl
+Country: BE
+--></g></svg>

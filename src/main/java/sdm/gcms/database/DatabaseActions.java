@@ -65,6 +65,7 @@ import sdm.gcms.shared.database.collections.MongoConfigurations;
 import sdm.gcms.shared.database.serializable.SerializableClass;
 import sdm.gcms.shared.database.serializable.SerializableField;
 import static sdm.gcms.shared.database.Core.universalObjectMapper;
+import sdm.gcms.shared.database.Database;
 import sdm.gcms.shared.database.FileObject;
 import sdm.gcms.shared.database.Method;
 import sdm.gcms.shared.database.Methods;
@@ -80,37 +81,37 @@ import sdm.gcms.shared.database.users.User;
  */
 public class DatabaseActions {
 
-    static MongoClient mongo;
-    static Map<String, MongoDatabase> databases = new HashMap<>();
+    static MongoClient mongo = Database.getMongo();
+    static Map<String, MongoDatabase> databases = Database.getDatabases();
 
     private static final Logger LOG = Logger.getLogger(DatabaseActions.class.getName());
     static CodecRegistry pojoCodecRegistry = fromRegistries(MongoClient.getDefaultCodecRegistry(),
             fromProviders(PojoCodecProvider.builder().automatic(true).build()));
-
-    public static void connect() {
-        mongo = new MongoClient("localhost",
-                MongoClientOptions.builder().codecRegistry(pojoCodecRegistry).build());
-    }
-
-    public static void createDatabaseMap() {
-
-        if (databases.get("users") == null) {
-            databases.put("users", openOrCreateDB("users"));
-        }
-        if (databases.get("lcms") == null) {
-            databases.put("lcms", openOrCreateDB("lcms"));
-        }
-        if (databases.get("files") == null) {
-            databases.put("files", openOrCreateDB("files"));
-        }
-        if (databases.get("history") == null) {
-            databases.put("history", openOrCreateDB("history"));
-        }
-        if (databases.get("backlog") == null) {
-            databases.put("backlog", openOrCreateDB("backlog"));
-        }
-
-    }
+    
+//    public static void connect() {
+//        mongo = new MongoClient("localhost",
+//                MongoClientOptions.builder().codecRegistry(pojoCodecRegistry).build());
+//    }
+//
+//    public static void createDatabaseMap() {
+//
+//        if (databases.get("users") == null) {
+//            databases.put("users", openOrCreateDB("users"));
+//        }
+//        if (databases.get("lcms") == null) {
+//            databases.put("lcms", openOrCreateDB("lcms"));
+//        }
+//        if (databases.get("files") == null) {
+//            databases.put("files", openOrCreateDB("files"));
+//        }
+//        if (databases.get("history") == null) {
+//            databases.put("history", openOrCreateDB("history"));
+//        }
+//        if (databases.get("backlog") == null) {
+//            databases.put("backlog", openOrCreateDB("backlog"));
+//        }
+//
+//    }
 
     static private MongoDatabase openOrCreateDB(String db) {
         try {
@@ -588,7 +589,6 @@ public class DatabaseActions {
 
     public static MongoCollection<Document> getObjectsFromDatabase(MongoConfigurations mongoConf) throws ClassNotFoundException {
         MongoCollection<Document> results = null;
-        //Class cls = Class.forName(mongoConf.className);
         results = databases.get(mongoConf.database).getCollection(mongoConf.collection);
         return results;
     }

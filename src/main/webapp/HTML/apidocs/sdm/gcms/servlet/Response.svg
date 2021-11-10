@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="136px" preserveAspectRatio="none" style="width:186px;height:136px;background:#FFFFFF;" version="1.1" viewBox="0 0 186 136" width="186px" zoomAndPan="magnify"><defs><filter height="300%" id="f8ucguotq6vsy" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[b9df9654e9767de83225b671db7e7f21]
+class sdm.gcms.servlet.Response--><a href="Response.html" target="_top" title="Response.html" xlink:actuate="onRequest" xlink:href="Response.html" xlink:show="new" xlink:title="Response.html" xlink:type="simple"><rect codeLine="5" fill="#FEFECE" filter="url(#f8ucguotq6vsy)" height="103.5313" id="sdm.gcms.servlet.Response" style="stroke:#A80036;stroke-width:1.5;" width="162" x="8.5" y="7"/><ellipse cx="46.45" cy="27.0938" fill="#ADD1B2" rx="11" ry="11" style="stroke:#A80036;stroke-width:1.0;"/><path d="M49.2156,22.9688 Q49.3719,22.75 49.5594,22.6406 Q49.7469,22.5313 49.9656,22.5313 Q50.3406,22.5313 50.575,22.7969 Q50.8094,23.0469 50.8094,23.6563 L50.8094,25.1094 Q50.8094,25.7188 50.575,25.9844 Q50.3406,26.25 49.9656,26.25 Q49.6219,26.25 49.4188,26.0469 Q49.2156,25.8594 49.1063,25.3438 Q49.0594,24.9844 48.8719,24.7969 Q48.5438,24.4219 47.9344,24.2031 Q47.325,23.9844 46.7,23.9844 Q45.9344,23.9844 45.2938,24.3125 Q44.6688,24.6406 44.1688,25.3906 Q43.6844,26.1406 43.6844,27.1719 L43.6844,28.2656 Q43.6844,29.5 44.575,30.3281 Q45.4656,31.1406 47.0594,31.1406 Q47.9969,31.1406 48.6531,30.8906 Q49.0438,30.7344 49.4656,30.2969 Q49.7313,30.0313 49.8719,29.9531 Q50.0281,29.875 50.2313,29.875 Q50.5594,29.875 50.8094,30.1406 Q51.075,30.3906 51.075,30.7344 Q51.075,31.0781 50.7313,31.4844 Q50.2313,32.0625 49.4344,32.3906 Q48.3563,32.8438 47.0594,32.8438 Q45.5438,32.8438 44.3406,32.2188 Q43.3563,31.7188 42.6688,30.6563 Q41.9813,29.5781 41.9813,28.2969 L41.9813,27.1406 Q41.9813,25.8125 42.5906,24.6719 Q43.2156,23.5156 44.3094,22.9063 Q45.4031,22.2813 46.6375,22.2813 Q47.3719,22.2813 48.0125,22.4531 Q48.6688,22.6094 49.2156,22.9688 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="64" x="73.05" y="26.5332">Response</text><text fill="#000000" font-family="sans-serif" font-size="10" lengthAdjust="spacing" textLength="79" x="65.55" y="39.9902">sdm.gcms.servlet</text><line style="stroke:#A80036;stroke-width:1.5;" x1="9.5" x2="169.5" y1="47.1875" y2="47.1875"/><ellipse cx="19.5" cy="58.1875" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="58" x="28.5" y="62.6064">Response()</text><ellipse cx="19.5" cy="72.0234" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="136" x="28.5" y="76.4424">Response(int, StringBuilder)</text><ellipse cx="19.5" cy="85.8594" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="103" x="28.5" y="90.2783">getSb(): StringBuilder</text><ellipse cx="19.5" cy="99.6953" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacing" textLength="123" x="28.5" y="104.1143">setSb(StringBuilder): void</text></a><text fill="#888888" font-family="sans-serif" font-size="10" lengthAdjust="spacing" textLength="179" x="0" y="127.9121">UMLDoclet 2.0.14, PlantUML 1.2021.9</text><!--MD5=[e90323f7052880ad4d9d398624e83eb9]
+@startuml
+    set namespaceSeparator none
+    hide empty fields
+    hide empty methods
+
+    class "<size:14>Response\n<size:10>sdm.gcms.servlet" as sdm.gcms.servlet.Response [[Response.html]] {
+        +Response()
+        +Response(int, StringBuilder)
+        +getSb(): StringBuilder
+        +setSb(StringBuilder): void
+    }
+
+    center footer UMLDoclet 2.0.14, PlantUML 1.2021.9
+@enduml
+
+PlantUML version 1.2021.9(Sun Jul 25 12:13:56 CEST 2021)
+(APACHE source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Default Encoding: Cp1252
+Language: nl
+Country: BE
+--></g></svg>

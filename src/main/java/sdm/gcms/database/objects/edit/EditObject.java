@@ -30,6 +30,7 @@ import sdm.gcms.shared.database.serializable.SerializableClass;
 import sdm.gcms.shared.database.serializable.SerializableField;
 import static sdm.gcms.shared.database.Core.universalObjectMapper;
 import sdm.gcms.shared.database.Methods;
+import sdm.gcms.shared.database.collections.Actions;
 import sdm.gcms.shared.database.users.Session;
 /**
  *
@@ -37,7 +38,7 @@ import sdm.gcms.shared.database.users.Session;
  */
 public class EditObject {
 
-    public static StringBuilder editObject(HashMap<String, String> requestParameters, String cookie, MongoConfigurations _mongoConf) throws IOException, ClassNotFoundException, NoSuchFieldException {
+    public static StringBuilder editObject(HashMap<String, String> requestParameters, String cookie, MongoConfigurations _mongoConf, Actions _action) throws IOException, ClassNotFoundException, NoSuchFieldException {
         StringBuilder sb = new StringBuilder();
 
        
@@ -54,8 +55,13 @@ public class EditObject {
 
             if (operation.equals("edit")) {
                 HashMap<String, Object> obj = createDatabaseObject(requestParameters, serializableClass);
-                editObject(obj, _mongoConf, cookie, serializableClass);
-                Map<String, String> workflowParameters = Map.of("method", "post", "mongoconfiguration", _mongoConf.getCollectionId(), "LCMS_session", cookie);
+                editObject(obj, _mongoConf, cookie, serializableClass, null);
+                Map<String, String> workflowParameters = Map.of(
+                        "method", _action.getMethod(), "mongoconfiguration",
+                        _mongoConf.getCollectionId(),
+                        "LCMS_session", cookie,
+                        "object_id", obj.get(_mongoConf.getIdName()).toString()
+                );
                 commandFunctions.doWorkflow(workflowParameters, null, null); //Start workflow on current mongoconfiguration
             }
             if (operation.equals("add")) {
@@ -67,9 +73,14 @@ public class EditObject {
                     parameters.put(key, value);
                 });
                 Document document = Document.parse(universalObjectMapper.writeValueAsString(parameters));
+                String object_id = UUID.randomUUID().toString();
                 document.append(_mongoConf.getIdName(), UUID.randomUUID().toString());
-                addObject(document, _mongoConf, cookie, serializableClass);
-                Map<String, String> workflowParameters = Map.of("method", "put", "mongoconfiguration", _mongoConf.getCollectionId());
+                addObject(document, _mongoConf, cookie, serializableClass, null);
+                Map<String, String> workflowParameters = Map.of(
+                        "method", _action.getMethod(),
+                        "mongoconfiguration", _mongoConf.getCollectionId(),
+                        "object_id", object_id
+                );
                 commandFunctions.doWorkflow(workflowParameters, null, null);
             }
         }
@@ -78,7 +89,7 @@ public class EditObject {
         return sb;
     }
 
-    public static void editObject(HashMap<String, Object> mongoObject, MongoConfigurations _mongoConf, String cookie, SerializableClass serializableClass) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
+    public static void editObject(HashMap<String, Object> mongoObject, MongoConfigurations _mongoConf, String cookie, SerializableClass serializableClass, Actions _actions) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
         List<String> columns = getDocumentPriveleges(Methods.put, cookie, _mongoConf, true, serializableClass);
         List<SerializableField> systemFields = sdm.gcms.Core.getSystemFields(serializableClass, "edit");
         BasicDBObject obj = BasicDBObject.parse(universalObjectMapper.writeValueAsString(mongoObject));
@@ -126,7 +137,7 @@ public class EditObject {
         }
     }
 
-    public static void addObject(Document doc, MongoConfigurations _mongoConf, String cookie, SerializableClass serializableClass) throws ClassNotFoundException, IOException {
+    public static void addObject(Document doc, MongoConfigurations _mongoConf, String cookie, SerializableClass serializableClass, Actions _action) throws ClassNotFoundException, IOException {
         List<String> columns = getDocumentPriveleges(Methods.post, cookie, _mongoConf, true, serializableClass);
         List<SerializableField> systemFields = sdm.gcms.Core.getSystemFields(serializableClass, "create");
         Document filteredDoc = new Document();

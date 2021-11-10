@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="240px" preserveAspectRatio="none" style="width:267px;height:240px;background:#FFFFFF;" version="1.1" viewBox="0 0 267 240" width="267px" zoomAndPan="magnify"><defs/><g><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="139" x="5" y="19">Dot Executable: null</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="170" x="5" y="36.6094">No dot executable found</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="255" x="5" y="54.2188">Cannot find Graphviz. You should try</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="0" x="9" y="71.8281"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="70" x="5" y="89.4375">@startuml</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="49" x="5" y="107.0469">testdot</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="65" x="5" y="124.6563">@enduml</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="0" x="9" y="142.2656"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="14" x="9" y="159.875">or</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="0" x="9" y="177.4844"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="197" x="5" y="195.0938">java -jar plantuml.jar -testdot</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="0" x="9" y="212.7031"/><text fill="#888888" font-family="sans-serif" font-size="10" lengthAdjust="spacing" textLength="179" x="43" y="231.6934">UMLDoclet 2.0.14, PlantUML 1.2021.9</text><!--MD5=[098feb57166ac9abbe272be103fb9d0a]
+@startuml
+    namespace sdm.gcms.database {
+
+        class DatabaseActions [[DatabaseActions.html]] {
+            {static} +getDatabase(String): MongoDatabase
+            {static} +getEnviromentInfo(): String
+            {static} +getLogo(): String
+            {static} +createCollection(String, String): void
+            {static} +getCollections(MongoDatabase): List<String>
+            {static} +startChronJobs(): void
+            {static} +stopChronJobs(): void
+            {static} +insertSession(Session): void
+            {static} +updateSession(Session): void
+            {static} +getSession(String): Session
+            {static} +notNullNorEmpty(String): Boolean
+            {static} +editSessionValidity(String, long): void
+            {static} +getUser(String): User
+            {static} +getUser(String, String): User
+            {static} +getRole(String): Role
+            {static} +insertFile(InputStream, String, FileObject): void
+            {static} +downloadFileToTemp(String, String, String, boolean): String
+            {static} +insertFileObject(FileObject): void
+            {static} +getFieldRolePriveleges(MongoConfigurations, Role, String): List<Methods>
+            {static} +getDocumentRolePriveleges(MongoConfigurations, Role, String): List<Methods>
+            {static} +getCollectionUserPriveleges(MongoConfigurations, User): List<Methods>
+            {static} +getFieldUserPriveleges(MongoConfigurations, User, String): List<Methods>
+            {static} +getDocumentUserPriveleges(MongoConfigurations, User, String): List<Methods>
+            {static} +getRightsFromDatabaseInCollection(String): ArrayList<Attribute>
+            {static} +getDocumentPriveleges(Methods, String, MongoConfigurations, boolean, SerializableClass): List<String>
+            {static} +getPriveleges(Methods, String, boolean, MongoConfigurations, SerializableClass): List<String>
+            {static} +getColumnsFromAnnotations(Methods, SerializableClass, String, Session, List<String>): List<String>
+            {static} +getObjectsFromDatabase(MongoConfigurations): MongoCollection<Document>
+            {static} +getObjectsFromDatabase(String, String, String): MongoCollection<Document>
+            {static} +insertObjectItemv2(MongoConfigurations, Document): void
+            {static} +updateObjectItemv2(MongoConfigurations, BasicDBObject): void
+            {static} +getObject(MongoConfigurations, String): Document
+            {static} +getObject(String, String, String, Bson): Document
+            {static} +getObjectsSpecificListv2(String, MongoConfigurations, Bson, Bson, int, String[], boolean): ArrayList<Document>
+            {static} +getObjectsSpecificListv2(MongoConfigurations, Bson, Bson, int, String[], List<String>): ArrayList<Document>
+            {static} +getObjectsRest(MongoConfigurations, Bson, Bson, int, String[], List<String>, int, int): ArrayList<Document>
+            {static} +getObjectCount(MongoConfigurations, Bson): long
+            {static} +addBackLogv2(MongoConfigurations, Object): Document
+            {static} +getBaseConfiguration(): MongoConfigurations
+            {static} +getCollection(): MongoConfigurations
+            {static} +getMongoConfigurationByClassName(String): MongoConfigurations
+            {static} +getMongoConfiguration(String): MongoConfigurations
+            {static} +doQuery(String, String): Document
+            {static} +getCommand(String): Command
+            {static} +getMethod(String): Method
+        }
+
+        class DatabaseWrapper [[DatabaseWrapper.html]] {
+            {static} +getUserInfo(Session): ObjectNode
+            {static} +getWebPage(String, String[]): ObjectNode
+            {static} +getObjectSpecificRawDatav2(String, MongoConfigurations, Bson): ArrayList<Document>
+            {static} +getObjectHashMapv2(String, MongoConfigurations, Bson): Map<String, Object>
+            {static} +revertChanges(ArrayList<Document>, Map<String, Object>, MongoConfigurations): Map<String, Object>
+            {static} +getAction(String): Actions
+            {static} +getActionPriveleges(Actions): List<ActionPrivelege>
+            {static} +getActions(String): List<Actions>
+            {static} +checkActionAccess(String, List<ActionPrivelege>): Boolean
+        }
+
+        class GetResponse [[GetResponse.html]] {
+            +GetResponse()
+            +GetResponse(Integer, List<Document>, Integer, Integer)
+            +getPage(): Integer
+            +setPage(Integer): void
+            +getRecords(): Integer
+            +setRecords(Integer): void
+            +getTotal(): Integer
+            +setTotal(Integer): void
+            +getRows(): List<Document>
+            +setRows(List<Document>): void
+        }
+
+    }
+
+    center footer UMLDoclet 2.0.14, PlantUML 1.2021.9
+@enduml
+
+PlantUML version 1.2021.9(Sun Jul 25 12:13:56 CEST 2021)
+(APACHE source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Default Encoding: Cp1252
+Language: nl
+Country: BE
+--></g></svg>

@@ -1,0 +1,9 @@
+sdm.gcms
+sdm.gcms.credentials
+sdm.gcms.database
+sdm.gcms.database.objects.edit
+sdm.gcms.database.objects.get
+sdm.gcms.database.objects.load
+sdm.gcms.GsonObjects.Core
+sdm.gcms.modules
+sdm.gcms.servlet

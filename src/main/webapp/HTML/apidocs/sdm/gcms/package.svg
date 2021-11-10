@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="240px" preserveAspectRatio="none" style="width:267px;height:240px;background:#FFFFFF;" version="1.1" viewBox="0 0 267 240" width="267px" zoomAndPan="magnify"><defs/><g><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="139" x="5" y="19">Dot Executable: null</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="170" x="5" y="36.6094">No dot executable found</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="255" x="5" y="54.2188">Cannot find Graphviz. You should try</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="0" x="9" y="71.8281"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="70" x="5" y="89.4375">@startuml</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="49" x="5" y="107.0469">testdot</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="65" x="5" y="124.6563">@enduml</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="0" x="9" y="142.2656"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="14" x="9" y="159.875">or</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="0" x="9" y="177.4844"/><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="197" x="5" y="195.0938">java -jar plantuml.jar -testdot</text><text fill="#33FF02" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="0" x="9" y="212.7031"/><text fill="#888888" font-family="sans-serif" font-size="10" lengthAdjust="spacing" textLength="179" x="43" y="231.6934">UMLDoclet 2.0.14, PlantUML 1.2021.9</text><!--MD5=[5d1fc39340615dad1f6a91195ef70edd]
+@startuml
+    namespace sdm.gcms {
+
+        class Core [[Core.html]] {
+            {static} +httpRequest(String, String, String): String
+            {static} +multiPartHttpRequest(Collection<Part>, String, String, String): String
+            {static} +getSerializableClass(String, MongoConfigurations): SerializableClass
+            {static} +httpRestfulRequest(String, ArrayList<String>): String
+            {static} +isValidApiKey(String, String): boolean
+            {static} +getParamsAsURLString(Map<String, String>): String
+            {static} +readFile(String): String
+            {static} +loadWebFile(String): String
+            {static} +loadScriptFile(String): String
+            {static} +createSession(String, String): Session
+            {static} +createTempDir(String, String): void
+            {static} +deleteTempDir(String, String): void
+            {static} +devalidateSession(String, String): void
+            {static} +checkUserRole(String, Roles): boolean
+            {static} +checkUserRoleValue(String, int): boolean
+            {static} +getRoleLevelCode(String): int
+            {static} +checkUserAgainstRoles(String, List<String>): boolean
+            {static} +getUserRoles(String): List<String>
+            {static} +getUserRolesv2(String): List<String>
+            {static} +getUserData(String): User
+            {static} +notNullNorEmpty(List<String>): boolean
+            {static} +checkSession(String): boolean
+            {static} +getWebFileLocation(String): String
+            {static} +JsonToHashMap(String): HashMap
+            {static} +StringToTimeStamp(String, String): long
+            {static} +StringToLong(String): long
+            {static} +SendEmail(): void
+            {static} +getTempDir(String, String): String
+            {static} +getTempDirWebUrl(String): String
+            {static} +getSystemFields(String, String): List<Field>
+            {static} +getFields(SerializableClass): List<String>
+            {static} +getSystemFields(SerializableClass, String): List<SerializableField>
+            {static} +isSystemField(List<Field>, String): boolean
+            {static} +createDatabaseObject(HashMap<String, String[]>, Class): HashMap<String, Object>
+            {static} +createDatabaseObject(HashMap<String, String>, SerializableClass): HashMap<String, Object>
+            {static} +createMailParameters(List<String>, String, String): HashMap<String, Object>
+            {static} +getProp(String): String
+            {static} +getPropFileName(): String
+            {static} +checkDir(String): boolean
+            {static} +checkFile(String): boolean
+            {static} +getProperty(String, String): String
+            {static} +getExtension(String): String
+            {static} +updateHash(String, HashMap<String, String>): HashMap<String, String>
+            {static} +getHashFields(HashMap<String, String>, Class): List<String>
+            {static} +getHashFields(HashMap<String, String>, SerializableClass): List<String>
+            {static} +checkHashFields(HashMap<String, String>, Class): HashMap<String, String>
+            {static} +checkHashFields(HashMap<String, String>, SerializableClass): HashMap<String, String>
+            {static} +encryptString(String): String
+            {static} +getClientPCName(String): String
+            {static} +getLatestFile(String, int): List<File>
+            {static} +readAllLines(List<File>): StringBuffer
+            {static} +readAllLines(StringBuffer, Path, String): StringBuffer
+            {static} +readAllLines(StringBuilder, Path, String): StringBuilder
+            {static} +buildRegex(String, List<StringPair>): String
+            {static} +search(StringBuffer, String, int[], boolean): List<String>
+            {static} +paramJson(String): String
+            {static} +createFileObject(String, String, String, String, String): FileObject
+            {static} +getFields(MongoConfigurations, String): SerializableClass
+            {static} +getFieldsv2(MongoConfigurations, String): SerializableClass
+            +readBytesIntoFields(byte[]): Object
+            {static} +getCRC32Checksum(byte[]): long
+        }
+
+        class sdm.gcms.Core.FilePair [[Core.FilePair.html]] {
+            +t: long
+            +f: File
+            +FilePair(File)
+            +compareTo(Object): int
+        }
+
+        class sdm.gcms.Core.StringPair [[Core.StringPair.html]] {
+            +name: String
+            +value: String
+            +StringPair()
+            +StringPair(String, String)
+            +getName(): String
+            +setName(String): void
+            +getValue(): String
+            +setValue(String): void
+        }
+
+        class MainServletContextListener [[MainServletContextListener.html]] {
+            +contextDestroyed(ServletContextEvent): void
+            +contextInitialized(ServletContextEvent): void
+        }
+
+        class Servlet [[Servlet.html]] {
+            +init(ServletConfig): void
+            #doPost(HttpServletRequest, HttpServletResponse): void
+        }
+
+        java.lang.Comparable <|.. sdm.gcms.Core.FilePair
+        Core +- - sdm.gcms.Core.FilePair
+        Core +- - sdm.gcms.Core.StringPair
+        javax.servlet.ServletContextListener <|.. MainServletContextListener
+        javax.servlet.http.HttpServlet <|- - Servlet
+    }
+
+    namespace java.lang {
+        interface Comparable<T> {
+            {abstract} +compareTo(T): int
+        }
+    }
+
+    namespace javax.servlet {
+        interface ServletContextListener {
+            {abstract} +contextInitialized(ServletContextEvent): void
+            {abstract} +contextDestroyed(ServletContextEvent): void
+        }
+    }
+
+    namespace javax.servlet.http {
+        abstract class HttpServlet {
+        }
+    }
+
+    center footer UMLDoclet 2.0.14, PlantUML 1.2021.9
+@enduml
+
+PlantUML version 1.2021.9(Sun Jul 25 12:13:56 CEST 2021)
+(APACHE source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Default Encoding: Cp1252
+Language: nl
+Country: BE
+--></g></svg>

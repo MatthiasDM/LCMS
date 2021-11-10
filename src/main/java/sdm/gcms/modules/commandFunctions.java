@@ -42,7 +42,6 @@ import static sdm.gcms.Core.getProp;
 
 import sdm.gcms.GsonObjects.Core.Command;
 
-
 import sdm.gcms.credentials.Cryptography;
 import sdm.gcms.database.DatabaseActions;
 import sdm.gcms.database.DatabaseWrapper;
@@ -116,10 +115,10 @@ public class commandFunctions {
             sb.append(command_doGenerateHash(commandParameters, command));
         }
         if (name.equals("doAPICall")) {
-            sb.append(command_doAPICall(commandParameters,  parts));
+            sb.append(command_doAPICall(commandParameters, parts));
         }
         if (name.equals("doEdit")) {
-            sb.append(command_doActionManager(commandParameters,  parts));
+            sb.append(command_doActionManager(commandParameters, parts));
         }
         if (name.equals("TableStructure")) {
             sb.append(command_TableStructure(commandParameters, command, parts));
@@ -167,11 +166,7 @@ public class commandFunctions {
             Map<String, String> workflowParameters = new HashMap<>();
             workflowParameters.put("action", "docommand");
             workflowParameters.put("k", "doWorkflow");
-            workflowParameters.put("extra", universalObjectMapper.writeValueAsString(Map.of(
-                    "LCMS_session", parameters.get("LCMS_session"),
-                    "mongoconfiguration", parameters.get("mongoconfiguration"),
-                    "method", parameters.get("method")
-                    )));
+            workflowParameters.put("extra", universalObjectMapper.writeValueAsString(parameters));
             command_doActionManager(workflowParameters, null);
         };
         return sb;
@@ -526,6 +521,10 @@ public class commandFunctions {
                 }
             }
             ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(DatabaseActions.getMongoConfiguration("queries"), eq("name", parameters.get("name")), null, 1, new String[]{}, Arrays.asList(new String[]{"query"}));
+            if (results.size() < 1) {
+                results = DatabaseActions.getObjectsSpecificListv2(DatabaseActions.getMongoConfiguration("queries"), eq("queryId", parameters.get("name")), null, 1, new String[]{}, Arrays.asList(new String[]{"query"}));
+            }
+
             List<String> replaceList = parameters.keySet().stream().filter(k -> k.startsWith("replaces")).collect(Collectors.toList());
 
             if (!results.isEmpty()) {

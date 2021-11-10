@@ -15,6 +15,7 @@ import sdm.gcms.database.DatabaseWrapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import sdm.gcms.shared.database.collections.Actions;
 
 import sdm.gcms.shared.database.collections.MongoConfigurations;
 /**
@@ -23,7 +24,7 @@ import sdm.gcms.shared.database.collections.MongoConfigurations;
  */
 public class GetObject {
 
-    public static StringBuilder getObject(String cookie, MongoConfigurations _mongoConf, String key, String value, Boolean publicPage) throws JsonProcessingException, JsonProcessingException, ClassNotFoundException, JsonProcessingException, JsonProcessingException, NoSuchFieldException, IOException {
+    public static StringBuilder getObject(String cookie, MongoConfigurations _mongoConf, String key, String value, Boolean publicPage, Actions _action) throws JsonProcessingException, JsonProcessingException, ClassNotFoundException, JsonProcessingException, JsonProcessingException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
 
         if (!key.equals("")) {
