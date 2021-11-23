@@ -67,6 +67,7 @@ import org.apache.commons.io.IOUtils;
 import sdm.gcms.shared.database.collections.MongoConfigurations;
 import sdm.gcms.shared.database.serializable.SerializableClass;
 import static sdm.gcms.shared.database.Core.universalObjectMapper;
+import sdm.gcms.shared.database.Database;
 import sdm.gcms.shared.database.FileObject;
 import sdm.gcms.shared.database.collections.Actions;
 import sdm.gcms.shared.database.filters.Apikey;
@@ -489,9 +490,9 @@ public class commandFunctions {
                 UUID id = UUID.randomUUID();
                 String fileName = id + part.getSubmittedFileName();
                 part.write(tempDir + fileName);
-                FileObject fileobject = Core.createFileObject(id.toString(), fileName, part.getName(), part.getContentType(), "private");
+                FileObject fileobject = sdm.gcms.shared.database.Core.createFileObject(id.toString(), fileName, part.getName(), part.getContentType(), "private");
                 sb.append(mapper.writeValueAsString(fileobject));
-                DatabaseActions.insertFile(part.getInputStream(), fileName, fileobject);
+                Database.insertFile(part.getInputStream(), fileName, fileobject);
                 DatabaseActions.insertFileObject(fileobject);
             }
         }

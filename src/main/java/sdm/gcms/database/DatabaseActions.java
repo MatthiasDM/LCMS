@@ -122,11 +122,7 @@ public class DatabaseActions {
 
             return null;
         }
-    }
-
-    public static MongoDatabase getDatabase(String db) {
-        return databases.get(db);
-    }
+    }  
 
     //SOFTWARE VERSION METHODS
     static public String getEnviromentInfo() throws IOException {
@@ -315,17 +311,17 @@ public class DatabaseActions {
     }
 
     //FILE METHODS
-    public static void insertFile(InputStream inputStream, String name, FileObject _fileobject) {
-        ObjectId fileId = null;
-        try {
-            GridFSBucket gridBucket = GridFSBuckets.create(DatabaseActions.getDatabase("files"));
-            ObjectMapper mapper = new ObjectMapper();
-            Document document = Document.parse(mapper.writeValueAsString(_fileobject));
-            GridFSUploadOptions uploadOptions = new GridFSUploadOptions().chunkSizeBytes(1024).metadata(document);
-            fileId = gridBucket.uploadFromStream(name, inputStream, uploadOptions);
-        } catch (JsonProcessingException e) {
-        }
-    }
+//    public static void insertFile(InputStream inputStream, String name, FileObject _fileobject) {
+//        ObjectId fileId = null;
+//        try {
+//            GridFSBucket gridBucket = GridFSBuckets.create(DatabaseActions.getDatabase("files"));
+//            ObjectMapper mapper = new ObjectMapper();
+//            Document document = Document.parse(mapper.writeValueAsString(_fileobject));
+//            GridFSUploadOptions uploadOptions = new GridFSUploadOptions().chunkSizeBytes(1024).metadata(document);
+//            fileId = gridBucket.uploadFromStream(name, inputStream, uploadOptions);
+//        } catch (JsonProcessingException e) {
+//        }
+//    }
 
     public static String downloadFileToTemp(String _fileName, String _cookie, String _contextPath, boolean _publicPage) {
         System.out.println("Calling download..");
@@ -589,7 +585,8 @@ public class DatabaseActions {
 
     public static MongoCollection<Document> getObjectsFromDatabase(MongoConfigurations mongoConf) throws ClassNotFoundException {
         MongoCollection<Document> results = null;
-        results = databases.get(mongoConf.database).getCollection(mongoConf.collection);
+        
+        results = Database.getDatabase(mongoConf.database).getCollection(mongoConf.collection);
         return results;
     }
 

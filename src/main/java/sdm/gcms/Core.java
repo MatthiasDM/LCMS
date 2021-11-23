@@ -1008,17 +1008,17 @@ public class Core {
         return "{" + paramIn + "\"}";
     }
 
-    public static FileObject createFileObject(String _id, String _filename, String _type, String _contenttype, String _accesstype) {
-        long now = Instant.now().toEpochMilli() / 1000;
-        FileObject fileObject = new FileObject();
-        fileObject.setFileid(_id);
-        fileObject.setType(_type);
-        fileObject.setName(_filename);
-        fileObject.setUpload_date(_type);
-        fileObject.setContent_type(_contenttype);
-        fileObject.setAccesstype(_accesstype);
-        return fileObject;
-    }
+//    public static FileObject createFileObject(String _id, String _filename, String _type, String _contenttype, String _accesstype) {
+//        long now = Instant.now().toEpochMilli() / 1000;
+//        FileObject fileObject = new FileObject();
+//        fileObject.setFileid(_id);
+//        fileObject.setType(_type);
+//        fileObject.setName(_filename);
+//        fileObject.setUpload_date(_type);
+//        fileObject.setContent_type(_contenttype);
+//        fileObject.setAccesstype(_accesstype);
+//        return fileObject;
+//    }
 
     public static SerializableClass getFields(MongoConfigurations mongoconf, String _cookie) {
         List<Field> fields = new ArrayList<>();
