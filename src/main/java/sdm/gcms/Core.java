@@ -48,7 +48,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import sdm.gcms.database.DatabaseActions;
 import sdm.gcms.database.DatabaseWrapper;
-import sdm.gcms.credentials.Cryptography;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -82,6 +81,7 @@ import javax.servlet.http.Part;
 import org.apache.http.Header;
 import org.apache.http.client.methods.HttpPut;
 import static sdm.gcms.shared.database.Core.universalObjectMapper;
+import sdm.gcms.shared.database.Cryptography;
 import sdm.gcms.shared.database.FileObject;
 import sdm.gcms.shared.database.collections.Actions;
 import sdm.gcms.shared.database.collections.MongoConfigurations;
@@ -227,17 +227,17 @@ public class Core {
         return "";
     }
 
-    public static boolean isValidApiKey(String _apiName, String _key) throws IOException, ClassNotFoundException {
-        boolean valid = false;
-        ObjectMapper mapper = new ObjectMapper();
-        BasicDBObject searchObject = new BasicDBObject();
-        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("apikeys");
-        searchObject.put("name", new BasicDBObject("$eq", _apiName));
-        Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(null, mongoConfiguration, searchObject);
-        Apikey apikey = mapper.convertValue(searchResult, Apikey.class);
-        return Cryptography.verifyHash(_key, apikey.getApiKey());
-        //return valid;
-    }
+//    public static boolean isValidApiKey(String _apiName, String _key) throws IOException, ClassNotFoundException {
+//        boolean valid = false;
+//        ObjectMapper mapper = new ObjectMapper();
+//        BasicDBObject searchObject = new BasicDBObject();
+//        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("apikeys");
+//        searchObject.put("name", new BasicDBObject("$eq", _apiName));
+//        Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(null, mongoConfiguration, searchObject);
+//        Apikey apikey = mapper.convertValue(searchResult, Apikey.class);
+//        return Cryptography.verifyHash(_key, apikey.getApiKey());
+//        //return valid;
+//    }
 
     public static String getParamsAsURLString(Map<String, String> params)
             throws UnsupportedEncodingException {
@@ -809,7 +809,7 @@ public class Core {
         List<String> hashFields = requestParameters.keySet().stream().filter((String k) -> {
             try {
                 Field f = cls.getField(k);
-                return f.getAnnotation(gcmsObject.class).type().equals("encrypted");
+                return f.getAnnotation(gcmsObject.class).type().equals("encrypted") ;
             } catch (NoSuchFieldException | SecurityException ex) {
                 Logger.getLogger(Core.class.getName()).log(Level.INFO, ex.getMessage());
                 return false;

@@ -23,6 +23,7 @@ import sdm.gcms.Core;
 import java.util.Enumeration;
 import javax.xml.bind.DatatypeConverter;
 import java.util.stream.Collectors;
+import static sdm.gcms.shared.database.Core.isValidApiKey;
 
 /**
  *
@@ -47,9 +48,9 @@ public class Servlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, JsonProcessingException {
         StringBuilder sb = new StringBuilder();
-      //  Map<String, String[]> requestParameters = new HashMap<>();
-       // requestParameters.putAll(request.getParameterMap());
-         Map<String, String> requestParameters = request.getParameterMap().entrySet().stream()
+        //  Map<String, String[]> requestParameters = new HashMap<>();
+        // requestParameters.putAll(request.getParameterMap());
+        Map<String, String> requestParameters = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(e -> (e.getKey()),
                         e -> (e.getValue()[0])));
         ActionManager aM;
@@ -57,12 +58,13 @@ public class Servlet extends HttpServlet {
         Boolean apiAuthorized = false;
         apiName = requestParameters.get("api");
         apiKey = requestParameters.get("key");
-        try {
-            apiAuthorized = Core.isValidApiKey(apiName, apiKey);
 
+        try {
+            apiAuthorized = isValidApiKey(apiName, apiKey);
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
+            Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
         }
+
         Response actionResponse = new Response();
         String host = Core.getClientPCName(request.getRemoteAddr());
 
@@ -99,10 +101,10 @@ public class Servlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, JsonProcessingException {
         StringBuilder sb = new StringBuilder();
-          Map<String, String> requestParameters = request.getParameterMap().entrySet().stream()
+        Map<String, String> requestParameters = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(e -> (e.getKey()),
                         e -> (e.getValue()[0])));
-      //  requestParameters.putAll(request.getParameterMap());
+        //  requestParameters.putAll(request.getParameterMap());
         requestParameters.put("contextPath", context.getRealPath("./HTML/other/files"));
         ActionManager aM;
         String host = Core.getClientPCName(request.getRemoteAddr());
@@ -124,12 +126,13 @@ public class Servlet extends HttpServlet {
                 String[] actualCredentials = decodedString.split(":");
                 apiName = actualCredentials[0];
                 apiKey = actualCredentials[1];
+
                 try {
-                    apiAuthorized = Core.isValidApiKey(apiName, apiKey);
-                    requestParameters.put("contextPath", context.getRealPath("/HTML/other/files"));
+                    apiAuthorized = isValidApiKey(apiName, apiKey);
                 } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
+                    Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                requestParameters.put("contextPath", context.getRealPath("/HTML/other/files"));
 
             }
         }
@@ -166,7 +169,5 @@ public class Servlet extends HttpServlet {
         }
 
     }
-
-
 
 }

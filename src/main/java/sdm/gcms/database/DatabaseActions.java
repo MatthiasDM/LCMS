@@ -49,7 +49,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import sdm.gcms.Core;
-import sdm.gcms.GsonObjects.Core.Command;
+
 import sdm.gcms.modules.commandFunctions;
 import static sdm.gcms.database.DatabaseActions.updateObjectItemv2;
 import java.util.Timer;
@@ -60,6 +60,7 @@ import org.bson.types.ObjectId;
 import sdm.gcms.shared.database.filters.annotation.gcmsObject;
 
 import static sdm.gcms.database.DatabaseActions.getCommand;
+import sdm.gcms.shared.database.Command;
 
 import sdm.gcms.shared.database.collections.MongoConfigurations;
 import sdm.gcms.shared.database.serializable.SerializableClass;
@@ -919,7 +920,7 @@ public class DatabaseActions {
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("commandid", new BasicDBObject("$eq", _commandId));
         ArrayList<Document> commandDoc = DatabaseActions.getObjectsSpecificListv2(null, commandConfiguration, searchObject, null, 1, new String[0], false);
-        sdm.gcms.GsonObjects.Core.Command commandObject = universalObjectMapper.convertValue(commandDoc.get(0), sdm.gcms.GsonObjects.Core.Command.class);
+        Command commandObject = universalObjectMapper.convertValue(commandDoc.get(0), Command.class);
         return commandObject;
     }
 
@@ -958,7 +959,7 @@ class CronTask extends TimerTask {
                             long lastExecution = chronJob.getLast();
                             if (currentTime - lastExecution > (Integer.parseInt(chronJob.getInterval()) * 60 * 1000)) {
                                 for (String command : chronJob.getCommmands()) {
-                                    sdm.gcms.GsonObjects.Core.Command commandObject = getCommand(command);
+                                    Command commandObject = getCommand(command);
 //                                    BasicDBObject searchObject = new BasicDBObject();
 //                                    searchObject.put("commandid", new BasicDBObject("$eq", command));
 //                                    ArrayList<Document> commandDoc = DatabaseActions.getObjectsSpecificListv2(null, commandConfiguration, searchObject, null, 1, new String[0], false);

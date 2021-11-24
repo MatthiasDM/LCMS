@@ -12,7 +12,7 @@ import com.mongodb.BasicDBObject;
 import sdm.gcms.Core;
 import static sdm.gcms.Core.loadWebFile;
 
-import sdm.gcms.GsonObjects.Core.Command;
+
 
 import sdm.gcms.database.DatabaseActions;
 import sdm.gcms.database.DatabaseWrapper;
@@ -38,6 +38,7 @@ import sdm.gcms.shared.database.collections.ActionPrivelege;
 import sdm.gcms.shared.database.collections.Actions;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.or;
+import sdm.gcms.shared.database.Command;
 /**
  *
  * @author Matthias
@@ -129,7 +130,7 @@ public class ActionManager {
                     //BasicDBObject searchObject = new BasicDBObject();
                     //searchObject.put("name", new BasicDBObject("$eq", key));
                     Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, mongoConfiguration, or(eq("name", key),eq(mongoConfiguration.getIdName(), key)));
-                    Command command = mapper.convertValue(searchResult, sdm.gcms.GsonObjects.Core.Command.class);
+                    Command command = mapper.convertValue(searchResult, Command.class);
                     List<String> accesstype = command.getAccessType();
                     if (accesstype.contains("0")) {
                         sb.append(commandFunctions.doCommand(key, requestParameters, command, parts));

@@ -1039,6 +1039,77 @@ class gcmscore {
         return form_group;
     }
 
+    static domFormInputHiddenFile(title, id, name, valObjects, val, _command) {
+        console.log("domFormInputHidden()");
+        if (typeof valObjects === "string") {
+            valObjects = $.parseJSON(valObjects);
+        }
+        var vals = new Array();
+        $.each(valObjects, function (a, b) {
+            vals.push(b.value);
+        });
+        vals.toString();
+        var form_group = $("<div id='" + id + "' class='form-group'></div>");
+        var input_group = $("<div class='input-group mb-3'></div>");
+        var link = $("<button class='btn btn-primary' type='button' onclick=gcmscore.preview('" + vals + "','" + _command + "')><i class='fa fa-lg fa-fw fa-search'></i></button>");
+        var select = $("<input type='text' autocomplete='off' class='form-control' name='" + name + "' value='" + vals + "' id='select-" + id + "'/>");
+        input_group.append(link);
+        input_group.append(select);
+        form_group.append(input_group);
+        $.each(valObjects, function (a, b) {
+            var hidden = $("<input type='hidden' id='" + b.id + "' value='" + b.value + "'/>"); //meta='" + JSON.stringify(b) + "'
+            hidden.data("meta", b);
+            form_group.append(hidden);
+            //
+        });
+        if (typeof val !== "undefined") {
+            select.val(val);
+        }
+        return form_group;
+    }
+
+    static async doCallFile(_fileName, _command) {
+        var me = this;
+        bootstrap_alert.warning("Bestand laden", "info", 3000);
+        async function onDone(data) {
+            return data;
+        }
+        var parameters = {};
+        parameters.extra = "{\"file\": \"" + _fileName + "\"}";
+        return me.doCommand(_command, parameters, onDone);
+    }
+
+    static async preview(_fileId, _command) {
+        var me = this;
+        let promise = new Promise((res, rej) => {
+            res(me.doCallFile(_fileId, _command));
+        });
+        let fileUrl = await promise;
+        fileUrl = fileUrl.replaceAll("\"", "");
+        var type = get_url_extension(fileUrl);
+        var contentId = uuidv4();
+        var m = create_modal_normal($("body"), "contentModal", "", "top:10%;min-height:300px;width:90%;", "lg");
+        var content = $("<div id=" + contentId + "></div>");
+        var fileExtensions = ['jpeg', 'jpg', 'png', 'gif', 'bmp', 'pdf', 'htm', 'html'];
+        m.find("div[id=contentModal-body]").empty();
+        m.find("div[id=contentModal-body]").append(content);
+        if ($.inArray(type.toLowerCase(), fileExtensions) === -1) {
+            content.load(fileUrl, function () {
+                if (type.toLowerCase() === "lab") {
+                    content.html(parseHealthOne(content.text()));
+                } else {
+                    CKEDITOR.replace(content.attr("id"), {startupMode: 'source', mode: 'source'}).config.mode = 'source';
+                }
+                console.log("loading content into CKeditor");
+            });
+        } else {
+            content.append("<iframe type='" + type + "' style='width:100%;min-height:" + $(window).height() * 0.8 + "px'' src=" + fileUrl + "></iframe>");
+            type = "application/pdf";
+        }
+        var modbs5 = new bootstrap.Modal(m);
+        modbs5.show();
+    }
+
     static foreignKeyFunction(selRowData, key) {
         console.log("foreignKeyFunction");
 
@@ -2360,10 +2431,10 @@ function dom_col(id, size) {
 }
 function dom_button(id, icon, text, color, _attributes) {
     var btn = $("<button type='button' id='" + id + "' class='btn btn-" + color + "'><i class='fa fa-lg fa-fw fa-" + icon + "' style='margin-right:5px;width:auto;max-width:200px'></i><span>" + text + "</span></button>");
-    if(getType(_attributes) == "object"){
-        $.each(_attributes, function(a,b){
-          btn.attr(a, b);            
-        });               
+    if (getType(_attributes) == "object") {
+        $.each(_attributes, function (a, b) {
+            btn.attr(a, b);
+        });
     }
     return btn;
 }
@@ -3010,7 +3081,7 @@ function supports_html5_storage() {
 }
 
 function set_theme(theme) {
-    $('link[title="main"]').attr('href', theme);    
+    $('link[title="main"]').attr('href', theme);
     if (supports_storage) {
         localStorage.theme = theme;
     }
@@ -3025,7 +3096,7 @@ if (supports_storage) {
     }
 }
 
-var getType = function(value) {
-  return Object.prototype.toString.call(value)
-    .replace(/^\[object |\]$/g, '').toLowerCase();
+var getType = function (value) {
+    return Object.prototype.toString.call(value)
+            .replace(/^\[object |\]$/g, '').toLowerCase();
 };

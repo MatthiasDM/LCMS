@@ -39,10 +39,6 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import static sdm.gcms.Core.getProp;
-
-import sdm.gcms.GsonObjects.Core.Command;
-
-import sdm.gcms.credentials.Cryptography;
 import sdm.gcms.database.DatabaseActions;
 import sdm.gcms.database.DatabaseWrapper;
 import java.util.Collection;
@@ -64,9 +60,11 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
+import sdm.gcms.shared.database.Command;
 import sdm.gcms.shared.database.collections.MongoConfigurations;
 import sdm.gcms.shared.database.serializable.SerializableClass;
 import static sdm.gcms.shared.database.Core.universalObjectMapper;
+import sdm.gcms.shared.database.Cryptography;
 import sdm.gcms.shared.database.Database;
 import sdm.gcms.shared.database.FileObject;
 import sdm.gcms.shared.database.collections.Actions;
@@ -116,7 +114,7 @@ public class commandFunctions {
             sb.append(command_doGenerateHash(commandParameters, command));
         }
         if (name.equals("doAPICall")) {
-            sb.append(command_doAPICall(commandParameters, parts));
+            sb.append(command_doAPICall(commandParameters, parts, command));
         }
         if (name.equals("doEdit")) {
             sb.append(command_doActionManager(commandParameters, parts));
@@ -353,7 +351,7 @@ public class commandFunctions {
         ObjectNode jsonData = mapper.createObjectNode();
         Map<String, String> commandParameters = mapper.readValue(command.getParameters(), new TypeReference<Map<String, String>>() {
         });
-        sb.append(Cryptography.hash(parameters.get("parameters[passwordInput]")));
+        sb.append(Cryptography.hash(parameters.get("password")));
         return sb;
     }
 
@@ -367,12 +365,12 @@ public class commandFunctions {
         return sb;
     }
 
-    public static StringBuilder command_doAPICall(Map<String, String> parameters, Collection<Part> parts) throws IOException, ClassNotFoundException {
+    public static StringBuilder command_doAPICall(Map<String, String> parameters, Collection<Part> parts, Command command) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
         ObjectMapper mapper = new ObjectMapper();
 
-        String apikey = parameters.get("apikey");
+        String apikeyName = parameters.get("apikey");
         String path = parameters.get("path");
         String method = parameters.get("method");
         String extraParameters = null;
@@ -380,13 +378,14 @@ public class commandFunctions {
             extraParameters = parameters.get("extra");
         }
         MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("apikeys");
-        searchObject.put("name", new BasicDBObject("$eq", apikey));
+        searchObject.put("name", new BasicDBObject("$eq", apikeyName));
         Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session"), mongoConfiguration, searchObject);
         Apikey key = mapper.convertValue(searchResult, Apikey.class);
         String receiver;
         receiver = key.getUrl();
         receiver += path;
-        receiver += "?key=" + key.getApiKey();
+        receiver += "?key=" + key.getApiKeyRaw();
+        receiver += "&command=" + command.getName();
         //sb.append(Core.httpRequest(receiver, method, extraParameters));
         sb.append(Core.multiPartHttpRequest(parts, receiver, method, extraParameters));
 
@@ -474,17 +473,7 @@ public class commandFunctions {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
         String tempDir = sdm.gcms.Core.getProp("files.path") + "/" + Core.getProp("temp.folder") + "/";
-
         Core.checkDir(tempDir);
-//        for (Part part : parts) {
-//            String filename = part.getSubmittedFileName();
-//            if (filename != null) {
-//                UUID id = UUID.randomUUID();
-//                String fileName = id + filename;
-//                part.write(tempDir + fileName);
-//            }
-//    }
-
         for (Part part : parts) {
             if (part.getName().equals("file")) {
                 UUID id = UUID.randomUUID();

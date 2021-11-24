@@ -50,6 +50,11 @@
                         <button class="btn btn-primary" onclick="gcmscore.createTableModal('Taken', 'chronjobs', $('#admin-container'))" style="margin: 5px;">Automatische taken</button>
                         <button class="btn btn-warning" onclick="gcmscore.createTableModal('Werkstromensjablonen', 'workflowTemplates', $('#admin-container'))" style="margin: 5px;">Werkstromensjablonen</button>
                         <button class="btn btn-warning" onclick="gcmscore.createTableModal('Werkstromentaaksjablonen', 'workflowTemplateTasks', $('#admin-container'))" style="margin: 5px;">Taaksjablonen</button>
+                        <br/><br/>
+                        <div class="input-group mb-3">
+                            <button class="btn btn-outline-success" type="button" id="btn-hash" onclick="generateHash()">Generate hash</button>
+                            <input type="text" class="form-control" placeholder="Password" id="txt-hash" aria-label="" aria-describedby="button-addon1">
+                        </div>
 
                     </div>
                 </div>
@@ -63,6 +68,15 @@
     require(["ckeditor"], function () {
         config2(false);
     });
+
+    function generateHash() {
+        gcmscore.doCommand("generateHash", {"password": $("#txt-hash").val()}, function (data) {
+            console.log(data)
+            var mod = create_modal_normal($("body"), "Hash generated", data, "", "lg")
+            var modbs5 = new bootstrap.Modal(mod);
+            modbs5.show();
+        });
+    }
 
     async function loadAttributes() {
         var lazyOptions = gcmscore.lazyOptions("attributes");
