@@ -445,7 +445,7 @@ class LCMSGrid {
         console.log("loading list");
         var position = "inherit";
         if (options.mode === "edit" || options.mode === "add") {
-                position = "fixed";
+            position = "fixed";
         }
         var datatarget = "external-list-" + options.relation.collection;
         var datatargetcontent = "external-list-content-" + options.relation.collection;
@@ -547,11 +547,8 @@ class LCMSGrid {
             }
 
             let tableName = await gcmscore.loadExternalGrid(options.relation.collection, content, extraOptionsJSON, inputId);
-            //gcmscore.jqGridFilter(filters, $("#" + tableName));
 
-            //if ($("#" + tableName).jqGrid().length > 0) {         
-            gcmscore.jqGridFilter(filters, $("#" + tableName));
-            //}
+
 
         }
     }
@@ -781,8 +778,8 @@ class LCMSGrid {
             };
             $.extend($.jgrid.defaults, {
                 datatype: 'json',
-                ajaxGridOptions: {contentType: "application/json"},
-                ajaxRowOptions: {contentType: "application/json", type: "POST"}
+                ajaxGridOptions: {contentType: "application/json; charset:utf-8"},
+                ajaxRowOptions: {contentType: "application/json; charset:utf-8", type: "POST"}
             });
         }
 
@@ -805,6 +802,10 @@ class LCMSGrid {
             if (typeof gridData.jqGridOptions.afterLoadComplete !== "undefined") {
                 gridData.jqGridOptions.afterLoadComplete(grid, me);
             }
+            if (exists(getSafe(() => gridData.jqGridOptions.postData.filters))) {
+                gcmscore.jqGridFilter(gridData.jqGridOptions.postData.filters, $("#" + gridData.tableObject));
+            }
+
 
         };
 
@@ -820,7 +821,7 @@ class LCMSGrid {
                     return false;
                 }
             });
-            return postdata;
+            return gcmscore.filterPostdata(postdata, colModel);
         };
         jqgridOptions.colModel = jqgridOptions.colModel.filter(function (el) {
             return el !== null;
@@ -842,6 +843,7 @@ class LCMSGrid {
         var tableObject = typeof me.gridData.tableObject === "object" ? me.gridData.tableObject.jqGrid(jqgridOptions) : $("#" + me.gridData.tableObject).jqGrid(jqgridOptions);
         tableObject.jqGrid(jqgridOptions);
 
+
         $.extend($.jgrid.defaults, {
             ajaxRowOptions: {
                 beforeSend: function (jqXHR, settings) {
@@ -849,6 +851,8 @@ class LCMSGrid {
                 }
             }
         });
+
+
 
         function editRow(id) {
 
@@ -907,7 +911,7 @@ class LCMSGrid {
             if (typeof container !== "undefined") {
                 if (container.parent().width() > 100) {
                     var container = $("#" + gridData.tableObject.slice(0, gridData.tableObject.length - 5) + "container");
-                //    tableObject.setGridWidth(Math.round($(window).width(), true));
+                    //    tableObject.setGridWidth(Math.round($(window).width(), true));
                 }
             }
 
@@ -1067,28 +1071,33 @@ class LCMSGrid {
                 var pills = me.createPills(formid);
                 $("div[id^=editmod]").removeClass("ui-jqgrid-bootstrap ui-jqdialog");
                 $("div[id^=editmod]").find("div[class='modal-dialog']").addClass("modal-xl modal-fullscreen-xl-down");
+                $(formid).find("[type=checkbox]").removeClass("FormElement");//
+                $(formid).find("[type=checkbox]").removeClass("form-control");
                 $("div[id^=editmod]")[0].style.removeProperty('width');
                 $("div[id^=editmod]")[0].style.removeProperty('height');
-               // $("div[id^=editmod]")[0].style.removeProperty('z-index');
+                // $("div[id^=editmod]")[0].style.removeProperty('z-index');
                 $("div[id^=editmod]")[0].style.removeProperty('top');
                 $("div[id^=editmod]")[0].style.removeProperty('left');
-               // $("div[id^=editmod]").css('position', 'absolute');
-               // $("div[id^=editmod]").css('top', '5%');
-               // $("div[id^=editmod]").css('width', '-webkit-fill-available');
-               // $("div[id^=editmod]").css('display', 'inline-block');
-               // $("div[id^=editmod]").css('margin-left', '5%');
-               // $("div[id^=editmod]").css('margin-right', '5%');
-               // $("div[id^=editmod]").css('left', '');
+                // $("div[id^=editmod]").css('position', 'absolute');
+                // $("div[id^=editmod]").css('top', '5%');
+                // $("div[id^=editmod]").css('width', '-webkit-fill-available');
+                // $("div[id^=editmod]").css('display', 'inline-block');
+                // $("div[id^=editmod]").css('margin-left', '5%');
+                // $("div[id^=editmod]").css('margin-right', '5%');
+                // $("div[id^=editmod]").css('left', '');
                 scrollTo($($("input")[0]));
             },
             onclickSubmit: function (params, postdata) {
                 console.log("onclickSubmit()");
                 var postdata = $("#FrmGrid_" + this.id).serializeObject();
                 var serialized = $("#FrmGrid_" + this.id).find("[type=checkbox]").map(function () {
-                    postdata[this.name] = this.checked ? this.value : "false";
+                    postdata[this.name] = this.checked ? "true" : "false";
                 });
-
-
+                $.each(postdata, function (a, b) {
+                    if (Array.isArray(b)) {
+                        postdata[a] = b.toString()
+                    }
+                })
                 $.each($("#FrmGrid_" + this.id).find("div[data-bs-target*=external-list]"), function (a, b) {
                     postdata[$(b).attr("name")] = gcmscore.idsFromInputHidden($(b));
                 });
@@ -1134,7 +1143,7 @@ class LCMSGrid {
                     }
 
                 });
-                return postdata;
+                return gcmscore.filterPostdata(postdata, colModel);
             },
             beforeSubmit: function (postdata, formid) {
                 console.log("Checking post data");

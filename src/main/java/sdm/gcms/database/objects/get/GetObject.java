@@ -9,11 +9,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
-import static sdm.gcms.Core.loadWebFile;
+import static sdm.gcms.Config.loadWebFile;
 
 import sdm.gcms.database.DatabaseWrapper;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import sdm.gcms.shared.database.collections.Actions;
 

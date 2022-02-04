@@ -8,12 +8,10 @@ package sdm.gcms.database.objects.edit;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.BasicDBObject;
 
-import sdm.gcms.Core;
-import static sdm.gcms.Core.createDatabaseObject;
+import sdm.gcms.Config;
 
 import sdm.gcms.database.DatabaseActions;
 import static sdm.gcms.database.DatabaseActions.getDocumentPriveleges;
-import static sdm.gcms.database.DatabaseActions.getObject;
 import sdm.gcms.modules.commandFunctions;
 import java.io.IOException;
 import java.time.Instant;
@@ -22,92 +20,84 @@ import java.util.List;
 import java.util.UUID;
 import org.bson.Document;
 import static sdm.gcms.database.DatabaseActions.getObjectsFromDatabase;
-import sdm.gcms.shared.database.filters.annotation.gcmsObject;
-
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import sdm.gcms.shared.database.collections.MongoConfigurations;
 import sdm.gcms.shared.database.serializable.SerializableClass;
 import sdm.gcms.shared.database.serializable.SerializableField;
 import static sdm.gcms.shared.database.Core.universalObjectMapper;
+import sdm.gcms.shared.database.Database;
 import sdm.gcms.shared.database.Methods;
 import sdm.gcms.shared.database.collections.Actions;
 import sdm.gcms.shared.database.users.Session;
+import static sdm.gcms.Config.parseDatabaseObject;
+
 /**
  *
  * @author Matthias
  */
 public class EditObject {
 
+    public static StringBuilder doWorkflow(Actions _action, String _mongoConfId, String _session, String _objectId, Document _initiatingDocument) {
+        StringBuilder sb = new StringBuilder();
+        try {
+            Map<String, String> workflowParameters = new HashMap<>();
+            workflowParameters.put("method", _action.getMethod());
+            workflowParameters.put("action", _action.getName());
+            workflowParameters.put("mongoconfiguration", _mongoConfId);
+            workflowParameters.put("LCMS_session", _session);
+            workflowParameters.put("object_id", _objectId);
+            sb = commandFunctions.doWorkflow(workflowParameters, null, null);
+        } catch (IOException | ClassNotFoundException ex) {
+            Logger.getLogger(EditObject.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return sb;
+    }
+
     public static StringBuilder editObject(HashMap<String, String> requestParameters, String cookie, MongoConfigurations _mongoConf, Actions _action) throws IOException, ClassNotFoundException, NoSuchFieldException {
         StringBuilder sb = new StringBuilder();
-
-       
-        SerializableClass serializableClass =  Core.getSerializableClass(cookie, _mongoConf);     
-        //  if (Core.checkUserRoleValue(cookie, 2)) {
+        SerializableClass serializableClass = Database.getSerializableClass(cookie, _mongoConf);
         requestParameters.remove("action");
         requestParameters.remove("LCMS_session");
         String operation = requestParameters.get("oper");
-
-        //Class cls = Class.forName(_mongoConf.getClassName());
         if (requestParameters.get("oper") != null) {
 
-            requestParameters = Core.checkHashFields(requestParameters, serializableClass);
+            requestParameters = Config.checkHashFields(requestParameters, serializableClass);
 
             if (operation.equals("edit")) {
-                HashMap<String, Object> obj = createDatabaseObject(requestParameters, serializableClass);
-                editObject(obj, _mongoConf, cookie, serializableClass, null);
-                Map<String, String> workflowParameters = Map.of(
-                        "method", _action.getMethod(), "mongoconfiguration",
-                        _mongoConf.getCollectionId(),
-                        "LCMS_session", cookie,
-                        "object_id", obj.get(_mongoConf.getIdName()).toString()
-                );
-                commandFunctions.doWorkflow(workflowParameters, null, null); //Start workflow on current mongoconfiguration
+                Document document = new Document(parseDatabaseObject(requestParameters, serializableClass));
+                editObject(document, _mongoConf, cookie, serializableClass, null);
+                doWorkflow(_action, _mongoConf.getCollectionId(), cookie, document.get(_mongoConf.getIdName()).toString(), document);
             }
             if (operation.equals("add")) {
-                requestParameters.remove("oper");
-                requestParameters.remove("id");
                 HashMap<String, Object> parameters = new HashMap<>();
-                requestParameters.forEach((key, value) -> {
-                    key = key.replaceAll("\\[|\\]", "");
-                    parameters.put(key, value);
-                });
+                for (String key : requestParameters.keySet()) {
+                    parameters.put(key.replaceAll("\\[|\\]", ""), requestParameters.get(key));
+                }
+                parameters = parseDatabaseObject(requestParameters, serializableClass);
                 Document document = Document.parse(universalObjectMapper.writeValueAsString(parameters));
                 String object_id = UUID.randomUUID().toString();
                 document.append(_mongoConf.getIdName(), UUID.randomUUID().toString());
                 addObject(document, _mongoConf, cookie, serializableClass, null);
-                Map<String, String> workflowParameters = Map.of(
-                        "method", _action.getMethod(),
-                        "mongoconfiguration", _mongoConf.getCollectionId(),
-                        "object_id", object_id
-                );
-                commandFunctions.doWorkflow(workflowParameters, null, null);
+                doWorkflow(_action, _mongoConf.getCollectionId(), cookie, object_id, document);
             }
         }
-        // }
 
         return sb;
     }
 
-    public static void editObject(HashMap<String, Object> mongoObject, MongoConfigurations _mongoConf, String cookie, SerializableClass serializableClass, Actions _actions) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
+    public static void editObject(Document obj, MongoConfigurations _mongoConf, String cookie, SerializableClass serializableClass, Actions _actions) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
         List<String> columns = getDocumentPriveleges(Methods.put, cookie, _mongoConf, true, serializableClass);
-        List<SerializableField> systemFields = sdm.gcms.Core.getSystemFields(serializableClass, "edit");
-        BasicDBObject obj = BasicDBObject.parse(universalObjectMapper.writeValueAsString(mongoObject));
+        List<SerializableField> systemFields = sdm.gcms.Config.getSystemFields(serializableClass, "edit");
+        //BasicDBObject obj = BasicDBObject.parse(universalObjectMapper.writeValueAsString(mongoObject));
         BasicDBObject filteredObj = new BasicDBObject();
         BasicDBObject backlogObj = new BasicDBObject();
-        Object oldObject = getObject(_mongoConf, mongoObject.get(_mongoConf.getIdName()).toString());
-        //Document oldDocument = Document.parse((universalObjectMapper.writeValueAsString(oldObject)));
 
         for (String key : obj.keySet()) {
             if (columns.indexOf(key) != -1) {
                 if (obj.get(key) != null) {
-                    gcmsObject mdmAnnotations = (gcmsObject) serializableClass.getField(key).getAnnotation();
-                    if (!mdmAnnotations.DMP()) {
-                        filteredObj.put(key, obj.get(key));
-                    } else {
-                        //String patchedObj = DatabaseActions.patchText(oldDocument.get(key), obj.get(key));
-                        //filteredObj.put(key, patchedObj);
-                    }
+                    filteredObj.put(key, obj.get(key));
                     backlogObj.put(key, obj.get(key));
                 }
             }
@@ -132,14 +122,14 @@ public class EditObject {
         DatabaseActions.updateObjectItemv2(_mongoConf, filteredObj);
         Document backlog = DatabaseActions.addBackLogv2(_mongoConf, backlogObj);
         if (backlog != null) {
-            MongoConfigurations backlogConfiguration = DatabaseActions.getMongoConfiguration("backlog");
+            MongoConfigurations backlogConfiguration = Database.getMongoConfiguration("backlog");
             getObjectsFromDatabase(backlogConfiguration).insertOne(backlog);
         }
     }
 
     public static void addObject(Document doc, MongoConfigurations _mongoConf, String cookie, SerializableClass serializableClass, Actions _action) throws ClassNotFoundException, IOException {
         List<String> columns = getDocumentPriveleges(Methods.post, cookie, _mongoConf, true, serializableClass);
-        List<SerializableField> systemFields = sdm.gcms.Core.getSystemFields(serializableClass, "create");
+        List<SerializableField> systemFields = sdm.gcms.Config.getSystemFields(serializableClass, "create");
         Document filteredDoc = new Document();
         for (String key : doc.keySet()) {
             if (columns.indexOf(key) != -1) {
@@ -163,7 +153,6 @@ public class EditObject {
             }
         }
         filteredDoc.put(_mongoConf.getIdName(), doc.get(_mongoConf.getIdName()));
-
         DatabaseActions.insertObjectItemv2(_mongoConf, filteredDoc);
 
     }

@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -19,9 +18,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
-import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -40,15 +37,13 @@ import com.mongodb.util.JSON;
 //import difflib.Patch;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-import sdm.gcms.Core;
+import sdm.gcms.Config;
 
 import sdm.gcms.modules.commandFunctions;
 import static sdm.gcms.database.DatabaseActions.updateObjectItemv2;
@@ -56,17 +51,17 @@ import java.util.Timer;
 import java.util.TimerTask;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
-import sdm.gcms.shared.database.filters.annotation.gcmsObject;
+import static sdm.gcms.Config.packageName;
 
 import static sdm.gcms.database.DatabaseActions.getCommand;
 import sdm.gcms.shared.database.Command;
+import sdm.gcms.shared.database.Core;
 
 import sdm.gcms.shared.database.collections.MongoConfigurations;
 import sdm.gcms.shared.database.serializable.SerializableClass;
-import sdm.gcms.shared.database.serializable.SerializableField;
 import static sdm.gcms.shared.database.Core.universalObjectMapper;
 import sdm.gcms.shared.database.Database;
+import static sdm.gcms.shared.database.Database.getPriveleges;
 import sdm.gcms.shared.database.FileObject;
 import sdm.gcms.shared.database.Method;
 import sdm.gcms.shared.database.Methods;
@@ -89,49 +84,14 @@ public class DatabaseActions {
     static CodecRegistry pojoCodecRegistry = fromRegistries(MongoClient.getDefaultCodecRegistry(),
             fromProviders(PojoCodecProvider.builder().automatic(true).build()));
     
-//    public static void connect() {
-//        mongo = new MongoClient("localhost",
-//                MongoClientOptions.builder().codecRegistry(pojoCodecRegistry).build());
-//    }
-//
-//    public static void createDatabaseMap() {
-//
-//        if (databases.get("users") == null) {
-//            databases.put("users", openOrCreateDB("users"));
-//        }
-//        if (databases.get("lcms") == null) {
-//            databases.put("lcms", openOrCreateDB("lcms"));
-//        }
-//        if (databases.get("files") == null) {
-//            databases.put("files", openOrCreateDB("files"));
-//        }
-//        if (databases.get("history") == null) {
-//            databases.put("history", openOrCreateDB("history"));
-//        }
-//        if (databases.get("backlog") == null) {
-//            databases.put("backlog", openOrCreateDB("backlog"));
-//        }
-//
-//    }
-
-    static private MongoDatabase openOrCreateDB(String db) {
-        try {
-            return mongo.getDatabase(db);
-
-        } catch (Exception e) {
-            LOG.info(e.getLocalizedMessage());
-
-            return null;
-        }
-    }  
 
     //SOFTWARE VERSION METHODS
     static public String getEnviromentInfo() throws IOException {
         StringBuilder sb = new StringBuilder();
-        sb.append(Core.getProp("env"));
+        sb.append(Core.getProp("env", packageName()));
         try {
             sb.append(" ");
-            sb.append(Core.getProperty("git.properties", "git.build.version"));
+            sb.append(Config.getProperty("git.properties", "git.build.version"));
         } catch (Exception e) {
         }
         return sb.toString();
@@ -139,10 +99,10 @@ public class DatabaseActions {
 
     static public String getLogo() throws IOException {
         StringBuilder sb = new StringBuilder();
-        sb.append(Core.getProp("env"));
+        sb.append(Core.getProp("env", packageName()));
         try {
             sb.append(" ");
-            sb.append(Core.getProperty("logo", "git.build.version"));
+            sb.append(Config.getProperty("logo", "git.build.version"));
         } catch (Exception e) {
         }
         return sb.toString();
@@ -219,7 +179,7 @@ public class DatabaseActions {
     static public void editSessionValidity(String _sessionId, long _validity) throws ClassNotFoundException {
 
         if (checkConnection("users")) {
-            if ((sdm.gcms.Core.checkSession(_sessionId))) {
+            if ((Database.checkSession(_sessionId))) {
                 long newValidity;
                 Session session = getSession(_sessionId);
                 newValidity = session.getValidity() + _validity;
@@ -326,13 +286,13 @@ public class DatabaseActions {
 
     public static String downloadFileToTemp(String _fileName, String _cookie, String _contextPath, boolean _publicPage) {
         System.out.println("Calling download..");
-        String outputDir = sdm.gcms.Core.getProp("files.path") + "/" + _cookie + "/";
+        String outputDir = Core.getProp("files.path", packageName()) + "/" + _cookie + "/";
         String outputPath = outputDir + _fileName;
-        String trimmedOutputPath = sdm.gcms.Core.getProp("files.folder") + _cookie + "/" + _fileName;
+        String trimmedOutputPath = Core.getProp("files.folder", packageName()) + _cookie + "/" + _fileName;
         if (_publicPage) {
-            outputDir = sdm.gcms.Core.getProp("files.path") + "/public/";
+            outputDir = Core.getProp("files.path", packageName()) + "/public/";
             outputPath = outputDir + _fileName;
-            trimmedOutputPath = sdm.gcms.Core.getProp("files.folder") + "public/" + _fileName;
+            trimmedOutputPath = Core.getProp("files.folder", packageName()) + "public/" + _fileName;
         }
         Core.checkDir(outputDir);
         try {
@@ -366,7 +326,7 @@ public class DatabaseActions {
 
     public static List<Methods> getFieldRolePriveleges(MongoConfigurations collection, Role role, String field) throws ClassNotFoundException {
         List<Methods> results = new ArrayList<>();
-        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("fieldRolePriveleges");
+        MongoConfigurations mongoConfiguration = Database.getMongoConfiguration("fieldRolePriveleges");
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("collection", new BasicDBObject("$eq", collection.getCollectionId()));
         searchObject.put("role", new BasicDBObject("$eq", role.getRoleid()));
@@ -382,7 +342,7 @@ public class DatabaseActions {
 
     public static List<Methods> getDocumentRolePriveleges(MongoConfigurations collection, Role role, String document) throws ClassNotFoundException {
         List<Methods> results = new ArrayList<>();
-        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("fieldRolePriveleges");
+        MongoConfigurations mongoConfiguration = Database.getMongoConfiguration("fieldRolePriveleges");
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("collection", new BasicDBObject("$eq", collection.getCollectionId()));
         searchObject.put("role", new BasicDBObject("$eq", role.getRoleid()));
@@ -398,7 +358,7 @@ public class DatabaseActions {
 
     public static List<Methods> getCollectionUserPriveleges(MongoConfigurations collection, User user) throws ClassNotFoundException {
         List<Methods> results = new ArrayList<>();
-        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("collectionRolePriveleges");
+        MongoConfigurations mongoConfiguration = Database.getMongoConfiguration("collectionRolePriveleges");
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("collection", new BasicDBObject("$eq", collection.getCollectionId()));
         searchObject.put("user", new BasicDBObject("$eq", user.getUserid()));
@@ -413,7 +373,7 @@ public class DatabaseActions {
 
     public static List<Methods> getFieldUserPriveleges(MongoConfigurations collection, User user, String field) throws ClassNotFoundException {
         List<Methods> results = new ArrayList<>();
-        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("fieldRolePriveleges");
+        MongoConfigurations mongoConfiguration = Database.getMongoConfiguration("fieldRolePriveleges");
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("collection", new BasicDBObject("$eq", collection.getCollectionId()));
         searchObject.put("user", new BasicDBObject("$eq", user.getUserid()));
@@ -429,7 +389,7 @@ public class DatabaseActions {
 
     public static List<Methods> getDocumentUserPriveleges(MongoConfigurations collection, User user, String document) throws ClassNotFoundException {
         List<Methods> results = new ArrayList<>();
-        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("fieldRolePriveleges");
+        MongoConfigurations mongoConfiguration = Database.getMongoConfiguration("fieldRolePriveleges");
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("collection", new BasicDBObject("$eq", collection.getCollectionId()));
         searchObject.put("user", new BasicDBObject("$eq", user.getUserid()));
@@ -444,7 +404,7 @@ public class DatabaseActions {
     }
 
     public static ArrayList<Attribute> getRightsFromDatabaseInCollection(String _collection) throws ClassNotFoundException {
-        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("attributes");
+        MongoConfigurations mongoConfiguration = Database.getMongoConfiguration("attributes");
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("collection", new BasicDBObject("$eq", _collection));
         Class cls = Class.forName(mongoConfiguration.getClassName());
@@ -479,110 +439,110 @@ public class DatabaseActions {
         return columns;
     }
 
-    public static List<String> getPriveleges(Methods _method, String _cookie, boolean _checkRights, MongoConfigurations _mongoConf, SerializableClass _serializableClass) throws ClassNotFoundException, JsonProcessingException, IOException {
-        List<String> columns = new ArrayList<>();
-        List<String> fields = new ArrayList<>();
-        if (_mongoConf.getClassName().equals("MongoConfigurations") || _mongoConf.getClassName().equals("Actions") || _mongoConf.getClassName().equals("ActionPrivelege")) {
-            columns = _serializableClass.getFields().stream()
-                    .map(result -> result.getName())
-                    .collect(Collectors.toList());
-        } else {
-            if (_checkRights) {
-                List<String> userRoles = Core.getUserRoles(_cookie);
-                Session session = getSession(_cookie);
-                columns.addAll(getColumnsFromAnnotations(_method, _serializableClass, _mongoConf.getCollectionId(), session, userRoles));
-                fields = _serializableClass.getFields().stream()
-                        .map(result -> result.getName())
-                        .collect(Collectors.toList());
+//    public static List<String> getPriveleges(Methods _method, String _cookie, boolean _checkRights, MongoConfigurations _mongoConf, SerializableClass _serializableClass) throws ClassNotFoundException, JsonProcessingException, IOException {
+//        List<String> columns = new ArrayList<>();
+//        List<String> fields = new ArrayList<>();
+//        if (_mongoConf.getClassName().equals("MongoConfigurations") || _mongoConf.getClassName().equals("Actions") || _mongoConf.getClassName().equals("ActionPrivelege")) {
+//            columns = _serializableClass.getFields().stream()
+//                    .map(result -> result.getName())
+//                    .collect(Collectors.toList());
+//        } else {
+//            if (_checkRights) {
+//                List<String> userRoles = getUserRoles(_cookie);
+//                Session session = getSession(_cookie);
+//                columns.addAll(getColumnsFromAnnotations(_method, _serializableClass, _mongoConf.getCollectionId(), session, userRoles));
+//                fields = _serializableClass.getFields().stream()
+//                        .map(result -> result.getName())
+//                        .collect(Collectors.toList());
+//
+//                HashMap<Methods, List<String>> collectionPriveleges = new HashMap<>();
+//                for (String role : userRoles) {
+//                    Role r = new Role();
+//                    r.setRoleid(role);
+//                }
+//            } else {
+//                columns.addAll(_serializableClass.getFields().stream().map(p -> p.getName()).collect(Collectors.toList()));
+//            }
+//        }
+//        return columns;
+//    }
 
-                HashMap<Methods, List<String>> collectionPriveleges = new HashMap<>();
-                for (String role : userRoles) {
-                    Role r = new Role();
-                    r.setRoleid(role);
-                }
-            } else {
-                columns.addAll(_serializableClass.getFields().stream().map(p -> p.getName()).collect(Collectors.toList()));
-            }
-        }
-        return columns;
-    }
-
-    public static List<String> getColumnsFromAnnotations(Methods _privelegeType, SerializableClass _serialiableClass, String _collection, Session _session, List<String> _userRoles) throws ClassNotFoundException {
-        List<String> columns = new ArrayList<>();
-        List<SerializableField> fields = _serialiableClass.getFields();
-        ArrayList<Attribute> rights = getRightsFromDatabaseInCollection(_collection);
-
-        for (SerializableField field : fields) {
-            gcmsObject annotation = (gcmsObject) field.getAnnotation();
-            Attribute databaseRight = rights.stream().filter(r -> r.getAttribute().equals(field.getName())).findFirst().orElse(new Attribute());
-            if (annotation != null) {
-                String requiredRole = "";
-                int requiredRoleVal = 1;
-                switch (_privelegeType) {
-                    case get:
-                        requiredRole = annotation.viewRole();
-                        requiredRoleVal = annotation.minimumViewRoleVal();
-                        break;
-                    case put:
-                        requiredRole = annotation.editRole();
-                        requiredRoleVal = annotation.minimumEditRoleVal();
-                        break;
-                    case post:
-                        requiredRole = annotation.createRole();
-                        requiredRoleVal = annotation.minimumCreateRoleVal();
-                        break;
-                    default:
-                        break;
-                }
-
-                for (String userRole : _userRoles) {
-                    if (requiredRole.equals("")) {
-                        if (Core.getRoleLevelCode(userRole) >= requiredRoleVal) {
-                            columns.add(field.getName());
-                            break;
-                        }
-                    } else {
-                        if (requiredRole.startsWith("@")) {
-                            String roleName = requiredRole.substring(1);
-                            String referencedField = fields.stream()
-                                    .filter(r -> r.getName().equals(roleName.substring(1)))
-                                    .findFirst()
-                                    .toString();
-                            if (_session != null) {
-                                if (_session.getUsername().equals(referencedField)) {
-                                    columns.add(field.getName());
-                                }
-                            }
-                        }
-
-                        if (userRole.equals(requiredRole)) {
-                            columns.add(field.getName());
-                            break;
-                        }
-                    }
-                }
-                for (String userRole : _userRoles) {
-                    int size = databaseRight.getRolesFromPrivilege(_privelegeType).size();
-
-                    if (size > 0) {
-                        if (databaseRight.getRolesFromPrivilege(_privelegeType).contains(userRole)) {
-                            if (!columns.contains(field.getName())) {
-                                columns.add(field.getName());
-                            }
-                            break;
-                        } else {
-                            if (columns.contains(field.getName())) {
-                                columns.remove(field.getName());
-                            }
-                        }
-                    }
-
-                }
-
-            }
-        }
-        return columns;
-    }
+//    public static List<String> getColumnsFromAnnotations(Methods _privelegeType, SerializableClass _serialiableClass, String _collection, Session _session, List<String> _userRoles) throws ClassNotFoundException {
+//        List<String> columns = new ArrayList<>();
+//        List<SerializableField> fields = _serialiableClass.getFields();
+//        ArrayList<Attribute> rights = getRightsFromDatabaseInCollection(_collection);
+//
+//        for (SerializableField field : fields) {
+//            gcmsObject annotation = (gcmsObject) field.getAnnotation();
+//            Attribute databaseRight = rights.stream().filter(r -> r.getAttribute().equals(field.getName())).findFirst().orElse(new Attribute());
+//            if (annotation != null) {
+//                String requiredRole = "";
+//                int requiredRoleVal = 1;
+//                switch (_privelegeType) {
+//                    case get:
+//                        requiredRole = annotation.viewRole();
+//                        requiredRoleVal = annotation.minimumViewRoleVal();
+//                        break;
+//                    case put:
+//                        requiredRole = annotation.editRole();
+//                        requiredRoleVal = annotation.minimumEditRoleVal();
+//                        break;
+//                    case post:
+//                        requiredRole = annotation.createRole();
+//                        requiredRoleVal = annotation.minimumCreateRoleVal();
+//                        break;
+//                    default:
+//                        break;
+//                }
+//
+//                for (String userRole : _userRoles) {
+//                    if (requiredRole.equals("")) {
+//                        if (Core.getRoleLevelCode(userRole) >= requiredRoleVal) {
+//                            columns.add(field.getName());
+//                            break;
+//                        }
+//                    } else {
+//                        if (requiredRole.startsWith("@")) {
+//                            String roleName = requiredRole.substring(1);
+//                            String referencedField = fields.stream()
+//                                    .filter(r -> r.getName().equals(roleName.substring(1)))
+//                                    .findFirst()
+//                                    .toString();
+//                            if (_session != null) {
+//                                if (_session.getUsername().equals(referencedField)) {
+//                                    columns.add(field.getName());
+//                                }
+//                            }
+//                        }
+//
+//                        if (userRole.equals(requiredRole)) {
+//                            columns.add(field.getName());
+//                            break;
+//                        }
+//                    }
+//                }
+//                for (String userRole : _userRoles) {
+//                    int size = databaseRight.getRolesFromPrivilege(_privelegeType).size();
+//
+//                    if (size > 0) {
+//                        if (databaseRight.getRolesFromPrivilege(_privelegeType).contains(userRole)) {
+//                            if (!columns.contains(field.getName())) {
+//                                columns.add(field.getName());
+//                            }
+//                            break;
+//                        } else {
+//                            if (columns.contains(field.getName())) {
+//                                columns.remove(field.getName());
+//                            }
+//                        }
+//                    }
+//
+//                }
+//
+//            }
+//        }
+//        return columns;
+//    }
 
     public static MongoCollection<Document> getObjectsFromDatabase(MongoConfigurations mongoConf) throws ClassNotFoundException {
         MongoCollection<Document> results = null;
@@ -634,7 +594,7 @@ public class DatabaseActions {
     public static ArrayList<Document> getObjectsSpecificListv2(String _cookie, MongoConfigurations mongoConf, Bson bson, Bson sort, int limit, String[] excludes, boolean checkRights) throws ClassNotFoundException, IOException {
         SerializableClass serializableClass = new SerializableClass();
         if (mongoConf.getPluginName() != null) {
-            serializableClass = Core.getFields(mongoConf, _cookie);
+            serializableClass = sdm.gcms.shared.database.Core.getFields(mongoConf, _cookie);
         } else {
             serializableClass.setClassName(mongoConf.getClassName());
             serializableClass.convertFields(Arrays.asList(Class.forName(mongoConf.getClassName()).getDeclaredFields()));
@@ -693,7 +653,7 @@ public class DatabaseActions {
             MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);
             results = ObjectItems.find(bson).sort(sort).skip(rows * (page - 1)).limit(limit).projection(
                     fields(include(columns))
-            ).projection(fields(and(exclude("_id"), exclude(excludes)))).into(new ArrayList<>());
+            ).projection(fields(and(exclude("_id"), exclude(excludes)))).into(new ArrayList<>());            
         } catch (ClassNotFoundException e) {
             LOG.severe(e.getMessage());
             return results;
@@ -827,22 +787,22 @@ public class DatabaseActions {
 //        return document;
 //    }
 
-    public static MongoConfigurations getBaseConfiguration() throws ClassNotFoundException, JsonProcessingException, IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        MongoConfigurations mongoConf = null;
-        BasicDBObject searchObject = new BasicDBObject();
-        searchObject.put("name", new BasicDBObject("$eq", "mongoconfigurations"));
-        Document d = DatabaseActions.getObject(Core.getProp("base.classname"), Core.getProp("base.database"), Core.getProp("base.collection"), searchObject);
-        mongoConf = mapper.convertValue(d, MongoConfigurations.class);
-        return mongoConf;
-    }
+//    public static MongoConfigurations getBaseConfiguration() throws ClassNotFoundException, JsonProcessingException, IOException {
+//        ObjectMapper mapper = new ObjectMapper();
+//        MongoConfigurations mongoConf = null;
+//        BasicDBObject searchObject = new BasicDBObject();
+//        searchObject.put("name", new BasicDBObject("$eq", "mongoconfigurations"));
+//        Document d = DatabaseActions.getObject(Core.getProp("base.classname"), Core.getProp("base.database"), Core.getProp("base.collection"), searchObject);
+//        mongoConf = mapper.convertValue(d, MongoConfigurations.class);
+//        return mongoConf;
+//    }
 
     public static MongoConfigurations getCollection() throws ClassNotFoundException, JsonProcessingException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         MongoConfigurations mongoConf = null;
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("name", new BasicDBObject("$eq", "collections"));
-        Document d = DatabaseActions.getObject(Core.getProp("collection.classname"), Core.getProp("collection.database"), Core.getProp("collection.collection"), searchObject);
+        Document d = DatabaseActions.getObject(Core.getProp("collection.classname", packageName()), Core.getProp("collection.database", packageName()), Core.getProp("collection.collection", packageName()), searchObject);
         mongoConf = mapper.convertValue(d, MongoConfigurations.class);
         return mongoConf;
     }
@@ -851,7 +811,7 @@ public class DatabaseActions {
         MongoConfigurations mongoConf = null;
         try {
             BasicDBObject searchObject = new BasicDBObject();
-            MongoConfigurations mongoConfigurations = getBaseConfiguration();
+            MongoConfigurations mongoConfigurations = Database.getBaseConfiguration();
             searchObject.put("name", new BasicDBObject("$eq", _className));
             ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(null, mongoConfigurations, searchObject, null, 1000, new String[]{}, false);
             if (results != null) {
@@ -874,40 +834,40 @@ public class DatabaseActions {
         return mongoConf;
     }
 
-    public static MongoConfigurations getMongoConfiguration(String _mongoConfigurationName) {
-        MongoConfigurations mongoConf = null;
-        try {
-            //ObjectMapper mapper = new ObjectMapper();
-            BasicDBObject searchObject = new BasicDBObject();
-            searchObject.put("mongoconfigurationsid", new BasicDBObject("$eq", _mongoConfigurationName));
-            MongoConfigurations mongoConfigurations = getBaseConfiguration();
-            ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(null, mongoConfigurations, searchObject, null, 1000, new String[]{}, false);
-            if (results.size() < 1) {
-                searchObject.remove("mongoconfigurationsid");
-                searchObject.put("name", new BasicDBObject("$eq", _mongoConfigurationName));
-                results = DatabaseActions.getObjectsSpecificListv2(null, mongoConfigurations, searchObject, null, 1000, new String[]{}, false);
-
-            }
-            if (results != null) {
-                if (results.size() > 0) {
-                    mongoConf = universalObjectMapper.convertValue(results.get(0), MongoConfigurations.class
-                    );
-                } else {
-                    Logger.getLogger(DatabaseActions.class
-                            .getName()).log(Level.SEVERE, "{0}Mongoconf not found!", searchObject.toString());
-                }
-
-            } else {
-                Logger.getLogger(DatabaseActions.class
-                        .getName()).log(Level.SEVERE, "Mongoconf is null!{0}", searchObject.toString());
-            }
-        } catch (JsonProcessingException | ClassNotFoundException ex) {
-            Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return mongoConf;
-    }
+//    public static MongoConfigurations getMongoConfiguration(String _mongoConfigurationName) {
+//        MongoConfigurations mongoConf = null;
+//        try {
+//            //ObjectMapper mapper = new ObjectMapper();
+//            BasicDBObject searchObject = new BasicDBObject();
+//            searchObject.put("mongoconfigurationsid", new BasicDBObject("$eq", _mongoConfigurationName));
+//            MongoConfigurations mongoConfigurations = getBaseConfiguration();
+//            ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(null, mongoConfigurations, searchObject, null, 1000, new String[]{}, false);
+//            if (results.size() < 1) {
+//                searchObject.remove("mongoconfigurationsid");
+//                searchObject.put("name", new BasicDBObject("$eq", _mongoConfigurationName));
+//                results = DatabaseActions.getObjectsSpecificListv2(null, mongoConfigurations, searchObject, null, 1000, new String[]{}, false);
+//
+//            }
+//            if (results != null) {
+//                if (results.size() > 0) {
+//                    mongoConf = universalObjectMapper.convertValue(results.get(0), MongoConfigurations.class
+//                    );
+//                } else {
+//                    Logger.getLogger(DatabaseActions.class
+//                            .getName()).log(Level.SEVERE, "{0}Mongoconf not found!", searchObject.toString());
+//                }
+//
+//            } else {
+//                Logger.getLogger(DatabaseActions.class
+//                        .getName()).log(Level.SEVERE, "Mongoconf is null!{0}", searchObject.toString());
+//            }
+//        } catch (JsonProcessingException | ClassNotFoundException ex) {
+//            Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (IOException ex) {
+//            Logger.getLogger(DatabaseActions.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return mongoConf;
+//    }
 
     public static Document doQuery(String database, String query) {
 
@@ -916,7 +876,7 @@ public class DatabaseActions {
     }
 
     public static Command getCommand(String _commandId) throws ClassNotFoundException, IOException {
-        MongoConfigurations commandConfiguration = DatabaseActions.getMongoConfiguration("commands");
+        MongoConfigurations commandConfiguration = Database.getMongoConfiguration("commands");
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("commandid", new BasicDBObject("$eq", _commandId));
         ArrayList<Document> commandDoc = DatabaseActions.getObjectsSpecificListv2(null, commandConfiguration, searchObject, null, 1, new String[0], false);
@@ -925,7 +885,7 @@ public class DatabaseActions {
     }
 
     public static Method getMethod(String _methodName) throws ClassNotFoundException, IOException {
-        MongoConfigurations commandConfiguration = DatabaseActions.getMongoConfiguration("methods");
+        MongoConfigurations commandConfiguration = Database.getMongoConfiguration("methods");
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("method", new BasicDBObject("$eq", _methodName));
         ArrayList<Document> commandDoc = DatabaseActions.getObjectsSpecificListv2(null, commandConfiguration, searchObject, null, 1, new String[0], false);
@@ -945,10 +905,9 @@ class CronTask extends TimerTask {
     public void run() {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            Actions action = DatabaseWrapper.getAction("loadchronjobs");
+            Actions action = Database.getDatabaseAction("loadchronjobs");
             if (action != null) {
-                MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration(action.mongoconfiguration);
-                MongoConfigurations commandConfiguration = DatabaseActions.getMongoConfiguration("commands");
+                MongoConfigurations mongoConfiguration = Database.getMongoConfiguration(action.mongoconfiguration);
                 if (mongoConfiguration != null) {
                     ArrayList<Document> jobs = DatabaseActions.getObjectsSpecificListv2(null, mongoConfiguration, new BasicDBObject(), null, 1000, new String[0], false);
                     if (jobs.size() > 0) {
@@ -960,10 +919,6 @@ class CronTask extends TimerTask {
                             if (currentTime - lastExecution > (Integer.parseInt(chronJob.getInterval()) * 60 * 1000)) {
                                 for (String command : chronJob.getCommmands()) {
                                     Command commandObject = getCommand(command);
-//                                    BasicDBObject searchObject = new BasicDBObject();
-//                                    searchObject.put("commandid", new BasicDBObject("$eq", command));
-//                                    ArrayList<Document> commandDoc = DatabaseActions.getObjectsSpecificListv2(null, commandConfiguration, searchObject, null, 1, new String[0], false);
-//                                    gcms.GsonObjects.Core.Command commandObject = mapper.convertValue(commandDoc.get(0), gcms.GsonObjects.Core.Command.class);
                                     Map<String, String> commandParameters = mapper.readValue(commandObject.getParameters(), new TypeReference<Map<String, String>>() {
                                     });
                                     Map<String, String> convertedCommandParameters = commandParameters.entrySet().stream()

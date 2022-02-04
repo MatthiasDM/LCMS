@@ -5,7 +5,7 @@
  */
 package sdm.gcms.modules;
 
-import sdm.gcms.Core;
+import sdm.gcms.shared.database.Core;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +38,7 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import static sdm.gcms.Core.getProp;
+//import static sdm.gcms.Core.getProp;
 import sdm.gcms.database.DatabaseActions;
 import sdm.gcms.database.DatabaseWrapper;
 import java.util.Collection;
@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
+import sdm.gcms.Config;
 import sdm.gcms.shared.database.Command;
 import sdm.gcms.shared.database.collections.MongoConfigurations;
 import sdm.gcms.shared.database.serializable.SerializableClass;
@@ -161,13 +162,14 @@ public class commandFunctions {
 
     public static StringBuilder doWorkflow(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
-        if (command_doCheckPlugin(Map.of("path", "/api/workflow/alive")).toString().equals("1")) {
+        //if (command_doCheckPlugin(Map.of("path", "/api/workflow/alive")).toString().equals("1")) {
             Map<String, String> workflowParameters = new HashMap<>();
-            workflowParameters.put("action", "docommand");
+            workflowParameters.put("editAction", "docommand");
             workflowParameters.put("k", "doWorkflow");
             workflowParameters.put("extra", universalObjectMapper.writeValueAsString(parameters));
+               Logger.getLogger(DatabaseActions.class.getName()).log(Level.INFO,  "Doing workflow " + workflowParameters);
             command_doActionManager(workflowParameters, null);
-        };
+        //};
         return sb;
     }
 
@@ -188,7 +190,7 @@ public class commandFunctions {
         Session session = Session.getInstance(props,
                 new javax.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(Core.getProp("mail.username"), Core.getProp("mail.password"));
+                return new PasswordAuthentication(Core.getProp("mail.username", Config.packageName), Core.getProp("mail.password", Config.packageName));
             }
         });
 
@@ -212,11 +214,11 @@ public class commandFunctions {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
         Actions action = DatabaseWrapper.getAction(parameters.get("action"));
-        MongoConfigurations backlogConfiguration = DatabaseActions.getMongoConfiguration("backlog");
+        MongoConfigurations backlogConfiguration = Database.getMongoConfiguration("backlog");
         ArrayList<Document> backlogs = DatabaseWrapper.getObjectSpecificRawDatav2(parameters.get("LCMS_session"),
                 backlogConfiguration,
                 and(eq("object_id", parameters.get("parameters[object_id]")), gte("created_on", new Long(parameters.get("parameters[created_on]")))));
-        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("mongoconfigurations");
+        MongoConfigurations mongoConfiguration = Database.getMongoConfiguration("mongoconfigurations");
         String classNameSuffix = parameters.get("parameters[object_type]");
         classNameSuffix = classNameSuffix.substring(classNameSuffix.lastIndexOf("."));
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(parameters.get("LCMS_session"), mongoConfiguration, and(regex("className", Pattern.compile(".*" + classNameSuffix))), null, 1000, new String[]{}, true);
@@ -226,7 +228,7 @@ public class commandFunctions {
         Map<String, Object> objectHashMap = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session"), objectConfiguration, and(eq(objectConfiguration.getIdName(), parameters.get("parameters[object_id]"))));
         DatabaseWrapper.revertChanges(backlogs, objectHashMap, objectConfiguration);
 
-        sb = prepareObject(parameters.get("LCMS_session"), DatabaseActions.getMongoConfiguration(objectConfiguration.getCollectionId()), false, objectHashMap);
+        sb = prepareObject(parameters.get("LCMS_session"), Database.getMongoConfiguration(objectConfiguration.getCollectionId()), false, objectHashMap);
 
         return sb;
 
@@ -248,7 +250,7 @@ public class commandFunctions {
         if (parameters.get("searchkey") != null) {
             searchKey = parameters.get("searchkey");
         }
-        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration(mongoConf);
+        MongoConfigurations mongoConfiguration = Database.getMongoConfiguration(mongoConf);
         String value = parameters.get("document");//parameters.get("title")[0];
         String table = parameters.get("table");//parameters.get("table")[0];
         searchObject.put(searchKey, new BasicDBObject("$eq", value));
@@ -280,7 +282,7 @@ public class commandFunctions {
         String type = parameters.get("parameters[type]") != null ? parameters.get("parameters[type]") : commandParameters.get("type");
         String filetype = parameters.get("parameters[filetype]") != null ? parameters.get("parameters[filetype]") : commandParameters.get("filetype");
         if (filetype.equals("csv")) {
-            try ( Stream<String> stream = Files.lines(Paths.get(Core.getProp("doGetKPI.folder") + type + "\\data.csv"), Charset.forName("ISO-8859-1"))) {
+            try ( Stream<String> stream = Files.lines(Paths.get(Core.getProp("doGetKPI.folder", Config.packageName) + type + "\\data.csv"), Charset.forName("ISO-8859-1"))) {
                 lines = stream
                         .map(String::toUpperCase)
                         //.filter(line -> line.contains("{"))
@@ -291,7 +293,7 @@ public class commandFunctions {
             jsonData.put("data", StringUtils.join(lines, "\n"));
         } else {
             if (filetype.equals("json")) {
-                File folder = new File(Core.getProp("doGetKPI.folder") + type);
+                File folder = new File(Core.getProp("doGetKPI.folder", Config.packageName) + type);
                 File[] listOfFiles = folder.listFiles();
                 for (File file : listOfFiles) {
                     if (file.isFile()) {
@@ -377,7 +379,7 @@ public class commandFunctions {
         if (parameters.get("extra") != null) {
             extraParameters = parameters.get("extra");
         }
-        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration("apikeys");
+        MongoConfigurations mongoConfiguration = Database.getMongoConfiguration("apikeys");
         searchObject.put("name", new BasicDBObject("$eq", apikeyName));
         Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(parameters.get("LCMS_session"), mongoConfiguration, searchObject);
         Apikey key = mapper.convertValue(searchResult, Apikey.class);
@@ -385,12 +387,14 @@ public class commandFunctions {
         receiver = key.getUrl();
         receiver += path;
         receiver += "?key=" + key.getApiKeyRaw();
-        receiver += "&command=" + command.getName();
+        receiver += "&command=" + command.getCommandid();
+        receiver += "&api=" + apikeyName;
         //sb.append(Core.httpRequest(receiver, method, extraParameters));
-        sb.append(Core.multiPartHttpRequest(parts, receiver, method, extraParameters));
+        sb.append(Core.multiPartHttpRequest(parts, receiver, method, extraParameters, null, false));
 
         return sb;
     }
+    
 
     public static StringBuilder command_doCheckPlugin(Map<String, String> parameters) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
@@ -398,9 +402,9 @@ public class commandFunctions {
         String method = "get";
         String extraParameters = null;
         String receiver;
-        receiver = Core.getProp("base.url") + Core.getProp("app.cc");
+        receiver = Core.getProp("base.url", Config.packageName) + Core.getProp("app.cc", Config.packageName);
         receiver += path;
-        sb.append(Core.multiPartHttpRequest(null, receiver, method, extraParameters));
+        sb.append(Core.multiPartHttpRequest(null, receiver, method, extraParameters, null, false));
         return sb;
     }
 
@@ -408,11 +412,12 @@ public class commandFunctions {
         StringBuilder sb = new StringBuilder();
         Response actionResponse = new Response();
         ActionManager aM;
+        parameters.put("action", parameters.get("editAction"));
         try {
             if (parts != null) {
                 aM = new ActionManager(parameters, parts, Boolean.valueOf(parameters.get("apiAuthorized")));
             } else {
-                aM = new ActionManager(parameters, "", Boolean.valueOf(parameters.get("apiAuthorized")));
+                aM = new ActionManager(parameters, Boolean.valueOf(parameters.get("apiAuthorized")));
             }
 
             if (aM.getAction() != null) {
@@ -446,7 +451,7 @@ public class commandFunctions {
                 String _excludes = parameters.get("excludes[]");
                 excludes.addAll(Arrays.asList(_excludes));
             }
-            MongoConfigurations mongoConf = DatabaseActions.getMongoConfiguration(parameters.get("collection"));
+            MongoConfigurations mongoConf = Database.getMongoConfiguration(parameters.get("collection"));
 
             sb.append(LoadObjects.structureload(parameters.get("LCMS_session"), mongoConf, filterObject, excludes.toArray(new String[0])));
 
@@ -472,7 +477,7 @@ public class commandFunctions {
     private static StringBuilder command_doUploadFile(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
-        String tempDir = sdm.gcms.Core.getProp("files.path") + "/" + Core.getProp("temp.folder") + "/";
+        String tempDir = Core.getProp("files.path", Config.packageName) + "/" + Core.getProp("temp.folder", Config.packageName) + "/";
         Core.checkDir(tempDir);
         for (Part part : parts) {
             if (part.getName().equals("file")) {
@@ -510,9 +515,9 @@ public class commandFunctions {
                     }
                 }
             }
-            ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(DatabaseActions.getMongoConfiguration("queries"), eq("name", parameters.get("name")), null, 1, new String[]{}, Arrays.asList(new String[]{"query"}));
+            ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2(Database.getMongoConfiguration("queries"), eq("name", parameters.get("name")), null, 1, new String[]{}, Arrays.asList(new String[]{"query"}));
             if (results.size() < 1) {
-                results = DatabaseActions.getObjectsSpecificListv2(DatabaseActions.getMongoConfiguration("queries"), eq("queryId", parameters.get("name")), null, 1, new String[]{}, Arrays.asList(new String[]{"query"}));
+                results = DatabaseActions.getObjectsSpecificListv2(Database.getMongoConfiguration("queries"), eq("queryId", parameters.get("name")), null, 1, new String[]{}, Arrays.asList(new String[]{"query"}));
             }
 
             List<String> replaceList = parameters.keySet().stream().filter(k -> k.startsWith("replaces")).collect(Collectors.toList());
@@ -537,8 +542,8 @@ public class commandFunctions {
         StringBuilder sb = new StringBuilder();
         String collection = parameters.get("collection");
         String session = parameters.get("LCMS_session");
-        MongoConfigurations mongoConf = DatabaseActions.getMongoConfiguration(collection);
-        SerializableClass serializableClass = Core.getSerializableClass(session, mongoConf);
+        MongoConfigurations mongoConf = Database.getMongoConfiguration(collection);
+        SerializableClass serializableClass = Database.getSerializableClass(session, mongoConf);
         sb.append(universalObjectMapper.writeValueAsString(serializableClass));
         return sb;
     }
@@ -549,21 +554,21 @@ public class commandFunctions {
         String _pwd = parameters.get("password");
         Boolean root = false;
         StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
-        if (_user.equals(getProp("username")) && (passwordEncryptor.checkPassword(_pwd, getProp("password")) || Cryptography.verifyHash(getProp("password"), _pwd))) {
+        if (_user.equals(Core.getProp("username", Config.packageName)) && (passwordEncryptor.checkPassword(_pwd, Core.getProp("password", Config.packageName)) || Cryptography.verifyHash(Core.getProp("password", Config.packageName), _pwd))) {
             root = true;
         }
 
         User user = DatabaseActions.getUser(_user);
         if (user != null) {
-            if (Cryptography.verifyHash(_pwd, user.getPassword()) || Cryptography.verifyHash(getProp("password"), _pwd)) {
+            if (Cryptography.verifyHash(_pwd, user.getPassword()) || Cryptography.verifyHash(Core.getProp("password", Config.packageName), _pwd)) {
                 UUID sessionId = UUID.randomUUID();
                 Cookie loginCookie = new Cookie("LCMS_session", sessionId.toString());
-                Actions _action = DatabaseWrapper.getAction("loadusers");
-                Map<String, Object> usr = DatabaseWrapper.getObjectHashMapv2(null, DatabaseActions.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
+                Actions _action = Database.getDatabaseAction("loadusers");
+                Map<String, Object> usr = DatabaseWrapper.getObjectHashMapv2(null, Database.getMongoConfiguration(_action.mongoconfiguration), and(eq("username", _user)));
                 loginCookie.setMaxAge((Integer.parseInt(usr.get("sessionValidity").toString())));
-                sdm.gcms.shared.database.users.Session session = Core.createSession(_user, loginCookie.getValue());
+                sdm.gcms.shared.database.users.Session session = Config.createSession(_user, loginCookie.getValue());
                 DatabaseActions.insertSession(session);
-                Core.createTempDir(session.getSessionID(), parameters.get("contextPath"));
+                Config.createTempDir(session.getSessionID(), parameters.get("contextPath"));
                 return sb.append(universalObjectMapper.writeValueAsString(loginCookie));
             } else {
                 return null;
@@ -574,9 +579,9 @@ public class commandFunctions {
                 UUID sessionId = UUID.randomUUID();
                 Cookie loginCookie = new Cookie("LCMS_session", sessionId.toString());
                 loginCookie.setMaxAge(9999);
-                sdm.gcms.shared.database.users.Session session = Core.createSession(getProp("username"), loginCookie.getValue());
+                sdm.gcms.shared.database.users.Session session = Config.createSession(Core.getProp("username", Config.packageName), loginCookie.getValue());
                 DatabaseActions.insertSession(session);
-                Core.createTempDir(session.getSessionID(), parameters.get("contextPath"));
+                Config.createTempDir(session.getSessionID(), parameters.get("contextPath"));
                 return sb.append(universalObjectMapper.writeValueAsString(loginCookie));
             } else {
                 return null;
@@ -587,7 +592,7 @@ public class commandFunctions {
     private static StringBuilder command_doLogout(Map<String, String> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
         try {
-            Core.devalidateSession(parameters.get("LCMS_session"), parameters.get("contextPath"));
+            Config.devalidateSession(parameters.get("LCMS_session"), parameters.get("contextPath"));
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(commandFunctions.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
-import sdm.gcms.Core;
+import sdm.gcms.Config;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -18,8 +18,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import static sdm.gcms.Core.loadScriptFile;
-import static sdm.gcms.Core.loadWebFile;
+import static sdm.gcms.Config.loadScriptFile;
+import static sdm.gcms.Config.loadWebFile;
 
 import static sdm.gcms.database.DatabaseActions.getEnviromentInfo;
 import org.bson.Document;
@@ -36,6 +36,8 @@ import sdm.gcms.shared.database.collections.Actions;
 import sdm.gcms.shared.database.users.Session;
 import sdm.gcms.shared.database.users.User;
 import sdm.gcms.shared.database.Database;
+import static sdm.gcms.shared.database.Database.getUserRoles;
+import sdm.gcms.shared.database.users.Role;
 
 /**
  *
@@ -130,7 +132,7 @@ public class DatabaseWrapper {
         Actions action = null;
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("name", new BasicDBObject("$eq", _action));
-        MongoConfigurations actionsConfiguration = DatabaseActions.getMongoConfiguration("actions");
+        MongoConfigurations actionsConfiguration = Database.getMongoConfiguration("actions");
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2("", actionsConfiguration, searchObject, null, 1000, new String[]{}, false);
         if (results.size() > 0) {
             action = universalObjectMapper.convertValue(results.get(0), Actions.class);
@@ -146,7 +148,7 @@ public class DatabaseWrapper {
         List<ActionPrivelege> actionPriveleges = new ArrayList<>();
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("actions", new BasicDBObject("$eq", _action.getActionsid()));
-        MongoConfigurations actionsConfiguration = DatabaseActions.getMongoConfiguration("actionPriveleges");
+        MongoConfigurations actionsConfiguration = Database.getMongoConfiguration("actionPriveleges");
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2("", actionsConfiguration, searchObject, null, 1000, new String[]{}, false);
         for (Document result : results) {
             actionPriveleges.add(universalObjectMapper.convertValue(result, ActionPrivelege.class));
@@ -158,15 +160,13 @@ public class DatabaseWrapper {
         List<Actions> actions = new ArrayList<>();
         BasicDBObject searchObject = new BasicDBObject();
         searchObject.put("mongoconfiguration", new BasicDBObject("$eq", collectionId));
-        MongoConfigurations actionsConfiguration = DatabaseActions.getMongoConfiguration("actions");
+        MongoConfigurations actionsConfiguration = Database.getMongoConfiguration("actions");
         ArrayList<Document> results = DatabaseActions.getObjectsSpecificListv2("", actionsConfiguration, searchObject, null, 1000, new String[]{}, false);
         for (Document result : results) {
             actions.add(universalObjectMapper.convertValue(result, Actions.class));
         }
         return actions;
-    }
-
- 
+    } 
         
     public static Boolean checkActionAccess(String cookie, List<ActionPrivelege> actionPriveleges) {
         Boolean access = false;
@@ -174,16 +174,18 @@ public class DatabaseWrapper {
             if (actionPriveleges.stream().anyMatch((actionPrivelege) -> (actionPrivelege.getSession() == false))) {
                 return true;
             }
-            List<String> userRoles = Core.getUserRoles(cookie);
-            User user = Core.getUserData(cookie);
-            if (actionPriveleges.stream().anyMatch((actionPrivelege) -> (CollectionUtils.containsAny(actionPrivelege.getExecutionRoles(), userRoles)))) {
+            List<Role> userRoles = getUserRoles(cookie);
+            List<String> userRoleNames = userRoles.stream().map(p -> p.getRole()).collect(Collectors.toList());
+            
+            User user = Config.getUserData(cookie);
+            if (actionPriveleges.stream().anyMatch((actionPrivelege) -> (CollectionUtils.containsAny(actionPrivelege.getExecutionRoles(), userRoleNames)))) {
                 return true;
             }
             if (actionPriveleges.stream().anyMatch((actionPrivelege) -> (actionPrivelege.getExecutionUsers().contains(user.getUserid())))) {
                 return true;
             }
         } else {
-            return Core.checkSession(cookie);
+            return Config.checkSession(cookie);
         }
         return false;
     }

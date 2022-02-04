@@ -6,7 +6,29 @@
 
 class gcmscore {
 
-    filterAttributeJson(data, filterBy) {
+    static filterPostdata(postdata, colModel) {
+        var postdataFiltered = $.extend(postdata, {});
+        var keys = ["LCMS_session", "action", "oper"];
+        var c = ["NaN", "undefined", "Undefined", "null"];
+        $.each(colModel, function (a) {
+            keys.push(colModel[a].name);
+        });
+        $.each(postdata, function (a) {
+            if (!keys.includes(a)) {
+                delete postdataFiltered[a];
+            }
+        });
+
+        $.each(postdataFiltered, function (a) {
+            console.log(postdataFiltered[a]);
+            if (postdataFiltered[a] !== postdataFiltered[a] || typeof postdataFiltered[a] == "undefined" || c.includes(postdataFiltered[a])) {
+                postdataFiltered[a] = "";
+            }
+        })
+        return postdataFiltered;
+    }
+
+    static filterAttributeJson(data, filterBy) {
         var lookup = {};
         var items = data;
         var result = [];
@@ -20,7 +42,7 @@ class gcmscore {
         return result;
     }
 
-    filterUniqueJson(data, filterBy) {
+    static filterUniqueJson(data, filterBy) {
         var lookup = {};
         var items = data;
         var result = [];
@@ -35,7 +57,7 @@ class gcmscore {
         return result;
     }
 
-    filterUnique(data, filterBy) {
+    static filterUnique(data, filterBy) {
         var lookup = {};
         var items = data;
         var result = [];
@@ -52,7 +74,7 @@ class gcmscore {
         return result;
     }
 
-    scrollTo(target) {
+    static scrollTo(target) {
 //var target = editorContents.contents().find(this.getAttribute('anchor'));
         if (target.length && typeof event !== "undefined") {
             event.preventDefault();
@@ -62,7 +84,7 @@ class gcmscore {
         }
     }
 
-    CSVToArray(strData, strDelimiter) {
+    static CSVToArray(strData, strDelimiter) {
         console.log("CSVToArray()");
         strDelimiter = (strDelimiter || ",");
         var objPattern = new RegExp(
@@ -100,7 +122,7 @@ class gcmscore {
         return(arrData);
     }
 
-    getCSSOfHref(href) {
+    static getCSSOfHref(href) {
         var css = [];
         //var sheet = $("<link type='text/css' rel='stylesheet' href='"+href+"'/>")[0].sheet;
         var sheet = $("link[href='" + href + "']")[0].sheet;
@@ -121,7 +143,7 @@ class gcmscore {
         return cssInline;
     }
 
-    async getJS() {
+    static async getJS() {
         var scriptsOnPage = "";
         var scriptTags = Array.prototype.slice.call(document.querySelectorAll("script[src]"));
         $.each(scriptTags, async function (index, script) {
@@ -145,7 +167,7 @@ class gcmscore {
         return scriptsOnPage;
     }
 
-    getCSS() {
+    static getCSS() {
         var css = [];
         for (var i = 0; i < document.styleSheets.length; i++)
         {
@@ -168,7 +190,7 @@ class gcmscore {
         return cssInline;
     }
 
-    async getDocumentByName(_parent, _id) {
+    static async getDocumentByName(_parent, _id) {
         let request = await LCMSRequest("./servlet", {action: "getdocument", k: "title", v: _id});
         let afterRequest = await onDone(request);
         return "done";
@@ -177,7 +199,7 @@ class gcmscore {
         }
     }
 
-    async doCommand(_command, _parameters, _ondone) {
+    static async doCommand(_command, _parameters, _ondone) {
         let request = await LCMSRequest("./servlet", {action: "docommand", k: _command, parameters: _parameters});
         let afterRequest = await onDone(request);
         return "done";
@@ -186,7 +208,7 @@ class gcmscore {
         }
     }
 
-    getUrlParameter = function getUrlParameter(sParam) {
+    static getUrlParameter = function getUrlParameter(sParam) {
         var sPageURL = window.location.search.substring(1),
                 sURLVariables = sPageURL.split('&'),
                 sParameterName,
@@ -201,7 +223,7 @@ class gcmscore {
 
     }
 
-    async LCMSRequest(_url, _data, _onDone, _extraParam, _includeSession) {
+    static async LCMSRequest(_url, _data, _onDone, _extraParam, _includeSession) {
 
         if (typeof _includeSession === "undefined") {
             _includeSession = true;
@@ -241,7 +263,7 @@ class gcmscore {
 
     }
 
-    getPatches(oldData, newData) {
+    static getPatches(oldData, newData) {
         console.log("getPatches()");
         // oldData = bytesToHex(stringToUTF8Bytes(oldData));
         // newData = bytesToHex(stringToUTF8Bytes(newData));
@@ -254,7 +276,7 @@ class gcmscore {
         return textPatches;
     }
 
-    getPatchesReverse(oldData, newData) {
+    static getPatchesReverse(oldData, newData) {
         console.log("getPatches()");
         var dmp = new diff_match_patch();
         // var diff = dmp.diff_main((oldData), (newData));
@@ -1161,7 +1183,7 @@ class gcmscore {
         return me.LCMSTableRequest(baseName, "edit" + baseName, editUrl, containerName + "-table", containerName + "-pager", containerName + "-div-grid-wrapper", caption, tableType, lazyOptions, extraRequestOptions, LCMSEditablePageObject);
     }
 
-    static createTableModal(_title, _baseName, _parent, _extraContent, _lazyOptions) {
+    static createTableModal(_title, _baseName, _parent, _extraContent, _lazyOptions, _extraRequestOptions) {
         var me = this;
         var mod = create_modal(_parent, "", "");
         var modalBody = mod.find("div[class=modal-body]");
@@ -1173,20 +1195,28 @@ class gcmscore {
             $(this).remove();
         });
 
-        me.loadLazyTable(_title, modalBody, _baseName, _lazyOptions);
+        me.loadLazyTable(_title, modalBody, _baseName, _lazyOptions, _extraRequestOptions);
         modalBody.append(_extraContent);
         var modbs5 = new bootstrap.Modal(mod);
         modbs5.show();
         //mod.modal();
     }
 
-    static createModal(_title, _parent) {
+    static createModal(_title, _parent, _backdrop, _onClosing) {
         var me = this;
         var mod = create_modal(_parent, _title, _title);
+        if (_backdrop) {
+            mod.attr("data-bs-backdrop", _backdrop);
+        }
         var modalBody = mod.find("div[class=modal-body]");
         mod.on('hidden.bs.modal', function () {
             $(this).remove();
-
+        });
+        mod.on('hide.bs.modal', function () {
+            if (_onClosing != null) {
+                _onClosing(mod)
+            }
+            ;
         });
         var modbs5 = new bootstrap.Modal(mod);
         modbs5.show();
@@ -1703,18 +1733,22 @@ async function LCMSRequest(_url, _data, _onDone, _extraParam, _includeSession) {
         _includeSession = true;
     }
 
-    if (!_data.__proto__.toString().includes("FormData") && _includeSession) {
-        _data['LCMS_session'] = $.cookie('LCMS_session');
-    }
-
     var ajaxParameters = {
         method: "POST",
         url: _url,
-        data: _data,
         beforeSend: function (xhr) {
             xhr.overrideMimeType("application/html");
         }
     };
+
+    if (_data != null) {
+        if (!_data.__proto__.toString().includes("FormData") && _includeSession) {
+            _data['LCMS_session'] = $.cookie('LCMS_session');
+        }
+        ajaxParameters.data = _data;
+    }
+
+
     $.each(_extraParam, function (key, value) {
         ajaxParameters[key] = value;
     });
@@ -1870,8 +1904,22 @@ $(function () {
         }
     };
 
+//    $.fn.fmatter["reference"] = async function (cellvalue, options, rowObject) {
+//        console.log("eval reference");
+//        try {
+//            var vals = gcmscore.valuesFromInputHidden(cellvalue, options.colModel.fk);
+//            var uuid = uuidv4();
+//            var selectWrapper = gcmscore.domFormInputHidden("", uuid, options.colModel.name, vals, "", false);
+//            var input = selectWrapper.find("input[type=text]");
+//            input.attr("style", "padding:0;height:auto;border:none;margin-top:0;margin-bottom:0;background:transparent !important;color:var(--bs-gray-500)");
+//            return selectWrapper.html();
+//        } catch (err) {
+//            console.log(err);
+//        }
+//    };
+
     $.extend($.fn.fmatter, {
-        reference: function (cellvalue, options, rowObject) {
+        reference: (function (cellvalue, options, rowObject, test) {
             console.log("eval reference");
             try {
                 var vals = gcmscore.valuesFromInputHidden(cellvalue, options.colModel.fk);
@@ -1883,7 +1931,7 @@ $(function () {
             } catch (err) {
                 console.log(err);
             }
-        }
+        })
     });
 
 
@@ -2143,11 +2191,16 @@ function removeElements(classname, source) {
     var callback = function (a) {
         console.log(a);
     };
-    source = minify(source, {
-        removeAttributeQuotes: true,
-        collapseWhitespace: true
-                // other options
-    }, callback);
+    try {
+        source = minify(source, {
+            removeAttributeQuotes: true,
+            collapseWhitespace: true
+                    // other options
+        }, callback);
+    } catch (e) {
+        console.log("Minify error");
+    }
+
     console.log(source);
     var $s = $(source).find("." + classname).remove().end();
 
@@ -2622,10 +2675,24 @@ function not_undefined(test, value) {
 }
 
 
-
 function exists(obj) {
 
+    if (typeof obj !== "undefined") {
+        return obj != null;
+    } else {
+        return false;
+    }
+    ;
 }
+
+function getSafe(fn, defaultVal) {
+    try {
+        return fn();
+    } catch (e) {
+        return defaultVal;
+    }
+}
+
 
 function canvasToString(canvas) {
     var myImage = new Image();

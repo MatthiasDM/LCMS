@@ -6,7 +6,6 @@
 package sdm.gcms;
 
 import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import sdm.gcms.database.DatabaseActions;
 import sdm.gcms.shared.database.Database;
 
@@ -18,15 +17,8 @@ public class MainServletContextListener implements javax.servlet.ServletContextL
     }
 
     @Override
-    public void contextInitialized(ServletContextEvent arg0) {
-        // do all the tasks that you need to perform just after the server starts
-        Core.getProp("env");
-        // DatabaseActions.connect();
-        // DatabaseActions.createDatabaseMap();
-        Database.connect();
-        Database.createDatabaseMap();
+    public void contextInitialized(ServletContextEvent arg0) {        
+        Database.startUp();        
         DatabaseActions.startChronJobs();
-
-        //Notification that the web application initialization process is starting
     }
 }

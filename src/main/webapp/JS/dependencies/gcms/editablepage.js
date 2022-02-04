@@ -171,6 +171,9 @@ class LCMSEditablePage {
 
         // var patches = getPatches(me.originalDocument, data);
         var _cookie = $.cookie('LCMS_session');
+        // data = data.replace(/[u200B-u200DuFEFF]/g, '');
+        var re = new RegExp("\u2028|\u2029");
+        var data = data.replace(re, '');
         function onDone(_data) {
             me.originalDocument = data;
             bootstrap_alert.warning('Validatie opgeslaan', 'success', 2000);

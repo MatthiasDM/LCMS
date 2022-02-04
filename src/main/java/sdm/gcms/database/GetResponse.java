@@ -5,8 +5,6 @@
  */
 package sdm.gcms.database;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import java.util.HashMap;
 import java.util.List;
 import org.bson.Document;
 

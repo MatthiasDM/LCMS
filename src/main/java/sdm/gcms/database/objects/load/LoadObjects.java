@@ -15,8 +15,8 @@ import com.mongodb.client.MongoCollection;
 import static com.mongodb.client.model.Projections.exclude;
 import static com.mongodb.client.model.Projections.fields;
 import static com.mongodb.client.model.Projections.include;
-import sdm.gcms.Core;
-import static sdm.gcms.Core.loadWebFile;
+import sdm.gcms.Config;
+import static sdm.gcms.Config.loadWebFile;
 import sdm.gcms.database.DatabaseActions;
 import static sdm.gcms.database.DatabaseActions.getDocumentPriveleges;
 import sdm.gcms.database.DatabaseWrapper;
@@ -42,6 +42,7 @@ import sdm.gcms.shared.database.collections.MongoConfigurations;
 import sdm.gcms.shared.database.serializable.SerializableClass;
 import sdm.gcms.shared.database.serializable.SerializableField;
 import static sdm.gcms.shared.database.Core.universalObjectMapper;
+import sdm.gcms.shared.database.Database;
 import sdm.gcms.shared.database.Methods;
 import sdm.gcms.shared.database.collections.ActionPrivelege;
 import sdm.gcms.shared.database.collections.Actions;
@@ -61,10 +62,10 @@ public class LoadObjects {
         if (cookie == null) {
             sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
         } else {
-            if (Core.checkSession(cookie)) {
+            if (Config.checkSession(cookie)) {
                 SerializableClass serializableClass = new SerializableClass();
                 if (_mongoConf.getPluginName() != null && !_mongoConf.getPluginName().isBlank()) {
-                    serializableClass = Core.getFields(_mongoConf, cookie);
+                    serializableClass = sdm.gcms.shared.database.Core.getFields(_mongoConf, cookie);
                 } else {
                     serializableClass.setClassName(_mongoConf.getClassName());
                     serializableClass.convertFields(Arrays.asList(Class.forName(_mongoConf.getClassName()).getDeclaredFields()));
@@ -89,17 +90,12 @@ public class LoadObjects {
             List<ActionPrivelege> actionPriveleges = DatabaseWrapper.getActionPriveleges(optionalAction.get());
             access = DatabaseWrapper.checkActionAccess(cookie, actionPriveleges);
         } else {
-            access = Core.checkSession(cookie);
+            access = Config.checkSession(cookie);
         }
 
         if (access) {
-            SerializableClass serializableClass = new SerializableClass();
-            if (_mongoConf.getPluginName() != null && !_mongoConf.getPluginName().isBlank()) {
-                serializableClass = Core.getFields(_mongoConf, cookie);
-            } else {
-                serializableClass.setClassName(_mongoConf.getClassName());
-                serializableClass.convertFields(Arrays.asList(Class.forName(_mongoConf.getClassName()).getDeclaredFields()));
-            }
+            
+            SerializableClass serializableClass = Database.getSerializableClass(cookie, _mongoConf);           
             List<String> columns = getDocumentPriveleges(Methods.get, cookie, _mongoConf, true, serializableClass);
             ObjectNode jsonData = getObjects(cookie, _mongoConf, _mongoConf.getCollection(), filter, excludes, serializableClass, columns);
             sb.append(jsonData);
@@ -114,7 +110,7 @@ public class LoadObjects {
     public static GetResponse dataload(String cookie, MongoConfigurations _mongoConf, Map<String, String> requestParameters, BasicDBObject prefilter) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
         GetResponse response = new GetResponse();
 
-            SerializableClass serializableClass = Core.getSerializableClass(cookie, _mongoConf);
+            SerializableClass serializableClass = Database.getSerializableClass(cookie, _mongoConf);
             List<String> columns = getDocumentPriveleges(Methods.get, cookie, _mongoConf, true, serializableClass);
 
             ArrayList<String> excludes = new ArrayList<>();
@@ -169,9 +165,9 @@ public class LoadObjects {
                     ArrayList<String> fields = new ArrayList<>();
                     fields.add(pk);
                     fields.add(display);
-                    MongoConfigurations _fkMongoConf = DatabaseActions.getMongoConfiguration(collection);
-                    SerializableClass fkClass = Core.getSerializableClass(cookie, _fkMongoConf);
-                    fields.addAll(getDocumentPriveleges(Methods.get, cookie, _fkMongoConf, true, Core.getSerializableClass(cookie, _fkMongoConf)));
+                    MongoConfigurations _fkMongoConf = Database.getMongoConfiguration(collection);
+                    SerializableClass fkClass = Database.getSerializableClass(cookie, _fkMongoConf);
+                    fields.addAll(getDocumentPriveleges(Methods.get, cookie, _fkMongoConf, true, Database.getSerializableClass(cookie, _fkMongoConf)));
 
                     for (SerializableField f : fkClass.getFields()) {
                         gcmsObject annotation = (gcmsObject) f.getAnnotation();
@@ -272,7 +268,7 @@ public class LoadObjects {
 //                    ArrayList<String> fields = new ArrayList<>();
 //                    fields.add(relationParameter.getKey());
 //                    fields.add(relationParameter.getValue());
-//                    ArrayList<Document> objectList = getObjectsList(cookie, DatabaseActions.getMongoConfiguration(relationParameter.getCollection()), fields);
+//                    ArrayList<Document> objectList = getObjectsList(cookie, Database.getMongoConfiguration(relationParameter.getCollection()), fields);
 //                    JsonNode actualObj = universalObjectMapper.readTree(mapper.writeValueAsString(objectList));
 //                    String jsonValue = actualObj.toString();
 //                    headerEntry.put("choices", map);
@@ -283,7 +279,7 @@ public class LoadObjects {
                         ArrayList<String> fields = new ArrayList<>();
                         fields.add(mdmAnnotations.reference()[2]);
                         fields.add(mdmAnnotations.reference()[3]);
-                        ArrayList<Document> objectList = getObjectsList(cookie, DatabaseActions.getMongoConfiguration(mdmAnnotations.reference()[1]), fields);
+                        ArrayList<Document> objectList = getObjectsList(cookie, Database.getMongoConfiguration(mdmAnnotations.reference()[1]), fields);
                         HashMap<String, Object> map = new HashMap<>();
                         for (Object doc : objectList) {
                             JsonNode actualObj = universalObjectMapper.readTree(mapper.writeValueAsString(doc));

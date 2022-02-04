@@ -8,7 +8,6 @@ package sdm.gcms.GsonObjects.Core;
 import sdm.gcms.shared.database.filters.annotation.gcmsObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import java.util.List;
 /**
  *
  * @author Matthias

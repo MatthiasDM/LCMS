@@ -16,7 +16,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import static sdm.gcms.Core.checkSession;
+import static sdm.gcms.Config.checkSession;
 import sdm.gcms.database.DatabaseWrapper;
 import org.apache.commons.lang.StringEscapeUtils;
 

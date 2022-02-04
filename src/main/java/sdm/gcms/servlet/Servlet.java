@@ -19,7 +19,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import sdm.gcms.Core;
+import sdm.gcms.Config;
 import java.util.Enumeration;
 import javax.xml.bind.DatatypeConverter;
 import java.util.stream.Collectors;
@@ -58,18 +58,18 @@ public class Servlet extends HttpServlet {
         Boolean apiAuthorized = false;
         apiName = requestParameters.get("api");
         apiKey = requestParameters.get("key");
+        String apiCommand = requestParameters.get("command");
 
         try {
-            apiAuthorized = isValidApiKey(apiName, apiKey);
+            apiAuthorized = isValidApiKey(apiName, apiKey, apiCommand);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         Response actionResponse = new Response();
-        String host = Core.getClientPCName(request.getRemoteAddr());
 
         try {
-            aM = new ActionManager(requestParameters, host, apiAuthorized);
+            aM = new ActionManager(requestParameters, apiAuthorized);
             if (aM.getAction() != null) {
                 try {
                     actionResponse = aM.startAction();
@@ -87,9 +87,9 @@ public class Servlet extends HttpServlet {
             Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, ex.getMessage());
         }
         if (sb.toString().length() > 0) {
-            response.setContentType("text/xml");
+            response.setContentType("text/xml; charset=utf-8");
             response.setHeader("Cache-Control", "no-cache");
-            response.setStatus(HttpServletResponse.SC_OK);
+            response.setStatus(actionResponse.responseStatus);
             response.getWriter().write(sb.toString());
         } else {
             response.setStatus(actionResponse.responseStatus);
@@ -107,8 +107,6 @@ public class Servlet extends HttpServlet {
         //  requestParameters.putAll(request.getParameterMap());
         requestParameters.put("contextPath", context.getRealPath("./HTML/other/files"));
         ActionManager aM;
-        String host = Core.getClientPCName(request.getRemoteAddr());
-        String user = request.getRemoteUser();
         Map<String, String> headers = new HashMap<>();
         Enumeration<String> headerNames = request.getHeaderNames();
         String apiName, apiKey;
@@ -126,14 +124,12 @@ public class Servlet extends HttpServlet {
                 String[] actualCredentials = decodedString.split(":");
                 apiName = actualCredentials[0];
                 apiKey = actualCredentials[1];
-
                 try {
-                    apiAuthorized = isValidApiKey(apiName, apiKey);
+                    apiAuthorized = isValidApiKey(apiName, apiKey, requestParameters.get("command"));
                 } catch (ClassNotFoundException ex) {
                     Logger.getLogger(Servlet.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 requestParameters.put("contextPath", context.getRealPath("/HTML/other/files"));
-
             }
         }
 
@@ -142,7 +138,7 @@ public class Servlet extends HttpServlet {
             if (request.getContentType().contains("multipart")) {
                 aM = new ActionManager(requestParameters, request.getParts(), apiAuthorized);
             } else {
-                aM = new ActionManager(requestParameters, host, apiAuthorized);
+                aM = new ActionManager(requestParameters, apiAuthorized);
             }
 
             if (aM.getAction() != null) {

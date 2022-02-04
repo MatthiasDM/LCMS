@@ -315,6 +315,10 @@ textarea[title=ckedit] {
     overflow: scroll !important;
 }
 
+.modal-content{
+    height: auto !important;    
+}
+
 .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-hdiv, .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-legacy-subgrid>thead {
     background-color: inherit !important;
 }

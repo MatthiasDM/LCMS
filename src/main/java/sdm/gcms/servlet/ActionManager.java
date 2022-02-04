@@ -9,12 +9,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
-import sdm.gcms.Core;
-import static sdm.gcms.Core.loadWebFile;
+import sdm.gcms.Config;
+import static sdm.gcms.Config.loadWebFile;
 
-
-
-import sdm.gcms.database.DatabaseActions;
 import sdm.gcms.database.DatabaseWrapper;
 import sdm.gcms.database.GetResponse;
 import static sdm.gcms.database.objects.edit.EditObject.editObject;
@@ -38,7 +35,12 @@ import sdm.gcms.shared.database.collections.ActionPrivelege;
 import sdm.gcms.shared.database.collections.Actions;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.or;
+import java.util.stream.Collectors;
 import sdm.gcms.shared.database.Command;
+import sdm.gcms.shared.database.Database;
+import static sdm.gcms.shared.database.Database.getUserRoles;
+import sdm.gcms.shared.database.users.Role;
+
 /**
  *
  * @author Matthias
@@ -51,16 +53,15 @@ public class ActionManager {
     List<ActionPrivelege> actionPriveleges;
     HashMap<String, String> requestParameters = new HashMap<String, String>();
     Collection<Part> parts;
-    int responseStatus = HttpServletResponse.SC_ACCEPTED;
+    int responseStatus = HttpServletResponse.SC_OK;
 
-    public ActionManager(Map<String, String> requestParameters, String hostName, Boolean apiAuthorized) throws ClassNotFoundException, IOException {
+    public ActionManager(Map<String, String> requestParameters, Boolean apiAuthorized) throws ClassNotFoundException, IOException {
         this.requestParameters = new HashMap<String, String>(requestParameters);
-
         this.apiAuthorized = apiAuthorized;
         this.hostName = hostName;
         if (requestParameters.get("action") != null) {
-            action = DatabaseWrapper.getAction(requestParameters.get("action"));
-            actionPriveleges = DatabaseWrapper.getActionPriveleges(action);
+            action = Database.getDatabaseAction(requestParameters.get("action"));
+            actionPriveleges = Database.getDatabaseActionPrivelege(action);
         }
         if (requestParameters.get("LCMS_session") != null) {
             cookie = requestParameters.get("LCMS_session");
@@ -72,7 +73,7 @@ public class ActionManager {
         this.requestParameters = new HashMap<>(requestParameters);
         if (requestParameters.get("action") != null) {
             action = DatabaseWrapper.getAction(requestParameters.get("action"));
-            actionPriveleges = DatabaseWrapper.getActionPriveleges(action);
+            actionPriveleges = Database.getDatabaseActionPrivelege(action);
         }
         if (requestParameters.get("LCMS_session") != null) {
             cookie = requestParameters.get("LCMS_session");
@@ -95,8 +96,8 @@ public class ActionManager {
             responseStatus = HttpServletResponse.SC_NOT_FOUND;
             sb.append("Specific action (").append(requestParameters.get("action")).append(") was not found.");
         }
-        MongoConfigurations mongoConfiguration = DatabaseActions.getMongoConfiguration(action.mongoconfiguration);
-        MongoConfigurations collection = DatabaseActions.getMongoConfiguration(action.mongoconfiguration);
+        MongoConfigurations mongoConfiguration = Database.getMongoConfiguration(action.mongoconfiguration);
+        MongoConfigurations collection = Database.getMongoConfiguration(action.mongoconfiguration);
 
         Boolean publicPage = false;
 
@@ -129,17 +130,18 @@ public class ActionManager {
                     String key = requestParameters.get("k");
                     //BasicDBObject searchObject = new BasicDBObject();
                     //searchObject.put("name", new BasicDBObject("$eq", key));
-                    Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, mongoConfiguration, or(eq("name", key),eq(mongoConfiguration.getIdName(), key)));
+                    Map<String, Object> searchResult = DatabaseWrapper.getObjectHashMapv2(cookie, mongoConfiguration, or(eq("name", key), eq(mongoConfiguration.getIdName(), key)));
                     Command command = mapper.convertValue(searchResult, Command.class);
                     List<String> accesstype = command.getAccessType();
                     if (accesstype.contains("0")) {
                         sb.append(commandFunctions.doCommand(key, requestParameters, command, parts));
                     } else {
-                        if (accesstype.contains("1") && !accesstype.contains("2") && (Core.checkSession(cookie) && !publicPage)) {
-                            List<String> userRoles = Core.getUserRoles(getCookie());
+                        if (accesstype.contains("1") && !accesstype.contains("2") && (Config.checkSession(cookie) && !publicPage)) {
+                            List<Role> userRoles = getUserRoles(getCookie());
+                            List<String> userRoleNames = userRoles.stream().map(p -> p.getRole()).collect(Collectors.toList());
                             List<String> executionRoles = command.getExecutionRoles();
-                            if (Core.notNullNorEmpty(executionRoles)) {
-                                if (CollectionUtils.containsAny(userRoles, executionRoles)) {
+                            if (Config.notNullNorEmpty(executionRoles)) {
+                                if (CollectionUtils.containsAny(userRoleNames, executionRoles)) {
                                     sb.append(commandFunctions.doCommand(key, requestParameters, command, parts));
                                 }
                             } else {
@@ -180,7 +182,7 @@ public class ActionManager {
                                 parseAsPage = Boolean.parseBoolean(requestParameters.get("parse_as_page"));
                                 restResponse = LoadObjects.parseAsPage(cookie, mongoConfiguration, publicPage, restResponse);
                             }
-
+                            
                             sb.append(universalObjectMapper.writeValueAsString(restResponse));
                         }
                     }
