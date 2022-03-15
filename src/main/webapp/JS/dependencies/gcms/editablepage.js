@@ -87,7 +87,8 @@ class LCMSEditablePage {
             }
 
         }
-        return await gcmscore.doQuery("getPageDepedencies", {"editablepageid": me.pageData.pageId}, fetchedDeps);
+        return await gcmscore.doCommand("getPageDepedencies", {"replaces": {"editablepageid": me.pageData.pageId}}, fetchedDeps);
+        //return await gcmscore.doQuery("getPageDepedencies", {"editablepageid": me.pageData.pageId}, fetchedDeps);
     }
 
     async generatePage(jsonData, grids) {
@@ -176,7 +177,7 @@ class LCMSEditablePage {
         var data = data.replace(re, '');
         function onDone(_data) {
             me.originalDocument = data;
-            bootstrap_alert.warning('Validatie opgeslaan', 'success', 2000);
+            bootstrap_alert.info('Validatie opgeslaan', 'success', 3000);
             console.log("Changes saved.");
         }
         var formData = new FormData();

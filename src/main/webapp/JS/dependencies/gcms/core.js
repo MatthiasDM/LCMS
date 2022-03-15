@@ -611,191 +611,6 @@ class gcmscore {
         return lcmsGrid;
     }
 
-//    async LCMSGridTemplateSimple(_jqGridOptions, _editAction, _editUrl, _tableName, _wrapperObject) {
-//        var gridData = {
-//            data: {header: _jqGridOptions.colModel, table: _jqGridOptions.data},
-//            editAction: _editAction,
-//            editUrl: _editUrl,
-//            tableObject: _tableName,
-//            pagerID: _tableName + "_pager",
-//            wrapperObject: _wrapperObject,
-//            jqGridOptions: {
-//                onSelectRow: function (rowid) {
-//                    return popupEdit(rowid, $("#" + _tableName), $("body"), "_editAction");
-//                },
-//                caption: _jqGridOptions.caption
-//            },
-//            jqGridParameters: {
-//                navGridParameters: {add: false}
-//            }
-//        };
-//        let LcmsGrid = new LCMSGrid(gridData);
-//        try {
-//            $("#" + _tableName).jqGrid('setGridWidth', 300);
-//        } catch (e) {
-//
-//        }
-//
-//        return LcmsGrid;
-//    }
-//
-//    async LCMSGridTemplateMinimal(jsonData, editAction, editUrl, tableName, pagerName, wrapperObject, caption, jqGridOptions) {
-//        try {
-//            if (typeof jsonData.table === "string") {
-//                jsonData.table = $.parseJSON(jsonData.table);
-//            }
-//            if (typeof jsonData.header === "string") {
-//                jsonData.header = $.parseJSON(jsonData.header);
-//            }
-//        } catch (e) {
-//
-//        }
-//
-//
-//
-//        var gridData = {
-//            data: jsonData,
-//            editAction: editAction, //"LAB_EDITDEPARTMENT",
-//            editUrl: editUrl, // "./lab",
-//            tableObject: tableName, //("department-table"),
-//            pagerID: pagerName, //"department-pager",
-//            wrapperObject: wrapperObject,
-//            jqGridOptions: {
-//                grouping: false,
-//                caption: caption, //lang["department"]['title']
-//            },
-//            jqGridParameters: {
-//                navGridParameters: {add: false, cancel: false, save: false, keys: true}
-//            }
-//        };
-//        if (typeof jqGridOptions !== "undefined") {
-//            $.each(jqGridOptions, function (i, n) {
-//                gridData.jqGridOptions[i] = n;
-//            });
-//        }
-//        let lcmsGrid = new LCMSGrid(gridData);
-//        await lcmsGrid.createGrid();
-//        return lcmsGrid;
-//    }
-//
-//    async LCMSGridTemplateStandard(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
-//        console.log("LCMSGridTemplateStandard()");
-//        var gridData = {
-//            data: jsonData,
-//            editAction: editAction, //"LAB_EDITDEPARTMENT",
-//            editUrl: editUrl, // "./lab",
-//            tableObject: tableName, //("department-table"),
-//            pagerID: pagerName, //"department-pager",
-//            wrapperObject: $("#" + wrapperName),
-//            jqGridOptions: {
-//                grouping: false,
-//                caption: caption //lang["department"]['title']
-//            },
-//            jqGridParameters: {
-//                navGridParameters: {add: false, cancel: true, save: true, keys: true, afterrestorefunc: function () {
-//                        console.log("afterrestorefunc");
-//                    }}
-//            }
-//        };
-//        if (typeof jqGridOptions !== "undefined") {
-//            $.each(jqGridOptions, function (i, n) {
-//                gridData.jqGridOptions[i] = n;
-//            });
-//        }
-//
-//
-//
-//        let lcmsGrid = new LCMSGrid(gridData);
-//
-//        var data = await lcmsGrid.createGrid().then(
-//                function (result) {
-//                    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw item", "", function () {
-//                        return lcmsGrid.popupEdit("new", function () {
-//                            return null;
-//                        });
-//                    }));
-//                    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
-//                        var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
-//                        if (rowid !== null) {
-//                            return lcmsGrid.popupEdit(rowid, function () {
-//                                return null;
-//                            });
-//                        } else {
-//                            return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
-//                        }
-//                    }));
-//                    $("#" + gridData.tableObject).trigger("reloadGrid");
-//                }
-//        );
-//        return lcmsGrid;
-//    }
-//
-//    async LCMSGridTemplateCustomOptions(jsonData, editAction, editUrl, tableName, pagerName, wrapperName, caption, jqGridOptions) {
-//        try {
-//            if (typeof jsonData.table === "string") {
-//                jsonData.table = $.parseJSON(jsonData.table);
-//            }
-//            if (typeof jsonData.header === "string") {
-//                jsonData.header = $.parseJSON(jsonData.header);
-//            }
-//        } catch (e) {
-//
-//        }
-//        var gridData = {
-//            data: jsonData,
-//            editAction: editAction, //"LAB_EDITDEPARTMENT",
-//            editUrl: editUrl, // "./lab",
-//            tableObject: tableName, //("department-table"),
-//            pagerID: pagerName, //"department-pager",
-//            wrapperObject: $("#" + wrapperName),
-//            jqGridOptions: {
-//                caption: caption //lang["department"]['title']
-//            },
-//            navGridParameters: {add: false, cancel: true, save: true, keys: true, afterrestorefunc: function () {
-//                    console.log("afterrestorefunc");
-//                }}
-//        };
-//        $.each(jqGridOptions, function (i, n) {
-//            gridData.jqGridOptions[i] = n;
-//        });
-//        let lcmsGrid = new LCMSGrid(gridData);
-//        await lcmsGrid.createGrid().then(
-//                function (result) {
-//                    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-plus", "Nieuw item", "", function () {
-//                        return lcmsGrid.popupEdit("new", function () {
-//                            return null;
-//                        });
-//                    }));
-//                    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
-//                        var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
-//                        if (rowid !== null) {
-//                            return lcmsGrid.popupEdit(rowid, function () {
-//                                return null;
-//                            });
-//                        } else {
-//                            return bootstrap_alert.warning('Geen rij geselecteerd', 'info', 1000);
-//                        }
-//                    }));
-//                    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-download", "Export", "", function () {
-//                        (async () => {
-//                            var data = (await lcmsGrid.export_as_html());
-//                            //openFile("test.html", "<div id='export' class='container'><div class='row'><div class='col-sm-1 mx-auto'></div><div class='col-sm-10 mx-auto'>" + data + "</div><div class='col-sm-1 mx-auto'></div></div>");
-//                        })();
-//                    }));
-//                    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-arrow-down", "Download as CSV", "", function () {
-//                        return lcmsGrid.download_grid();
-//                    }));
-//                    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-list-ul", "Click here to change columns", "", function () {
-//                        return lcmsGrid.toggle_multiselect($("#" + gridData.tableObject).jqGrid('getGridParam', 'id'));
-//                    }));
-//                }
-//        );
-//        return lcmsGrid;
-//    }
-
-
-
-
     LCMSTemplateGridButton(icon, title, caption, onClickFunction) {
         this.icon = icon;
         this.title = title;
@@ -1233,18 +1048,19 @@ class gcmscore {
                 return {};
             }
         }
-        var requestOptions = {};
-        requestOptions.action = "docommand";
-        requestOptions.k = "doQuery";
-        requestOptions.name = "getSnippet";
-        requestOptions.database = "lcms";
-        requestOptions.replaces = {};
-        requestOptions.replaces.name = name;
-        let request = await LCMSRequest("./servlet", requestOptions);
-        let returnvalue = await onDone(request);
-        return returnvalue;
+
+        return await gcmscore.doCommand("getSnippet", {"replaces": {"name": name}}, onDone);
     }
 
+    static async getSnippetPopup(name, target) {
+        var code = await this.getSnippet(name);
+        var modalBody = gcmscore.createModal('Query result', $('#admin-container'));
+        var modalContent = $("<div id='target'></div>");
+        modalContent.data('target', target);
+        modalContent.append(code);
+        modalBody.html(modalContent);
+    }
+    
     static async doQuery(name, replaces, onDone) {
 
         var requestOptions = {};
@@ -1361,36 +1177,27 @@ class gcmscore {
         return returnvalue;
     }
 
-    static async getSnippet(name, target) {
-        async function onDone(data) {
-            try {
-                console.log(JSON.parse(data).cursor.firstBatch[0].code);
-                return JSON.parse(data).cursor.firstBatch[0].code;
-            } catch (e) {
-                console.log(e);
-                return {};
-            }
-        }
-        var requestOptions = {};
-        requestOptions.action = "docommand";
-        requestOptions.k = "doQuery";
-        requestOptions.name = "getSnippet";
-        requestOptions.database = "lcms";
-        requestOptions.replaces = {};
-        requestOptions.replaces.name = name;
-        let request = await LCMSRequest("./servlet", requestOptions);
-        let returnvalue = await onDone(request);
-        return returnvalue;
-    }
-
-    static async getSnippetPopup(name, target) {
-        var code = await this.getSnippet(name);
-        var modalBody = gcmscore.createModal('Query result', $('#admin-container'));
-        var modalContent = $("<div id='target'></div>");
-        modalContent.data('target', target);
-        modalContent.append(code);
-        modalBody.html(modalContent);
-    }
+//    static async getSnippet(name, target) {
+//        async function onDone(data) {
+//            try {
+//                console.log(JSON.parse(data).cursor.firstBatch[0].code);
+//                return JSON.parse(data).cursor.firstBatch[0].code;
+//            } catch (e) {
+//                console.log(e);
+//                return {};
+//            }
+//        }
+//        var requestOptions = {};
+//        requestOptions.action = "docommand";
+//        requestOptions.k = "getFormatters";
+//        requestOptions.name = "getSnippet";
+//        requestOptions.database = "lcms";
+//        requestOptions.replaces = {};
+//        requestOptions.replaces.name = name;
+//        let request = await LCMSRequest("./servlet", requestOptions);
+//        let returnvalue = await onDone(request);
+//        return returnvalue;
+//    }
 
     static async editTable(collection, oper, data) {
         data.oper = oper;
@@ -1698,14 +1505,14 @@ async function getDocumentByName(_parent, _id) {
     }
 }
 
-async function doCommand(_command, _parameters, _ondone) {
-    let request = await LCMSRequest("./servlet", {action: "docommand", k: _command, parameters: _parameters});
-    let afterRequest = await onDone(request);
-    return "done";
-    async function onDone(data) {
-        return await _ondone(data);
-    }
-}
+//async function doCommand(_command, _parameters, _ondone) {
+//    let request = await LCMSRequest("./servlet", {action: "docommand", k: _command, parameters: _parameters});
+//    let afterRequest = await onDone(request);
+//    return "done";
+//    async function onDone(data) {
+//        return await _ondone(data);
+//    }
+//}
 
 var getUrlParameter = function getUrlParameter(sParam) {
     var sPageURL = window.location.search.substring(1),
@@ -2086,10 +1893,11 @@ function sessionCountdown() {
         $("#userInfo-session-timout").text(duration.hours() + ":" + duration.minutes() + ":" + duration.seconds())
     }, interval);
 }
+
 bootstrap_alert = function () {};
 bootstrap_alert.warning = function (message, alert, timeout) {
 
-    if ($("div[id^=floating_alert]").length === 0) {
+    if ($("div[id^=floating_alert]").length < 3) {
         bootstrap_alert.show(message, alert, timeout);
     } else {
         bootstrap_alert.clear();
@@ -2100,7 +1908,7 @@ bootstrap_alert.warning = function (message, alert, timeout) {
 
 bootstrap_alert.info = function (message, alert, timeout) {
 
-    if ($("div[id^=floating_alert]").length === 0) {
+    if ($("div[id^=floating_alert]").length < 3) {
         bootstrap_alert.info(message, alert, timeout);
     } else {
         bootstrap_alert.clear();
@@ -2761,8 +2569,6 @@ async function loadTemplates() {
     await onDone(request);
 
 }
-
-
 
 function get_url_extension(url) {
     return url.split(/\#|\?/)[0].split('.').pop().trim();

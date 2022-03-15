@@ -42,7 +42,7 @@ public class PageDependency {
             visibleOnTable = true,
             visibleOnForm = true
     )
-    public String archived;
+    public boolean archived;
 
     @gcmsObject(
             type = "datetime",

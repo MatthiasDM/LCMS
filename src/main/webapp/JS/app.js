@@ -44,7 +44,8 @@ require.config({
         papaparse: ('PapaParse/papaparse.min'),
         filesaver: ('filesaver/filesaver.min'),
         htmlminifier: ('htmlminifier/htmlminifier.min'),
-        zxing: ('zxing/zxing.min')
+        zxing: ('zxing/zxing.min'),
+        lz: ('lz/lz-string.min')
 
     },
     map: {
@@ -94,7 +95,8 @@ require([
     "dmp",
     "dropzone",
     "iframeresizer",
-    "htmlminifier"
+    "htmlminifier",
+    "lz"
 ], function ($) {
     console.log("all sources required");
     $("body").css({"background-image": "linear-gradient(rgba(var(--bs-body-bg-rgb), var(--alpha)),rgba(var(--bs-body-bg-rgb), var(--alpha))) , url('./files/background.jpg')", "background-attachment": "fixed", "background-repeat": "no-repeat", "background-size": "cover", "background-position": "center", "-webkit-mask-size": "cover"});

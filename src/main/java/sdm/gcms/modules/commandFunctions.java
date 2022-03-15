@@ -78,6 +78,18 @@ import sdm.gcms.shared.database.users.User;
  */
 public class commandFunctions {
 
+    /**
+     *
+     * @param name
+     * @param requestParameters
+     * @param command
+     * @param parts
+     * @return
+     * @throws ClassNotFoundException
+     * @throws JsonProcessingException
+     * @throws NoSuchFieldException
+     * @throws IOException
+     */
     public static StringBuilder doCommand(String name, Map<String, String> requestParameters, Command command, Collection<Part> parts) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
         name = command.getCommand();
         StringBuilder sb = new StringBuilder();
@@ -144,6 +156,12 @@ public class commandFunctions {
         if (name.equals("doQuery")) {
             sb.append(command_doQueryByName(commandParameters, parts));
         }
+        if (name.equals("doQueryTrimmed")) {
+            sb.append(command_doResultsQuery(commandParameters, parts));
+        }
+        if (name.equals("doReplace")) {
+            sb.append(command_replaceTemplate(commandParameters, command));
+        }
         if (name.equals("doGetClassInfo")) {
             sb.append(command_doGetCollectionInfo(commandParameters));
         }
@@ -155,24 +173,45 @@ public class commandFunctions {
         return sb;
     }
 
+    /**
+     *
+     * @return
+     */
     public static StringBuilder command1() {
         StringBuilder sb = new StringBuilder();
         return sb;
     }
 
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @param parts
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     public static StringBuilder doWorkflow(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         //if (command_doCheckPlugin(Map.of("path", "/api/workflow/alive")).toString().equals("1")) {
-            Map<String, String> workflowParameters = new HashMap<>();
-            workflowParameters.put("editAction", "docommand");
-            workflowParameters.put("k", "doWorkflow");
-            workflowParameters.put("extra", universalObjectMapper.writeValueAsString(parameters));
-               Logger.getLogger(DatabaseActions.class.getName()).log(Level.INFO,  "Doing workflow " + workflowParameters);
-            command_doActionManager(workflowParameters, null);
+        Map<String, String> workflowParameters = new HashMap<>();
+        workflowParameters.put("editAction", "docommand");
+        workflowParameters.put("k", "doWorkflow");
+        workflowParameters.put("extra", universalObjectMapper.writeValueAsString(parameters));
+        Logger.getLogger(DatabaseActions.class.getName()).log(Level.INFO, "Doing workflow " + workflowParameters);
+        command_doActionManager(workflowParameters, null);
         //};
         return sb;
     }
 
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @param parts
+     * @return
+     * @throws IOException
+     */
     public static StringBuilder command_sendEmail(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
@@ -210,6 +249,16 @@ public class commandFunctions {
         return sb;
     }
 
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @return
+     * @throws ClassNotFoundException
+     * @throws JsonProcessingException
+     * @throws NoSuchFieldException
+     * @throws IOException
+     */
     public static StringBuilder command_doBacklog(Map<String, String> parameters, Command command) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
@@ -234,6 +283,17 @@ public class commandFunctions {
 
     }
 
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @return
+     * @throws ClassNotFoundException
+     * @throws JsonProcessingException
+     * @throws NoSuchFieldException
+     * @throws IOException
+     * @throws DecoderException
+     */
     public static StringBuilder command_doGetTableFromDocument(Map<String, String> parameters, Command command) throws ClassNotFoundException, JsonProcessingException, NoSuchFieldException, IOException, DecoderException {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
@@ -271,7 +331,16 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doGetKPI(Map<String, String> parameters, Command command) throws ClassNotFoundException, NoSuchFieldException, IOException {
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @return
+     * @throws ClassNotFoundException
+     * @throws NoSuchFieldException
+     * @throws IOException
+     */
+    public static StringBuilder command_doGetKPI(Map<String, String> parameters, Command command) throws ClassNotFoundException, NoSuchFieldException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         StringBuilder sb = new StringBuilder();
         ObjectNode jsonData = mapper.createObjectNode();
@@ -323,7 +392,14 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doGetFiles(Map<String, String> parameters, Command command) throws IOException {
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @return
+     * @throws IOException
+     */
+    public static StringBuilder command_doGetFiles(Map<String, String> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -333,21 +409,47 @@ public class commandFunctions {
 
         for (Map.Entry<String, String> entry : commandParameters.entrySet()) {
             List<String> lines = new ArrayList<>();
-            try ( Stream<String> stream = Files.lines(Paths.get(entry.getValue()), Charset.forName("ISO-8859-1"))) {
-                lines = stream
-                        .map(String::toUpperCase)
-                        .filter(line -> line.contains("'"))
-                        .collect(Collectors.toList());
-            } catch (IOException e) {
-                e.printStackTrace();
+
+            if (new File(entry.getValue()).isDirectory()) {
+                File folder = new File(entry.getValue());
+                File[] listOfFiles = folder.listFiles();
+                for (File file : listOfFiles) {
+                    if (file.isFile()) {
+                        try ( Stream<String> stream = Files.lines(Paths.get(file.getPath()), Charset.forName("ISO-8859-1"))) {
+                            lines.addAll(stream
+                                    .map(String::toUpperCase)
+                                    .filter(line -> line.contains("'"))
+                                    .collect(Collectors.toList()));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            } else {
+                try ( Stream<String> stream = Files.lines(Paths.get(entry.getValue()), Charset.forName("ISO-8859-1"))) {
+                    lines = stream
+                            .map(String::toUpperCase)
+                            .filter(line -> line.contains("'"))
+                            .collect(Collectors.toList());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+
             jsonData.put(entry.getKey(), mapper.writeValueAsString(lines));
         }
         sb.append(jsonData);
         return sb;
     }
 
-    private static StringBuilder command_doGenerateHash(Map<String, String> parameters, Command command) throws IOException {
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @return
+     * @throws IOException
+     */
+    public static StringBuilder command_doGenerateHash(Map<String, String> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
@@ -357,7 +459,14 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doGetLocalPage(Map<String, String> parameters, Command command) throws IOException {
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @return
+     * @throws IOException
+     */
+    public static StringBuilder command_doGetLocalPage(Map<String, String> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
@@ -367,6 +476,15 @@ public class commandFunctions {
         return sb;
     }
 
+    /**
+     *
+     * @param parameters
+     * @param parts
+     * @param command
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     public static StringBuilder command_doAPICall(Map<String, String> parameters, Collection<Part> parts, Command command) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
@@ -394,8 +512,14 @@ public class commandFunctions {
 
         return sb;
     }
-    
 
+    /**
+     *
+     * @param parameters
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     public static StringBuilder command_doCheckPlugin(Map<String, String> parameters) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         String path = parameters.get("path");
@@ -408,6 +532,14 @@ public class commandFunctions {
         return sb;
     }
 
+    /**
+     *
+     * @param parameters
+     * @param parts
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     public static StringBuilder command_doActionManager(Map<String, String> parameters, Collection<Part> parts) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         Response actionResponse = new Response();
@@ -438,6 +570,15 @@ public class commandFunctions {
         return sb;
     }
 
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @param parts
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     public static StringBuilder command_TableStructure(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
 
@@ -463,6 +604,14 @@ public class commandFunctions {
         return sb;
     }
 
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     public static StringBuilder command_doGetTableConfig(Map<String, String> parameters, Command command) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         BasicDBObject searchObject = new BasicDBObject();
@@ -474,7 +623,15 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doUploadFile(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @param parts
+     * @return
+     * @throws IOException
+     */
+    public static StringBuilder command_doUploadFile(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
         String tempDir = Core.getProp("files.path", Config.packageName) + "/" + Core.getProp("temp.folder", Config.packageName) + "/";
@@ -493,7 +650,15 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doDownloadToTemp(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @param parts
+     * @return
+     * @throws IOException
+     */
+    public static StringBuilder command_doDownloadToTemp(Map<String, String> parameters, Command command, Collection<Part> parts) throws IOException {
         StringBuilder sb = new StringBuilder();
         ObjectNode jsonData = universalObjectMapper.createObjectNode();
         jsonData.put("filePath", DatabaseActions.downloadFileToTemp(parameters.get("filename"), parameters.get("LCMS_session"), parameters.get("contextPath"), Boolean.valueOf(parameters.get("public"))));
@@ -502,10 +667,74 @@ public class commandFunctions {
         return sb;
     }
 
+    /**
+     *
+     * @param parameters HashMap which takes two entries "textValues" and
+     * "template", both json-strings.
+     * @param command
+     * @return
+     */
+    public static StringBuilder command_replaceTemplate(Map<String, String> parameters, Command command) throws JsonProcessingException { //textValues
+        StringBuilder sb = new StringBuilder();
+
+        String template = parameters.get("template");
+
+        if (parameters.get("replaces") != null && Core.isValidJSON(parameters.get("textValues"))) {
+            HashMap<String, String> replaces = Core.universalObjectMapper.readValue(parameters.get("textValues"), new TypeReference<HashMap<String, String>>() {
+            });
+            for (Map.Entry<String, String> entry : replaces.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                template = template.replace("$" + key + "$", value);
+            }
+        } else {
+            List<String> replaceList = parameters.keySet().stream().filter(k -> k.startsWith("textValues")).collect(Collectors.toList());
+            for (String replace : replaceList) {
+                String replaceBy = replace;
+                replaceBy = replaceBy.replace("textValues", "");
+                replaceBy = replaceBy.replace("[", "");
+                replaceBy = replaceBy.replace("]", "");
+                template = template.replace("$" + replaceBy + "$", (parameters.get(replace)));
+            }
+        }
+
+        sb.append(template);
+
+        return sb;
+
+    }
+
+    public static StringBuilder command_doResultsQuery(Map<String, String> parameters, Collection<Part> parts) throws IOException, ClassNotFoundException {
+        StringBuilder sb = new StringBuilder();
+        String queryResult = command_doQueryByName(parameters, parts).toString();
+
+        HashMap<String, Object> qryResults = new HashMap<>();
+        if (!"".equals(queryResult)) {
+            Core.universalObjectMapper.readTree(queryResult.getBytes()).get("cursor").get("firstBatch").forEach((arg0) -> {
+                try {
+                    String toParse = Core.universalObjectMapper.writeValueAsString(arg0.toString());
+                    HashMap<String, Object> results = Core.universalObjectMapper.readValue(arg0.toString(), new TypeReference<HashMap<String, Object>>() {
+                    });      
+                    qryResults.putAll(results);
+                } catch (IOException ex) {
+                    Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+        }
+        return sb.append(qryResults.get("results"));
+    }
+
+    /**
+     *
+     * @param parameters
+     * @param parts
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     public static StringBuilder command_doQueryByName(Map<String, String> parameters, Collection<Part> parts) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         if (!parameters.isEmpty()) {
-            Gson gson = new Gson();
             if (parts != null) {
                 for (Part part : parts) {
                     System.out.println(part.getName());
@@ -519,26 +748,40 @@ public class commandFunctions {
             if (results.size() < 1) {
                 results = DatabaseActions.getObjectsSpecificListv2(Database.getMongoConfiguration("queries"), eq("queryId", parameters.get("name")), null, 1, new String[]{}, Arrays.asList(new String[]{"query"}));
             }
-
-            List<String> replaceList = parameters.keySet().stream().filter(k -> k.startsWith("replaces")).collect(Collectors.toList());
-
-            if (!results.isEmpty()) {
-                String query = results.get(0).get("query").toString();
-                for (String replace : replaceList) {
-                    String replaceBy = replace;
-                    replaceBy = replaceBy.replace("replaces", "");
-                    replaceBy = replaceBy.replace("[", "");
-                    replaceBy = replaceBy.replace("]", "");
-                    query = query.replace("$" + replaceBy + "$", (parameters.get(replace)));
+            String query = results.get(0).get("query").toString();
+            if (!results.isEmpty()) { //faalt hier omdat replaces geen array is maar json
+                if (parameters.get("replaces") != null && Core.isValidJSON(parameters.get("replaces"))) {
+                    HashMap<String, String> replaces = Core.universalObjectMapper.readValue(parameters.get("replaces"), new TypeReference<HashMap<String, String>>() {
+                    });
+                    for (Map.Entry<String, String> entry : replaces.entrySet()) {
+                        String key = entry.getKey();
+                        String value = entry.getValue();
+                        query = query.replace("$" + key + "$", value);
+                    }
+                } else {
+                    List<String> replaceList = parameters.keySet().stream().filter(k -> k.startsWith("replaces")).collect(Collectors.toList());
+                    for (String replace : replaceList) {
+                        String replaceBy = replace;
+                        replaceBy = replaceBy.replace("replaces", "");
+                        replaceBy = replaceBy.replace("[", "");
+                        replaceBy = replaceBy.replace("]", "");
+                        query = query.replace("$" + replaceBy + "$", (parameters.get(replace)));
+                    }
                 }
-                sb.append(
-                        DatabaseActions.doQuery(parameters.get("database"), query).toJson());
+                sb.append(DatabaseActions.doQuery(parameters.get("database"), query).toJson());
             }
         }
         return sb;
     }
 
-    private static StringBuilder command_doGetCollectionInfo(Map<String, String> parameters) throws IOException, ClassNotFoundException {
+    /**
+     *
+     * @param parameters
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public static StringBuilder command_doGetCollectionInfo(Map<String, String> parameters) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         String collection = parameters.get("collection");
         String session = parameters.get("LCMS_session");
@@ -548,7 +791,15 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doLogin(Map<String, String> parameters, Command command) throws IOException, ClassNotFoundException {
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public static StringBuilder command_doLogin(Map<String, String> parameters, Command command) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         String _user = parameters.get("username");
         String _pwd = parameters.get("password");
@@ -589,7 +840,14 @@ public class commandFunctions {
         }
     }
 
-    private static StringBuilder command_doLogout(Map<String, String> parameters, Command command) throws IOException {
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @return
+     * @throws IOException
+     */
+    public static StringBuilder command_doLogout(Map<String, String> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
         try {
             Config.devalidateSession(parameters.get("LCMS_session"), parameters.get("contextPath"));
@@ -599,7 +857,14 @@ public class commandFunctions {
         return sb;
     }
 
-    private static StringBuilder command_doUserInfo(Map<String, String> parameters, Command command) throws IOException {
+    /**
+     *
+     * @param parameters
+     * @param command
+     * @return
+     * @throws IOException
+     */
+    public static StringBuilder command_doUserInfo(Map<String, String> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
         sdm.gcms.shared.database.users.Session session = DatabaseActions.getSession(parameters.get("LCMS_session"));
         sb.append(DatabaseWrapper.getUserInfo(session)); //e.g. "admin/tools/index.html"

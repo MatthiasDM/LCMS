@@ -1,4 +1,4 @@
-.pvtUi { color: #333; }
+/* pvtUi { color: #333; }
 
 
 table.pvtTable {
@@ -81,7 +81,7 @@ table.pvtTable tbody tr td {
 .pvtVertList { vertical-align: top; }
 
 .pvtFilteredAttribute { font-style: italic }
-
+*/
 .pvtFilterBox{
     z-index: 100;
     width: 300px;
@@ -97,7 +97,7 @@ table.pvtTable tbody tr td {
 .pvtFilterBox input[type='checkbox'] { margin-right: 10px; margin-left: 10px; }
 .pvtFilterBox input[type='text'] { width: 230px; }
 .pvtFilterBox .count { color: gray; font-weight: normal; margin-left: 3px;}
-
+/*
 .pvtCheckContainer{
     text-align: left;
     font-size: 14px;
@@ -112,3 +112,4 @@ table.pvtTable tbody tr td {
 .pvtCheckContainer p{ margin: 5px; }
 
 .pvtRendererArea { padding: 5px;}
+*/

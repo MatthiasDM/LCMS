@@ -94,7 +94,7 @@ public class Config {
         out.close();
         return "";
     }
- 
+
     public static String readFile(String urlName) {
         try {
             String out = new Scanner(new URL(baseURL + urlName).openStream(), "UTF-8").useDelimiter("\\A").next();
@@ -330,10 +330,12 @@ public class Config {
                                     parameters.put(key, new ArrayList<>(Arrays.asList(val.split(","))));
                                 }
                             }
-
                         }
                         if (f.getType().equals("java.lang.String") && !val.equals("")) {
                             parameters.put(key, (val));
+                        }
+                        if (f.getType().equals("java.lang.Integer") && !val.equals("")) {
+                            parameters.put(key, Integer.parseInt(val));
                         }
                         if (f.getType().equals("boolean")) {
                             parameters.put(key, Boolean.parseBoolean(val));
@@ -351,7 +353,7 @@ public class Config {
         }
         return databaseObject;
     }
- 
+
     public static boolean checkDir(String _directoryName) {
         File directory = new File(_directoryName);
         if (!directory.exists()) {

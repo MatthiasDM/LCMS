@@ -559,8 +559,9 @@ class LCMSGrid {
         var me = this;
         var gridObject;
 
-        //function (result) {
+        
         me.formatters = await gcmscore.fetchFormatters(me.gridData.tableObject.split("-")[0]);
+        //me.formatters = await gcmscore.loadFormatters(me.gridData.tableObject.split("-")[0]);
         if (typeof me.formatters !== "undefined") {
             if (me.formatters.reference == null) {
                 me.formatters.reference = $.fn.fmatter.reference;

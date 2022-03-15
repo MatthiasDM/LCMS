@@ -951,6 +951,7 @@
       }
       result = document.createElement("table");
       result.className = "pvtTable";
+	  $(result).addClass("table table-sm table-responsive table-striped table-hover");
       spanSize = function(arr, i, j) {
         var l, len, n, noDraw, ref, ref1, stop, x;
         if (i !== 0) {
@@ -992,6 +993,8 @@
         }
         th = document.createElement("th");
         th.className = "pvtAxisLabel";
+		$(th).addClass("bg-success");
+		$(th).css("--bs-bg-opacity", ".3");
         th.textContent = c;
         tr.appendChild(th);
         for (i in colKeys) {
@@ -1025,6 +1028,8 @@
           r = rowAttrs[i];
           th = document.createElement("th");
           th.className = "pvtAxisLabel";
+		  $(th).addClass("bg-warning");
+		  $(th).css("--bs-bg-opacity", ".3");
           th.textContent = r;
           tr.appendChild(th);
         }
@@ -1274,8 +1279,12 @@
         uiTable = $("<table>", {
           "class": "pvtUi"
         }).attr("cellpadding", 5);
-        rendererControl = $("<td>").addClass("pvtUiCell");
-        renderer = $("<select>").addClass('pvtRenderer').appendTo(rendererControl).bind("change", function() {
+		uiTable.addClass("table table-borderless");
+		
+        rendererControl = $("<td>").addClass("pvtUiCell d-flex");
+		colauto = $("<div class='col-auto' id='renderer-wrapper'></div>");
+		rendererControl.append(colauto);
+        renderer = $("<select>").addClass('pvtRenderer form-select').appendTo(colauto).bind("change", function() {
           return refresh();
         });
         ref = opts.renderers;
@@ -1283,7 +1292,7 @@
           if (!hasProp.call(ref, x)) continue;
           $("<option>").val(x).html(x).appendTo(renderer);
         }
-        unused = $("<td>").addClass('pvtAxisContainer pvtUnused pvtUiCell');
+        unused = $("<td colspan='2'>").addClass('pvtAxisContainer pvtUnused pvtUiCell d-flex flex-wrap');
         shownAttributes = (function() {
           var results;
           results = [];
@@ -1460,7 +1469,8 @@
               top: top + 10
             }).show();
           });
-          attrElem = $("<li>").addClass("axis_" + i).append($("<span>").addClass('pvtAttr').text(attr).data("attrName", attr).append(triangleLink));
+          attrElem = $("<li>").addClass("axis_" + i).addClass("list-group-item").addClass("m-0 p-0").append($("<span>").addClass('pvtAttr btn btn-sm').text(attr).data("attrName", attr).append(triangleLink));
+		
           if (hasExcludedItem) {
             attrElem.addClass('pvtFilteredAttribute');
           }
@@ -1472,7 +1482,7 @@
           fn1(attr);
         }
         tr1 = $("<tr>").appendTo(uiTable);
-        aggregator = $("<select>").addClass('pvtAggregator').bind("change", function() {
+        aggregator = $("<select>").addClass('pvtAggregator form-select').bind("change", function() {
           return refresh();
         });
         ref1 = opts.aggregators;
@@ -1511,11 +1521,17 @@
           $(this).html(ordering[$(this).data("order")].colSymbol);
           return refresh();
         });
-        $("<td>").addClass('pvtVals pvtUiCell').appendTo(tr1).append(aggregator).append(rowOrderArrow).append(colOrderArrow).append($("<br>"));
-        $("<td>").addClass('pvtAxisContainer pvtHorizList pvtCols pvtUiCell').appendTo(tr1);
+      //  $("<td>").addClass('pvtVals pvtUiCell').appendTo(tr1).append(aggregator).append(rowOrderArrow).append(colOrderArrow).append($("<br>"));
+	    colauto = ($("<div class='col-auto'></div>"));
+		colauto.append(aggregator)
+        rendererControl.append(colauto).append(rowOrderArrow).append(colOrderArrow).append($("<br>"));
         tr2 = $("<tr>").appendTo(uiTable);
-        tr2.append($("<td>").addClass('pvtAxisContainer pvtRows pvtUiCell').attr("valign", "top"));
-        pivotTable = $("<td>").attr("valign", "top").addClass('pvtRendererArea').appendTo(tr2);
+		tr2_1 = $("<tr>").appendTo(uiTable);
+		tr3 = $("<tr>").appendTo(uiTable);
+		tr4 = $("<tr>").appendTo(uiTable);
+		$("<td colspan='2' style='min-height:2rem;--bs-bg-opacity:.3'>").addClass('pvtAxisContainer pvtHorizList pvtCols pvtUiCell d-flex flex-wrap bg-success m-1').appendTo(tr2_1);
+        tr3.append($("<td colspan='2' style='min-height:2rem;--bs-bg-opacity:.3'>").addClass('pvtAxisContainer pvtRows pvtUiCell d-flex flex-wrap bg-warning m-1').attr("valign", "top"));
+        pivotTable = $("<td colspan='2'>").attr("valign", "top").addClass('pvtRendererArea').appendTo(tr4);
         if (opts.unusedAttrsVertical === true || unusedAttrsVerticalAutoOverride) {
           uiTable.find('tr:nth-child(1)').prepend(rendererControl);
           uiTable.find('tr:nth-child(2)').prepend(unused);
@@ -1541,7 +1557,11 @@
         }
         if (!opts.showUI) {
           this.find(".pvtUiCell").hide();
-        }
+        }		 
+		$(".pvtUnused").find(".btn").addClass("btn-primary");
+		$(".pvtCols").find(".btn").addClass("btn-primary");
+		$(".pvtRows ").find(".btn").addClass("btn-primary");	    
+		
         initialRender = true;
         refreshDelayed = (function(_this) {
           return function() {
@@ -1560,10 +1580,12 @@
             _this.find(".pvtRows li span.pvtAttr").each(function() {
               return subopts.rows.push($(this).data("attrName"));
             });
+			//_this.find(".pvtRows li").addClass("border border-success");
+			
             _this.find(".pvtCols li span.pvtAttr").each(function() {
               return subopts.cols.push($(this).data("attrName"));
             });
-            _this.find(".pvtVals select.pvtAttrDropdown").each(function() {
+            _this.find("#renderer-wrapper select.pvtAttrDropdown").each(function() {
               if (numInputsToProcess === 0) {
                 return $(this).remove();
               } else {
@@ -1574,7 +1596,7 @@
               }
             });
             if (numInputsToProcess !== 0) {
-              pvtVals = _this.find(".pvtVals");
+              pvtVals = _this.find("#renderer-wrapper");
               for (x = t = 0, ref5 = numInputsToProcess; 0 <= ref5 ? t < ref5 : t > ref5; x = 0 <= ref5 ? ++t : --t) {
                 newDropdown = $("<select>").addClass('pvtAttrDropdown').append($("<option>")).bind("change", function() {
                   return refresh();
@@ -1589,7 +1611,7 @@
             if (initialRender) {
               vals = opts.vals;
               i = 0;
-              _this.find(".pvtVals select.pvtAttrDropdown").each(function() {
+              _this.find("#renderer-wrapper select.pvtAttrDropdown").each(function() {
                 $(this).val(vals[i]);
                 return i++;
               });
