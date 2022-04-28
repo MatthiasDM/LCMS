@@ -679,12 +679,13 @@ public class commandFunctions {
 
         String template = parameters.get("template");
 
-        if (parameters.get("replaces") != null && Core.isValidJSON(parameters.get("textValues"))) {
-            HashMap<String, String> replaces = Core.universalObjectMapper.readValue(parameters.get("textValues"), new TypeReference<HashMap<String, String>>() {
-            });
+        if (Core.isValidJSON(parameters.get("textValues"))) {
+
+            HashMap<String, String> replaces = Core.readHashMapFromJson(parameters.get("textValues"));
             for (Map.Entry<String, String> entry : replaces.entrySet()) {
                 String key = entry.getKey();
-                String value = entry.getValue();
+                String value = entry.getValue();    
+                value = value.replace("\"", "\\\"");
                 template = template.replace("$" + key + "$", value);
             }
         } else {
@@ -714,7 +715,7 @@ public class commandFunctions {
                 try {
                     String toParse = Core.universalObjectMapper.writeValueAsString(arg0.toString());
                     HashMap<String, Object> results = Core.universalObjectMapper.readValue(arg0.toString(), new TypeReference<HashMap<String, Object>>() {
-                    });      
+                    });
                     qryResults.putAll(results);
                 } catch (IOException ex) {
                     Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);

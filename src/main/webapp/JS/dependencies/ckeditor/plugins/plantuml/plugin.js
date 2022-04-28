@@ -86,6 +86,8 @@ CKEDITOR.plugins.add( 'plantuml',
 								{
 								var alt = element.getAttribute("alt");
 									if (alt!=null) {
+                                                                                console.log("Decodeing PlantUML...");
+                                                                                alt = decodeURI(alt);
 										this.setValue(alt);
 									}
 								},
@@ -93,7 +95,8 @@ CKEDITOR.plugins.add( 'plantuml',
 								{
 									var u = compress(this.getValue());
 									u = "../plantuml/png/"+u;
-									element.setAttribute( "alt", this.getValue() );
+                                                                        console.log("Encoding PlantUML...");
+									element.setAttribute( "alt", encodeURI(this.getValue()));
 									element.setAttribute( "src", u );
 								}
 							},
