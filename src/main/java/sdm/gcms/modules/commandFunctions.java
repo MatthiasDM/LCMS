@@ -31,21 +31,21 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 //import static sdm.gcms.Core.getProp;
 import sdm.gcms.database.DatabaseActions;
 import sdm.gcms.database.DatabaseWrapper;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.regex.Pattern;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.Part;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.Part;
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 import org.jasypt.util.password.StrongPasswordEncryptor;
@@ -60,7 +60,9 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
 import sdm.gcms.Config;
+import static sdm.gcms.Config.checkSession;
 import sdm.gcms.shared.database.Command;
 import sdm.gcms.shared.database.collections.MongoConfigurations;
 import sdm.gcms.shared.database.serializable.SerializableClass;
@@ -227,7 +229,7 @@ public class commandFunctions {
 
         props.putAll(commandParameters);
         Session session = Session.getInstance(props,
-                new javax.mail.Authenticator() {
+                new jakarta.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(Core.getProp("mail.username", Config.packageName), Core.getProp("mail.password", Config.packageName));
             }
@@ -240,6 +242,7 @@ public class commandFunctions {
             message.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(receiverList));
             message.setSubject(subject);
+            
             message.setContent(text, "text/html; charset=utf-8");
             Transport.send(message);
             System.out.println("Done");
@@ -508,7 +511,7 @@ public class commandFunctions {
         receiver += "&command=" + command.getCommandid();
         receiver += "&api=" + apikeyName;
         //sb.append(Core.httpRequest(receiver, method, extraParameters));
-        sb.append(Core.multiPartHttpRequest(parts, receiver, method, extraParameters, null, false));
+        sb.append(Core.multiPartHttpRequest(parts, receiver, method, extraParameters, new Header[0], false));
 
         return sb;
     }
@@ -684,7 +687,7 @@ public class commandFunctions {
             HashMap<String, String> replaces = Core.readHashMapFromJson(parameters.get("textValues"));
             for (Map.Entry<String, String> entry : replaces.entrySet()) {
                 String key = entry.getKey();
-                String value = entry.getValue();    
+                String value = entry.getValue();
                 value = value.replace("\"", "\\\"");
                 template = template.replace("$" + key + "$", value);
             }
@@ -868,8 +871,11 @@ public class commandFunctions {
     public static StringBuilder command_doUserInfo(Map<String, String> parameters, Command command) throws IOException {
         StringBuilder sb = new StringBuilder();
         sdm.gcms.shared.database.users.Session session = DatabaseActions.getSession(parameters.get("LCMS_session"));
-        sb.append(DatabaseWrapper.getUserInfo(session)); //e.g. "admin/tools/index.html"
-
+        if (checkSession(parameters.get("LCMS_session"))) {
+            sb.append(DatabaseWrapper.getUserInfo(session)); //e.g. "admin/tools/index.html"
+        }else{
+            sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
+        }
         return sb;
     }
 

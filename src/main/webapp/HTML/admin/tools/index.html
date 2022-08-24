@@ -131,7 +131,8 @@
                 doQuery(rowData.name);
             }));
         }
-        gcmscore.createTableModal('Queries', 'queries', $('#admin-container'), null, lazyOptions);
+        tableInput = forms_textbox("Tabel", uuidv4(), "Tabel", "gcms");
+        gcmscore.createTableModal('Queries', 'queries', $('#admin-container'), tableInput, lazyOptions);
     }
     async function doQuery(name) {
         async function onDone(data) {
@@ -149,7 +150,7 @@
         requestOptions.action = "docommand";
         requestOptions.k = "doQuery";
         requestOptions.name = name;
-        requestOptions.database = "lcms";
+        requestOptions.database = $("input[name=Tabel]").val();
         let request = await LCMSRequest("./servlet", requestOptions);
         let returnvalue = await onDone(request);
         return returnvalue;

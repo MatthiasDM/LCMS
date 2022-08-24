@@ -36,7 +36,7 @@ function config2(publicPage) { //for inline editing
             {name: 'about', groups: ['about']}
         ];
 
-
+        //config.skin = 'moono-dark';
         config.templates_files = ['./JS/ckeditor/plugins/templates/templates/defaultLCMS.js'];
         config.templates_replaceContent = false;
         config.extraPlugins = 'codesnippet,pre,codemirror,sourcedialog,widget,dialog,templates,plantuml,luckysheet';
@@ -98,8 +98,7 @@ function ckOnInstanceReady(e, imageController) {
     if (typeof editor.dropzone !== "undefined") {
         // if (editor.dropzone.destroy !== undefined) {
         // if (editor.dropzone.destroy !== "undefined") {
-        if (true) {
-            if (true) {
+        //if ($.cookie('LCMS_session'))) {           
                 try {
                     editor.dropzone({
                         url: "./servlet",
@@ -123,9 +122,8 @@ function ckOnInstanceReady(e, imageController) {
                         }});
                 } catch (e) {
 
-                }
-            }
-        }
+                }            
+       // }
 
 
     }

@@ -9,12 +9,12 @@
         +contextInitialized(ServletContextEvent): void
     }
 
-    interface "<size:14>ServletContextListener\n<size:10>javax.servlet" as javax.servlet.ServletContextListener {
+    interface "<size:14>ServletContextListener\n<size:10>javax.servlet" as jakarta.servlet.ServletContextListener {
         {abstract} +contextInitialized(ServletContextEvent): void
         {abstract} +contextDestroyed(ServletContextEvent): void
     }
 
-    javax.servlet.ServletContextListener <|.. sdm.gcms.MainServletContextListener
+    jakarta.servlet.ServletContextListener <|.. sdm.gcms.MainServletContextListener
 
     center footer UMLDoclet 2.0.14, PlantUML 1.2021.9
 @enduml

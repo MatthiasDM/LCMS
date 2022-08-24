@@ -97,8 +97,8 @@
         java.lang.Comparable <|.. sdm.gcms.Core.FilePair
         Core +- - sdm.gcms.Core.FilePair
         Core +- - sdm.gcms.Core.StringPair
-        javax.servlet.ServletContextListener <|.. MainServletContextListener
-        javax.servlet.http.HttpServlet <|- - Servlet
+        jakarta.servlet.ServletContextListener <|.. MainServletContextListener
+        jakarta.servlet.http.HttpServlet <|- - Servlet
     }
 
     namespace java.lang {
@@ -114,7 +114,7 @@
         }
     }
 
-    namespace javax.servlet.http {
+    namespace jakarta.servlet.http {
         abstract class HttpServlet {
         }
     }

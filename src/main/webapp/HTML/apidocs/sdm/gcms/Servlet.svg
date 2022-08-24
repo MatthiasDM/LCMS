@@ -9,9 +9,9 @@
         #doPost(HttpServletRequest, HttpServletResponse): void
     }
 
-    abstract class "<size:14>HttpServlet\n<size:10>javax.servlet.http" as javax.servlet.http.HttpServlet
+    abstract class "<size:14>HttpServlet\n<size:10>jakarta.servlet.http" as jakarta.servlet.http.HttpServlet
 
-    javax.servlet.http.HttpServlet <|- - sdm.gcms.Servlet
+    jakarta.servlet.http.HttpServlet <|- - sdm.gcms.Servlet
 
     center footer UMLDoclet 2.0.14, PlantUML 1.2021.9
 @enduml

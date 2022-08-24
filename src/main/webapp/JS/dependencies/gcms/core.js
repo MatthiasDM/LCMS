@@ -167,9 +167,16 @@ class gcmscore {
         return scriptsOnPage;
     }
 
-    static getCSS() {
+    static getCSS(name) {
+        var sheets = new Array();
+        if (name != null) {
+            sheets = sheets.concat(Object.filter(document.styleSheets, e => (e.href != null && e.href.includes(name))));
+        } else {
+            sheets = document.styleSheets;
+        }
+
         var css = [];
-        for (var i = 0; i < document.styleSheets.length; i++)
+        for (var i = 0; i < sheets.length; i++)
         {
             var sheet = document.styleSheets[i];
             var rules = ('cssRules' in sheet) ? sheet.cssRules : sheet.rules;
@@ -470,6 +477,7 @@ class gcmscore {
                 console.log("aftersavefunc");
             },
             beforeCancelRow: function (a, b, c) {
+                $(".popover").remove();
                 console.log("beforeCancelRow");
             },
             action: editAction,
@@ -533,6 +541,7 @@ class gcmscore {
                         })();
                     }));
                     if (gridData.jqGridOptions.postData.filters != null) {
+                        console.log("filtering...");
                         gcmscore.jqGridFilter(gridData.jqGridOptions.postData.filters, $("#" + gridData.tableObject));
                     }
                     $(window).bind('resize', function () {
@@ -873,6 +882,7 @@ class gcmscore {
         if (typeof val !== "undefined") {
             select.val(val);
         }
+        // $(".popover").remove();
         return form_group;
     }
 
@@ -940,7 +950,7 @@ class gcmscore {
                 console.log("loading content into CKeditor");
             });
         } else {
-            content.append("<iframe type='" + type + "' style='width:100%;min-height:" + $(window).height() * 0.8 + "px'' src=" + fileUrl + "></iframe>");
+            content.append("<iframe type='" + type + "' style='width:100%;min-height:" + $(window).height() * 0.8 + "px'' src=" + fileUrl + "#zoom=FitH ></iframe>");
             type = "application/pdf";
         }
         var modbs5 = new bootstrap.Modal(m);
@@ -1052,7 +1062,7 @@ class gcmscore {
         return await gcmscore.doCommand("getSnippet", {"replaces": {"name": name}}, onDone);
     }
 
-    static async getSnippetPopup(name, target) {
+    static async getSnippetPopup2(name, target) {
         var code = await this.getSnippet(name);
         var modalBody = gcmscore.createModal('Query result', $('#admin-container'));
         var modalContent = $("<div id='target'></div>");
@@ -1060,14 +1070,24 @@ class gcmscore {
         modalContent.append(code);
         modalBody.html(modalContent);
     }
-    
+
+    static async getSnippetPopup(name, target) {
+        var code = await this.getSnippet(name);
+        var modalBody = gcmscore.createModal('Query result', $('#admin-container'));
+        var modalContent = $("<div id='target'></div>");
+        modalContent.data('target', target);
+        modalContent.append(code);
+        modalBody.html(modalContent);
+        window[name](modalBody);
+    }
+
     static async doQuery(name, replaces, onDone) {
 
         var requestOptions = {};
         requestOptions.action = "docommand";
         requestOptions.k = "doQuery";
         requestOptions.name = name;
-        requestOptions.database = "lcms";
+        requestOptions.database = "gcms";
         requestOptions.replaces = {};
         requestOptions.replaces = replaces;
         try {
@@ -1099,7 +1119,7 @@ class gcmscore {
         requestOptions.action = "docommand";
         requestOptions.k = "doQuery";
         requestOptions.name = name;
-        requestOptions.database = "lcms";
+        requestOptions.database = "gcms";
         let request = await LCMSRequest("./servlet", requestOptions);
         let returnvalue = await onDone(request);
         return returnvalue;
@@ -1177,28 +1197,6 @@ class gcmscore {
         return returnvalue;
     }
 
-//    static async getSnippet(name, target) {
-//        async function onDone(data) {
-//            try {
-//                console.log(JSON.parse(data).cursor.firstBatch[0].code);
-//                return JSON.parse(data).cursor.firstBatch[0].code;
-//            } catch (e) {
-//                console.log(e);
-//                return {};
-//            }
-//        }
-//        var requestOptions = {};
-//        requestOptions.action = "docommand";
-//        requestOptions.k = "getFormatters";
-//        requestOptions.name = "getSnippet";
-//        requestOptions.database = "lcms";
-//        requestOptions.replaces = {};
-//        requestOptions.replaces.name = name;
-//        let request = await LCMSRequest("./servlet", requestOptions);
-//        let returnvalue = await onDone(request);
-//        return returnvalue;
-//    }
-
     static async editTable(collection, oper, data) {
         data.oper = oper;
         data.LCMS_session = $.cookie("LCMS_session");
@@ -1239,6 +1237,30 @@ class gcmscore {
             x.document.write(text);
             x.document.close();
         });
+    }
+
+    static async dataCollection(_collection) {
+        async function onDone(data) {
+            try {
+                return JSON.parse(data);
+            } catch (e) {
+                console.log(e);
+                return {};
+            }
+        }
+        var requestOptions = {
+            datatype: "json",
+            _search: false,
+            nd: 1661233386465,
+            rows: 10,
+            page: 1,
+            sord: "asc",
+            filters: {"groupOp": "AND", "rules": []}
+        }
+        requestOptions.action = "data" + _collection;
+        let request = await LCMSRequest("./servlet", requestOptions);
+        let returnvalue = await onDone(request);
+        return returnvalue;
     }
 }
 
@@ -1711,20 +1733,6 @@ $(function () {
         }
     };
 
-//    $.fn.fmatter["reference"] = async function (cellvalue, options, rowObject) {
-//        console.log("eval reference");
-//        try {
-//            var vals = gcmscore.valuesFromInputHidden(cellvalue, options.colModel.fk);
-//            var uuid = uuidv4();
-//            var selectWrapper = gcmscore.domFormInputHidden("", uuid, options.colModel.name, vals, "", false);
-//            var input = selectWrapper.find("input[type=text]");
-//            input.attr("style", "padding:0;height:auto;border:none;margin-top:0;margin-bottom:0;background:transparent !important;color:var(--bs-gray-500)");
-//            return selectWrapper.html();
-//        } catch (err) {
-//            console.log(err);
-//        }
-//    };
-
     $.extend($.fn.fmatter, {
         reference: (function (cellvalue, options, rowObject, test) {
             console.log("eval reference");
@@ -1740,7 +1748,6 @@ $(function () {
             }
         })
     });
-
 
 
 
@@ -2032,7 +2039,7 @@ function create_modal(parent, title, text) {
     var modal_title = $("<h5 class='modal-title'>" + title + "</h5>");
     var modal_title_close = $("<button type='button' class='close' data-bs-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>");
     var modal_body = $("<div class='modal-body'>" + text + "</div>");
-    var modal_footer = $("<div class='modal-footer'><button type='button' style='margin-right:1rem' class='btn bg-secondary' data-bs-dismiss='modal'>Close</button></div>");
+    var modal_footer = $("<div class='modal-footer'><button type='button' style='margin-right:1rem' class='btn bg-light' data-bs-dismiss='modal'>Close</button></div>");
 
     modal_header.append(modal_title);
     modal_header.append(modal_title_close);
@@ -2425,7 +2432,7 @@ function dom_fourColContainer(containerID) {
 }
 
 function dom_jqGridContainer(name) {
-    var container = $("<div class='container-lg' id='" + name + "-container' style='padding:0rem;width:100%;'></div>");
+    var container = $("<div class='container-lg' id='" + name + "-container' style='padding:1rem;width:100%;'></div>");
     var row = dom_row();
     //var col1 = dom_col("", "0");
     var col2 = dom_col(name + "-div-grid-wrapper", "12");
@@ -2607,12 +2614,13 @@ var numberTemplate = {
         sopt: ['ge', 'gt', 'eq', 'lt', 'le']
     }
 }, listGridFilterToolbarOptions = {
-    searchOnEnter: true,
+    searchOnEnter: false,
+    loadFilterDefaults: false,
     stringResult: true,
-    multipleSearch: true,
     searchOperators: true,
     ignoreCase: true,
-    defaultSearch: 'cn'
+    defaultSearch: 'cn',
+    multipleSearch: true,
 
 }, timespanTemplate = {
     align: 'center',
@@ -2779,6 +2787,7 @@ function cgenerateView2(data) {
             column.formatoptions = {srcformat: "u1000", newformat: "d-m-y"};
             column.formatter = "date";
             column.sorttype = "date";
+            column.template = numberTemplate;
             column.editoptions = {dataInit: initDateEdit};
         }
         if (value.type === "number") {
@@ -2788,6 +2797,7 @@ function cgenerateView2(data) {
             column.formatoptions = {srcformat: "u1000", newformat: "d-m-y h:i"};
             column.formatter = "date";
             column.sorttype = "date";
+            column.template = numberTemplate;
             column.editoptions = {dataInit: initDateEdit};
         }
 
@@ -2890,6 +2900,40 @@ function gridClickFunctions(e, target) {
 // $subGridExpanded = $(e.target).closest("td.sgexpanded");
 
 }
+
+function resizeGrid(_gridOptions, _gridCaption) {
+
+    if (_gridOptions == null) {
+        var grid = $("#" + getJQGridParamByCaption(_gridCaption).id);
+        var width = Math.round(grid.parent().parent().parent().parent().parent().width());
+        if (width == 0) {
+            for (var i = 0; i < grid.parents().length; i++) {
+                width = $(grid.parents()[i]).width();
+                if (width > 0 && $(grid.parents()[i]).is(":visible")) {
+                    width *= 0.9;
+                    break;
+                }
+            }
+        }
+        grid.setGridWidth(Math.round(width, true));
+
+    } else {
+        var grid = $("#" + _gridOptions.id);
+        var width = Math.round(grid.parent().parent().parent().parent().parent().width());
+        if (width == 0) {
+            for (var i = 0; i < grid.parents().length; i++) {
+                width = $(grid.parents()[i]).width();
+                if (width > 0 && $(grid.parents()[i]).is(":visible")) {
+                    width *= 0.9;
+                    break;
+                }
+            }
+        }
+        grid.setGridWidth(Math.round(width, true));
+    }
+}
+
+
 
 function getJQGridParamByCaption(_name) {
     var gridParam = {};

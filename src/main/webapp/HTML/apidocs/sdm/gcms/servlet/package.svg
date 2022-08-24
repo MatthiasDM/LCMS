@@ -23,10 +23,10 @@
             #doPost(HttpServletRequest, HttpServletResponse): void
         }
 
-        javax.servlet.http.HttpServlet <|- - Servlet
+        jakarta.servlet.http.HttpServlet <|- - Servlet
     }
 
-    namespace javax.servlet.http {
+    namespace jakarta.servlet.http {
         abstract class HttpServlet {
         }
     }

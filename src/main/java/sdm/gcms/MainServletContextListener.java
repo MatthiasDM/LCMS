@@ -5,20 +5,22 @@
  */
 package sdm.gcms;
 
-import javax.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextEvent;
 import sdm.gcms.database.DatabaseActions;
 import sdm.gcms.shared.database.Database;
 
-public class MainServletContextListener implements javax.servlet.ServletContextListener {
+public class MainServletContextListener implements jakarta.servlet.ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent arg0) {
         //Notification that the servlet context is about to be shut down.   
+        DatabaseActions.stop();
+   
     }
 
     @Override
-    public void contextInitialized(ServletContextEvent arg0) {        
-        Database.startUp();        
+    public void contextInitialized(ServletContextEvent arg0) {
+        Database.startUp();
         DatabaseActions.startChronJobs();
     }
 }

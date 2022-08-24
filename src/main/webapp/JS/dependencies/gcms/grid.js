@@ -224,6 +224,7 @@ class LCMSGrid {
                 column.formatter = "date";
                 column.sorttype = "date";
                 column.editoptions = {dataInit: initDateEdit};
+                column.template = numberTemplate;
             }
             if (type === "number") {
                 column.template = numberTemplate;
@@ -232,7 +233,7 @@ class LCMSGrid {
                 column.template = numberTemplate;
             }
             if (type === "datetime") {
-
+                column.template = numberTemplate;
                 column.formatoptions = {srcformat: "u1000"};
                 column.formatter = me.datetimeformatter;
                 column.type = "datetime";
@@ -276,7 +277,7 @@ class LCMSGrid {
 
             if (type === "select") {// && typeof value.editoptions === "undefined") {
                 column.edittype = "select";
-                column.formatter = "select";
+                column.formatter = column.formatter == undefined ? "select" : column.formatter;
                 column.width = "200";
                 if (typeof value.choices !== "undefined") {
                     if (value.choices.constructor.name === "String") {
@@ -443,6 +444,87 @@ class LCMSGrid {
     loadExternalList(_value, options) {
         var me = this;
         console.log("loading list");
+
+        //------------------------------------------
+
+//        var options = {};
+//        options.getAction = 'gettickets';
+//        options.idColumn = 'ticketid';
+//        options.sortorder = 'desc';
+//        options.sortname = 'date';
+//        options.caption = 'test';
+//        options.afterLoadComplete = function (a, b) {
+//            popover.update();
+//            console.log("table has loaded");
+//        }
+        function loadTable() {
+            //var options = {};            
+            var selectedValues = gcmscore.valuesFromInputHidden($("#" + me.id).parent());
+            var filters = {"groupOp": "AND", "rules": []};
+            if (options.relation.pk !== "" && options.relation.type === "ManyToOne") {
+                var data = "";
+                if (typeof me.selRowData[options.name] !== "undefined") {
+                    data = me.selRowData[options.name];
+                }
+                var fieldName = options.relation.pk;
+                filters = {"groupOp": "AND", "rules": [{"field": fieldName, "op": "cn", "data": data}]};
+            }
+            options.getAction = 'gettickets';
+            options.idColumn = 'ticketid';
+            options.sortorder = 'desc';
+            options.sortname = 'date';
+            options.caption = 'test';
+            options.onSelectRow = function (rowid) {
+                me.onSelectRelationalRow(rowid, options.relation, $('#' + this.id), options.name);
+            };
+            options.requestingGrid = this;
+            options.searching = listGridFilterToolbarOptions;
+            options.searching.beforeSearch = function () {
+                var jsonFilter = $.parseJSON($(this).jqGrid("getGridParam").postData.filters);
+                // jsonFilter.rules.shift();
+                $(this).jqGrid("getGridParam").postData.filters = JSON.stringify(jsonFilter);
+                console.log("before search");
+            };
+
+            options.multiselect = options.relation.type === "ManyToMany";
+            options.postData = {
+                "LCMS_session": $.cookie('LCMS_session'),
+                "action": "data" + options.relation.collection
+            };
+            options.afterLoadComplete = function (a, b) {
+                popover.update();
+                console.log("table has loaded");
+            }
+
+            if (filters !== null) {
+                console.log("adding post filters 1");
+                if (typeof filters !== "string") {
+                    filters = JSON.stringify(filters);
+                }
+                options.postData.filters = filters;
+            }
+
+
+            var wrapper = $("<div class='nosave no-save'>Test</div>");
+            let tableName = gcmscore.loadLazyTable(options.relation.collection, wrapper, options.relation.collection, options, {});
+
+
+            //let LCMSTable = await me.loadExternalList2($($(list)[1]).find("div[id='" + datatargetcontent + "']"), options, this.id);
+
+//            var tableID = "#" + list.id + "-table";
+//            var valueAttr = options.relation.display;
+//            if ($(tableID).jqGrid().length > 0) {
+//               var filters = {"groupOp": "AND", "rules": [{"field": valueAttr, "op": "cn", "data": this.value}]};
+//               gcmscore.jqGridFilter(filters, $(tableID));
+//            }
+
+
+            // popover.update();
+            return wrapper;
+        }
+        //------------------------------------------
+
+
         var position = "inherit";
         if (options.mode === "edit" || options.mode === "add") {
             position = "fixed";
@@ -451,26 +533,40 @@ class LCMSGrid {
         var datatargetcontent = "external-list-content-" + options.relation.collection;
         var list = $("<div style='' data-bs-target='#" + datatarget + "'>" + _value + "</div><div class='collapse' id='" + datatarget + "' style='position: " + position + ";width: 100%;z-index:100;left:0px;display:block'><div class='card mb-6' style='border:none'><div id='" + datatargetcontent + "' style='padding:0' class='card-body text-secondary'></div></div></div>");
         list.find("input[type='text']").attr("style", "");
-        $(list).find("input").click(async function (e) {
-            e.preventDefault();
-            $($(list)[1]).show();
-            var tableID = "#" + this.id + "-table";
-            if ($(tableID).jqGrid("getGridParam") === null) {
-                let LCMSTable = await me.loadExternalList2($($(list)[1]).find("div[id='" + datatargetcontent + "']"), options, this.id);
-                var tableID = "#" + this.id + "-table";
-                var valueAttr = options.relation.display;
-                if ($(tableID).jqGrid().length > 0) {
-                    var filters = {"groupOp": "AND", "rules": [{"field": valueAttr, "op": "cn", "data": this.value}]};
-                    gcmscore.jqGridFilter(filters, $(tableID));
-                }
-            }
+        var popover = new bootstrap.Popover(list, {
+            html: true,
+            //placement: "bottom",
+            content: loadTable
         });
+//        $(list).find("input").click(async function (e) {
+//            e.preventDefault();       
+//            $($(list)[1]).show();
+//            var tableID = "#" + this.id + "-table";
+//            if ($(tableID).jqGrid("getGridParam") === null) {
+//
+//                let LCMSTable = await me.loadExternalList2($($(list)[1]).find("div[id='" + datatargetcontent + "']"), options, this.id);
+//                var tableID = "#" + this.id + "-table";
+//                var valueAttr = options.relation.display;
+//                if ($(tableID).jqGrid().length > 0) {
+//                    var filters = {"groupOp": "AND", "rules": [{"field": valueAttr, "op": "cn", "data": this.value}]};
+//                    gcmscore.jqGridFilter(filters, $(tableID));
+//                }
+//            }
+//        });
+
+//        $(list).find("input").bind('DOMNodeRemoved', function (e) {
+//            console.log("Removing popovers");
+//            $(".popover").remove();
+//
+//        });
+
         $(list).find("input").bind("paste keyup", function (e) {
-            var tableID = "#" + this.id + "-table";
+            var table = $("#" + $(e.target).parent().attr("aria-describedby")).find("div[class=ui-jqgrid-bdiv]").find("table");
             var valueAttr = options.relation.display;
-            if ($(tableID).jqGrid().length > 0) {
+            if (table.jqGrid().length > 0) {
                 var filters = {"groupOp": "AND", "rules": [{"field": valueAttr, "op": "cn", "data": this.value}]};
-                gcmscore.jqGridFilter(filters, $(tableID));
+                console.log("filtering...");
+                gcmscore.jqGridFilter(filters, table);
             }
         });
         return list;
@@ -559,7 +655,7 @@ class LCMSGrid {
         var me = this;
         var gridObject;
 
-        
+
         me.formatters = await gcmscore.fetchFormatters(me.gridData.tableObject.split("-")[0]);
         //me.formatters = await gcmscore.loadFormatters(me.gridData.tableObject.split("-")[0]);
         if (typeof me.formatters !== "undefined") {
@@ -804,8 +900,10 @@ class LCMSGrid {
                 gridData.jqGridOptions.afterLoadComplete(grid, me);
             }
             if (exists(getSafe(() => gridData.jqGridOptions.postData.filters))) {
+                console.log("filtering...");
                 gcmscore.jqGridFilter(gridData.jqGridOptions.postData.filters, $("#" + gridData.tableObject));
             }
+            resizeGrid(grid.jqGrid("getGridParam"), gridData.jqGridOptions.caption);
 
 
         };
@@ -907,14 +1005,14 @@ class LCMSGrid {
 
 
         $(window).bind('resize', function () {
-
-
-            if (typeof container !== "undefined") {
-                if (container.parent().width() > 100) {
-                    var container = $("#" + gridData.tableObject.slice(0, gridData.tableObject.length - 5) + "container");
-                    //    tableObject.setGridWidth(Math.round($(window).width(), true));
+            if (typeof tableObject != "undefined") {
+                if (typeof tableObject.jqGrid("getGridParam").caption !== "undefined" && tableObject.jqGrid("getGridParam").caption !== "") {
+                    resizeGrid(tableObject.jqGrid("getGridParam"), gridData.jqGridOptions.caption);
                 }
             }
+
+
+
 
         }).trigger('resize');
 
@@ -927,6 +1025,8 @@ class LCMSGrid {
             tableObject.closest("div.ui-jqgrid-bootstrap").find("div.ui-jqgrid-pager").css("display", "none")
             tableObject.closest("div.ui-jqgrid-bootstrap").find("div.ui-jqgrid-titlebar").css("display", "none")
             tableObject.closest("div.ui-jqgrid-bootstrap").find("div.ui-jqgrid-hdiv").css("display", "none")
+            tableObject.closest("div.ui-jqgrid-bootstrap").find("tr.jqgfirstrow").css("visibility", "hidden")
+
             //children("div.ui-jqgrid-titlebar")
         }
 
@@ -1211,6 +1311,19 @@ class LCMSGrid {
                 }
             } else {
                 $("#tab0").append((this));
+                if ($(this).find("td").css("visibility") == "hidden") {
+                    $(this).css("display", "none");
+                } else {
+                    if ($(this).find("div[title=ckedit_code]").length > 0) {
+                        $(this).css("width", "100%");
+                    } else {
+                        $(this).css("width", "50%");
+                    }
+                    $(this).css("display", "inline-grid");
+
+                    $(this).css("padding", "0.2rem");
+                }
+
 //                if ($(this).find("td.DataTD").find("div[data-bs-target^='#external-list']").length > 0) {
 //                    console.log(header);
 //                    var rowId = ($($(this).find("td.DataTD").find("div[data-bs-target^='#external-list']")).attr("id"));

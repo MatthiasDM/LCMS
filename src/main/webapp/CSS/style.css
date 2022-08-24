@@ -7,8 +7,17 @@ and open the template in the editor.
     Created on : Jan 30, 2018, 2:34:27 PM
     Author     : matmey
 */
+body {
+    overflow: auto    
+}
 .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(0, 0, 0, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(0, 0, 0, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    mask-image:url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(0, 0, 0, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    background: rgba(var(--bs-primary-rgb));
+    // background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(0, 0, 0, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+.navbar-toggler-icon>svg>path{ /*target the image with css*/
+
 }
 .navbar-toggler {
     //  background: #fff; /* pick your color */
@@ -97,14 +106,10 @@ img {
 
 }
 
-table {
-   // color: var(--bs-gray-300) !important;   
-   // --bs-table-striped-color: var(--bs-gray-300) !important;
-}
 
 input[type="text"], textarea {
     color: var(--bs-gray-600);
-   // background-color : var(--bs-gray-200); 
+    // background-color : var(--bs-gray-200); 
 
 }
 
@@ -151,6 +156,45 @@ input[type="text"], textarea {
 
 /*JQGRID*/
 
+.ui-jqgrid .ui-jqgrid-toppager .ui-pager-control, .ui-jqgrid .ui-jqgrid-pager .ui-pager-control {
+    height: auto;
+}
+.ui-jqgrid .ui-pager-control td[id$="_toppager_center"], .ui-jqgrid .ui-pager-control td[id$="pager_center"] {
+    width: auto !important;
+    white-space: normal !important;
+    height: auto;
+}
+.ui-jqgrid .ui-pager-control td[id$="_toppager_left"], .ui-jqgrid .ui-pager-control td[id$="pager_left"] {
+    width: auto !important;
+    white-space: normal !important;
+    height: auto;
+
+}
+.ui-jqgrid .ui-pager-control td[id$="_toppager_right"], .ui-jqgrid .ui-pager-control td[id$="pager_right"] {
+    width: auto !important;
+    white-space: normal !important;
+    height: auto;
+}
+.ui-jqgrid .ui-jqgrid-bdiv, .ui-jqgrid .ui-jqgrid-view.table-responsive, .ui-jqgrid, .ui-jqgrid-pager,
+.ui-jqgrid-toppager, .ui-jqgrid-hdiv {
+    width: auto !important;
+}
+.ui-jqgrid .ui-pager-control td[id$="_toppager_left"], .ui-jqgrid .ui-pager-control td[id$="pager_left"],
+.ui-jqgrid .ui-pager-control td[id$="_toppager_center"], .ui-jqgrid .ui-pager-control td[id$="pager_center"] {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+@media (max-width: 575.98px) {
+    .ui-jqgrid tr.jqgrow td {
+        white-space: break-spaces;
+
+    }
+    .ui-jqgrid table {
+        display: initial;
+    }
+}
+
 .jqgrow{
     cursor:pointer;
 }
@@ -161,6 +205,8 @@ jqgrid-bootstrap tr.jqgrow>td {
 .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-view {
     font-size: 1em;
     border: none !important;
+    overflow-x: auto;
+    table-layout:auto !important;
 }
 
 .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-pager {
@@ -219,8 +265,8 @@ jqgrid-bootstrap tr.jqgrow>td {
     border: 0px solid #ddd;
     -ms-border-radius: 0px;
     border-radius: 0px; 
-   margin-left: auto;
-   margin-right: auto;
+    margin-left: auto;
+    margin-right: auto;
 
 
 
@@ -228,16 +274,13 @@ jqgrid-bootstrap tr.jqgrow>td {
 
 .ui-jqgrid tr.jqgrow td { 
     font-size: 1rem;
-    word-wrap: break-word;
-    /*white-space: no-wrap; 
-    white-space: -moz-pre-wrap;
-    white-space: -pre-wrap;
-    white-space: -o-pre-wrap; */
+    white-space: pre-wrap;
     overflow: hidden;
     height: auto;
     vertical-align: middle;
     padding-top: 3px;
     padding-bottom: 3px;
+    max-width: 200px !important;
 }
 
 .ui-jqgrid tr.jqgrow:hover {
@@ -312,7 +355,7 @@ textarea[title=ckedit] {
 
 }
 .modal-open {
-    overflow: scroll !important;
+   // overflow: auto !important;
 }
 
 .modal-content{
@@ -334,3 +377,6 @@ body.modal-open {
     line-height: 1.5rem !important;
 }
 
+.popover {
+    max-width: 800px !important    
+}

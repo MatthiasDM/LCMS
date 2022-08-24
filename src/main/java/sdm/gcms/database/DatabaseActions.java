@@ -71,6 +71,7 @@ import sdm.gcms.shared.database.collections.Backlog;
 import sdm.gcms.shared.database.users.Role;
 import sdm.gcms.shared.database.users.Session;
 import sdm.gcms.shared.database.users.User;
+
 /**
  *
  * @author matmey
@@ -79,11 +80,11 @@ public class DatabaseActions {
 
     static MongoClient mongo = Database.getMongo();
     static Map<String, MongoDatabase> databases = Database.getDatabases();
+    static CronTask mTask = new CronTask();
 
     private static final Logger LOG = Logger.getLogger(DatabaseActions.class.getName());
     static CodecRegistry pojoCodecRegistry = fromRegistries(MongoClient.getDefaultCodecRegistry(),
             fromProviders(PojoCodecProvider.builder().automatic(true).build()));
-    
 
     //SOFTWARE VERSION METHODS
     static public String getEnviromentInfo() throws IOException {
@@ -126,12 +127,14 @@ public class DatabaseActions {
 
     public static void startChronJobs() {
         Timer t = new Timer();
-        CronTask mTask = new CronTask();
+        mTask = new CronTask();
         // This task is scheduled to run every 60 seconds
         t.scheduleAtFixedRate(mTask, 0, 60000);
     }
 
-    public static void stopChronJobs() {
+    public static void stop() {
+        mTask.cancel();
+        Database.disconnect();
     }
 
     //SESSION METHODS
@@ -283,7 +286,6 @@ public class DatabaseActions {
 //        } catch (JsonProcessingException e) {
 //        }
 //    }
-
     public static String downloadFileToTemp(String _fileName, String _cookie, String _contextPath, boolean _publicPage) {
         System.out.println("Calling download..");
         String outputDir = Core.getProp("files.path", packageName()) + "/" + _cookie + "/";
@@ -312,7 +314,7 @@ public class DatabaseActions {
 
     //FILEOBJECT METHODS
     static private MongoCollection<FileObject> getFileObjects() {
-        MongoCollection<FileObject> fileObjects = databases.get("lcms")
+        MongoCollection<FileObject> fileObjects = databases.get("gcms")
                 .getCollection("fileobjects", FileObject.class);
         return fileObjects;
     }
@@ -321,8 +323,6 @@ public class DatabaseActions {
         getFileObjects().insertOne(_fileObject);
         LOG.info("One fileobject inserted of total: " + getFileObjects().count());
     }
-
-   
 
     public static List<Methods> getFieldRolePriveleges(MongoConfigurations collection, Role role, String field) throws ClassNotFoundException {
         List<Methods> results = new ArrayList<>();
@@ -466,7 +466,6 @@ public class DatabaseActions {
 //        }
 //        return columns;
 //    }
-
 //    public static List<String> getColumnsFromAnnotations(Methods _privelegeType, SerializableClass _serialiableClass, String _collection, Session _session, List<String> _userRoles) throws ClassNotFoundException {
 //        List<String> columns = new ArrayList<>();
 //        List<SerializableField> fields = _serialiableClass.getFields();
@@ -543,10 +542,9 @@ public class DatabaseActions {
 //        }
 //        return columns;
 //    }
-
     public static MongoCollection<Document> getObjectsFromDatabase(MongoConfigurations mongoConf) throws ClassNotFoundException {
         MongoCollection<Document> results = null;
-        
+
         results = Database.getDatabase(mongoConf.database).getCollection(mongoConf.collection);
         return results;
     }
@@ -653,7 +651,7 @@ public class DatabaseActions {
             MongoCollection<Document> ObjectItems = DatabaseActions.getObjectsFromDatabase(mongoConf);
             results = ObjectItems.find(bson).sort(sort).skip(rows * (page - 1)).limit(limit).projection(
                     fields(include(columns))
-            ).projection(fields(and(exclude("_id"), exclude(excludes)))).into(new ArrayList<>());            
+            ).projection(fields(and(exclude("_id"), exclude(excludes)))).into(new ArrayList<>());
         } catch (ClassNotFoundException e) {
             LOG.severe(e.getMessage());
             return results;
@@ -760,14 +758,12 @@ public class DatabaseActions {
 //                }
 //
 //            });
-
 //            HashMap<String, Patch<String>> registeredPatches = new HashMap<>();
 //            patches.forEach((k, p) -> {
 //                if (p.getDeltas().size() != 0) {
 //                    registeredPatches.put(k, p);
 //                }
 //            });
-
 //            String patchString = mapper.writeValueAsString(registeredPatches);
 //            Document patchDocument = Document.parse((patchString));
 //
@@ -786,7 +782,6 @@ public class DatabaseActions {
 //        }
 //        return document;
 //    }
-
 //    public static MongoConfigurations getBaseConfiguration() throws ClassNotFoundException, JsonProcessingException, IOException {
 //        ObjectMapper mapper = new ObjectMapper();
 //        MongoConfigurations mongoConf = null;
@@ -796,7 +791,6 @@ public class DatabaseActions {
 //        mongoConf = mapper.convertValue(d, MongoConfigurations.class);
 //        return mongoConf;
 //    }
-
     public static MongoConfigurations getCollection() throws ClassNotFoundException, JsonProcessingException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         MongoConfigurations mongoConf = null;
@@ -868,7 +862,6 @@ public class DatabaseActions {
 //        }
 //        return mongoConf;
 //    }
-
     public static Document doQuery(String database, String query) {
 
         BasicDBObject q = BasicDBObject.parse(JSON.parse(query).toString());
