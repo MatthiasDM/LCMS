@@ -79,8 +79,17 @@ class LCMSEditablePage {
                 if (parsedResults.cursor.firstBatch.length > 0) {
                     var deps = parsedResults.cursor.firstBatch[0]._id.dependencies;
                     var scripts = "";
-                    $.each(deps, function (a, b) {
-                        scripts += b;
+                    $.each(deps, async function (a, dep) {
+                        $.each(dep, async function (b, code) {
+                            var type = $(code)[0].localName;
+                            if (type == "script" && $(code).attr("type") == "module" && typeof $(code).attr("name") != "undefined") {
+                                let _module = await import("data:text/javascript," + $(code).html());
+                                window[$(code).attr("name")] = _module;
+                            }else{
+                                scripts += code;
+                            }
+                        })
+                        
                     });
                     return "<div class='nosave'>" + scripts + "</div>";
                 }
@@ -90,6 +99,27 @@ class LCMSEditablePage {
         return await gcmscore.doCommand("getPageDepedencies", {"replaces": {"editablepageid": me.pageData.pageId}}, fetchedDeps);
         //return await gcmscore.doQuery("getPageDepedencies", {"editablepageid": me.pageData.pageId}, fetchedDeps);
     }
+
+//    async fetchDependencies() {
+//        console.log("fetchDependencies()");
+//        var me = this;
+//        function fetchedDeps(results) {
+//            if (results.length > 0) {
+//                var parsedResults = $.parseJSON(results);
+//                if (parsedResults.cursor.firstBatch.length > 0) {
+//                    var deps = parsedResults.cursor.firstBatch[0]._id.dependencies;
+//                    var scripts = "";
+//                    $.each(deps, function (a, b) {
+//                        scripts += b;
+//                    });
+//                    return "<div class='nosave'>" + scripts + "</div>";
+//                }
+//            }
+//
+//        }
+//        return await gcmscore.doCommand("getPageDepedencies", {"replaces": {"editablepageid": me.pageData.pageId}}, fetchedDeps);
+//        //return await gcmscore.doQuery("getPageDepedencies", {"editablepageid": me.pageData.pageId}, fetchedDeps);
+//    }
 
     async generatePage(jsonData, grids) {
         console.log("generatePage()");

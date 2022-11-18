@@ -10,6 +10,22 @@ and open the template in the editor.
 body {
     overflow: auto    
 }
+
+::-webkit-scrollbar {
+    -webkit-appearance: none;
+}
+::-webkit-scrollbar:vertical {
+    width: 10px;
+}
+::-webkit-scrollbar:horizontal {
+    height: 10px;
+}
+::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--bs-primary-rgb), 0.3);
+    border-radius: 10px;
+    border: 2px solid rgba(var(--bs-primary-rgb), 0.3);
+}
+
 .navbar-toggler-icon {
     -webkit-mask-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(0, 0, 0, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
     mask-image:url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(0, 0, 0, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
@@ -355,7 +371,7 @@ textarea[title=ckedit] {
 
 }
 .modal-open {
-   // overflow: auto !important;
+    // overflow: auto !important;
 }
 
 .modal-content{
@@ -379,4 +395,13 @@ body.modal-open {
 
 .popover {
     max-width: 800px !important    
+}
+
+
+.accordion-collapse:not(.show) {
+  display: block;
+  /* height = lineheight * no of lines to display */
+  height: 5em;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent);
 }

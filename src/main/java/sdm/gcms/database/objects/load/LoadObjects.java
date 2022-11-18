@@ -50,6 +50,7 @@ import sdm.gcms.shared.database.collections.Attribute;
 import sdm.gcms.shared.database.filters.FilterObject;
 import sdm.gcms.shared.database.filters.FilterRule;
 import sdm.gcms.shared.database.users.Roles;
+
 /**
  *
  * @author Matthias
@@ -94,8 +95,8 @@ public class LoadObjects {
         }
 
         if (access) {
-            
-            SerializableClass serializableClass = Database.getSerializableClass(cookie, _mongoConf);           
+
+            SerializableClass serializableClass = Database.getSerializableClass(cookie, _mongoConf);
             List<String> columns = getDocumentPriveleges(Methods.get, cookie, _mongoConf, true, serializableClass);
             ObjectNode jsonData = getObjects(cookie, _mongoConf, _mongoConf.getCollection(), filter, excludes, serializableClass, columns);
             sb.append(jsonData);
@@ -110,93 +111,93 @@ public class LoadObjects {
     public static GetResponse dataload(String cookie, MongoConfigurations _mongoConf, Map<String, String> requestParameters, BasicDBObject prefilter) throws JsonProcessingException, ClassNotFoundException, NoSuchFieldException, IOException {
         GetResponse response = new GetResponse();
 
-            SerializableClass serializableClass = Database.getSerializableClass(cookie, _mongoConf);
-            List<String> columns = getDocumentPriveleges(Methods.get, cookie, _mongoConf, true, serializableClass);
+        SerializableClass serializableClass = Database.getSerializableClass(cookie, _mongoConf);
+        List<String> columns = getDocumentPriveleges(Methods.get, cookie, _mongoConf, true, serializableClass);
 
-            ArrayList<String> excludes = new ArrayList<>();
-            String sidx = _mongoConf.getIdName();
-            Integer sort = 1;
-            if (requestParameters.get("sidx") != null) {
-                sidx = String.valueOf(requestParameters.get("sidx")).equals("") ? _mongoConf.getIdName() : String.valueOf(requestParameters.get("sidx"));
+        ArrayList<String> excludes = new ArrayList<>();
+        String sidx = _mongoConf.getIdName();
+        Integer sort = 1;
+        if (requestParameters.get("sidx") != null) {
+            sidx = String.valueOf(requestParameters.get("sidx")).equals("") ? _mongoConf.getIdName() : String.valueOf(requestParameters.get("sidx"));
+        }
+        if (requestParameters.get("sord") != null) {
+            sort = String.valueOf(requestParameters.get("sord")).equals("asc") ? 1 : -1;
+        }
+        if (requestParameters.get("excludes") != null) {
+            excludes.addAll(Arrays.asList(requestParameters.get("excludes")));
+        }
+        if (requestParameters.get("excludes[]") != null) {
+            String _excludes = requestParameters.get("excludes[]");
+            excludes.addAll(Arrays.asList(_excludes));
+        }
+        BasicDBObject filter = createFilterObject(requestParameters.get("filters"));
+        filter.forEach((k, v) -> prefilter.put(k, v));
+        Integer page = Integer.parseInt(requestParameters.get("page"));
+        Integer rows = Integer.parseInt(requestParameters.get("rows"));
+        Boolean includeLargeFields = false;
+        if (requestParameters.get("include_large_files") != null) {
+            includeLargeFields = Boolean.parseBoolean(requestParameters.get("include_large_files"));
+        }
+        for (SerializableField f : serializableClass.getFields()) {
+            gcmsObject annotation = (gcmsObject) f.getAnnotation();
+            if ((annotation.type().equals("cktext") || annotation.type().equals("ckcode")) && !includeLargeFields) {
+                excludes.add(f.getName());
             }
-            if (requestParameters.get("sord") != null) {
-                sort = String.valueOf(requestParameters.get("sord")).equals("asc") ? 1 : -1;
-            }
-            if (requestParameters.get("excludes") != null) {
-                excludes.addAll(Arrays.asList(requestParameters.get("excludes")));
-            }
-            if (requestParameters.get("excludes[]") != null) {
-                String _excludes = requestParameters.get("excludes[]");
-                excludes.addAll(Arrays.asList(_excludes));
-            }
-            BasicDBObject filter = createFilterObject(requestParameters.get("filters"));
-            filter.forEach((k, v) -> prefilter.put(k, v));
-            Integer page = Integer.parseInt(requestParameters.get("page"));
-            Integer rows = Integer.parseInt(requestParameters.get("rows"));
-            Boolean includeLargeFields = false;
-            if (requestParameters.get("include_large_files") != null) {
-                includeLargeFields = Boolean.parseBoolean(requestParameters.get("include_large_files"));
-            }
-            for (SerializableField f : serializableClass.getFields()) {
-                gcmsObject annotation = (gcmsObject) f.getAnnotation();
-                if ((annotation.type().equals("cktext") || annotation.type().equals("ckcode")) && !includeLargeFields) {
-                    excludes.add(f.getName());
-                }
-            }
+        }
 
-            BasicDBObject sorting = new BasicDBObject(sidx, sort);
-            ArrayList<Document> results = DatabaseActions.getObjectsRest(_mongoConf, filter, sorting, rows, excludes.toArray(new String[0]), columns, rows, page);
+        BasicDBObject sorting = new BasicDBObject(sidx, sort);
+        ArrayList<Document> results = DatabaseActions.getObjectsRest(_mongoConf, filter, sorting, rows, excludes.toArray(new String[0]), columns, rows, page);
 
-            columns.removeAll(excludes);
+        columns.removeAll(excludes);
 
-            for (String column : columns) {
-                HashMap relationships = new HashMap();
-                SerializableField serializableField = serializableClass.getFields().stream().filter(f -> f.getName().equals(column)).findFirst().get();
-                String fieldName = serializableField.getName();
-                Annotation fieldAnnotation = serializableField.getAnnotation();
-                gcmsObject mdmAnnotations = (gcmsObject) fieldAnnotation;
+        for (String column : columns) {
+            HashMap relationships = new HashMap();
+            SerializableField serializableField = serializableClass.getFields().stream().filter(f -> f.getName().equals(column)).findFirst().get();
+            String fieldName = serializableField.getName();
+            Annotation fieldAnnotation = serializableField.getAnnotation();
+            gcmsObject mdmAnnotations = (gcmsObject) fieldAnnotation;
 
-                if (!StringUtils.isEmpty(mdmAnnotations.fk())) {
+            if (!StringUtils.isEmpty(mdmAnnotations.fk())) {
 
-                    HashMap fk = universalObjectMapper.readValue(mdmAnnotations.fk(), HashMap.class);
-                    String collection = (String) fk.get("collection");
-                    String pk = (String) fk.get("pk");
-                    String display = (String) fk.get("display");
-                    ArrayList<String> fields = new ArrayList<>();
-                    fields.add(pk);
-                    fields.add(display);
-                    MongoConfigurations _fkMongoConf = Database.getMongoConfiguration(collection);
-                    SerializableClass fkClass = Database.getSerializableClass(cookie, _fkMongoConf);
-                    fields.addAll(getDocumentPriveleges(Methods.get, cookie, _fkMongoConf, true, Database.getSerializableClass(cookie, _fkMongoConf)));
+                HashMap fk = universalObjectMapper.readValue(mdmAnnotations.fk(), HashMap.class);
+                String collection = (String) fk.get("collection");
+                String pk = (String) fk.get("pk");
+                String display = (String) fk.get("display");
+                ArrayList<String> fields = new ArrayList<>();
+                fields.add(pk);
+                fields.add(display);
+                MongoConfigurations _fkMongoConf = Database.getMongoConfiguration(collection);
+                SerializableClass fkClass = Database.getSerializableClass(cookie, _fkMongoConf);
+                fields.addAll(getDocumentPriveleges(Methods.get, cookie, _fkMongoConf, true, Database.getSerializableClass(cookie, _fkMongoConf)));
 
-                    for (SerializableField f : fkClass.getFields()) {
-                        gcmsObject annotation = (gcmsObject) f.getAnnotation();
-                        if (annotation.type().equals("cktext") || annotation.type().equals("ckcode")) {
-                            fields.remove(f.getName());
-                        }
-                    }
-                    for (int i = 0; i < results.size(); i++) {
-                        String pkFilter = (String) results.get(i).get(column);
-                        ArrayList<Document> fkResults = DatabaseActions.getObjectsSpecificListv2(_fkMongoConf, new BasicDBObject(pk, new BasicDBObject("$eq", pkFilter)), new BasicDBObject(), 1, new String[0], fields);
-                        for (int j = 0; j < fkResults.size(); j++) {
-                            fkResults.get(j).append("id", fkResults.get(j).get(pk));
-                            fkResults.get(j).append("value", fkResults.get(j).get(display));
-                            fkResults.get(j).remove(pk);
-                            fkResults.get(j).remove(display);
-                        }
-                        String jsonValue = universalObjectMapper.writeValueAsString(fkResults);
-                        results.get(i).put(column, jsonValue);
+                for (SerializableField f : fkClass.getFields()) {
+                    gcmsObject annotation = (gcmsObject) f.getAnnotation();
+                    if (annotation.type().equals("cktext") || annotation.type().equals("ckcode")) {
+                        fields.remove(f.getName());
                     }
                 }
+                for (int i = 0; i < results.size(); i++) {
+                    String pkFilter = (String) results.get(i).get(column);
+                    ArrayList<Document> fkResults = DatabaseActions.getObjectsSpecificListv2(_fkMongoConf, new BasicDBObject(pk, new BasicDBObject("$eq", pkFilter)), new BasicDBObject(), 1, new String[0], fields);
+                    for (int j = 0; j < fkResults.size(); j++) {
+                        fkResults.get(j).append("id", fkResults.get(j).get(pk));
+                        fkResults.get(j).append("value", fkResults.get(j).get(display));
+                        fkResults.get(j).remove(pk);
+                        fkResults.get(j).remove(display);
+                    }
+                    String jsonValue = universalObjectMapper.writeValueAsString(fkResults);
+                    results.get(i).put(column, jsonValue);
+                }
             }
-            response.setRecords(Integer.parseInt(String.valueOf(DatabaseActions.getObjectCount(_mongoConf, filter))));
-            double totalPage = (response.getRecords().doubleValue() / rows.doubleValue());
-            response.setTotal((int) (Math.ceil((totalPage))));
-            response.setPage(page);
-            if (!results.isEmpty()) {
-                response.setRows(results);
-            }
-        
+        }
+        response.setRecords(Integer.parseInt(String.valueOf(DatabaseActions.getObjectCount(_mongoConf, filter))));
+        double totalPage = (response.getRecords().doubleValue() / rows.doubleValue());
+        response.setTotal((int) (Math.ceil((totalPage))));
+        response.setPage(page);
+        if (!results.isEmpty()) {
+            response.setRows(results);
+        }
+
         return response;
     }
 
@@ -209,8 +210,16 @@ public class LoadObjects {
                 FilterObject filterObject = mapper.readValue(json, FilterObject.class);
                 for (FilterRule rule : filterObject.getRules()) {
                     if (rule.getOp().equals("cn")) {
-                        Logger.getLogger(LoadObjects.class.getName()).log(Level.INFO, "Filtering: " + rule.getField() + " with value: " + rule.getData());
+                        Logger.getLogger(LoadObjects.class.getName()).log(Level.INFO, "Filtering (cn): " + rule.getField() + " with value: " + rule.getData());
                         filter.put(rule.getField(), new BasicDBObject("$regex", rule.getData()));
+                    }
+                    if (rule.getOp().equals("gt")) {
+                        Logger.getLogger(LoadObjects.class.getName()).log(Level.INFO, "Filtering (gt): " + rule.getField() + " with value: " + rule.getData());
+                        filter.put(rule.getField(), new BasicDBObject("$gt", Long.parseLong(rule.getData())));
+                    }
+                    if (rule.getOp().equals("lt")) {
+                        Logger.getLogger(LoadObjects.class.getName()).log(Level.INFO, "Filtering (lt): " + rule.getField() + " with value: " + rule.getData());
+                        filter.put(rule.getField(), new BasicDBObject("$lt", Long.parseLong(rule.getData())));
                     }
                 }
             } catch (JsonProcessingException ex) {

@@ -790,6 +790,7 @@ class LCMSGrid {
                     var subgrid_table_id;
                     subgrid_table_id = subgrid_id + "_t";
                     var selectedRowData = $(this).jqGrid("getRowData", row_id);
+
                     $("#" + subgrid_id).closest("td").siblings().remove();
                     $("#" + subgrid_id).closest("td").attr("colspan", "50");
                     $("#" + subgrid_id).closest("td").css("height", "auto");

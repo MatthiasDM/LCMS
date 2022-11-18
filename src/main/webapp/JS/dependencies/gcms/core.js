@@ -2034,18 +2034,18 @@ function create_modal(parent, title, text) {
     var modal = $("<div class='modal' style='padding:0 !important' tabindex='-1' role='dialog'></div>");
     var modal_dialog = $("<div class='modal-dialog modal-xl modal-fullscreen-xl-down' style='padding:0.1rem' role='document'></div>");
     var modal_content = $("<div class='modal-content'  style='backdrop-filter: blur(6px);'></div>");
-    var modal_header = $("<div class='modal-header'></div>");
+    var modal_header = $("<div class='modal-header sticky-top' style='background:inherit'></div>");
 
     var modal_title = $("<h5 class='modal-title'>" + title + "</h5>");
-    var modal_title_close = $("<button type='button' class='close' data-bs-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>");
+    var modal_title_close = $("<button type='button' style='margin-right:1rem' class='btn bg-light' data-bs-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>");
     var modal_body = $("<div class='modal-body'>" + text + "</div>");
     var modal_footer = $("<div class='modal-footer'><button type='button' style='margin-right:1rem' class='btn bg-light' data-bs-dismiss='modal'>Close</button></div>");
 
     modal_header.append(modal_title);
     modal_header.append(modal_title_close);
-    if (title !== "") {
+    //if (title !== "") {
         modal_content.append(modal_header);
-    }
+    //}
 
     modal_content.append(modal_body);
     modal_content.append(modal_footer);
