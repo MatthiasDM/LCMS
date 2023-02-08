@@ -150,46 +150,48 @@ public class LoadObjects {
 
         columns.removeAll(excludes);
 
-        for (String column : columns) {
-            HashMap relationships = new HashMap();
-            SerializableField serializableField = serializableClass.getFields().stream().filter(f -> f.getName().equals(column)).findFirst().get();
-            String fieldName = serializableField.getName();
-            Annotation fieldAnnotation = serializableField.getAnnotation();
-            gcmsObject mdmAnnotations = (gcmsObject) fieldAnnotation;
-
-            if (!StringUtils.isEmpty(mdmAnnotations.fk())) {
-
-                HashMap fk = universalObjectMapper.readValue(mdmAnnotations.fk(), HashMap.class);
-                String collection = (String) fk.get("collection");
-                String pk = (String) fk.get("pk");
-                String display = (String) fk.get("display");
-                ArrayList<String> fields = new ArrayList<>();
-                fields.add(pk);
-                fields.add(display);
-                MongoConfigurations _fkMongoConf = Database.getMongoConfiguration(collection);
-                SerializableClass fkClass = Database.getSerializableClass(cookie, _fkMongoConf);
-                fields.addAll(getDocumentPriveleges(Methods.get, cookie, _fkMongoConf, true, Database.getSerializableClass(cookie, _fkMongoConf)));
-
-                for (SerializableField f : fkClass.getFields()) {
-                    gcmsObject annotation = (gcmsObject) f.getAnnotation();
-                    if (annotation.type().equals("cktext") || annotation.type().equals("ckcode")) {
-                        fields.remove(f.getName());
-                    }
-                }
-                for (int i = 0; i < results.size(); i++) {
-                    String pkFilter = (String) results.get(i).get(column);
-                    ArrayList<Document> fkResults = DatabaseActions.getObjectsSpecificListv2(_fkMongoConf, new BasicDBObject(pk, new BasicDBObject("$eq", pkFilter)), new BasicDBObject(), 1, new String[0], fields);
-                    for (int j = 0; j < fkResults.size(); j++) {
-                        fkResults.get(j).append("id", fkResults.get(j).get(pk));
-                        fkResults.get(j).append("value", fkResults.get(j).get(display));
-                        fkResults.get(j).remove(pk);
-                        fkResults.get(j).remove(display);
-                    }
-                    String jsonValue = universalObjectMapper.writeValueAsString(fkResults);
-                    results.get(i).put(column, jsonValue);
-                }
-            }
-        }
+        results = DatabaseActions.loadRelationalColumns(columns, results, cookie, serializableClass);
+        
+//        for (String column : columns) {
+//            HashMap relationships = new HashMap();
+//            SerializableField serializableField = serializableClass.getFields().stream().filter(f -> f.getName().equals(column)).findFirst().get();
+//            String fieldName = serializableField.getName();
+//            Annotation fieldAnnotation = serializableField.getAnnotation();
+//            gcmsObject mdmAnnotations = (gcmsObject) fieldAnnotation;
+//
+//            if (!StringUtils.isEmpty(mdmAnnotations.fk())) {
+//
+//                HashMap fk = universalObjectMapper.readValue(mdmAnnotations.fk(), HashMap.class);
+//                String collection = (String) fk.get("collection");
+//                String pk = (String) fk.get("pk");
+//                String display = (String) fk.get("display");
+//                ArrayList<String> fields = new ArrayList<>();
+//                fields.add(pk);
+//                fields.add(display);
+//                MongoConfigurations _fkMongoConf = Database.getMongoConfiguration(collection);
+//                SerializableClass fkClass = Database.getSerializableClass(cookie, _fkMongoConf);
+//                fields.addAll(getDocumentPriveleges(Methods.get, cookie, _fkMongoConf, true, Database.getSerializableClass(cookie, _fkMongoConf)));
+//
+//                for (SerializableField f : fkClass.getFields()) {
+//                    gcmsObject annotation = (gcmsObject) f.getAnnotation();
+//                    if (annotation.type().equals("cktext") || annotation.type().equals("ckcode")) {
+//                        fields.remove(f.getName());
+//                    }
+//                }
+//                for (int i = 0; i < results.size(); i++) {
+//                    String pkFilter = (String) results.get(i).get(column);
+//                    ArrayList<Document> fkResults = DatabaseActions.getObjectsSpecificListv2(_fkMongoConf, new BasicDBObject(pk, new BasicDBObject("$eq", pkFilter)), new BasicDBObject(), 1, new String[0], fields);
+//                    for (int j = 0; j < fkResults.size(); j++) {
+//                        fkResults.get(j).append("id", fkResults.get(j).get(pk));
+//                        fkResults.get(j).append("value", fkResults.get(j).get(display));
+//                        fkResults.get(j).remove(pk);
+//                        fkResults.get(j).remove(display);
+//                    }
+//                    String jsonValue = universalObjectMapper.writeValueAsString(fkResults);
+//                    results.get(i).put(column, jsonValue);
+//                }
+//            }
+//        }
         response.setRecords(Integer.parseInt(String.valueOf(DatabaseActions.getObjectCount(_mongoConf, filter))));
         double totalPage = (response.getRecords().doubleValue() / rows.doubleValue());
         response.setTotal((int) (Math.ceil((totalPage))));

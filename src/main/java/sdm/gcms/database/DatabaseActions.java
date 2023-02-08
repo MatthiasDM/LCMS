@@ -37,9 +37,11 @@ import com.mongodb.util.JSON;
 //import difflib.Patch;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -49,6 +51,7 @@ import sdm.gcms.modules.commandFunctions;
 import static sdm.gcms.database.DatabaseActions.updateObjectItemv2;
 import java.util.Timer;
 import java.util.TimerTask;
+import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import static sdm.gcms.Config.packageName;
@@ -56,10 +59,10 @@ import static sdm.gcms.Config.packageName;
 import static sdm.gcms.database.DatabaseActions.getCommand;
 import sdm.gcms.shared.database.Command;
 import sdm.gcms.shared.database.Core;
+import static sdm.gcms.shared.database.Core.universalObjectMapper;
 
 import sdm.gcms.shared.database.collections.MongoConfigurations;
 import sdm.gcms.shared.database.serializable.SerializableClass;
-import static sdm.gcms.shared.database.Core.universalObjectMapper;
 import sdm.gcms.shared.database.Database;
 import static sdm.gcms.shared.database.Database.getPriveleges;
 import sdm.gcms.shared.database.FileObject;
@@ -68,6 +71,8 @@ import sdm.gcms.shared.database.Methods;
 import sdm.gcms.shared.database.collections.Actions;
 import sdm.gcms.shared.database.collections.Attribute;
 import sdm.gcms.shared.database.collections.Backlog;
+import sdm.gcms.shared.database.filters.annotation.gcmsObject;
+import sdm.gcms.shared.database.serializable.SerializableField;
 import sdm.gcms.shared.database.users.Role;
 import sdm.gcms.shared.database.users.Session;
 import sdm.gcms.shared.database.users.User;
@@ -439,109 +444,6 @@ public class DatabaseActions {
         return columns;
     }
 
-//    public static List<String> getPriveleges(Methods _method, String _cookie, boolean _checkRights, MongoConfigurations _mongoConf, SerializableClass _serializableClass) throws ClassNotFoundException, JsonProcessingException, IOException {
-//        List<String> columns = new ArrayList<>();
-//        List<String> fields = new ArrayList<>();
-//        if (_mongoConf.getClassName().equals("MongoConfigurations") || _mongoConf.getClassName().equals("Actions") || _mongoConf.getClassName().equals("ActionPrivelege")) {
-//            columns = _serializableClass.getFields().stream()
-//                    .map(result -> result.getName())
-//                    .collect(Collectors.toList());
-//        } else {
-//            if (_checkRights) {
-//                List<String> userRoles = getUserRoles(_cookie);
-//                Session session = getSession(_cookie);
-//                columns.addAll(getColumnsFromAnnotations(_method, _serializableClass, _mongoConf.getCollectionId(), session, userRoles));
-//                fields = _serializableClass.getFields().stream()
-//                        .map(result -> result.getName())
-//                        .collect(Collectors.toList());
-//
-//                HashMap<Methods, List<String>> collectionPriveleges = new HashMap<>();
-//                for (String role : userRoles) {
-//                    Role r = new Role();
-//                    r.setRoleid(role);
-//                }
-//            } else {
-//                columns.addAll(_serializableClass.getFields().stream().map(p -> p.getName()).collect(Collectors.toList()));
-//            }
-//        }
-//        return columns;
-//    }
-//    public static List<String> getColumnsFromAnnotations(Methods _privelegeType, SerializableClass _serialiableClass, String _collection, Session _session, List<String> _userRoles) throws ClassNotFoundException {
-//        List<String> columns = new ArrayList<>();
-//        List<SerializableField> fields = _serialiableClass.getFields();
-//        ArrayList<Attribute> rights = getRightsFromDatabaseInCollection(_collection);
-//
-//        for (SerializableField field : fields) {
-//            gcmsObject annotation = (gcmsObject) field.getAnnotation();
-//            Attribute databaseRight = rights.stream().filter(r -> r.getAttribute().equals(field.getName())).findFirst().orElse(new Attribute());
-//            if (annotation != null) {
-//                String requiredRole = "";
-//                int requiredRoleVal = 1;
-//                switch (_privelegeType) {
-//                    case get:
-//                        requiredRole = annotation.viewRole();
-//                        requiredRoleVal = annotation.minimumViewRoleVal();
-//                        break;
-//                    case put:
-//                        requiredRole = annotation.editRole();
-//                        requiredRoleVal = annotation.minimumEditRoleVal();
-//                        break;
-//                    case post:
-//                        requiredRole = annotation.createRole();
-//                        requiredRoleVal = annotation.minimumCreateRoleVal();
-//                        break;
-//                    default:
-//                        break;
-//                }
-//
-//                for (String userRole : _userRoles) {
-//                    if (requiredRole.equals("")) {
-//                        if (Core.getRoleLevelCode(userRole) >= requiredRoleVal) {
-//                            columns.add(field.getName());
-//                            break;
-//                        }
-//                    } else {
-//                        if (requiredRole.startsWith("@")) {
-//                            String roleName = requiredRole.substring(1);
-//                            String referencedField = fields.stream()
-//                                    .filter(r -> r.getName().equals(roleName.substring(1)))
-//                                    .findFirst()
-//                                    .toString();
-//                            if (_session != null) {
-//                                if (_session.getUsername().equals(referencedField)) {
-//                                    columns.add(field.getName());
-//                                }
-//                            }
-//                        }
-//
-//                        if (userRole.equals(requiredRole)) {
-//                            columns.add(field.getName());
-//                            break;
-//                        }
-//                    }
-//                }
-//                for (String userRole : _userRoles) {
-//                    int size = databaseRight.getRolesFromPrivilege(_privelegeType).size();
-//
-//                    if (size > 0) {
-//                        if (databaseRight.getRolesFromPrivilege(_privelegeType).contains(userRole)) {
-//                            if (!columns.contains(field.getName())) {
-//                                columns.add(field.getName());
-//                            }
-//                            break;
-//                        } else {
-//                            if (columns.contains(field.getName())) {
-//                                columns.remove(field.getName());
-//                            }
-//                        }
-//                    }
-//
-//                }
-//
-//            }
-//        }
-//        return columns;
-//    }
     public static MongoCollection<Document> getObjectsFromDatabase(MongoConfigurations mongoConf) throws ClassNotFoundException {
         MongoCollection<Document> results = null;
 
@@ -884,6 +786,53 @@ public class DatabaseActions {
         ArrayList<Document> commandDoc = DatabaseActions.getObjectsSpecificListv2(null, commandConfiguration, searchObject, null, 1, new String[0], false);
         Method method = universalObjectMapper.convertValue(commandDoc.get(0), Method.class);
         return method;
+    }
+
+    public static ArrayList<Document> loadRelationalColumns(List<String> columns, ArrayList<Document> results, String cookie, SerializableClass serializableClass) throws JsonProcessingException, ClassNotFoundException, IOException {
+
+        for (String column : columns) {
+            HashMap relationships = new HashMap();
+            SerializableField serializableField = serializableClass.getFields().stream().filter(f -> f.getName().equals(column)).findFirst().get();
+            String fieldName = serializableField.getName();
+            Annotation fieldAnnotation = serializableField.getAnnotation();
+            gcmsObject mdmAnnotations = (gcmsObject) fieldAnnotation;
+
+            if (!StringUtils.isEmpty(mdmAnnotations.fk())) {
+
+                HashMap fk = universalObjectMapper.readValue(mdmAnnotations.fk(), HashMap.class);
+                String collection = (String) fk.get("collection");
+                String pk = (String) fk.get("pk");
+                String display = (String) fk.get("display");
+                ArrayList<String> fields = new ArrayList<>();
+                fields.add(pk);
+                fields.add(display);
+                MongoConfigurations _fkMongoConf = Database.getMongoConfiguration(collection);
+                SerializableClass fkClass = Database.getSerializableClass(cookie, _fkMongoConf);
+                fields.addAll(getDocumentPriveleges(Methods.get, cookie, _fkMongoConf, true, Database.getSerializableClass(cookie, _fkMongoConf)));
+
+                for (SerializableField f : fkClass.getFields()) {
+                    gcmsObject annotation = (gcmsObject) f.getAnnotation();
+                    if (annotation.type().equals("cktext") || annotation.type().equals("ckcode")) {
+                        fields.remove(f.getName());
+                    }
+                }
+                for (int i = 0; i < results.size(); i++) {
+                    String pkFilter = (String) results.get(i).get(column);
+                    ArrayList<Document> fkResults = DatabaseActions.getObjectsSpecificListv2(_fkMongoConf, new BasicDBObject(pk, new BasicDBObject("$eq", pkFilter)), new BasicDBObject(), 1, new String[0], fields);
+                    for (int j = 0; j < fkResults.size(); j++) {
+                        fkResults.get(j).append("id", fkResults.get(j).get(pk));
+                        fkResults.get(j).append("value", fkResults.get(j).get(display));
+                        fkResults.get(j).remove(pk);
+                        fkResults.get(j).remove(display);
+                    }
+                    String jsonValue = universalObjectMapper.writeValueAsString(fkResults);
+                    results.get(i).put(column, jsonValue);
+                }
+            }
+        }
+        
+        return results;
+
     }
 
 }

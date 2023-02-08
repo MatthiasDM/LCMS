@@ -83,18 +83,43 @@ class LCMSEditablePage {
                         $.each(dep, async function (b, code) {
                             var type = $(code)[0].localName;
                             if (type == "script" && $(code).attr("type") == "module" && typeof $(code).attr("name") != "undefined") {
-                                let _module = await import("data:text/javascript," + $(code).html());
-                                window[$(code).attr("name")] = _module;
-                            }else{
+                                if (typeof $(code).attr("src") != "undefined") {
+                                    let _module = await import($(code).attr("src"));
+                                    window[$(code).attr("name")] = _module;
+                                } else {
+                                    let _module = await import("data:text/javascript," + $(code).html());
+                                    window[$(code).attr("name")] = _module;
+                                }
+
+
+                            } else {
                                 scripts += code;
                             }
                         })
-                        
+
                     });
                     return "<div class='nosave'>" + scripts + "</div>";
                 }
             }
 
+        }
+        async function getModuleSource(_url, _onDone) {
+            var ajaxParameters = {
+                method: "GET",
+                url: _url,
+                beforeSend: function (xhr) {
+                    xhr.overrideMimeType("application/html");
+                }
+            };
+
+            await $.ajax(ajaxParameters).done(function (data) {
+                if (typeof _onDone !== "undefined") {
+                    _onDone(data);
+                }
+                return data;
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                console.log(errorThrown);
+            });
         }
         return await gcmscore.doCommand("getPageDepedencies", {"replaces": {"editablepageid": me.pageData.pageId}}, fetchedDeps);
         //return await gcmscore.doQuery("getPageDepedencies", {"editablepageid": me.pageData.pageId}, fetchedDeps);

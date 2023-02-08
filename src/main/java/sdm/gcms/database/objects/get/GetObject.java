@@ -13,10 +13,18 @@ import static sdm.gcms.Config.loadWebFile;
 
 import sdm.gcms.database.DatabaseWrapper;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import org.bson.Document;
+import sdm.gcms.database.DatabaseActions;
+import static sdm.gcms.database.DatabaseActions.getDocumentPriveleges;
+import sdm.gcms.shared.database.Database;
+import sdm.gcms.shared.database.Methods;
 import sdm.gcms.shared.database.collections.Actions;
 
 import sdm.gcms.shared.database.collections.MongoConfigurations;
+import sdm.gcms.shared.database.serializable.SerializableClass;
 /**
  *
  * @author Matthias
@@ -36,7 +44,7 @@ public class GetObject {
         return sb;
     }
 
-    public static StringBuilder prepareObject(String cookie, MongoConfigurations _mongoConf, Boolean publicPage, Map<String, Object> searchResult) throws ClassNotFoundException, JsonProcessingException {
+    public static StringBuilder prepareObject(String cookie, MongoConfigurations _mongoConf, Boolean publicPage, Map<String, Object> searchResult) throws ClassNotFoundException, JsonProcessingException, IOException {
         StringBuilder sb = new StringBuilder();
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonData = mapper.createObjectNode();
@@ -61,7 +69,12 @@ public class GetObject {
             jsonData.set("replaces", jsonReplaces);
             sb.append(jsonData);
         } else {
-            sb.append(mapper.writeValueAsString(searchResult));
+            ArrayList<Document> results = new ArrayList<>();
+            results.add(Document.parse(mapper.writeValueAsString(searchResult)));
+            SerializableClass serializableClass = Database.getSerializableClass(cookie, _mongoConf);
+            List<String> columns = getDocumentPriveleges(Methods.get, cookie, _mongoConf, true, serializableClass);
+            results = DatabaseActions.loadRelationalColumns(columns, results, cookie, serializableClass);
+            sb.append(mapper.writeValueAsString(results.get(0)));
         }
 
         return sb;

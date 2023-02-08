@@ -436,6 +436,9 @@ class gcmscore {
             jqGridParameters: {
                 navGridParameters: {
                     add: true,
+                    edittitle: "r_bewerken",
+                    canceltitle: "r_annuleren",
+                    savetitle: "r_opslaan",
                     cancel: true,
                     save: true,
                     keys: true,
@@ -450,9 +453,6 @@ class gcmscore {
                 }
             }
         };
-
-
-
         var editparameters = {
             keys: true,
             oneditfunc: function (a, b, c) {
@@ -463,6 +463,7 @@ class gcmscore {
             },
             afterrestorefunc: function (a, b, c) {
                 console.log("afterrestorefunc");
+
                 let filters = $(this).jqGrid("getGridParam").postData.filters;
                 if (filters != null) {
                     if (typeof filters !== "string") {
@@ -477,7 +478,7 @@ class gcmscore {
                 console.log("aftersavefunc");
             },
             beforeCancelRow: function (a, b, c) {
-                $(".popover").remove();
+                // $(".popover").remove();
                 console.log("beforeCancelRow");
             },
             action: editAction,
@@ -489,11 +490,8 @@ class gcmscore {
             },
             mtype: "POST"
         };
-
         gridData.jqGridParameters.navGridParameters.editParams = editparameters;
         gridData.jqGridParameters.navGridParameters.addParams = {"position": "last", "addRowParams": editparameters};
-
-
         if (typeof jqGridOptions !== "undefined") {
             $.each(jqGridOptions, function (i, n) {
                 gridData.jqGridOptions[i] = n;
@@ -502,7 +500,6 @@ class gcmscore {
         //let test = new LCMSGridForm(documentPage);
         //var testArr = new Array();
         //test.new_grid_wizard(documentPage, $.parseJSON(gridData.data.header), gridData.jqGridOptions, testArr, $.parseJSON(gridData.data.table), tableName, $("body"));
-
         let lcmsGrid = new LCMSGrid(gridData);
         await lcmsGrid.createGrid().then(
                 function (result) {
@@ -511,7 +508,7 @@ class gcmscore {
                             return null;
                         });
                     }));
-                    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil-square", "Eigenschappen wijzigen", "", function () {
+                    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil-square", "r_Eigenschappen wijzigen", "", function () {
                         var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
                         if (rowid !== null) {
                             return lcmsGrid.popupEdit(rowid, function () {
@@ -593,7 +590,7 @@ class gcmscore {
                             return null;
                         });
                     }));
-                    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "Eigenschappen wijzigen", "", function () {
+                    lcmsGrid.addGridButton(new LCMSTemplateGridButton("fa-pencil", "r_Eigenschappen wijzigen", "", function () {
                         var rowid = $("#" + gridData.tableObject).jqGrid('getGridParam', 'selrow');
                         if (rowid !== null) {
                             return lcmsGrid.popupEdit(rowid, function () {
@@ -1011,7 +1008,12 @@ class gcmscore {
     static createTableModal(_title, _baseName, _parent, _extraContent, _lazyOptions, _extraRequestOptions) {
         var me = this;
         var mod = create_modal(_parent, "", "");
+        mod.find("div[class^=modal-dialog]").css("padding", "0.3rem");
+        mod.find("div[class^=modal-header]").addClass("rounded p-2");
+        mod.find("div[class^=modal-header]").css("display","none");
+        mod.find("div[class=modal-content]").addClass("rounded");
         var modalBody = mod.find("div[class=modal-body]");
+        var modalHeader = mod.find("[class=modal-title]");
         modalBody.css("padding", "0");
         modalBody.css("border-top-right-radius", "calc(0.3rem - 1px)");
         modalBody.css("border-top-left-radius", "calc(0.3rem - 1px)");
@@ -1019,7 +1021,7 @@ class gcmscore {
         mod.on('hidden.bs.modal', function () {
             $(this).remove();
         });
-
+        modalHeader.append(_title);
         me.loadLazyTable(_title, modalBody, _baseName, _lazyOptions, _extraRequestOptions);
         modalBody.append(_extraContent);
         var modbs5 = new bootstrap.Modal(mod);
@@ -1674,6 +1676,8 @@ function LCMSgetEditablePage(_parent, _k, _v) {
     }
 }
 
+
+
 $(function () {
     Object.filter = (obj, predicate) =>
         Object.keys(obj)
@@ -1747,6 +1751,35 @@ $(function () {
                 console.log(err);
             }
         })
+    });
+
+
+
+    $(document).on('click', function (e) {
+        //aria-describedby="popover64021
+        $('.popover').each(function () {
+            var id = $(this).attr("id");
+
+            if ($("[aria-describedby=" + id + "]").length == 0) {
+                bootstrap.Popover.getInstance(id).dispose();
+                //$("#"+id).remove();
+            }
+
+            if ($("[aria-describedby=" + id + "]")[0].localName == "tr") {
+                if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover-body').has(e.target).length === 0 && $("[aria-describedby=" + id + "]").has(e.target).length === 0) {
+                    bootstrap.Popover.getInstance(document.getElementById(id)).dispose();
+                    //$("#"+id).remove();
+                }
+            } else {
+                if (!$(e.target).parent("div[aria-describedby=" + id + "]").length > 0 && !$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover-body').has(e.target).length === 0) {
+                    bootstrap.Popover.getInstance(document.getElementById(id)).dispose();
+                    //$("#"+id).remove();
+                }
+            }
+
+
+
+        });
     });
 
 
@@ -2044,11 +2077,11 @@ function create_modal(parent, title, text) {
     modal_header.append(modal_title);
     modal_header.append(modal_title_close);
     //if (title !== "") {
-        modal_content.append(modal_header);
+    modal_content.append(modal_header);
     //}
 
     modal_content.append(modal_body);
-    modal_content.append(modal_footer);
+    //modal_content.append(modal_footer);
     modal_dialog.append(modal_content);
     modal.append(modal_dialog);
 
@@ -2157,7 +2190,7 @@ function forms_select(title, id, name, valObjects, val) {
     console.log("forms_select()");
     var form_group = $("<div id='" + id + "' class='form-group'></div>");
     var label = $("<label for='" + title + "'>" + title + "</label>");
-    var select = $("<select class='form-control' multiple name='" + name + "' id='select-" + id + "'></select>");
+    var select = $("<select class='form-select' multiple name='" + name + "' id='select-" + id + "'></select>");
     Object.keys(valObjects).forEach(function (key) {
         select.append($("<option value='" + valObjects[key].name + "'>" + valObjects[key].name + "</option>"));
     });
@@ -2169,11 +2202,26 @@ function forms_select(title, id, name, valObjects, val) {
     return form_group;
 
 }
+function dom_radio_toggle_buttons(name, btnId, btnVal, btnLabel, onClick, color) {
+    var parent = $("<span></span>");
+    var label = $("<input type='radio' value='" + btnVal + "' name='" + name + "' class='btn-check' id='" + btnId + "' autocomplete='off'>");
+    var radio = $("<label style='width:auto' class='btn btn-outline-" + color + "' for='" + btnId + "'>" + btnLabel + "</label>");
+    radio.on("click", onClick);
+    parent.append(label);
+    parent.append(radio);
+    return parent
+}
+function inline_radio(name, radioId, radioVal, radioLabel) {
+
+    var radio = $("<div class='form-check form-check-inline'><input class='form-check-input' type='radio' name='" + name + "' id='" + radioId + "' value='" + radioVal + "'><label style='width:auto' class='form-check-label' for='" + radioId + "'>" + radioLabel + "</label></div>");
+    return radio;
+}
+
 function forms_select_single(title, id, name, valObjects, val) {
     console.log("forms_select()");
     var form_group = $("<div id='" + id + "' class='form-group'></div>");
     var label = $("<label for='" + title + "'>" + title + "</label>");
-    var select = $("<select class='form-control' name='" + id + "' id='select-" + id + "'></select>");
+    var select = $("<select class='form-select' name='" + id + "' id='select-" + id + "'></select>");
     Object.keys(valObjects).forEach(function (key) {
         select.append($("<option value='" + valObjects[key].id + "'>" + valObjects[key].name + "</option>"));
     });
@@ -2432,7 +2480,7 @@ function dom_fourColContainer(containerID) {
 }
 
 function dom_jqGridContainer(name) {
-    var container = $("<div class='container-lg' id='" + name + "-container' style='padding:1rem;width:100%;'></div>");
+    var container = $("<div class='container-lg' id='" + name + "-container' style='padding:0rem;width:100%;'></div>");
     var row = dom_row();
     //var col1 = dom_col("", "0");
     var col2 = dom_col(name + "-div-grid-wrapper", "12");

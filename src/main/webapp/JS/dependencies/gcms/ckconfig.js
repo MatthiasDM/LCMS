@@ -45,9 +45,9 @@ function config2(publicPage) { //for inline editing
         config.removePlugins = 'liststyle,tabletools,scayt,menubutton,contextmenu,language,tableselection,iframe,forms';
         config.startupShowBorders = false;
         config.height = 500;
-        // config.autoGrow_minHeight = 500;
-        //config.autoGrow_maxHeight = 3000;
-        //config.autoGrow_onStartup = true;
+        config.autoGrow_minHeight = 500;
+        config.autoGrow_maxHeight = 3000;
+        config.autoGrow_onStartup = true;
         config.resize_enabled = true;
         config.title = false;
         config.stylesSet = 'mdmConfig2:/styles.js';
@@ -154,8 +154,8 @@ function ckOnInstanceReady(e, imageController) {
         // loadTOC($(this).attr('id'));
         $("#cke_" + $(this).attr('id')).css("border", "0px dotted grey");
         $("#cke_" + $(this).attr('id')).css("padding", "10px");
-        $("#cke_" + $(this).attr('id')).css("min-height", "500px");
-        $("#cke_" + $(this).attr('id')).css("max-height", "700px");
+        //$("#cke_" + $(this).attr('id')).css("min-height", "500px");
+        //$("#cke_" + $(this).attr('id')).css("max-height", "700px");
 
     });
 

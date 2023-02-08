@@ -18,7 +18,7 @@ class LCMSGrid {
         if ($("#" + gridData.pagerID).find("div[title='" + LCMSTemplateGridButton.title + "']").length < 1) {
             $("#" + gridData.tableObject).navButtonAdd("#" + gridData.pagerID, {
                 caption: LCMSTemplateGridButton.caption,
-                title: LCMSTemplateGridButton.title,
+                title: LCMSTemplateGridButton.title, //c for custom
                 buttonicon: LCMSTemplateGridButton.icon,
                 onClickButton: function () {
                     LCMSTemplateGridButton.onClickFunction();
@@ -469,14 +469,15 @@ class LCMSGrid {
                 var fieldName = options.relation.pk;
                 filters = {"groupOp": "AND", "rules": [{"field": fieldName, "op": "cn", "data": data}]};
             }
-            options.getAction = 'gettickets';
-            options.idColumn = 'ticketid';
+            options.getAction = 'get' + options.relation.collection;
+            options.idColumn = options.relation.pk;
             options.sortorder = 'desc';
-            options.sortname = 'date';
-            options.caption = 'test';
-            options.onSelectRow = function (rowid) {
-                me.onSelectRelationalRow(rowid, options.relation, $('#' + this.id), options.name);
-            };
+            options.sortname = 'created_on';
+            options.caption = options.relation.collection;
+            options["LCMS_session"] = $.cookie('LCMS_session'),
+                    options.onSelectRow = function (rowid) {
+                        me.onSelectRelationalRow(rowid, options.relation, $('#' + this.id), options.name);
+                    };
             options.requestingGrid = this;
             options.searching = listGridFilterToolbarOptions;
             options.searching.beforeSearch = function () {
@@ -533,11 +534,16 @@ class LCMSGrid {
         var datatargetcontent = "external-list-content-" + options.relation.collection;
         var list = $("<div style='' data-bs-target='#" + datatarget + "'>" + _value + "</div><div class='collapse' id='" + datatarget + "' style='position: " + position + ";width: 100%;z-index:100;left:0px;display:block'><div class='card mb-6' style='border:none'><div id='" + datatargetcontent + "' style='padding:0' class='card-body text-secondary'></div></div></div>");
         list.find("input[type='text']").attr("style", "");
+        list.find("input[type='text']").trigger("classChanged");
         var popover = new bootstrap.Popover(list, {
             html: true,
-            //placement: "bottom",
+            //trigger: "focus",
+            placement: "bottom",
             content: loadTable
         });
+        list.find("input[type='text']").on("classChanged", function () {
+            popover.hide();
+        })
 //        $(list).find("input").click(async function (e) {
 //            e.preventDefault();       
 //            $($(list)[1]).show();
@@ -721,6 +727,7 @@ class LCMSGrid {
             pager: "#" + gridData.pagerID,
             caption: "",
             onSelectRow: function (rowid) {
+
                 if (typeof gridData.jqGridOptions.selectToEdit !== "undefined") {
                     if (gridData.jqGridOptions.selectToEdit === true) {
                         me.popupEdit(rowid);
@@ -905,6 +912,68 @@ class LCMSGrid {
                 gcmscore.jqGridFilter(gridData.jqGridOptions.postData.filters, $("#" + gridData.tableObject));
             }
             resizeGrid(grid.jqGrid("getGridParam"), gridData.jqGridOptions.caption);
+            $.each($(this).find("tr"), function (a, b) {
+                var pop = new bootstrap.Popover(b, {
+                    html: true,
+                    trigger: "focus",
+                    placement: "top",
+                    content: showRowOptions
+                })
+
+                var locationX = 0;
+                var rowWidth = 0;
+                $(this).on("shown.bs.popover", function () {
+                    console.log("popover is shown");
+                    var pop = bootstrap.Popover.getInstance(document.getElementById($(this).attr("aria-describedby")))
+                    console.log($(pop.tip).offset());
+                    console.log(locationX);
+
+                    var containerOffset = (window.innerWidth - rowWidth) / 2;
+                    if (containerOffset < 0) {
+                        containerOffset = 0;
+                    }
+                    var widthOfContainer = rowWidth;
+                    var offset = (locationX);
+                    if (offset < $(pop.tip).width() / 4) {
+                        offset = 5;
+                    } else {
+                        if (offset + $(pop.tip).width() > widthOfContainer) {
+                            offset = widthOfContainer - $(pop.tip).width() - 5;
+                        } else {
+                            offset = offset - ($(pop.tip).width() / 2);
+                        }
+                    }
+
+                    $(pop.tip).offset({left: offset + containerOffset});
+                    console.log($(pop.tip).offset());
+
+                })
+                $(this).on("click", function () {
+                    console.log("row click");
+                    locationX = event.layerX;
+                    rowWidth = $(this).width();
+                    if (!$(this).hasClass("row-selected")) {
+                        pop.show();
+                    } else {
+                        pop.hide();
+                    }
+
+                });
+
+
+            })
+
+
+            function showRowOptions() {
+                var options = $("<div></div>");
+                $.each($("#" + gridData.pagerID).find("div[title^=r_]"), function (a, b) {
+                    options.append($(b).clone(true, true));
+                    $(this).on("click", function(){
+                        pop.hide();
+                    })
+                })
+                return options; //$("#" + gridData.pagerID).find("div[title^=r_]").clone(true,true);    
+            }
 
 
         };
@@ -1005,17 +1074,13 @@ class LCMSGrid {
 
 
 
-        $(window).bind('resize', function () {
-            if (typeof tableObject != "undefined") {
-                if (typeof tableObject.jqGrid("getGridParam").caption !== "undefined" && tableObject.jqGrid("getGridParam").caption !== "") {
-                    resizeGrid(tableObject.jqGrid("getGridParam"), gridData.jqGridOptions.caption);
-                }
-            }
-
-
-
-
-        }).trigger('resize');
+//        $(window).bind('resize', function () {
+//            if (typeof tableObject != "undefined") {
+//                if (typeof tableObject.jqGrid("getGridParam").caption !== "undefined" && tableObject.jqGrid("getGridParam").caption !== "") {
+//                    resizeGrid(tableObject.jqGrid("getGridParam"), gridData.jqGridOptions.caption);
+//                }
+//            }
+//        }).trigger('resize');
 
         tableObject.closest("div.ui-jqgrid-view").children("div.ui-jqgrid-titlebar").click(function () {
             $(".ui-jqgrid-titlebar-close", this).click();
@@ -1121,7 +1186,7 @@ class LCMSGrid {
         var me = this;
         var gridData = this.gridData;
         var grid = $("#" + gridData.tableObject);
-        console.log("new item");
+        console.log("new item");        
         if (_action !== "new" && typeof this.gridData.jqGridOptions.getAction !== "undefined") {
             var id = _action;
             try {
@@ -1148,7 +1213,7 @@ class LCMSGrid {
                     $(this).replaceWith("<div contenteditable='true' title=ckedit id='" + $(this).attr("id") + "'>" + $(this).val() + "</div>");
                 });
                 $("textarea[title=ckedit_code]").each(function (index) {
-                    $(this).replaceWith("<div contenteditable='true' title=ckedit_code id='" + $(this).attr("id") + "'>" + $(this).val() + "</div>");
+                    $(this).replaceWith("<div contenteditable='true' class='ckedit_code' title=ckedit_code id='" + $(this).attr("id") + "'>" + $(this).val() + "</div>");
                 });
                 $("div[title=ckedit]").each(function (index) {
                     $(this).addClass("border rounded p-3");

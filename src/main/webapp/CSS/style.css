@@ -8,7 +8,7 @@ and open the template in the editor.
     Author     : matmey
 */
 body {
-    overflow: auto    
+    overflow: auto
 }
 
 ::-webkit-scrollbar {
@@ -44,7 +44,7 @@ body {
 
 }
 .jumbotron{
-    opacity: 0.8;    
+    opacity: 0.8;
 }
 
 .sticky-top{
@@ -54,9 +54,9 @@ body {
 
 }
 
-#alertWrapper{    
+#alertWrapper{
     position: fixed;
-    z-index: 1000;    
+    z-index: 1000;
     bottom: 20px;
     left: 20px;
 }
@@ -77,7 +77,7 @@ body {
 }
 
 .nav-item{
-    margin-top: 0.5em;    
+    margin-top: 0.5em;
 }
 
 h1, .h1 {
@@ -86,19 +86,19 @@ h1, .h1 {
 }
 
 h2, .h2 {
-    font-size: 1.8rem;    
+    font-size: 1.8rem;
 }
 h3, .h3 {
-    font-size: 1.6rem;    
+    font-size: 1.6rem;
 }
 h4, .h4 {
-    font-size: 1.5rem;    
+    font-size: 1.5rem;
 }
 h5, .h5 {
-    font-size: 1.2rem;    
+    font-size: 1.2rem;
 }
 a {
-    cursor: pointer;    
+    cursor: pointer;
 }
 
 
@@ -172,6 +172,28 @@ input[type="text"], textarea {
 
 /*JQGRID*/
 
+.modal-dialog .modal-xl .modal-fullscreen-xl-down .ui-jqgrid-titlebar{
+  display: none;
+}
+
+
+.ui-jqgrid-bdiv > div {
+    overflow-y: auto;
+    overflow-x: auto;
+    width: 100%;
+}
+.ui-jqgrid-bdiv * {
+    max-height: 75vh;
+   
+}
+.ui-jqgrid-bdiv {
+    width: 100% !important;
+    overflow: hidden !important;
+    max-height: 75vh !important;
+}
+
+
+
 .ui-jqgrid .ui-jqgrid-toppager .ui-pager-control, .ui-jqgrid .ui-jqgrid-pager .ui-pager-control {
     height: auto;
 }
@@ -221,7 +243,7 @@ jqgrid-bootstrap tr.jqgrow>td {
 .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-view {
     font-size: 1em;
     border: none !important;
-    overflow-x: auto;
+    //overflow-x: auto;
     table-layout:auto !important;
 }
 
@@ -231,10 +253,10 @@ jqgrid-bootstrap tr.jqgrow>td {
 .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-pager .btn, .ui-jqgrid.ui-jqgrid-bootstrap>.ui-jqgrid-view .btn {
     font-size: 1em;
 }
-.ui-jqgrid-bdiv {
-    display: contents;    
+
+.ui-jqgrid-btable .ui-state-highlight {
+    background: yellow;
 }
-.ui-jqgrid-btable .ui-state-highlight { background: yellow; }
 .row-selected{
     background-color: lightblue !important;
 }
@@ -280,7 +302,7 @@ jqgrid-bootstrap tr.jqgrow>td {
 .ui-jqgrid.ui-jqgrid-bootstrap {
     border: 0px solid #ddd;
     -ms-border-radius: 0px;
-    border-radius: 0px; 
+    border-radius: 0px;
     margin-left: auto;
     margin-right: auto;
 
@@ -288,7 +310,7 @@ jqgrid-bootstrap tr.jqgrow>td {
 
 }
 
-.ui-jqgrid tr.jqgrow td { 
+.ui-jqgrid tr.jqgrow td {
     font-size: 1rem;
     white-space: pre-wrap;
     overflow: hidden;
@@ -334,7 +356,7 @@ textarea[title=ckedit] {
     display: block;
     width: 100%;
     overflow: auto;
-}  
+}
 
 /*MODAL*/
 .modal-body {
@@ -358,7 +380,8 @@ textarea[title=ckedit] {
 .modal-backdrop {
     width: auto !important;
     position: fixed;
-    //background: rgba(0, 0, 0, 0.45);
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(5px);
     //display: none;
     left: 0;
     right: 0;
@@ -375,7 +398,7 @@ textarea[title=ckedit] {
 }
 
 .modal-content{
-    height: auto !important;    
+    height: auto !important;
 }
 
 .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-hdiv, .ui-jqgrid.ui-jqgrid-bootstrap .ui-jqgrid-legacy-subgrid>thead {
@@ -391,17 +414,23 @@ body.modal-open {
     font-family: monospace !important;
     font-size: 16px !important;
     line-height: 1.5rem !important;
+    height: auto !important;
+    //overflow-y: auto !important;
+}
+
+.cke_contents{
+    height: auto !important;
 }
 
 .popover {
-    max-width: 800px !important    
+    max-width: 800px !important
 }
 
 
 .accordion-collapse:not(.show) {
-  display: block;
-  /* height = lineheight * no of lines to display */
-  height: 5em;
-  overflow: hidden;
-  -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent);
+    display: block;
+    /* height = lineheight * no of lines to display */
+    height: 5em;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent);
 }

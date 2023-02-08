@@ -240,9 +240,9 @@ public class commandFunctions {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(from));
             message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(receiverList));
+                    InternetAddress.parse(parameters.get("receivers").replaceAll("\\[|\\]", "")));
             message.setSubject(subject);
-            
+
             message.setContent(text, "text/html; charset=utf-8");
             Transport.send(message);
             System.out.println("Done");
@@ -682,26 +682,25 @@ public class commandFunctions {
 
         String template = parameters.get("template");
 
-        if (Core.isValidJSON(parameters.get("textValues"))) {
+        Map<String, Object> replaces = Core.getJSONHash((parameters.get("textValues")));
 
-            HashMap<String, String> replaces = Core.readHashMapFromJson(parameters.get("textValues"));
-            for (Map.Entry<String, String> entry : replaces.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();
-                value = value.replace("\"", "\\\"");
-                template = template.replace("$" + key + "$", value);
-            }
-        } else {
-            List<String> replaceList = parameters.keySet().stream().filter(k -> k.startsWith("textValues")).collect(Collectors.toList());
-            for (String replace : replaceList) {
-                String replaceBy = replace;
-                replaceBy = replaceBy.replace("textValues", "");
-                replaceBy = replaceBy.replace("[", "");
-                replaceBy = replaceBy.replace("]", "");
-                template = template.replace("$" + replaceBy + "$", (parameters.get(replace)));
-            }
+        for (Map.Entry<String, Object> entry : replaces.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue().toString();
+            //hier check of de value op zich geen json is (readtree??) kan ook array zijn met json in
+            value = value.replace("\"", "\\\"");
+            //  Core.universalObjectMapper.readTree(value).
+            template = template.replace("$" + key + "$", value);
         }
 
+//            List<String> replaceList = parameters.keySet().stream().filter(k -> k.startsWith("textValues")).collect(Collectors.toList());
+//            for (String replace : replaceList) {
+//                String replaceBy = replace;
+//                replaceBy = replaceBy.replace("textValues", "");
+//                replaceBy = replaceBy.replace("[", "");
+//                replaceBy = replaceBy.replace("]", "");
+//                template = template.replace("$" + replaceBy + "$", (parameters.get(replace)));
+//            }
         sb.append(template);
 
         return sb;
@@ -717,15 +716,14 @@ public class commandFunctions {
             Core.universalObjectMapper.readTree(queryResult.getBytes()).get("cursor").get("firstBatch").forEach((arg0) -> {
                 try {
                     String toParse = Core.universalObjectMapper.writeValueAsString(arg0.toString());
-                    HashMap<String, Object> results = Core.universalObjectMapper.readValue(arg0.toString(), new TypeReference<HashMap<String, Object>>() {
-                    });
+                    HashMap<String, Object> results = Core.universalObjectMapper.readValue(arg0.toString(), HashMap.class);
                     qryResults.putAll(results);
                 } catch (IOException ex) {
                     Logger.getLogger(Core.class.getName()).log(Level.SEVERE, null, ex);
                 }
             });
         }
-        return sb.append(qryResults.get("results"));
+        return sb.append(Core.universalObjectMapper.writeValueAsString(qryResults.get("results")));
     }
 
     /**
@@ -754,24 +752,7 @@ public class commandFunctions {
             }
             String query = results.get(0).get("query").toString();
             if (!results.isEmpty()) { //faalt hier omdat replaces geen array is maar json
-                if (parameters.get("replaces") != null && Core.isValidJSON(parameters.get("replaces"))) {
-                    HashMap<String, String> replaces = Core.universalObjectMapper.readValue(parameters.get("replaces"), new TypeReference<HashMap<String, String>>() {
-                    });
-                    for (Map.Entry<String, String> entry : replaces.entrySet()) {
-                        String key = entry.getKey();
-                        String value = entry.getValue();
-                        query = query.replace("$" + key + "$", value);
-                    }
-                } else {
-                    List<String> replaceList = parameters.keySet().stream().filter(k -> k.startsWith("replaces")).collect(Collectors.toList());
-                    for (String replace : replaceList) {
-                        String replaceBy = replace;
-                        replaceBy = replaceBy.replace("replaces", "");
-                        replaceBy = replaceBy.replace("[", "");
-                        replaceBy = replaceBy.replace("]", "");
-                        query = query.replace("$" + replaceBy + "$", (parameters.get(replace)));
-                    }
-                }
+                query = Core.applyQueryReplace(query, parameters);
                 sb.append(DatabaseActions.doQuery(parameters.get("database"), query).toJson());
             }
         }
@@ -873,7 +854,7 @@ public class commandFunctions {
         sdm.gcms.shared.database.users.Session session = DatabaseActions.getSession(parameters.get("LCMS_session"));
         if (checkSession(parameters.get("LCMS_session"))) {
             sb.append(DatabaseWrapper.getUserInfo(session)); //e.g. "admin/tools/index.html"
-        }else{
+        } else {
             sb.append(DatabaseWrapper.getWebPage("credentials/index.html", new String[]{}));
         }
         return sb;

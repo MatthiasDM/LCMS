@@ -12,16 +12,31 @@
                                 Thema
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                <li><a class="dropdown-item change-style-menu-item" rel="cerulean" href="#">Cerulean</a></li>
-                                <li><a class="dropdown-item change-style-menu-item" rel="morph" href="#">Morph</a></li>
-                                <li><a class="dropdown-item change-style-menu-item" rel="slate" href="#">Slate</a></li>
-                                <li><a class="dropdown-item change-style-menu-item" rel="superhero" href="#">Superhero</a></li>
-                                <li><a class="dropdown-item change-style-menu-item" rel="zephyr" href="#">Zephyr</a></li>
-                                <li><a class="dropdown-item change-style-menu-item" rel="flatly" href="#">Flatly</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="cerulean" href="#">cerulean</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="cosmo" href="#">cosmo</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="cyborg" href="#">cyborg</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="darkly" href="#">darkly</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="flatly" href="#">flatly</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="journal" href="#">journal</a></li>
                                 <li><a class="dropdown-item change-style-menu-item" rel="litera" href="#">Litera</a></li>
-                                <li><a class="dropdown-item change-style-menu-item" rel="united" href="#">United</a></li>
-                                <li><a class="dropdown-item change-style-menu-item" rel="solar" href="#">Solar</a></li>
-                                <li><a class="dropdown-item change-style-menu-item" rel="minty" href="#">Minty</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="lumen" href="#">lumen</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="lux" href="#">lux</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="materia" href="#">materia</a></li>                                
+                                <li><a class="dropdown-item change-style-menu-item" rel="minty" href="#">minty</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="morph" href="#">morph</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="pulse" href="#">pulse</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="quartz" href="#">quartz</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="sandstone" href="#">sandstone</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="simplex" href="#">simplex</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="sketchy" href="#">sketchy</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="slate" href="#">slate</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="solar" href="#">solar</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="spacelab" href="#">spacelab</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="superhero" href="#">superhero</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="united" href="#">united</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="vapor" href="#">vapor</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="yeti" href="#">yeti</a></li>
+                                <li><a class="dropdown-item change-style-menu-item" rel="zephyr" href="#">zephyr</a></li>
                             </ul>
                         </div>
                     </div>
@@ -37,7 +52,7 @@
     jQuery(function ($) {
         $('body').on('click', '.change-style-menu-item', function () {
             var theme_name = $(this).attr('rel');
-            var theme = "./JS/dependencies/bootstrap/5.0.0/bootstrap." + theme_name + ".min.css";
+            var theme = "./JS/dependencies/bootstrap/5.0.0/"+theme_name+"/bootstrap.min.css";
             set_theme(theme);
             if (supports_storage) {
                 localStorage.themeName = theme_name;
